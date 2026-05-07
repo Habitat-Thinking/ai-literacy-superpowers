@@ -46,13 +46,14 @@
 
 ## Spec-scoped changes
 
-- **Rule**: Each feature or behaviour-change PR should trace to a single spec. Bug fixes, dependency updates, and other maintenance changes do not require a spec but should still be coherently scoped — one concern per PR.
+- **Rule**: Each feature or behaviour-change PR should trace to a single spec. Bug fixes, dependency updates, and other maintenance changes do not require a spec but should still be coherently scoped — one concern per PR. PRs that bundle unrelated changes must be decomposed.
 - **Enforcement**: agent
+- **Tool**: harness-enforcer (reviews against The Human Pace)
 - **Scope**: pr
 
 ## Spec-first commit ordering
 
-- **Rule**: For feature and behaviour-change PRs, the first commit on the branch must contain only a spec file in `docs/superpowers/specs/`. No implementation code may appear in that commit. Bug-fix, dependency, and maintenance PRs are exempt.
+- **Rule**: For feature and behaviour-change PRs, the first commit on the branch must contain only a spec file in `docs/superpowers/specs/`. No implementation code may appear in that commit. Bug-fix, dependency, and maintenance PRs (labelled `bug`, `fix`, `chore`, `maintenance` or branch-prefixed `fix/`, `chore/`) are exempt.
 - **Enforcement**: deterministic
 - **Tool**: `.github/workflows/spec-first-check.yml`
 - **Scope**: pr
@@ -61,11 +62,12 @@
 
 - **Rule**: The spec file in a feature PR must describe the problem being solved, the chosen approach, and the expected outcome. The implementation in the PR should trace back to what the spec describes.
 - **Enforcement**: agent
+- **Tool**: harness-enforcer agent
 - **Scope**: pr
 
 ## Version consistency
 
-- **Rule**: plugin.json version, README badge version, and CHANGELOG heading must all match. Changes to files inside `ai-literacy-superpowers/` require a version bump. Trivial formatting-only fixes can skip the bump with the `no-bump` PR label.
+- **Rule**: plugin.json version, README badge version, and CHANGELOG heading must all match. Changes to files inside `ai-literacy-superpowers/` (skills, agents, commands, hooks, config) require a version bump. Changes outside the plugin directory do not. Trivial formatting-only fixes to plugin files can skip the bump with the `no-bump` PR label.
 - **Enforcement**: deterministic
 - **Tool**: `.github/workflows/version-check.yml`
 - **Scope**: pr
@@ -79,12 +81,62 @@
 
 ## Release traceability
 
-- **Rule**: Every version in `plugin.json` must have a matching `## X.Y.Z — YYYY-MM-DD` heading in `CHANGELOG.md` and a `vX.Y.Z` git tag. The changelog heading must match at PR time. The git tag is created automatically on merge.
+- **Rule**: Every version of every plugin in this marketplace must have a matching `## X.Y.Z — YYYY-MM-DD` heading in that plugin's CHANGELOG and a corresponding git tag. The changelog heading must match at PR time. The git tag is created automatically on merge by the per-plugin auto-tag workflow. Per-plugin tag conventions: `ai-literacy-superpowers` uses bare `vX.Y.Z` tags with CHANGELOG at the repo root; `model-cards` uses `model-cards-vX.Y.Z` tags with CHANGELOG at `model-cards/CHANGELOG.md`. Future sister plugins follow the same shape.
 - **Enforcement**: deterministic
+- **Tool**: `.github/workflows/version-check.yml` (PR gate); `.github/workflows/auto-tag.yml` and `.github/workflows/auto-tag-model-cards.yml` (post-merge); `.github/workflows/gc.yml` (release-tag-completeness GC)
 - **Scope**: pr + post-merge
+
+## Output validation checkpoints
+
+- **Rule**: Every command that produces structured output parsed by downstream consumers (snapshots, assessments, audit reports, reflections, cost snapshots, HARNESS.md sections, habitat files, onboarding documents) must include a validation checkpoint step that reads the output, checks structure against the format spec reference, and fixes deviations in place
+- **Enforcement**: agent
+- **Tool**: harness-enforcer agent
+- **Scope**: pr
+
+## Docs site kept current
+
+- **Rule**: When a PR adds, removes, or substantially changes a skill, agent, or command, the corresponding docs pages in `docs/` (how-to guides, explanation pages, reference material) must be reviewed and updated in the same PR. A PR that changes plugin behaviour without a docs review note in the PR description is incomplete.
+- **Enforcement**: agent
+- **Tool**: harness-enforcer agent
+- **Scope**: pr
+
+## PRs have adjudicated objections
+
+- **Rule**: Every feature or behaviour-change PR must have (a) a spec-mode objection record at `docs/superpowers/objections/<spec-slug>.md` with all dispositions resolved (no `pending` values), and (b) a code-mode objection record at `docs/superpowers/objections/<spec-slug>-code.md` with all dispositions resolved. Bug-fix, dependency, and maintenance PRs (labelled `bug`, `fix`, `chore`, `maintenance` or branch-prefixed `fix/`, `chore/`) are exempt on the same terms as spec-first-commit-ordering. Specs created before 2026-04-19 are exempt — add `diaboli: exempt-pre-existing` to their frontmatter or rely on the dated cutoff. "Resolved" is a judgment call on rationale quality, not a schema check.
+- **Enforcement**: agent
+- **Tool**: harness-enforcer
+- **Scope**: pr
+
+## PRs have adjudicated choice stories
+
+- **Rule**: Every non-exempt PR must have either (a) at least one spec in `docs/superpowers/specs/` with a corresponding choice-story record at `docs/superpowers/stories/<spec-slug>.md` whose every story has `disposition` set to one of `accepted`, `revisit` (deferred), or `promoted` — no `pending` values; or (b) one of the exempt labels: `bug`, `fix`, `chore`, `maintenance`, `cross-repo`, or a branch prefixed `fix/` or `chore/`. A PR that has no spec **and** no exempt label fails the constraint. Per-spec exemptions: specs with filename date before 2026-04-27 are exempt; specs with `cartographer: exempt-pre-existing` in their frontmatter are exempt individually.
+- **Enforcement**: agent
+- **Tool**: harness-enforcer
+- **Scope**: pr
 
 ## Tests must pass
 
 - **Rule**: The project's test suite must pass with zero failures before any code is merged
 - **Enforcement**: unverified
+- **Scope**: pr
+
+## Reflections via PR workflow
+
+- **Rule**: Every addition to `REFLECTION_LOG.md` must be committed on a branch and merged to `main` via a PR with CI passing. Direct commits to `main` that modify `REFLECTION_LOG.md` are prohibited. Applies to all `/reflect` invocations. Effective from 2026-04-20 — commits before that date are exempt.
+- **Enforcement**: deterministic
+- **Tool**: `git log --no-merges --format="%H %s" --since="2026-04-20" origin/main -- REFLECTION_LOG.md | grep -v "#[0-9]" | grep -q .`
+- **Scope**: weekly
+
+## Label PRs at creation time
+
+- **Rule**: When creating a PR with `gh pr create` that requires a label (`chore`, `fix`, `cross-repo`) to bypass a CI gate, always pass `--label <label>` in the `gh pr create` command itself. Labels added after the initial push are invisible to already-queued CI runs and require an empty-commit retrigger.
+- **Enforcement**: agent
+- **Tool**: harness-enforcer
+- **Scope**: manual
+
+## Docs propagation when shipping new commands
+
+- **Rule**: When a PR adds a new command, skill, or agent in `ai-literacy-superpowers/` that consolidates or replaces existing functionality, the same PR must update every reference in `docs/plugins/<plugin>/` to the commands or skills the new one composes or replaces. A `See also` callout pattern is insufficient when the new artefact is meant to be the canonical entry point — the older pages must explicitly frame the existing artefacts as primitives or alternatives, not as first-class equivalents. Effective from 2026-05-07.
+- **Enforcement**: agent
+- **Tool**: harness-enforcer
 - **Scope**: pr
