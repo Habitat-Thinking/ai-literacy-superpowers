@@ -9,7 +9,9 @@ engineering, agent orchestration, literate programming, CUPID code
 review, compound learning, and the three enforcement loops. You'll be
 working with markdown skills, bash hook scripts, JSON configuration,
 and YAML CI workflows. There is no compiled application code here; the
-plugin's "code" is content that agents and tools read and execute.
+plugin's "code" is content that agents and tools read and execute. The
+project is also a marketplace — `model-cards` is a sister plugin that
+ships from the same repo with its own version line and tag convention.
 
 ---
 
@@ -92,6 +94,18 @@ these pass.
   bundle unrelated changes.
 - **Spec intent** — the spec must describe the problem, approach, and
   expected outcome. The implementation should trace back to it.
+- **Adjudicated objections** — every feature PR needs a spec-mode and
+  a code-mode objection record at
+  `docs/superpowers/objections/<spec-slug>.md` and
+  `<spec-slug>-code.md`, with all dispositions resolved (no `pending`
+  values). Run `/diaboli` after the spec is written and again after
+  the implementation is complete. Bug-fix and maintenance PRs are
+  exempt on the same terms as spec-first ordering.
+- **Adjudicated choice stories** — every non-exempt feature PR needs
+  a choice-story record at `docs/superpowers/stories/<spec-slug>.md`
+  with every story dispositioned. Run `/choice-cartograph` after the
+  spec-mode `/diaboli` dispositions are resolved. The exempt-label
+  list is the same as objections plus `cross-repo`.
 - **Version consistency** — `plugin.json` version, README badge, and
   CHANGELOG heading must all match. Changes inside
   `ai-literacy-superpowers/` require a version bump.
@@ -99,9 +113,19 @@ these pass.
   match `plugin.json` `version`.
 - **Release traceability** — every version needs a matching CHANGELOG
   heading and a git tag. The tag is created automatically on merge.
+  `ai-literacy-superpowers` uses bare `vX.Y.Z` tags;
+  `model-cards` uses `model-cards-vX.Y.Z` tags.
 - **Output validation** — commands that produce structured output must
   include a validation checkpoint that reads the output back and
   checks it against the format spec.
+- **Docs site kept current** — when a PR adds, removes, or changes a
+  skill, agent, or command, the corresponding pages under `docs/`
+  must be reviewed and updated in the same PR.
+- **Docs propagation when shipping new commands** — when a new
+  command consolidates or replaces existing functionality, every
+  reference in `docs/plugins/<plugin>/` to the older commands must
+  be updated to frame them as primitives or alternatives. A "See
+  also" callout is not enough.
 - **Tests must pass** — the test suite (such as it is) must pass with
   zero failures. Currently unverified because there is no application
   test suite.
@@ -110,10 +134,10 @@ these pass.
 
 Periodic checks run weekly or monthly to catch slow drift.
 
-- **Documentation freshness** — checks whether README, HARNESS.md, and
-  CLAUDE.md reference things that no longer exist.
-- **Secret scanner operational** — confirms gitleaks is still installed
-  and running.
+- **Documentation freshness** — checks whether README.md, HARNESS.md,
+  and CLAUDE.md reference things that no longer exist.
+- **Secret scanner operational** — confirms gitleaks is still
+  installed and running.
 - **Snapshot staleness** — flags if the harness health snapshot is
   older than 30 days.
 - **Command-prompt sync** — detects when commands and their
@@ -129,14 +153,25 @@ Periodic checks run weekly or monthly to catch slow drift.
   a git tag.
 - **Onboarding staleness** — flags if ONBOARDING.md is older than
   HARNESS.md, AGENTS.md, or REFLECTION_LOG.md.
-- **Template currency** — detects when the HARNESS.md template version
-  is behind the installed plugin version.
+- **Template currency** — detects when the HARNESS.md template
+  version is behind the installed plugin version.
 - **Dependency currency** — checks for known vulnerabilities in
   dependencies.
 - **Convention file sync** — checks whether Cursor, Copilot, and
   Windsurf convention files reflect current HARNESS.md conventions.
 - **Reflection regression detection** — looks for recurring failure
   patterns in REFLECTION_LOG.md that should become constraints.
+- **Reflection log archival** — promoted reflection entries are
+  auto-moved to `reflections/archive/<YYYY>.md` once verified.
+- **Reflection log aged-out review** — entries older than 180 days
+  without a `Promoted` line surface as evidence for the curator
+  (no auto-classification).
+- **Objection record freshness** — flags spec files modified more
+  recently than their objection record (a spec edited without
+  re-running `/diaboli`).
+- **Reflections via PR workflow** — every change to
+  `REFLECTION_LOG.md` must come via a PR with CI passing. Direct
+  commits to `main` that modify the log are forbidden.
 - **Observability archive** — moves snapshots older than 6 months to
   the archive directory.
 
@@ -169,13 +204,45 @@ Proposing a duplicate wastes a branch cycle.
 **The plugin is self-referential.** This plugin defines the harness
 framework, and its own HARNESS.md uses that framework. Changes to
 template files (`templates/HARNESS.md`) do not automatically propagate
-to the project's root `HARNESS.md`. The command-prompt sync and plugin
-manifest currency GC rules catch this drift.
+to the project's root `HARNESS.md`. The command-prompt sync and
+plugin manifest currency GC rules catch this drift.
 
 **Plugin files live in two locations.** Root-level `skills/`, `hooks/`,
 `templates/` are the plugin's own development files. Files under
 `ai-literacy-superpowers/` are the packaged plugin that gets
 distributed. When a spec references a file path, check both locations.
+
+**Apply spec-first exemption labels at PR creation, not after.** When
+a PR needs a `chore`, `fix`, or `cross-repo` label to bypass a CI
+gate, pass `--label <label>` directly in `gh pr create`. Labels added
+after the initial push are invisible to already-queued CI runs and
+need an empty-commit retrigger to re-evaluate. The `chore` label is
+the right exemption for docs-only changes outside the plugin
+directory; CLAUDE.md's "Spec-First Exemptions" table lists which
+label to use for which kind of change.
+
+**Audit after shipping a new command — not just the immediate docs.**
+When a new command consolidates or replaces existing functionality,
+the new how-to page is not enough. Grep `docs/plugins/<plugin>/` for
+every reference to the older commands and reframe them as primitives
+or alternatives in the same PR. The new docs-propagation constraint
+encodes this, but the discipline is yours: a PR that ships
+`/harness-sync` without updating `convention-sync.md` and
+`harness-onboarding.md` to acknowledge the new entry point is
+incomplete.
+
+**Match each file's existing emphasis style for markdown.** The
+project's `.markdownlint.json` runs MD049 in `consistent` mode — it
+enforces consistency *within each file*, not project-wide. Some
+existing pages use asterisks for emphasis, others use underscores.
+Match what the file already uses; do not assume a global convention.
+
+**Prose-embedded counts and version strings drift silently.** Badges
+in README.md are kept correct by the version-bump workflow, but
+prose-embedded counts (the marketplace plugin table row, "Skills
+(N)" headings, anything that looks like `N skills, M agents, K
+commands`) are not. When you ship a command/skill/agent, update
+those prose surfaces in the same PR.
 
 ---
 
@@ -187,39 +254,74 @@ cannot predict. Advisory messages let users decide how to act. The
 alternative of configurable blocking was rejected — the complexity
 wasn't justified.
 
-**Health snapshots are committed directly to main.** They don't affect
-behaviour, and gating them on PR review would add friction to the
-observability cadence. This is an intentional exception to the
+**Health snapshots are committed directly to main.** They don't
+affect behaviour, and gating them on PR review would add friction to
+the observability cadence. This is an intentional exception to the
 branch-and-PR workflow.
 
 **Every structured-output command has a validation checkpoint.** The
 pattern is: generate output, read it back, check against the format
 spec, fix in place. This was added because agents consistently drift
-from format specs under cognitive load — reference templates set intent
-but don't guarantee compliance. The checkpoint is the verification
-layer, analogous to type checking in compiled code.
+from format specs under cognitive load — reference templates set
+intent but don't guarantee compliance. The checkpoint is the
+verification layer, analogous to type checking in compiled code.
+
+**Content-emitting agents follow agent-emit + dispatcher-persist +
+human-disposes.** The agent's tool boundary is research-and-author
+only (no Edit, no Bash); it returns content as a string; the
+dispatching command writes the file after a structured human review
+(accept / edit / re-run / abort). This pattern is in production
+across `advocatus-diaboli`, `choice-cartographer`, and
+`model-card-researcher`. Future research-and-author agents should
+default to this shape unless an explicit reason argues otherwise.
+
+**The advocatus-diaboli is hard-wired into the spec-first pipeline,
+not optional.** It runs as an agent-enforced constraint at PR time
+and as a gate inside the orchestrator pipeline. Manual-only
+invocation was rejected — discipline that depends on remembering
+collapses under pressure. Schema-only checks were also rejected —
+"resolved" is a judgment call about rationale quality, not a value
+in a field.
+
+**Cross-cutting methodology lives in
+`skills/<skill-name>/references/<contract>.md`.** When the same
+methodology is consumed by multiple agents, commands, and skills,
+factor it into a reference file. Edits land in one place and
+propagate. Inlining at each consumer site causes silent drift as one
+copy is edited and the others are not — a failure mode caught
+explicitly in code-mode diaboli on the choice-cartographer PR.
+
+**Reflection-driven amendments may use `chore`-labelled PRs.** When
+a reflection has been captured, the work is scoped in a tracked
+issue, the implementation is additive or conservatively bounded,
+and the version bump is honest about the change, a `chore` PR is
+acceptable even for behavioural changes. Reserve full feature-flow
+ceremony (spec → diaboli → adjudicate → implement → diaboli code-
+mode → adjudicate) for net-new capability. Use chore for refining
+existing capability driven by captured signal. The distinction is
+calibrated rather than codified — judgement, not a rule.
 
 ---
 
 ## How We Test
 
-This project has no application code or test suite. Quality is assured
-by four deterministic tools that run in CI:
+This project has no application code or test suite. Quality is
+assured by four deterministic tools that run in CI:
 
 1. **markdownlint** — enforces consistent markdown formatting
 2. **ShellCheck** — catches shell script bugs and style issues
 3. **bash -n** — verifies shell script syntax
 4. **gitleaks** — detects accidentally committed secrets
 
-All four run on every PR via the harness CI workflow. Run them locally
-before pushing to avoid CI failures.
+All four run on every PR via the harness CI workflow. Run them
+locally before pushing to avoid CI failures.
 
 ---
 
 ## How the Harness Works
 
-The project uses three enforcement loops that protect the codebase at
-different timescales:
+The project uses three enforcement loops that protect the codebase
+at different timescales:
 
 - **Advisory loop** — hooks run during editing and warn about
   potential issues, but never block your work. You'll see system
@@ -227,7 +329,8 @@ different timescales:
   for secrets.
 - **Strict loop** — CI workflows run on every PR and block merges
   until all checks pass. This includes markdownlint, gitleaks, shell
-  checks, version consistency, and spec-first ordering.
+  checks, version consistency, spec-first ordering, and the
+  agent-driven `Enforce PR constraints` workflow.
 - **Investigative loop** — garbage collection rules run weekly (or
   monthly) to catch slow drift that neither hooks nor CI gates
   detect. Things like documentation staleness, marketplace listing
@@ -246,22 +349,42 @@ The project runs on a monthly observability cadence:
 ## Your First PR Checklist
 
 1. Create a branch — never commit directly to `main`
-2. For feature work, commit the spec first (in
-   `docs/superpowers/specs/`) before any implementation
-3. Run `npx markdownlint-cli2 "**/*.md"` and fix any warnings
-4. Run `shellcheck` on any `.sh` files you changed or created
-5. Confirm every `.sh` file has `set -euo pipefail` in the first
-   15 lines
-6. Ensure all `.agent.md`, `SKILL.md`, and command `.md` files have
-   `name` and `description` in their YAML frontmatter
-7. Run `gitleaks detect --source . --no-banner` to check for secrets
-8. If you changed files inside `ai-literacy-superpowers/`, bump the
-   version in `plugin.json`, the README badge, and the CHANGELOG
-   heading (all three must match)
-9. Update `marketplace.json` `plugin_version` to match `plugin.json`
-10. Update `CHANGELOG.md` with a dated section describing your changes
-11. Push and create a PR — wait for all CI checks to pass before
-    requesting review
+2. Pick the right exemption label up front: `fix` for bug fixes,
+   `chore` for docs/maintenance outside the plugin directory,
+   `cross-repo` for syncs from another repo. Pass `--label <label>`
+   in `gh pr create` — adding labels after the push leaves CI gates
+   in their failed state until you push another commit.
+3. For feature work, commit the spec first (in
+   `docs/superpowers/specs/`) before any implementation.
+4. After the spec is written, run `/diaboli` and resolve every
+   disposition before plan approval; then run `/choice-cartograph`
+   and resolve every story.
+5. Run `npx markdownlint-cli2 "**/*.md"` and fix any warnings —
+   match each file's existing emphasis style (MD049 enforces
+   per-file consistency, not a global default).
+6. Run `shellcheck` on any `.sh` files you changed or created.
+7. Confirm every `.sh` file has `set -euo pipefail` in the first
+   15 lines.
+8. Ensure all `.agent.md`, `SKILL.md`, and command `.md` files have
+   `name` and `description` in their YAML frontmatter.
+9. Run `gitleaks detect --source . --no-banner` to check for secrets.
+10. If you changed files inside `ai-literacy-superpowers/`, bump
+    the version in `plugin.json`, the README badge, and the
+    CHANGELOG heading (all three must match).
+11. Update `marketplace.json` `plugin_version` to match
+    `plugin.json`.
+12. Update `CHANGELOG.md` with a dated section describing your
+    changes.
+13. If the PR adds, removes, or substantially changes a skill,
+    agent, or command: review every relevant page under
+    `docs/plugins/<plugin>/` and update references in the same PR.
+    Update prose-embedded counts in README.md (marketplace table
+    row, section headings) too — badges update automatically but
+    prose does not.
+14. After the implementation is complete, run `/diaboli` again in
+    code mode and resolve every disposition before opening the PR.
+15. Push and create the PR — wait for all CI checks to pass before
+    requesting review.
 
 ---
 
@@ -277,3 +400,5 @@ The project runs on a monthly observability cadence:
   sessions
 - [README.md](README.md) — full plugin documentation with component
   listings
+- [docs/](docs/) — the project's full documentation site (per-plugin
+  how-tos, explanation pages, reference material)
