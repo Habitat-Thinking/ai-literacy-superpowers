@@ -158,18 +158,26 @@ The `docs/` directory is the project's documentation site, organised
 plan or opening a PR, always check whether any docs pages need to be
 created or updated.
 
-For each plugin, content is grouped using the Diataxis framework as
-sections within the plugin's `index.md` (page locations are flat
-within the plugin directory):
+For each plugin, content is organised into Diataxis quadrant folders:
 
-- **How-to guides** — task-oriented (one guide per command or workflow)
-- **Explanation** — conceptual background (why things work the way they do)
-- **Reference** — API/schema reference material
-- **Tutorials** — end-to-end walkthroughs
+- `tutorials/` — nav label "Getting Started" — end-to-end walkthroughs
+- `how-to/` — nav label "How-to Guides" — task-oriented (one guide per
+  command or workflow)
+- `reference/` — nav label "Reference" — API/schema reference material
+- `explanation/` — nav label "Concepts" — conceptual background
 
-For changes to the `ai-literacy-superpowers` plugin, pages live at
-`docs/plugins/ai-literacy-superpowers/<slug>.md`. For sister plugins,
-under `docs/plugins/<plugin-name>/<slug>.md`.
+Pages live at `docs/plugins/<plugin-name>/<quadrant>/<slug>.md`. The
+plugin's root `index.md` is a landing page that links to each quadrant;
+each quadrant has its own `index.md` with `has_children: true` so
+just-the-docs renders the nested tree. Friendly nav labels are set via
+`nav_label` frontmatter. The `_template.md` file stays at the plugin
+root with header guidance for each quadrant. A quadrant folder is
+created only when the plugin has at least one page in that quadrant —
+empty quadrants are not scaffolded.
+
+For the `ai-literacy-superpowers` plugin, pages live at
+`docs/plugins/ai-literacy-superpowers/<quadrant>/<slug>.md`. For sister
+plugins, under `docs/plugins/<plugin-name>/<quadrant>/<slug>.md`.
 
 **When a feature adds a new command, skill, or agent**: check for an existing
 how-to guide and create one if missing.

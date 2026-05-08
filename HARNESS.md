@@ -431,6 +431,17 @@ Use /governance-constrain for guided authoring of governance constraints.
 - **Tool**: file date comparison
 - **Auto-fix**: false
 
+### Redirect sunset
+
+- **What it checks**: Whether any markdown file in `docs/plugins/`
+  contains a `<!-- redirect-sunset: YYYY-MM-DD -->` marker with a
+  date in the past — indicating a temporary redirect has expired and
+  should be reviewed for removal
+- **Frequency**: monthly
+- **Enforcement**: deterministic
+- **Tool**: `scripts/check-redirect-sunsets.sh docs/plugins`
+- **Auto-fix**: false (curator decides whether to extend or remove)
+
 ### Template currency
 
 - **What it checks**: Whether the HARNESS.md template-version marker

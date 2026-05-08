@@ -1,10 +1,15 @@
 ---
 title: Mitchell-Extended Model Cards
 layout: default
-parent: model-cards
-grand_parent: Plugins
-nav_order: 7
+parent: Concepts
+grand_parent: model-cards
+nav_order: 1
+redirect_from:
+  - /plugins/model-cards/mitchell-extended-cards/
+  - /plugins/model-cards/mitchell-extended-cards.html
 ---
+
+<!-- redirect-sunset: 2027-05-08 -->
 
 # Mitchell-Extended Model Cards
 

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.34.0 — 2026-05-08
+
+### Feature — Diataxis docs reorg (Phase 1: model-cards)
+
+Establishes the project-wide Diataxis folder convention for the docs
+site and applies it to the `model-cards` plugin as the reference
+implementation. Plugin docs now live at
+`docs/plugins/<plugin-name>/<quadrant>/<slug>.md` where `<quadrant>`
+is one of `tutorials/`, `how-to/`, `reference/`, or `explanation/`.
+URLs are Diataxis-pure; sidebar nav uses friendly labels via
+just-the-docs `nav_label` frontmatter.
+
+Ships the convention machinery: a new **Redirect sunset** GC rule
+(monthly, deterministic, scans for expired `<!-- redirect-sunset:
+YYYY-MM-DD -->` markers), the `scripts/check-redirect-sunsets.sh`
+tool that backs it, and the `scripts/migrations/rewrite-docs-links.sh`
+one-shot link rewriter. Updates `CLAUDE.md` and
+`templates/CLAUDE.md` to document the new layout convention.
+
+The `model-cards` plugin's 7 movable docs pages were moved into
+how-to/, reference/, and explanation/ quadrants (no tutorials/ —
+no end-to-end walkthrough page exists yet). Every moved page
+carries `redirect_from` covering both old URL forms (`/slug/` and
+`/slug.html`) plus a 12-month sunset marker (2027-05-08).
+
+`ai-literacy-superpowers` plugin docs migration arrives in Phase 2
+as a separate PR (no version bump — outside the plugin directory).
+
 ## 0.33.0 — 2026-05-07
 
 ### Feature — Unified surface sync via /harness-sync

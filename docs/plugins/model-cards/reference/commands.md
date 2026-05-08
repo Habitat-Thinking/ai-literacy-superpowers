@@ -1,10 +1,15 @@
 ---
 title: Commands
 layout: default
-parent: model-cards
-grand_parent: Plugins
+parent: Reference
+grand_parent: model-cards
 nav_order: 3
+redirect_from:
+  - /plugins/model-cards/commands/
+  - /plugins/model-cards/commands.html
 ---
+
+<!-- redirect-sunset: 2027-05-08 -->
 
 # Commands
 
