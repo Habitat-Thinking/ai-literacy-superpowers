@@ -27,7 +27,7 @@ with `HARNESS.md`. The current scan covers:
 | Convention files | `.cursor/rules/` matches HARNESS.md | yes — `/convention-sync` |
 | Convention files | `.github/copilot-instructions.md` matches HARNESS.md | yes — `/convention-sync` |
 | Convention files | `.windsurf/rules/` matches HARNESS.md | yes — `/convention-sync` |
-| Onboarding | `ONBOARDING.md` matches HARNESS.md + AGENTS.md + REFLECTION_LOG.md | yes — `/harness-onboarding` |
+| Onboarding | `ONBOARDING.md` matches HARNESS.md + AGENTS.md + REFLECTION_LOG.md | manual — `/harness-onboarding` |
 | Observability | Most recent snapshot in `observability/snapshots/` is < 30 days old | yes — `/harness-health` |
 | Status section | `HARNESS.md` Status block matches actual constraint enforcement counts | yes — `/harness-audit` (audit updates Status as a side-effect) |
 | Template currency | `<!-- template-version: X -->` in HARNESS.md matches installed plugin version | manual — `/harness-upgrade` |

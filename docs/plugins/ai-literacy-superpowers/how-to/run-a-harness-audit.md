@@ -29,9 +29,10 @@ engine. The difference is action:
   committing to action — for example from CI, or when scripting,
   or when you suspect drift but aren't ready to deal with it yet.
 - **`/harness-sync`** runs the same engine but prompts you to apply
-  fixes. Mechanical fixes (convention files, ONBOARDING.md, snapshot,
-  Status section) auto-apply when selected. Judgement-required fixes
-  (template upgrade, constraint authoring) print suggested commands.
+  fixes. Mechanical fixes (convention files, snapshot, Status section)
+  auto-apply when selected. Judgement-required fixes (ONBOARDING
+  regen, template upgrade, constraint authoring) print suggested
+  commands.
 
 **For everyday lifecycle hygiene, run `/harness-sync`.** Run
 `/harness-audit` when you specifically want the diagnostic without

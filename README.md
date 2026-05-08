@@ -3,7 +3,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.3.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.35.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.35.1-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
 [![Skills](https://img.shields.io/badge/Skills-30-2E8B57?style=flat-square)](#skills-30)
 [![Agents](https://img.shields.io/badge/Agents-13-2E8B57?style=flat-square)](#agents-13)
@@ -27,7 +27,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.35.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **30 skills, 13 agents, 25 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.35.1 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **30 skills, 13 agents, 25 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 
 The bulk of this README documents the **`ai-literacy-superpowers`** plugin specifically — its skills, agents, commands, hooks, templates, enforcement loops, and pipelines. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md). Future sister plugins will land in this marketplace under `<plugin-name>/` with their own docs at `docs/plugins/<plugin-name>/`.
@@ -228,7 +228,7 @@ A coordinated team that handles the full development lifecycle.
 | `/assess` | AI literacy assessment with immediate fixes, workflow recommendations, and prioritised improvement plans |
 | `/harness-health` | Harness health snapshot — enforcement ratio, trends, meta-observability checks |
 | `/extract-conventions` | Guided session — surfaces tacit team conventions and maps them to CLAUDE.md and HARNESS.md |
-| `/harness-sync` | Everyday lifecycle entry. Runs the shared audit-engine to detect drift across every surface (convention files, ONBOARDING.md, snapshot, Status section, template, constraint regressions, recurring reflection patterns), presents a unified drift table tagged `[auto]`/`[manual]`, and applies the fixes you select. Mechanical fixes auto-apply via existing primitives; judgement-required fixes print suggested commands. |
+| `/harness-sync` | Everyday lifecycle entry. Runs the shared audit-engine to detect drift across every surface (convention files, snapshot, Status section accuracy, ONBOARDING.md staleness, template, constraint regressions, recurring reflection patterns), presents a unified drift table tagged `[auto]`/`[manual]`, and applies the fixes you select. Mechanical fixes (convention files, snapshot, Status) auto-apply via existing primitives; judgement-required fixes (ONBOARDING regen, template upgrade, constraint authoring) print suggested commands. |
 | `/convention-sync` | Sync HARNESS.md conventions to Cursor, Copilot, and Windsurf convention files |
 | `/portfolio-assess` | Multi-repo AI literacy assessment — aggregate across local repos, GitHub orgs, or topic tags |
 | `/cost-capture` | Capture AI tool cost data — record spend, compare to previous snapshot, update model routing |

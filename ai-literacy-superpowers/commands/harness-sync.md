@@ -1,13 +1,13 @@
 ---
 name: harness-sync
-description: Detect drift across all push-direction control surfaces, present the full picture, and apply the user's selected fixes via the existing primitives — single human-instigated entry point for keeping convention files and ONBOARDING.md in sync with HARNESS.md.
+description: Detect drift across all push-direction control surfaces, present the full picture, and apply the user's selected fixes via the existing primitives — single human-instigated entry point for keeping convention files in sync with HARNESS.md. ONBOARDING.md staleness is surfaced but not auto-fixed; users run /harness-onboarding deliberately when they want it regenerated.
 ---
 
 # /harness-sync
 
 Detect drift across every push-direction surface, present the full picture as
 a structured table, and apply the selected fixes via the existing primitives
-(`/convention-sync`, `/harness-onboarding`). This command is a multiplexer —
+(`/convention-sync`). This command is a multiplexer —
 it composes existing commands and does not introduce new propagation logic.
 
 **What this command does NOT do:**
@@ -126,7 +126,7 @@ Surface / Finding                              Status      Action on apply
 .cursor/rules/                                 drifted     /convention-sync       [auto]
 .github/copilot-instructions.md                in sync     —
 .windsurf/rules/                               missing     /convention-sync       [auto]
-ONBOARDING.md                                  drifted     /harness-onboarding    [auto]
+ONBOARDING.md                                  drifted     /harness-onboarding    [manual]
 Snapshot staleness (last: 2026-04-15)          drifted     /harness-health        [auto]
 HARNESS.md Status section accuracy             drifted     /harness-audit         [auto]
 Template version (HARNESS: 0.31, plugin: 0.34) drifted     /harness-upgrade       [manual]
@@ -182,11 +182,6 @@ items. The `managed` row never appears as a selectable option.
       "selected": true
     },
     {
-      "id": "onboarding",
-      "label": "ONBOARDING.md  [auto: /harness-onboarding]",
-      "selected": true
-    },
-    {
       "id": "snapshot",
       "label": "Snapshot staleness  [auto: /harness-health]",
       "selected": true
@@ -195,6 +190,11 @@ items. The `managed` row never appears as a selectable option.
       "id": "status",
       "label": "HARNESS.md Status accuracy  [auto: /harness-audit]",
       "selected": true
+    },
+    {
+      "id": "onboarding",
+      "label": "ONBOARDING.md  [manual: /harness-onboarding]",
+      "selected": false
     },
     {
       "id": "template",
@@ -233,9 +233,10 @@ For each `[auto]` selected finding, invoke its `action_command` _in
 series_ (not in parallel — order matters for the verification scan):
 
 1. **`.cursor/rules/`, `.github/copilot-instructions.md`, `.windsurf/rules/`** — invoke `/convention-sync`. This handles all three convention-file surfaces in a single run; if multiple are selected they share the same invocation.
-2. **`ONBOARDING.md`** — invoke `/harness-onboarding`.
-3. **Snapshot staleness** — invoke `/harness-health`.
-4. **HARNESS.md Status section accuracy** — invoke `/harness-audit`. (Audit updates Status as a side-effect of running.)
+2. **Snapshot staleness** — invoke `/harness-health`.
+3. **HARNESS.md Status section accuracy** — invoke `/harness-audit`. (Audit updates Status as a side-effect of running.)
+
+`ONBOARDING.md` is **not** auto-invoked. Sync surfaces its staleness as a `[manual]` finding so users see the drift, but `/harness-onboarding` is run separately by the user — onboarding regen is a heavier mutation than convention-file regen and benefits from the user's deliberate trigger.
 
 If an underlying command errors out for one finding:
 
@@ -270,7 +271,7 @@ Surface / Finding                              Before      After
 ─────────────────────────────────────────────  ──────────  ─────────────
 .cursor/rules/                                 drifted     in sync ✓
 .windsurf/rules/                               missing     in sync ✓
-ONBOARDING.md                                  drifted     in sync ✓
+ONBOARDING.md                                  drifted     drifted (manual — see suggestion above)
 Snapshot staleness                             drifted     in sync ✓
 HARNESS.md Status accuracy                     drifted     in sync ✓
 Template drift                                 drifted     drifted (manual — see suggestion above)
@@ -303,10 +304,11 @@ Verify every modified path matches the allow-list:
 - `.cursor/rules/**`
 - `.github/copilot-instructions.md`
 - `.windsurf/rules/**`
-- `ONBOARDING.md`
 
 If any path falls _outside_ the allow-list (including `HARNESS.md`,
-`AGENTS.md`, or `REFLECTION_LOG.md`), refuse to commit. Tell the user:
+`AGENTS.md`, `REFLECTION_LOG.md`, or `ONBOARDING.md` — which sync
+surfaces as a `[manual]` finding but never writes to), refuse to
+commit. Tell the user:
 
 > Trust-boundary violation: the underlying primitive modified a file outside
 > the allowed set. This is a bug in the underlying command, not a
@@ -325,21 +327,16 @@ If the guard passes, proceed to step 8 to commit and ship.
 Stage the surface files only:
 
 ```bash
-git add .cursor/rules/ .github/copilot-instructions.md .windsurf/rules/ ONBOARDING.md
+git add .cursor/rules/ .github/copilot-instructions.md .windsurf/rules/
 ```
 
 Git will only stage files with actual changes; paths that were not touched are
 safe to include in the `git add` list.
 
-Parameterise the commit message based on which surfaces were applied:
-
-- Both convention files and `ONBOARDING.md`:
-  `"chore: sync convention files and ONBOARDING.md to HARNESS.md"`
-- Convention files only: `"chore: sync convention files to HARNESS.md"`
-- `ONBOARDING.md` only: `"chore: sync ONBOARDING.md to HARNESS.md"`
+Commit message: `"chore: sync convention files to HARNESS.md"`.
 
 ```bash
-git commit -m "chore: <parameterised message above>"
+git commit -m "chore: sync convention files to HARNESS.md"
 ```
 
 Push the branch:
@@ -368,17 +365,9 @@ Report the PR URL and the verification delta.
 Stage and commit only — do _not_ push and do _not_ open a PR:
 
 ```bash
-git add .cursor/rules/ .github/copilot-instructions.md .windsurf/rules/ ONBOARDING.md
-git commit -m "chore: <parameterised message — use the same parameterisation as Path A>"
+git add .cursor/rules/ .github/copilot-instructions.md .windsurf/rules/
+git commit -m "chore: sync convention files to HARNESS.md"
 ```
-
-Use the same parameterised commit message as Path A — derived from which
-surfaces were applied:
-
-- Both convention files and `ONBOARDING.md`:
-  `"chore: sync convention files and ONBOARDING.md to HARNESS.md"`
-- Convention files only: `"chore: sync convention files to HARNESS.md"`
-- `ONBOARDING.md` only: `"chore: sync ONBOARDING.md to HARNESS.md"`
 
 Report the commit hash and tell the user:
 
@@ -413,10 +402,10 @@ Verification:
   .cursor/rules/                  drifted → in sync ✓
   .github/copilot-instructions.md drifted → in sync ✓
   .windsurf/rules/                missing → in sync ✓ (created)
-  ONBOARDING.md                   drifted → in sync ✓
+  ONBOARDING.md                   drifted → drifted (manual — run /harness-onboarding)
 
 Branch:   chore/sync-surfaces-2026-05-07
-Commit:   a1b2c3d  chore: sync convention files and ONBOARDING.md to HARNESS.md
+Commit:   a1b2c3d  chore: sync convention files to HARNESS.md
 Pushed:   origin/chore/sync-surfaces-2026-05-07
 PR:       https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/N
 ```
@@ -428,9 +417,9 @@ Harness Sync complete.
 
 Verification:
   .cursor/rules/                  drifted → in sync ✓
-  ONBOARDING.md                   drifted → in sync ✓
+  ONBOARDING.md                   drifted → drifted (manual — run /harness-onboarding)
 
-Commit:   a1b2c3d  chore: sync convention files and ONBOARDING.md to HARNESS.md
+Commit:   a1b2c3d  chore: sync convention files to HARNESS.md
 Push when ready: git push -u origin <branch-name>
 ```
 

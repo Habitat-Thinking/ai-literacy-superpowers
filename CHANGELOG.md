@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.35.1 — 2026-05-08
+
+### Refinement — `/harness-sync` no longer auto-invokes `/harness-onboarding`
+
+Removes the auto-invocation of `/harness-onboarding` from
+`/harness-sync`'s Phase 3 apply step. ONBOARDING.md staleness still
+appears in the unified drift table (audit-engine continues to detect
+it), but it now appears as a `[manual]` row instead of `[auto]` —
+sync prints "Run: /harness-onboarding" and exits without writing.
+
+Rationale: ONBOARDING.md regen is a heavier mutation than
+convention-file regen and benefits from the user's deliberate trigger.
+Convention-file sync is a tight derive-from-HARNESS.md operation;
+onboarding regen also pulls in AGENTS.md and REFLECTION_LOG.md and
+produces a substantial human-facing document. Same-shape change as
+template-drift and constraint-regression: surface the staleness, let
+the user act.
+
+The trust-boundary pre-commit guard's allow-list drops `ONBOARDING.md`
+accordingly — sync never writes to it now.
+
+Updates `/harness-sync`'s command file, the audit-engine skill's
+classification table, the sync-harness how-to, the run-a-harness-audit
+how-to, the-harness-lifecycle explanation, CLAUDE.md (root + template)
+Monthly Operations, and the README Commands table.
+
 ## 0.35.0 — 2026-05-08
 
 ### Feature — Audit-driven `/harness-sync`

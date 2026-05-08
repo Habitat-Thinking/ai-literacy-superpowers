@@ -41,10 +41,11 @@ Three commands cover most lifecycle activity:
 Detects drift across every surface and lets you fix it in one pass.
 Internally runs `/harness-audit`'s detection logic, presents a unified
 drift table, and applies the fixes you select. Mechanical fixes
-(convention files, ONBOARDING.md, snapshots, HARNESS.md Status
-accuracy) run automatically. Judgement-required fixes (which
-constraint to add, whether to take a template upgrade) print the
-suggested command for you to run separately.
+(convention files, snapshots, HARNESS.md Status accuracy) run
+automatically. Judgement-required fixes (which constraint to add,
+whether to take a template upgrade, regenerating ONBOARDING.md when
+it's heavier and worth your deliberate trigger) print the suggested
+command for you to run separately.
 
 When in doubt, run `/harness-sync`. It tells you everything that's out
 of alignment and either fixes it or tells you what to run.
@@ -89,9 +90,16 @@ Behind the everyday three, there are deeper or focused tools:
   over time, with trends.
 - **`/harness-gc`** manages the periodic garbage-collection rules
   that fight slow drift between PR-level enforcement events.
-- **`/convention-sync`** and **`/harness-onboarding`** are the
-  primitives `/harness-sync` calls. You can invoke them directly when
-  you only want one surface refreshed.
+- **`/convention-sync`** is the primitive `/harness-sync` calls for
+  the convention files (`.cursor/rules/`, `.github/copilot-instructions.md`,
+  `.windsurf/rules/`). You can invoke it directly when you only want
+  those surfaces refreshed.
+- **`/harness-onboarding`** regenerates `ONBOARDING.md` from
+  `HARNESS.md` + `AGENTS.md` + `REFLECTION_LOG.md`. `/harness-sync`
+  surfaces ONBOARDING staleness in its drift table but does **not**
+  invoke this command — onboarding regen is heavier than convention-
+  file regen and benefits from your deliberate trigger. Run it
+  separately when sync flags ONBOARDING as drifted.
 
 ## When each lifecycle state happens
 
@@ -100,7 +108,9 @@ Behind the everyday three, there are deeper or focused tools:
   the convention files automatically (it shows up as a drifted
   surface that auto-fixes).
 - **You merge a PR** → run `/harness-sync` if the PR changed
-  HARNESS.md content. Convention files and ONBOARDING.md regenerate.
+  HARNESS.md content. Convention files regenerate automatically; if
+  ONBOARDING is flagged as drifted, run `/harness-onboarding`
+  separately.
 - **You see a build break** related to harness state → run
   `/harness-audit` for the read-only diagnostic, or `/harness-sync`
   to also fix.

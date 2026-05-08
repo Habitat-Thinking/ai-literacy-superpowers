@@ -38,7 +38,7 @@ Surface / Finding                              Status      Action on apply
 .cursor/rules/                                 drifted     /convention-sync       [auto]
 .github/copilot-instructions.md                in sync     —
 .windsurf/rules/                               missing     /convention-sync       [auto]
-ONBOARDING.md                                  drifted     /harness-onboarding    [auto]
+ONBOARDING.md                                  drifted     /harness-onboarding    [manual]
 Snapshot staleness (last: 2026-04-15)          drifted     /harness-health        [auto]
 HARNESS.md Status section accuracy             drifted     /harness-audit         [auto]
 Template version (HARNESS: 0.31, plugin: 0.34) drifted     /harness-upgrade       [manual]
@@ -65,9 +65,9 @@ Pick which to address. Hit "Apply nothing — exit without changes" if
 you just wanted the diagnostic.
 
 Phase 3 applies the fixes. For each `[auto]` selection, `/harness-sync`
-invokes the underlying primitive (`/convention-sync`,
-`/harness-onboarding`, `/harness-health`, `/harness-audit`). For each
-`[manual]` selection, it prints a "next step" line:
+invokes the underlying primitive (`/convention-sync`, `/harness-health`,
+`/harness-audit`). For each `[manual]` selection — including
+`ONBOARDING.md` staleness — it prints a "next step" line:
 
 ```text
 Manual remediation suggested for: Template version drift
@@ -88,7 +88,7 @@ Surface / Finding                              Before      After
 ─────────────────────────────────────────────  ──────────  ─────────────
 .cursor/rules/                                 drifted     in sync ✓
 .windsurf/rules/                               missing     in sync ✓
-ONBOARDING.md                                  drifted     in sync ✓
+ONBOARDING.md                                  drifted     drifted (manual — run /harness-onboarding)
 Snapshot staleness                             drifted     in sync ✓
 HARNESS.md Status accuracy                     drifted     in sync ✓
 Template drift                                 drifted     drifted (manual — see suggestion above)
@@ -104,10 +104,12 @@ be auto-applied.
 `/harness-sync` refuses to run on `main`. If you're on `main` it
 offers to create `chore/sync-surfaces-YYYY-MM-DD` for you. The
 trust-boundary pre-commit guard restricts what gets staged: only
-`.cursor/rules/**`, `.github/copilot-instructions.md`,
-`.windsurf/rules/**`, and `ONBOARDING.md` may be committed.
-`HARNESS.md`, `AGENTS.md`, and `REFLECTION_LOG.md` are off-limits to
-this command.
+`.cursor/rules/**`, `.github/copilot-instructions.md`, and
+`.windsurf/rules/**` may be committed. `HARNESS.md`, `AGENTS.md`,
+`REFLECTION_LOG.md`, and `ONBOARDING.md` are off-limits to this
+command. `ONBOARDING.md` shows in the drift table as a `[manual]`
+finding so you can see when it's stale, but `/harness-onboarding`
+runs separately under your deliberate trigger.
 
 If a `[auto]` action mutates HARNESS.md (the Status section update
 from `/harness-audit`, for example), that mutation lands as part of
