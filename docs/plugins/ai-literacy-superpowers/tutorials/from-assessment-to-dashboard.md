@@ -27,7 +27,7 @@ You need:
   or topic tag — optional if you are scanning a local directory
 
 If you haven't run a single-repo assessment yet, follow the
-[Getting Started](getting-started) tutorial first to install the
+[Getting Started](getting-started.md) tutorial first to install the
 plugin and run `/harness-init`, then use `/assess` to get an
 assessment document in at least one repo before continuing here.
 
@@ -453,7 +453,7 @@ After completing this tutorial you have:
 
 ## Next Steps
 
-- [The Improvement Cycle](the-improvement-cycle) — walk one repo from
+- [The Improvement Cycle](the-improvement-cycle.md) — walk one repo from
   L2 to L3 using the assessment's improvement plan
 - [How-to: Run a Portfolio Assessment](../how-to/run-portfolio-assessment.md)
   — flags, options, and edge cases for the `/portfolio-assess` command

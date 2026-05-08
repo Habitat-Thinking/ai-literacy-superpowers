@@ -24,7 +24,7 @@ are ready.
 Before starting, make sure you have:
 
 - Claude Code installed with the ai-literacy-superpowers plugin (see
-  [Getting Started](getting-started) if you haven't done this yet)
+  [Getting Started](getting-started.md) if you haven't done this yet)
 - An existing project with at least some CI in place
 - A few minutes to talk through your conventions — the extraction
   conversation is the most valuable part
@@ -389,7 +389,7 @@ not encoded.
 - [How-to: Set Up Secret Detection](../how-to/set-up-secret-detection.md) —
   promote the "no secrets in source" constraint from unverified to
   deterministic using gitleaks
-- [Creating Your First Skill](your-first-skill) — encode domain knowledge
+- [Creating Your First Skill](your-first-skill.md) — encode domain knowledge
   that agents carry into every session
 - [Reference: HARNESS.md Format](../reference/harness-md-format.md) — full
   specification of every field in HARNESS.md

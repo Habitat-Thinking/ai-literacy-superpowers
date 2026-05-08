@@ -76,7 +76,7 @@ a workflow for fixing drifted constraints.
 
 ## Next steps
 
-- [Run a governance audit](run-a-governance-audit) quarterly to catch
+- [Run a governance audit](run-a-governance-audit.md) quarterly to catch
   drift early
-- [Check governance health](check-governance-health) between audits
+- [Check governance health](check-governance-health.md) between audits
   for a quick pulse

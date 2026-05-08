@@ -17,9 +17,9 @@ It takes about twenty minutes.
 You need:
 
 - Claude Code installed with the ai-literacy-superpowers plugin
-  (see [Getting Started](getting-started))
+  (see [Getting Started](getting-started.md))
 - A project with a `HARNESS.md` — if you do not have one yet, run
-  through [Harness from Scratch](harness-from-scratch) first
+  through [Harness from Scratch](harness-from-scratch.md) first
 
 The tutorial works best if your `HARNESS.md` already has a few
 constraints. Most teams have at least one constraint that uses

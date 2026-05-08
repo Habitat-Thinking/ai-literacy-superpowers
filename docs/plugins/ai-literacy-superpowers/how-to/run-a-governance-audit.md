@@ -95,8 +95,8 @@ debt inventory, and prioritised recommendations.
 
 ## Next steps
 
-- [Check governance health](check-governance-health) for a quick
+- [Check governance health](check-governance-health.md) for a quick
   pulse between audits
-- [Build a governance dashboard](build-a-governance-dashboard) to
+- [Build a governance dashboard](build-a-governance-dashboard.md) to
   visualise trends
 - Add `/governance-audit` to your quarterly operating cadence

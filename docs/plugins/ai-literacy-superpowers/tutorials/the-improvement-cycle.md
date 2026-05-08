@@ -540,10 +540,10 @@ After completing this tutorial you have:
 
 ## Next Steps
 
-- [From Assessment to Dashboard](from-assessment-to-dashboard) — run
+- [From Assessment to Dashboard](from-assessment-to-dashboard.md) — run
   a portfolio assessment across multiple repos and generate a shareable
   dashboard
-- [Getting Started](getting-started) — back to basics if you haven't
+- [Getting Started](getting-started.md) — back to basics if you haven't
   set up the plugin yet
 - [How-to: Add a Constraint](../how-to/add-a-constraint.md) — add
   individual constraints without running the full init flow

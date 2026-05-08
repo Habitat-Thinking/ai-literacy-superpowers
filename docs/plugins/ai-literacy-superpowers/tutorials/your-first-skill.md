@@ -20,7 +20,7 @@ skill is active. It takes about twenty minutes.
 You need:
 
 - Claude Code installed with the ai-literacy-superpowers plugin (see
-  [Getting Started](getting-started) if you haven't done this yet)
+  [Getting Started](getting-started.md) if you haven't done this yet)
 - A project with at least a `.claude/` directory — run `/superpowers-init`
   if you don't have one
 
@@ -332,7 +332,7 @@ for freshness periodically.
 
 ## Next Steps
 
-- [Harness for an Existing Codebase](harness-from-scratch) — encode more
+- [Harness for an Existing Codebase](harness-from-scratch.md) — encode more
   of your conventions in HARNESS.md and promote them to enforcement
 - [Reference: Commands](../reference/commands.md) — `/harness-gc` for
   managing skill freshness over time

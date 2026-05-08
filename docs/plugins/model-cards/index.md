@@ -18,8 +18,8 @@ in the repository.
 
 | If you want to… | Go to |
 | --- | --- |
-| Do a specific task (research a card, seed your library) | [How-to Guides](how-to/) |
-| Look up an agent, command, skill, or the card schema | [Reference](reference/) |
-| Understand why the cards are shaped the way they are | [Concepts](explanation/) |
+| Do a specific task (research a card, seed your library) | [How-to Guides](how-to/index.md) |
+| Look up an agent, command, skill, or the card schema | [Reference](reference/index.md) |
+| Understand why the cards are shaped the way they are | [Concepts](explanation/index.md) |
 
 End-to-end tutorials are not yet shipped for this plugin.

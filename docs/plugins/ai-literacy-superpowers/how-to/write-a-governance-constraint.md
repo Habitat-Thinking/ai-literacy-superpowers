@@ -94,7 +94,7 @@ three-frame alignment.
 
 ## Next steps
 
-- [Run a governance audit](run-a-governance-audit) to assess all your
+- [Run a governance audit](run-a-governance-audit.md) to assess all your
   governance constraints
-- [Detect semantic drift](detect-semantic-drift) to catch constraints
+- [Detect semantic drift](detect-semantic-drift.md) to catch constraints
   that have diverged from reality

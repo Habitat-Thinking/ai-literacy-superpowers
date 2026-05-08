@@ -57,7 +57,7 @@ the commands; the shape of the output is the same.
 You need:
 
 - Claude Code installed with the ai-literacy-superpowers plugin (see
-  [Getting Started](getting-started))
+  [Getting Started](getting-started.md))
 - A project repository the team works in — existing code, not a
   greenfield empty directory. Extraction depends on having artefacts
   to mine and a codebase to validate conventions against.
@@ -621,10 +621,10 @@ onboarding confusion, and scheduled quarterly revisits.
 
 ## Next Steps
 
-- [The Improvement Cycle](the-improvement-cycle) — run `/assess`
+- [The Improvement Cycle](the-improvement-cycle.md) — run `/assess`
   to measure where the habitat has moved you on the AI Literacy
   framework, and generate an improvement plan for the next level
-- [Governance for Your Harness](governance-for-your-harness) — for
+- [Governance for Your Harness](governance-for-your-harness.md) — for
   conventions that are important enough to audit quarterly,
   promote them to governance constraints with falsifiability
   checks and three-frame alignment

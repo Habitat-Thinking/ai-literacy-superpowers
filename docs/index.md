@@ -14,7 +14,7 @@ engineering**, **agent orchestration**, **decision archaeology**,
 
 {: .fs-6 .fw-300 }
 
-[Get Started](plugins/ai-literacy-superpowers/getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[Get Started](plugins/ai-literacy-superpowers/tutorials/getting-started.md){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
 [Browse Plugins](plugins/index.md){: .btn .fs-5 .mb-4 .mb-md-0 .mr-2 }
 [Quick Install](#add-the-marketplace){: .btn .fs-5 .mb-4 .mb-md-0 }
 

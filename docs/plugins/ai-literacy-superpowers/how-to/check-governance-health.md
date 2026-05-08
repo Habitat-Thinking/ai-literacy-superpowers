@@ -66,7 +66,7 @@ A current view of governance health without running a full audit.
 
 ## Next steps
 
-- [Run a governance audit](run-a-governance-audit) if any metric is
+- [Run a governance audit](run-a-governance-audit.md) if any metric is
   red
-- [Build a governance dashboard](build-a-governance-dashboard) for a
+- [Build a governance dashboard](build-a-governance-dashboard.md) for a
   visual overview

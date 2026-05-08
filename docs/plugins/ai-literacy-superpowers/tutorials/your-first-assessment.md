@@ -28,7 +28,7 @@ is technically valid (it will return Level 0) but not very interesting.
 You also need:
 
 - Claude Code installed with the ai-literacy-superpowers plugin (see
-  [Getting Started](getting-started))
+  [Getting Started](getting-started.md))
 - Access to the project repository from your terminal
 
 The assessor can see everything Claude Code can see — files, CI
@@ -325,9 +325,9 @@ and what gaps you have closed.
 
 ## Next Steps
 
-- [Harness for an Existing Codebase](harness-from-scratch) — if the
+- [Harness for an Existing Codebase](harness-from-scratch.md) — if the
   assessment revealed gaps in your harness, start here
-- [Creating Your First Skill](your-first-skill) — encode domain knowledge
+- [Creating Your First Skill](your-first-skill.md) — encode domain knowledge
   the assessor found was missing
 - [How-to: Set Up Secret Detection](../how-to/set-up-secret-detection.md) —
   a common Level 2 → Level 3 gap

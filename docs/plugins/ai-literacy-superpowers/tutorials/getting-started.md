@@ -396,12 +396,12 @@ run reflections, and discover patterns worth encoding.
 
 ## Next Steps
 
-- [A First-Time Tour of Every Capability](first-time-tour) — the full
+- [A First-Time Tour of Every Capability](first-time-tour.md) — the full
   tour of every command in the order it is most useful, with the reason
   each step comes where it does
-- [Creating Your First Skill](your-first-skill) — encode domain knowledge
+- [Creating Your First Skill](your-first-skill.md) — encode domain knowledge
   that agents will carry into every session
-- [Harness for an Existing Codebase](harness-from-scratch) — strategies for
+- [Harness for an Existing Codebase](harness-from-scratch.md) — strategies for
   retrofitting a harness into a project that already has conventions but no
   enforcement
 - [How-to Guides](../index.md) — specific tasks: adding a constraint, setting

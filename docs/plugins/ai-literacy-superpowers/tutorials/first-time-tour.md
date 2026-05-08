@@ -15,7 +15,7 @@ leaves the project in a coherent, better-off state than when you
 started.
 
 The tour assumes you have already completed
-[Getting Started](getting-started) — the plugin is installed and you
+[Getting Started](getting-started.md) — the plugin is installed and you
 have a project to try it against. If not, do that first.
 
 ---
@@ -603,12 +603,12 @@ before plan approval.
 
 ## Next Steps
 
-- [The Improvement Cycle](the-improvement-cycle) — a focused walk
+- [The Improvement Cycle](the-improvement-cycle.md) — a focused walk
   through one L2 → L3 cycle, if you want more depth on the
   assessment-driven path
-- [Governance for Your Harness](governance-for-your-harness) — a
+- [Governance for Your Harness](governance-for-your-harness.md) — a
   full walkthrough of the governance phase in isolation
-- [Harness for an Existing Codebase](harness-from-scratch) —
+- [Harness for an Existing Codebase](harness-from-scratch.md) —
   strategies for retrofitting a harness into a mature project
 - [Reference: Commands](../reference/commands.md) — the full
   specification for every command mentioned above

@@ -72,5 +72,5 @@ dependencies, showing health metrics, debt trends, and frame alignment.
 
 - Share the dashboard with your team for governance visibility
 - The governance data also feeds into the
-  [portfolio dashboard](build-portfolio-dashboard) when using
+  [portfolio dashboard](build-portfolio-dashboard.md) when using
   `/portfolio-assess`
