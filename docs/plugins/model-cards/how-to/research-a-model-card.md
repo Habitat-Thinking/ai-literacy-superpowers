@@ -1,10 +1,15 @@
 ---
 title: Research a Model Card
 layout: default
-parent: model-cards
-grand_parent: Plugins
-nav_order: 2
+parent: How-to Guides
+grand_parent: model-cards
+nav_order: 1
+redirect_from:
+  - /plugins/model-cards/research-a-model-card/
+  - /plugins/model-cards/research-a-model-card.html
 ---
+
+<!-- redirect-sunset: 2027-05-08 -->
 
 # Research a Model Card
 

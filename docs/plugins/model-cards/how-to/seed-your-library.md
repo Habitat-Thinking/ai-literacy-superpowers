@@ -1,10 +1,15 @@
 ---
 title: Seed Your Library
 layout: default
-parent: model-cards
-grand_parent: Plugins
-nav_order: 1
+parent: How-to Guides
+grand_parent: model-cards
+nav_order: 2
+redirect_from:
+  - /plugins/model-cards/seed-your-library/
+  - /plugins/model-cards/seed-your-library.html
 ---
+
+<!-- redirect-sunset: 2027-05-08 -->
 
 # Seed Your Model Card Library
 

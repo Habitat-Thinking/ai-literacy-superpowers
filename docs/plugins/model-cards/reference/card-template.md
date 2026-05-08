@@ -1,10 +1,15 @@
 ---
 title: Card Template
 layout: default
-parent: model-cards
-grand_parent: Plugins
-nav_order: 6
+parent: Reference
+grand_parent: model-cards
+nav_order: 2
+redirect_from:
+  - /plugins/model-cards/card-template/
+  - /plugins/model-cards/card-template.html
 ---
+
+<!-- redirect-sunset: 2027-05-08 -->
 
 # Card Template
 
