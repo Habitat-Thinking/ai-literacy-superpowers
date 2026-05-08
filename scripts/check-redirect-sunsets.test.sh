@@ -86,7 +86,7 @@ EOF
 # per-file findings go to stdout and the summary line goes to stderr.
 # ---------------------------------------------------------------------------
 stdout_out=$("$script" "$fixture/docs/plugins" 2>/dev/null) && rc=$? || rc=$?
-stderr_out=$("$script" "$fixture/docs/plugins" 2>&1 >/dev/null) && : || :
+stderr_out=$("$script" "$fixture/docs/plugins" 2>&1 >/dev/null || true)
 
 # Assert: exit code is non-zero (findings exist)
 if [[ "$rc" -eq 0 ]]; then
