@@ -15,6 +15,32 @@ redirect_from:
 > upstream when needed**. Three commands cover it. Everything else is
 > a deeper or specialised version of one of those three.
 
+## Before the lifecycle: setting up the harness
+
+The lifecycle starts when a harness exists. To get there, run one of
+two init commands depending on how much of the framework you want:
+
+- **`/superpowers-init`** sets up the **full habitat** — `HARNESS.md`,
+  `CLAUDE.md`, `AGENTS.md`, `MODEL_ROUTING.md`, `REFLECTION_LOG.md`,
+  the agent team, skills, hooks, and CI workflow templates. This is
+  the recommended entry for new projects that want everything the
+  framework offers.
+- **`/harness-init`** sets up **only the harness** —
+  `HARNESS.md` with starter constraints and garbage-collection rules.
+  Use this when you want the constraint and enforcement machinery
+  without the full agent pipeline.
+
+Both commands are interactive. They scan your project to discover the
+stack, ask about your conventions one topic at a time, ask which
+constraints to enforce and how, generate the resulting files, and
+commit them. Re-running either command is also how you add features
+incrementally — the init flow is idempotent for unchanged sections
+and prompts before overwriting customised content.
+
+After init, the project enters the lifecycle described below in the
+**in sync** state. Subsequent lifecycle activity is `/harness-sync`,
+`/harness-upgrade`, and `/harness-constrain`.
+
 ## The three states a harness is ever in
 
 A harness is always in one of three states:
@@ -77,6 +103,12 @@ constrain` is the authoring path.
 
 Behind the everyday three, there are deeper or focused tools:
 
+- **`/superpowers-init`** and **`/harness-init`** bootstrap a harness
+  into a project that does not yet have one. See [Before the
+  lifecycle](#before-the-lifecycle-setting-up-the-harness) above.
+  Re-running either command is also how you add framework features
+  incrementally to a project that already has a partial setup.
+
 - **`/harness-audit`** is the inspection-only deep-dive. Same engine
   as `/harness-sync` but read-only — no prompts, just a report.
   Useful when you want to inspect without committing to action, or
@@ -103,6 +135,10 @@ Behind the everyday three, there are deeper or focused tools:
 
 ## When each lifecycle state happens
 
+- **You start a new project** → run `/superpowers-init` (full habitat)
+  or `/harness-init` (harness only). The interactive flow generates
+  HARNESS.md and the related files, then commits them. The project
+  enters the lifecycle in the **in sync** state.
 - **You write a constraint** → run `/harness-constrain`. Then later,
   next time you run `/harness-sync`, the new constraint propagates to
   the convention files automatically (it shows up as a drifted
