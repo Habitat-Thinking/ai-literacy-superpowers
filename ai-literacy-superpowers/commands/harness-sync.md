@@ -26,6 +26,12 @@ it composes existing commands and does not introduce new propagation logic.
   the status table. Useful for dry-run from CI or as the deep-scan step inside
   `/harness-health --deep`.
 
+Read the `harness-audit-engine` skill from this plugin before
+proceeding. The engine defines the shared drift-detection logic and
+the drift-report shape. This command is the read-then-fix caller; it
+runs the engine, builds a unified drift table including every audit
+finding, and applies fixes via the existing primitives.
+
 ## Process
 
 ### 1. Branch Enforcement
@@ -80,7 +86,7 @@ the user:
 
 Exit without making any changes.
 
-### 3. Phase 1 — Drift Scan
+### 3. Phase 1 — Drift Scan via audit-engine
 
 **If invoked with `--check`, the command stops after this phase — see exit semantics at the end of this section.**
 
@@ -90,94 +96,115 @@ the user:
 > No `HARNESS.md` found. Run `/harness-init` first, then re-run
 > `/harness-sync`.
 
-For each push-direction surface, evaluate its state against the current
-`HARNESS.md` content. Reuse the drift detection logic described by the
-`convention file sync` and `ONBOARDING.md staleness` GC rules in `HARNESS.md`
-— do _not_ invent new drift criteria; reference those GC rules by name.
+Invoke the `harness-audit-engine` skill to scan all surfaces. The engine
+returns a list of findings in the structured shape documented in the
+skill: each finding has `surface`, `status`, `details`, `action_command`,
+and `auto_fixable`.
 
-#### Surface evaluation
+Surfaces the engine evaluates include (this list mirrors the table in the
+audit-engine skill — when surfaces are added there, they appear here
+automatically):
 
-For each surface, determine its state using the named GC rule as the
-canonical detector. States: `missing` (files absent), `drifted` (files exist
-but diverge from HARNESS.md), `in sync` (files match), `managed` (not
-actionable here).
-
-**`.cursor/rules/`** — Apply the `convention file sync` GC rule's check
-against `.cursor/rules/conventions.mdc` and `.cursor/rules/constraints.mdc`.
-
-**`.github/copilot-instructions.md`** — Apply the `convention file sync` GC
-rule's check against `.github/copilot-instructions.md`.
-
-**`.windsurf/rules/`** — Apply the `convention file sync` GC rule's check
-against `.windsurf/rules/conventions.md` and `.windsurf/rules/constraints.md`.
-
-**`ONBOARDING.md`** — Apply the `ONBOARDING.md staleness` GC rule's check:
-compare `ONBOARDING.md` against the current state of `HARNESS.md`, `AGENTS.md`,
-and `REFLECTION_LOG.md` (modification times and content alignment).
-
-**CI / CD (constraint scope)** — Always report as `managed`. Handled at
-runtime by the `harness-enforcer` agent; surfaced for completeness only.
+- `.cursor/rules/`, `.github/copilot-instructions.md`, `.windsurf/rules/`
+- `ONBOARDING.md`
+- Most recent snapshot in `observability/snapshots/`
+- HARNESS.md Status section accuracy
+- Template version drift
+- Constraint regressions (deterministic constraints whose tool fails)
+- Recurring reflection patterns (the `Reflection-driven regression detection` GC rule's findings)
+- CI / CD (informational only)
 
 #### Drift scan output table
 
-Build and print this structured table, substituting the evaluated statuses:
+Build and print this structured table from the findings. Each row's
+`Action on apply` column carries `[auto]` or `[manual]` based on the
+finding's `auto_fixable` field:
 
 ```text
-Surface                                              Status      Action on apply
-───────────────────────────────────────────────────  ──────────  ─────────────────────────
-.cursor/rules/                                       drifted     /convention-sync
-.github/copilot-instructions.md                      in sync     —
-.windsurf/rules/                                     missing     /convention-sync (create)
-ONBOARDING.md                                        drifted     /harness-onboarding
-CI / CD (constraint scope)                           managed     handled at runtime
-─────────────────────────────────────────────────────────────────────────────────────────
-5 surfaces tracked · 2 drifted · 1 missing · 1 in sync · 1 managed at runtime
+Surface / Finding                              Status      Action on apply
+─────────────────────────────────────────────  ──────────  ────────────────────────
+.cursor/rules/                                 drifted     /convention-sync       [auto]
+.github/copilot-instructions.md                in sync     —
+.windsurf/rules/                               missing     /convention-sync       [auto]
+ONBOARDING.md                                  drifted     /harness-onboarding    [auto]
+Snapshot staleness (last: 2026-04-15)          drifted     /harness-health        [auto]
+HARNESS.md Status section accuracy             drifted     /harness-audit         [auto]
+Template version (HARNESS: 0.31, plugin: 0.34) drifted     /harness-upgrade       [manual]
+Constraint regression: ShellCheck unverified   drifted     /harness-constrain     [manual]
+Reflection pattern: Output validation x3       candidate   /harness-constrain     [manual]
+CI / CD (constraint scope)                     managed     handled at runtime
+─────────────────────────────────────────────────────────────────────────────────────
+N surfaces tracked · X drifted · Y missing · Z in sync · W managed · K candidates
 ```
 
 State vocabulary:
 
-- `drifted` — file exists but does not match HARNESS.md.
+- `drifted` — file or fact exists but does not match HARNESS.md / reality.
 - `missing` — file is not present; would be created on apply.
-- `in sync` — file matches HARNESS.md.
+- `in sync` — matches HARNESS.md / reality.
 - `managed` — runtime-managed; surfaced for completeness, not actionable here.
+- `candidate` — not strict drift but warrants review (recurring reflection patterns; deferred constraints).
 
-If `--check` was passed, stop here and exit zero (or non-zero if any surface
-is `drifted` or `missing`, so CI can gate on drift). Do not proceed to
+If `--check` was passed, stop here and exit zero (or non-zero if any
+finding is `drifted`, `missing`, or `candidate`). Do not proceed to
 Phase 2.
 
 ### 4. Phase 2 — Selection
 
-If all surfaces are `in sync` or `managed`, tell the user:
+If all findings are `in sync` or `managed`, tell the user:
 
-> All surfaces are in sync. Nothing to apply.
+> All surfaces and audit checks are in sync. Nothing to apply.
 
 Exit cleanly with no changes.
 
 Otherwise, present a multi-select prompt. Use `AskUserQuestion` with
-`multiSelect: true`. List each `drifted` or `missing` surface as a separate
-option. Default selection is _all_ drifted/missing surfaces. The `managed` row
-never appears as a selectable option.
+`multiSelect: true`. List each `drifted`, `missing`, or `candidate`
+finding as a separate option, with the `[auto]` / `[manual]` tag from
+the table. Default selection is _all_ actionable findings.
+
+Group options visually so `[auto]` items appear before `[manual]`
+items. The `managed` row never appears as a selectable option.
 
 ```json
 {
   "type": "AskUserQuestion",
   "multiSelect": true,
-  "question": "Select which surfaces to bring in sync. All drifted/missing surfaces are selected by default.",
+  "question": "Select which findings to address. [auto] items run via existing primitives; [manual] items print the suggested command for you to run separately.",
   "options": [
     {
       "id": "cursor",
-      "label": ".cursor/rules/  [drifted — /convention-sync]",
+      "label": ".cursor/rules/  [auto: /convention-sync]",
       "selected": true
     },
     {
       "id": "windsurf",
-      "label": ".windsurf/rules/  [missing — /convention-sync (create)]",
+      "label": ".windsurf/rules/  [auto: /convention-sync (create)]",
       "selected": true
     },
     {
       "id": "onboarding",
-      "label": "ONBOARDING.md  [drifted — /harness-onboarding]",
+      "label": "ONBOARDING.md  [auto: /harness-onboarding]",
       "selected": true
+    },
+    {
+      "id": "snapshot",
+      "label": "Snapshot staleness  [auto: /harness-health]",
+      "selected": true
+    },
+    {
+      "id": "status",
+      "label": "HARNESS.md Status accuracy  [auto: /harness-audit]",
+      "selected": true
+    },
+    {
+      "id": "template",
+      "label": "Template drift  [manual: /harness-upgrade]",
+      "selected": false
+    },
+    {
+      "id": "regression",
+      "label": "Constraint regression  [manual: /harness-constrain]",
+      "selected": false
     },
     {
       "id": "none",
@@ -188,53 +215,77 @@ never appears as a selectable option.
 }
 ```
 
-The options above are illustrative. Construct the actual options list from the
-Phase 1 scan results — include one option per surface that is `drifted` or
-`missing`, plus the always-present "Apply nothing" option.
+Construct the actual options list from the Phase 1 findings. `[auto]`
+items default to `selected: true`; `[manual]` items default to
+`selected: false` (the user must opt in to running judgement-required
+remediations, even via just printing the command).
 
-Only include options for surfaces that are `drifted` or `missing`. Omit
-options for `in sync` surfaces. Always include the "Apply nothing" option.
-
-If the user selects "Apply nothing — exit without changes" (or deselects all
-surfaces), exit cleanly with no changes.
+If the user selects "Apply nothing — exit without changes" (or
+deselects all surfaces), exit cleanly with no changes.
 
 ### 5. Phase 3 — Apply
 
-For each surface the user selected, invoke the corresponding primitive
-_in series_ (not in parallel — order matters for the verification scan):
+For each selected finding, branch on its `auto_fixable` classification:
 
-1. **`.cursor/rules/` or `.windsurf/rules/`** — invoke `/convention-sync`.
-   This handles all three convention-file surfaces in a single run; if both
-   are selected they share the same invocation.
+#### `[auto]` items — run the action command
+
+For each `[auto]` selected finding, invoke its `action_command` _in
+series_ (not in parallel — order matters for the verification scan):
+
+1. **`.cursor/rules/`, `.github/copilot-instructions.md`, `.windsurf/rules/`** — invoke `/convention-sync`. This handles all three convention-file surfaces in a single run; if multiple are selected they share the same invocation.
 2. **`ONBOARDING.md`** — invoke `/harness-onboarding`.
+3. **Snapshot staleness** — invoke `/harness-health`.
+4. **HARNESS.md Status section accuracy** — invoke `/harness-audit`. (Audit updates Status as a side-effect of running.)
 
-If an underlying command errors out for one surface:
+If an underlying command errors out for one finding:
 
-- Continue with the remaining selected surfaces.
-- Mark the errored surface as `still drifted (error)` in the verification
+- Continue with the remaining selected `[auto]` findings.
+- Mark the errored finding as `still drifted (error)` in the verification
   scan.
 - The overall run will exit non-zero (see step 6 below).
 
+#### `[manual]` items — print the suggested command
+
+For each `[manual]` selected finding, do NOT invoke the action command.
+Instead, print a "next step" line:
+
+```text
+Manual remediation suggested for: Template version drift
+Run: /harness-upgrade
+```
+
+The user runs these separately. `/harness-sync` does not invoke them
+to preserve the trust boundary — these commands require user judgement
+(which template content to adopt, which constraint to add).
+
 ### 6. Verification Scan
 
-After all selected surfaces are applied, re-run the drift scan from Phase 1.
-Build and print the delta table:
+After all selected `[auto]` items are applied, re-invoke the
+`harness-audit-engine` skill and build the delta table:
 
 ```text
 Apply complete — verification scan:
 
-Surface                                              Before      After
-───────────────────────────────────────────────────  ──────────  ──────────
-.cursor/rules/                                       drifted     in sync ✓
-.windsurf/rules/                                     missing     in sync ✓
-ONBOARDING.md                                        drifted     in sync ✓
+Surface / Finding                              Before      After
+─────────────────────────────────────────────  ──────────  ─────────────
+.cursor/rules/                                 drifted     in sync ✓
+.windsurf/rules/                               missing     in sync ✓
+ONBOARDING.md                                  drifted     in sync ✓
+Snapshot staleness                             drifted     in sync ✓
+HARNESS.md Status accuracy                     drifted     in sync ✓
+Template drift                                 drifted     drifted (manual — see suggestion above)
 ```
 
-If any selected surface is _not_ now `in sync`, mark it as
+If any selected `[auto]` finding is _not_ now `in sync`, mark it as
 `still drifted (error)` in the After column. Do _not_ proceed to commit.
-Report the failed surfaces and exit non-zero.
+Report the failed findings and exit non-zero.
 
-If all selected surfaces are now `in sync`, proceed to the trust-boundary
+`[manual]` findings that the user selected are reported in the After
+column with the `(manual — see suggestion above)` note, not flagged
+as errors. They were not auto-applied.
+
+If all selected `[auto]` findings are now `in sync` (and any `[manual]`
+findings have their suggestions printed), proceed to the trust-boundary
 guard.
 
 ### 7. Trust-Boundary Pre-Commit Guard
