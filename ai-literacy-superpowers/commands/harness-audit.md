@@ -7,6 +7,11 @@ description: Run a full meta-verification of the harness — check whether HARNE
 
 Full meta-verification of the harness itself.
 
+Read the `harness-audit-engine` skill from this plugin before
+proceeding. The engine defines the shared drift-detection logic and
+the drift-report shape. This command is the read-only inspection
+caller; `/harness-sync` is the read-then-fix caller.
+
 ## Process
 
 ### 1. Check HARNESS.md Exists
