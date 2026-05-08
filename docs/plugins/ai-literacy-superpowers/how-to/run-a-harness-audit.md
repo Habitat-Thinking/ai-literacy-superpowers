@@ -11,8 +11,31 @@ redirect_from:
 
 # Run a Harness Audit
 
-Run `/harness-audit` to produce a full meta-verification of the harness and generate
-a health snapshot with trend data.
+> `/harness-audit` is the read-only diagnostic. It runs the shared
+> drift-detection engine across every surface and prints findings,
+> without prompting you to fix anything. Use it when you want
+> visibility without action. For everyday hygiene, prefer
+> [`/harness-sync`](sync-harness.md), which uses the same engine and
+> applies fixes.
+
+## Audit vs `/harness-sync`
+
+`/harness-audit` and `/harness-sync` use the same drift-detection
+engine. The difference is action:
+
+- **`/harness-audit`** is read-only. It prints findings and updates
+  the `HARNESS.md` Status section. It never prompts you to fix
+  anything. Useful when you want a clean diagnostic without
+  committing to action — for example from CI, or when scripting,
+  or when you suspect drift but aren't ready to deal with it yet.
+- **`/harness-sync`** runs the same engine but prompts you to apply
+  fixes. Mechanical fixes (convention files, ONBOARDING.md, snapshot,
+  Status section) auto-apply when selected. Judgement-required fixes
+  (template upgrade, constraint authoring) print suggested commands.
+
+**For everyday lifecycle hygiene, run `/harness-sync`.** Run
+`/harness-audit` when you specifically want the diagnostic without
+the action prompt.
 
 ---
 
