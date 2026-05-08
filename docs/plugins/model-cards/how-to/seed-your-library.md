@@ -107,7 +107,7 @@ The library now lives at `~/.claude/model-cards/` (or whatever
 ## 4. Inspect a card
 
 Open any of the generated cards. Every card has the same 10-section
-structure (see the [card template]({% link plugins/model-cards/card-template.md %})
+structure (see the [card template]({% link plugins/model-cards/reference/card-template.md %})
 reference) and a frontmatter `sources` block listing every URL the
 agent fetched, grouped by tier.
 
@@ -152,7 +152,7 @@ the source material has changed, re-research a single card with:
 /model-card create <model-name> --provider <provider>
 ```
 
-This is the same flow as the [research a model card]({% link plugins/model-cards/research-a-model-card.md %})
+This is the same flow as the [research a model card]({% link plugins/model-cards/how-to/research-a-model-card.md %})
 how-to. When prompted about the existing card, choose `overwrite` or
 `load-existing-as-base`.
 
@@ -167,9 +167,9 @@ library — the existence-check rule guarantees this.
 
 ## Next steps
 
-- [Research a model card]({% link plugins/model-cards/research-a-model-card.md %}) —
+- [Research a model card]({% link plugins/model-cards/how-to/research-a-model-card.md %}) —
   add a card for a model that wasn't in the seed list.
-- [Mitchell-extended model cards]({% link plugins/model-cards/mitchell-extended-cards.md %}) —
+- [Mitchell-extended model cards]({% link plugins/model-cards/explanation/mitchell-extended-cards.md %}) —
   understand why the cards are structured the way they are.
-- [Card template reference]({% link plugins/model-cards/card-template.md %}) —
+- [Card template reference]({% link plugins/model-cards/reference/card-template.md %}) —
   the template every generated card conforms to.

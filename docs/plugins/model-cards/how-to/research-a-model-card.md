@@ -19,7 +19,7 @@ human-in-the-loop review checkpoint before the file is written.
 Use this when you want fine-grained control over a single card —
 inspecting source coverage, re-running a thin section, or editing the
 draft before it lands on disk. To bulk-populate a library, use the
-[seed your library]({% link plugins/model-cards/seed-your-library.md %})
+[seed your library]({% link plugins/model-cards/how-to/seed-your-library.md %})
 tutorial instead.
 
 ---
@@ -78,7 +78,7 @@ Card exists at <path>. [overwrite / skip / load-existing-as-base]
 
 The agent dispatches with the model name and provider hint, then
 researches section-by-section using each section's primary source tier
-(see the [agent reference]({% link plugins/model-cards/agents.md %})
+(see the [agent reference]({% link plugins/model-cards/reference/agents.md %})
 for the per-section tier table).
 
 Research can take 1-3 minutes depending on how much source material is
@@ -188,7 +188,7 @@ be too recent for available sources.
 
 No file is written. This is by design — the existence-check rule
 prevents authoritative-looking cards for hallucinated or non-existent
-models. See [the explanation page]({% link plugins/model-cards/mitchell-extended-cards.md %}#card-level-honesty)
+models. See [the explanation page]({% link plugins/model-cards/explanation/mitchell-extended-cards.md %}#card-level-honesty)
 for why this matters.
 
 If the refusal looks wrong (e.g. you know the model exists), pass an
@@ -206,9 +206,9 @@ resolves.
 
 ## Next steps
 
-- [Seed your library]({% link plugins/model-cards/seed-your-library.md %}) —
+- [Seed your library]({% link plugins/model-cards/how-to/seed-your-library.md %}) —
   bulk-populate from the shipped frontier-models seed list.
-- [Card template reference]({% link plugins/model-cards/card-template.md %}) —
+- [Card template reference]({% link plugins/model-cards/reference/card-template.md %}) —
   the canonical structure each card is validated against.
-- [Agent: model-card-researcher]({% link plugins/model-cards/agents.md %}) —
+- [Agent: model-card-researcher]({% link plugins/model-cards/reference/agents.md %}) —
   inside the research loop and refusal logic.

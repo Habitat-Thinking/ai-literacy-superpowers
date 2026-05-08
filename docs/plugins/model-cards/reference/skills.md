@@ -162,7 +162,7 @@ should follow the same rule.
 | 4 | Web search | Anything tiers 1-3 don't cover; independent evaluations |
 
 The agent researches **section by section** using each section's
-primary tier (see the [agent reference]({% link plugins/model-cards/agents.md %})
+primary tier (see the [agent reference]({% link plugins/model-cards/reference/agents.md %})
 for the full table). This is more efficient than fetching all sources
 upfront and produces a sharper provenance trail.
 
@@ -170,9 +170,9 @@ upfront and produces a sharper provenance trail.
 
 ## Related
 
-- [Card template]({% link plugins/model-cards/card-template.md %}) —
+- [Card template]({% link plugins/model-cards/reference/card-template.md %}) —
   the structural template every card conforms to.
-- [Agent reference]({% link plugins/model-cards/agents.md %}) — how
+- [Agent reference]({% link plugins/model-cards/reference/agents.md %}) — how
   the agent applies this skill end-to-end.
-- [Mitchell-extended model cards]({% link plugins/model-cards/mitchell-extended-cards.md %}) —
+- [Mitchell-extended model cards]({% link plugins/model-cards/explanation/mitchell-extended-cards.md %}) —
   conceptual background on why the cards are structured this way.

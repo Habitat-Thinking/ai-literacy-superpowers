@@ -48,7 +48,7 @@ where `<library-root>` is the first of:
 2. **Resolve target path** using the priority order above.
 3. **Existing-card prompt** — if the target exists, ask
    `overwrite / skip / load-existing-as-base`.
-4. **Dispatch** the [`model-card-researcher`]({% link plugins/model-cards/agents.md %})
+4. **Dispatch** the [`model-card-researcher`]({% link plugins/model-cards/reference/agents.md %})
    agent. Output is either a markdown card body or a `REFUSED:` string.
 5. **Handle REFUSED** — if the agent's output starts with `REFUSED:`,
    surface the refusal verbatim and abort. No file is written.
@@ -64,7 +64,7 @@ where `<library-root>` is the first of:
 9. **Write the card** to the resolved target path. Print
    `Card written: <full-path>`.
 
-See the [research a model card]({% link plugins/model-cards/research-a-model-card.md %})
+See the [research a model card]({% link plugins/model-cards/how-to/research-a-model-card.md %})
 how-to for a step-by-step walkthrough.
 
 ### Disposition options
@@ -132,7 +132,7 @@ pattern — the existence check at step 4 skips already-written cards.
 To re-research existing cards, either pass `--force` (overwrites all)
 or run `/model-card create <name>` per-model (interactive review).
 
-See the [seed your library]({% link plugins/model-cards/seed-your-library.md %})
+See the [seed your library]({% link plugins/model-cards/how-to/seed-your-library.md %})
 tutorial for an end-to-end walkthrough.
 
 ---

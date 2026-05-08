@@ -202,11 +202,11 @@ because its source was the most authoritative for that claim type.
 
 ## Related
 
-- [Skill: model-cards]({% link plugins/model-cards/skills.md %}) —
+- [Skill: model-cards]({% link plugins/model-cards/reference/skills.md %}) —
   the operational reference for each section.
-- [Agent: model-card-researcher]({% link plugins/model-cards/agents.md %}) —
+- [Agent: model-card-researcher]({% link plugins/model-cards/reference/agents.md %}) —
   how the rules are enforced in code.
-- [Card template]({% link plugins/model-cards/card-template.md %}) —
+- [Card template]({% link plugins/model-cards/reference/card-template.md %}) —
   the canonical structure.
 - [Adversarial review]({% link plugins/ai-literacy-superpowers/adversarial-review.md %}) —
   the broader read-only-emitter pattern this plugin's agent follows.
