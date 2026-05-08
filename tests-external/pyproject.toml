@@ -1,0 +1,42 @@
+# Project metadata for the tests-external/ spike. Kept deliberately small —
+# this is exploratory infrastructure and the dependency surface should not
+# grow without justification. Dependencies are pinned to ranges, not exact
+# versions, so updates surface through the pip resolver rather than through
+# silent drift.
+
+[project]
+name = "ai-literacy-superpowers-tests"
+version = "0.1.0"
+description = "External test suite for the ai-literacy-superpowers plugin (TDAB spike)"
+requires-python = ">=3.11"
+dependencies = [
+    # pytest is the runner. Layer 1 needs only this.
+    "pytest>=8.0",
+
+    # PyYAML parses the scenario frontmatter. Layer 1 also uses it to
+    # validate the plugin's own component frontmatter.
+    "pyyaml>=6.0",
+
+    # The Claude Agent SDK is needed only for Layer 2 and Layer 3.
+    # Layer 1 imports nothing from it; tests gate on ANTHROPIC_API_KEY.
+    "claude-agent-sdk>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-asyncio>=0.23",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+# Markers mirror the three-layer architecture and the api-key gate.
+# ``asyncio_mode`` is intentionally absent — the spike's tests are all
+# sync. When the SDK runner is implemented, pytest-asyncio's mode goes
+# in alongside it (or we use the synchronous facade the SDK exposes).
+markers = [
+    "needs_api: requires ANTHROPIC_API_KEY (Layer 2 and Layer 3 tests)",
+    "behavioural: full SDK-driven test (Layer 3)",
+    "trigger: description-match test (Layer 2)",
+    "structural: offline check (Layer 1)",
+]
