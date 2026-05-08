@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.35.2 — 2026-05-08
+
+### Fix — `/harness-sync` trust-boundary contradiction with HARNESS.md Status auto-fix
+
+Resolves an internal inconsistency in the `/harness-sync` command spec.
+Phase 3 step 3 declared HARNESS.md Status section accuracy auto-fixable
+via `/harness-audit`, but step 7's trust-boundary guard listed HARNESS.md
+in the rejected set. A live sync run hit this contradiction and had to
+resolve it pragmatically inline; this PR codifies that resolution.
+
+Changes:
+
+- Step 7 trust-boundary allow-list now permits HARNESS.md changes
+  scoped to the four-line Status block under the
+  `<!-- Auto-updated by /harness-audit — do not edit manually -->`
+  marker, with an additional scoped-diff check that rejects any hunk
+  outside that region. Adds `observability/snapshots/**` to the
+  allow-list (covers `/harness-health` snapshot creation, the other
+  HARNESS.md-adjacent auto-fix the audit-engine declares).
+- Phase 3 step 3 no longer says "invoke `/harness-audit`". Sync now
+  inlines the Status block update directly. The full audit (which
+  also writes the README badge and runs heavy constraint regression
+  scans) remains a separate user-triggered action.
+- The opening "What this command does NOT do" paragraph distinguishes
+  curated-by-humans files (`AGENTS.md`, `REFLECTION_LOG.md`,
+  `ONBOARDING.md`) from the narrowly-scoped HARNESS.md Status mutation
+  that sync is allowed to make.
+- Path A and Path B `git add` lines now stage every allow-listed
+  surface (including HARNESS.md and snapshot directories); commit
+  message guidance reflects the actual mix of surfaces synced.
+- Error/Refusal table updated to match the new allow-list.
+- The `sync-harness` how-to doc's "Branch and trust-boundary" section
+  is rewritten to match the corrected spec — including the explicit
+  note that everything above the Status block (Context, Constraints,
+  Garbage Collection, Observability, Read-side filtering) is
+  off-limits to sync.
+
+No change to the `harness-audit-engine` skill — its `auto_fixable`
+classification rule already permitted HARNESS.md Status section
+mutation as a defined exception. Only the sync command spec lagged.
+
 ## 0.35.1 — 2026-05-08
 
 ### Chore — Bump HARNESS.md template-version marker to 0.35.1

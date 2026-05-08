@@ -94,20 +94,31 @@ be auto-applied.
 ## Branch and trust-boundary
 
 `/harness-sync` refuses to run on `main`. If you're on `main` it
-offers to create `chore/sync-surfaces-YYYY-MM-DD` for you. The
-trust-boundary pre-commit guard restricts what gets staged: only
-`.cursor/rules/**`, `.github/copilot-instructions.md`, and
-`.windsurf/rules/**` may be committed. `HARNESS.md`, `AGENTS.md`,
-`REFLECTION_LOG.md`, and `ONBOARDING.md` are off-limits to this
-command. `ONBOARDING.md` shows in the drift table as a `[manual]`
-finding so you can see when it's stale, but `/harness-onboarding`
-runs separately under your deliberate trigger.
+offers to create `chore/sync-surfaces-YYYY-MM-DD` for you.
 
-If a `[auto]` action mutates HARNESS.md (the Status section update
-from `/harness-audit`, for example), that mutation lands as part of
-the action's own flow and is committed separately by the action's
-own logic. `/harness-sync`'s commit covers only the four push-direction
-surfaces.
+The trust-boundary pre-commit guard restricts what may be committed
+from a sync run:
+
+- `.cursor/rules/**`, `.github/copilot-instructions.md`,
+  `.windsurf/rules/**` — convention files derived from HARNESS.md
+- `observability/snapshots/**` — only when `/harness-health` ran as
+  a selected `[auto]` action
+- `HARNESS.md` — only the four-line Status block under the
+  `<!-- Auto-updated by /harness-audit — do not edit manually -->`
+  marker. Sync regenerates these lines as the audit-engine's
+  narrowly-scoped Status auto-fix and runs a scoped-diff check before
+  committing — any HARNESS.md change outside the Status block is
+  treated as a trust-boundary violation.
+
+`AGENTS.md`, `REFLECTION_LOG.md`, and `ONBOARDING.md` are never on
+the allow-list. `ONBOARDING.md` shows in the drift table as a
+`[manual]` finding so you can see when it's stale, but
+`/harness-onboarding` runs separately under your deliberate trigger.
+
+The Context, Constraints, Garbage Collection, Observability, and
+Read-side filtering sections of HARNESS.md are off-limits to sync —
+those are the harness source of truth, edited by humans (or by
+`/harness-upgrade` when adopting upstream template content).
 
 ## `--check` mode
 
