@@ -152,7 +152,7 @@ Manage the project's affordance inventory — the declared tools the
 agent can invoke, with the identity each tool runs under, the audit
 trail each tool produces, and the permission allowlist that
 authorises it. See the
-[harness-affordances design spec](../../superpowers/specs/2026-04-26-harness-affordances-design.md)
+[harness-affordances design spec](../../../superpowers/specs/2026-04-26-harness-affordances-design.md)
 for the full schema.
 
 `/harness-affordance discover` reads `.claude/settings.json`,
@@ -165,7 +165,7 @@ governance fields (`Identity`, `Audit trail`, `Last reviewed`) are
 left as `TODO` placeholders. The scanner is the **backfill path** for
 existing harness adopters: running it once produces a draft for every
 existing permission. See
-[Discover Affordances](discover-affordances.md) for the
+[Discover Affordances](../how-to/discover-affordances.md) for the
 full how-to.
 
 `/harness-affordance add <name>` (planned, sequencing step 3 of the

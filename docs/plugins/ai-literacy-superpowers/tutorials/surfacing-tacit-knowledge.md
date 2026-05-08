@@ -504,7 +504,7 @@ habitat, so it stays current by construction.
 ### `/harness-onboarding` (or `/harness-sync` for the multi-surface entry)
 
 `/harness-onboarding` is one of the underlying primitives that
-[`/harness-sync`](sync-harness.md)
+[`/harness-sync`](../how-to/sync-harness.md)
 composes. When the team-composition change you are absorbing also
 warrants refreshing the convention files (Cursor, Copilot, Windsurf),
 use `/harness-sync` — it runs `/harness-onboarding` and
@@ -636,10 +636,10 @@ onboarding confusion, and scheduled quarterly revisits.
   conventions that are important enough to audit quarterly,
   promote them to governance constraints with falsifiability
   checks and three-frame alignment
-- [How-to: Extract Conventions](extract-conventions.md) —
+- [How-to: Extract Conventions](../how-to/extract-conventions.md) —
   a shorter, task-oriented reference for running
   `/extract-conventions` without the full tutorial context
-- [How-to: Generate Onboarding](generate-onboarding.md) — a
+- [How-to: Generate Onboarding](../how-to/generate-onboarding.md) — a
   shorter reference for `/harness-onboarding`
-- [Reference: Commands](commands.md) — full specification
+- [Reference: Commands](../reference/commands.md) — full specification
   for every command used in this tutorial

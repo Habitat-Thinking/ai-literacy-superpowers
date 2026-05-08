@@ -24,7 +24,7 @@ engineering**, **agent orchestration**, **decision archaeology**,
 
 | Plugin | What it does | Get started |
 | ------ | ------------ | ----------- |
-| **[ai-literacy-superpowers](plugins/ai-literacy-superpowers/index.md)** | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. 30 skills, 13 agents, 24 commands. | [Tutorial](plugins/ai-literacy-superpowers/getting-started.md) |
+| **[ai-literacy-superpowers](plugins/ai-literacy-superpowers/index.md)** | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. 30 skills, 13 agents, 24 commands. | [Tutorial](plugins/ai-literacy-superpowers/tutorials/getting-started.md) |
 | **[model-cards](plugins/model-cards/index.md)** | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy with refusal-on-unconfirmed-existence honesty rule. | [Tutorial](plugins/model-cards/how-to/seed-your-library.md) |
 
 The marketplace is on track to ship more sister plugins as the

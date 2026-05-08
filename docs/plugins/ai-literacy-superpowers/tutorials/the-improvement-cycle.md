@@ -553,7 +553,7 @@ After completing this tutorial you have:
   dashboard
 - [Getting Started](getting-started) — back to basics if you haven't
   set up the plugin yet
-- [How-to: Add a Constraint](add-a-constraint.md) — add
+- [How-to: Add a Constraint](../how-to/add-a-constraint.md) — add
   individual constraints without running the full init flow
-- [Reference: Commands](commands.md) — full specification for
+- [Reference: Commands](../reference/commands.md) — full specification for
   `/assess`, `/harness-init`, `/reflect`, and `/harness-constrain`

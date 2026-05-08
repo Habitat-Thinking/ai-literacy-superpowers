@@ -22,7 +22,7 @@ describes the procedure for *interpreting* that signal and producing
 calibration decisions — including the decision to leave things alone.
 
 For the conceptual background, see
-[Determinacy Calibration](determinacy-calibration.md).
+[Determinacy Calibration](../explanation/determinacy-calibration.md).
 
 ---
 
@@ -253,10 +253,10 @@ re-litigate the same questions without new evidence.
 
 ## See also
 
-- [Determinacy Calibration](determinacy-calibration.md) —
+- [Determinacy Calibration](../explanation/determinacy-calibration.md) —
   the conceptual background: bidirectional movement, four signal
   classes, refusals as outputs, the harness-as-habitat framing
-- [Progressive Hardening](progressive-hardening.md) —
+- [Progressive Hardening](../explanation/progressive-hardening.md) —
   the determinacy ladder calibration applies to
 - [Run a Harness Audit](run-a-harness-audit.md) —
   the audit command that surfaces drift signal

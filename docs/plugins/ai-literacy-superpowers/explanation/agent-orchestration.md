@@ -214,7 +214,7 @@ That is the review process working. The reviewer can reject, and the implementer
 
 ## Further reading
 
-- [Agents Reference](agents.md) — detailed catalogue of all agents in this plugin
+- [Agents Reference](../reference/agents.md) — detailed catalogue of all agents in this plugin
 - [Adversarial Review](adversarial-review.md) — the concepts behind the advocatus-diaboli and the human-cognition gate
 - [Decision Archaeology](decision-archaeology.md) — the choice-cartographer's role; intent debt and cognitive debt; the soft gate / hard gate asymmetry
 - [Compound Learning](compound-learning.md) — how agent output feeds the learning loop

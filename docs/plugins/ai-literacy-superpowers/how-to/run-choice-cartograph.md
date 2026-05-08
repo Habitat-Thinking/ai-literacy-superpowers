@@ -189,7 +189,7 @@ signal about which kinds of decisions tend to need spec edits.
 - Once all dispositions are filled, return to the orchestrator
   pipeline and present the plan for approval; proceed to tdd-agent
   only after plan approval
-- See [Decision Archaeology](decision-archaeology.md)
+- See [Decision Archaeology](../explanation/decision-archaeology.md)
   for the conceptual background on intent debt, cognitive debt, and
   why the Cartographer is paired with the diaboli rather than
   replacing it

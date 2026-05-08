@@ -287,7 +287,7 @@ recalibrated as the territory itself shifts.
 - [Habitat Engineering](habitat-engineering.md) —
   the paths-versus-wildness framing from which calibration borrows
   its underlying metaphor
-- [How to: Run a determinacy calibration review](run-a-calibration-review.md) —
+- [How to: Run a determinacy calibration review](../how-to/run-a-calibration-review.md) —
   the practical procedure
 
 External: the article that motivated this page is Russ Miles'

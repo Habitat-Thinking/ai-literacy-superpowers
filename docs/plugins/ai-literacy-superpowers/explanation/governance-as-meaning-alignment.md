@@ -158,11 +158,11 @@ A Stop hook nudges `/governance-audit` when governance-related files
 change during a session and the last audit is stale.
 
 For a hands-on walkthrough, start with the
-[Governance for Your Harness](governance-for-your-harness.md)
+[Governance for Your Harness](../tutorials/governance-for-your-harness.md)
 tutorial. For specific tasks, see the how-to guides:
 
-- [Write a governance constraint](write-a-governance-constraint.md)
-- [Run a governance audit](run-a-governance-audit.md)
-- [Check governance health](check-governance-health.md)
-- [Detect semantic drift](detect-semantic-drift.md)
-- [Build a governance dashboard](build-a-governance-dashboard.md)
+- [Write a governance constraint](../how-to/write-a-governance-constraint.md)
+- [Run a governance audit](../how-to/run-a-governance-audit.md)
+- [Check governance health](../how-to/check-governance-health.md)
+- [Detect semantic drift](../how-to/detect-semantic-drift.md)
+- [Build a governance dashboard](../how-to/build-a-governance-dashboard.md)

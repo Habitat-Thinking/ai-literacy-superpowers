@@ -394,12 +394,12 @@ not encoded.
 
 ## Next Steps
 
-- [How-to: Set Up Secret Detection](set-up-secret-detection.md) —
+- [How-to: Set Up Secret Detection](../how-to/set-up-secret-detection.md) —
   promote the "no secrets in source" constraint from unverified to
   deterministic using gitleaks
 - [Creating Your First Skill](your-first-skill) — encode domain knowledge
   that agents carry into every session
-- [Reference: HARNESS.md Format](harness-md-format.md) — full
+- [Reference: HARNESS.md Format](../reference/harness-md-format.md) — full
   specification of every field in HARNESS.md
-- [Reference: Commands](commands.md) — full specification for
+- [Reference: Commands](../reference/commands.md) — full specification for
   `/harness-constrain`, `/harness-audit`, and `/harness-gc`

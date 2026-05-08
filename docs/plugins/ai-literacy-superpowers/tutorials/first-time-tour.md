@@ -239,7 +239,7 @@ the equivalent content.
 
 **The unified entry point.** `/convention-sync` is one of the
 underlying primitives that
-[`/harness-sync`](sync-harness.md)
+[`/harness-sync`](../how-to/sync-harness.md)
 composes. For multi-surface propagation in one interactive pass —
 across the convention files *and* `ONBOARDING.md` together — use
 `/harness-sync`. Use `/convention-sync` directly only when you want
@@ -475,7 +475,7 @@ monthly whether it has become stale against its sources.
 
 **The unified entry point.** `/harness-onboarding` is one of the
 underlying primitives that
-[`/harness-sync`](sync-harness.md)
+[`/harness-sync`](../how-to/sync-harness.md)
 composes. For multi-surface propagation in one interactive pass —
 when you want to refresh both `ONBOARDING.md` *and* the convention
 files together — use `/harness-sync`. Use `/harness-onboarding`
@@ -618,5 +618,5 @@ before plan approval.
   full walkthrough of the governance phase in isolation
 - [Harness for an Existing Codebase](harness-from-scratch) —
   strategies for retrofitting a harness into a mature project
-- [Reference: Commands](commands.md) — the full
+- [Reference: Commands](../reference/commands.md) — the full
   specification for every command mentioned above

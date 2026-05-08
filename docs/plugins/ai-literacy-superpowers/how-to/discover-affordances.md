@@ -109,7 +109,7 @@ For each draft entry you want to keep:
 1. **Fill in `Identity`** — whose credentials does this tool run
    under? Use one of: `user-sso`, `service-account`, `current-user`,
    `runtime-resolved`, `none`. See the
-   [affordances design spec](../../superpowers/specs/2026-04-26-harness-affordances-design.md)
+   [affordances design spec](../../../superpowers/specs/2026-04-26-harness-affordances-design.md)
    for the full definitions.
 2. **Fill in `Audit trail`** — where would you find a record of what
    the agent did? `none` is encouraged when there genuinely is no
@@ -154,5 +154,5 @@ changed.
 
 ## Related
 
-- [Harness Affordances — Design Spec](../../superpowers/specs/2026-04-26-harness-affordances-design.md)
-- [`/harness-affordance discover` — Implementation Spec](../../superpowers/specs/2026-04-27-harness-affordance-discover.md)
+- [Harness Affordances — Design Spec](../../../superpowers/specs/2026-04-26-harness-affordances-design.md)
+- [`/harness-affordance discover` — Implementation Spec](../../../superpowers/specs/2026-04-27-harness-affordance-discover.md)

@@ -342,7 +342,7 @@ for freshness periodically.
 
 - [Harness for an Existing Codebase](harness-from-scratch) — encode more
   of your conventions in HARNESS.md and promote them to enforcement
-- [Reference: Commands](commands.md) — `/harness-gc` for
+- [Reference: Commands](../reference/commands.md) — `/harness-gc` for
   managing skill freshness over time
-- [How-to Guides](index.md) — specific tasks like adding a constraint
+- [How-to Guides](../index.md) — specific tasks like adding a constraint
   or running an audit

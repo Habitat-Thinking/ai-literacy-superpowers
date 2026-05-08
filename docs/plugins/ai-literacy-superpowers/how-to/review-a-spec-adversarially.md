@@ -141,5 +141,5 @@ carry interpretive signal about whether the spec-time charter is catching issues
 - **Spec mode**: once all dispositions are filled, return to the orchestrator pipeline and
   present the plan for approval; proceed to tdd-agent only after plan approval
 - **Code mode**: once all dispositions are filled, proceed to integration-agent
-- See [Adversarial Review](adversarial-review.md) for the
+- See [Adversarial Review](../explanation/adversarial-review.md) for the
   conceptual background on why this gate exists and what the agent is not allowed to do

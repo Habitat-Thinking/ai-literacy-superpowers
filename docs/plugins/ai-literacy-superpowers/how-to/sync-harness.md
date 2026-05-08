@@ -171,7 +171,7 @@ the harness itself.
   — single-surface deep dive for convention and constraint files
 - [Generate an Onboarding Guide](generate-onboarding.md)
   — single-surface deep dive for `ONBOARDING.md`
-- [The Harness Tuning Loop](the-harness-tuning-loop.md)
+- [The Harness Tuning Loop](../explanation/the-harness-tuning-loop.md)
   — the Propagate stage (Stage 5) that `/harness-sync` serves
-- [The Harness Lifecycle](the-harness-lifecycle.md)
+- [The Harness Lifecycle](../explanation/the-harness-lifecycle.md)
   — the Renewal stage where surface synchronisation fits

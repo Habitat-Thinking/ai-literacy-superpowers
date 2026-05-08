@@ -277,7 +277,7 @@ calibrate, not to be measured.
 
 ## See also
 
-- [Run the Choice Cartographer](run-choice-cartograph.md)
+- [Run the Choice Cartographer](../how-to/run-choice-cartograph.md)
   — the practical guide to invoking it
 - [Adversarial Review](adversarial-review.md)
   — the diaboli's role and why the two are paired

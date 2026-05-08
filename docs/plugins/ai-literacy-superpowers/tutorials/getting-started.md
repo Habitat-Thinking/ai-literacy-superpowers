@@ -412,7 +412,7 @@ run reflections, and discover patterns worth encoding.
 - [Harness for an Existing Codebase](harness-from-scratch) — strategies for
   retrofitting a harness into a project that already has conventions but no
   enforcement
-- [How-to Guides](index.md) — specific tasks: adding a constraint, setting
+- [How-to Guides](../index.md) — specific tasks: adding a constraint, setting
   up secret detection, running a harness audit
-- [Reference: Commands](commands.md) — full specification for every
+- [Reference: Commands](../reference/commands.md) — full specification for every
   slash command

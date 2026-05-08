@@ -463,9 +463,9 @@ After completing this tutorial you have:
 
 - [The Improvement Cycle](the-improvement-cycle) — walk one repo from
   L2 to L3 using the assessment's improvement plan
-- [How-to: Run a Portfolio Assessment](run-portfolio-assessment.md)
+- [How-to: Run a Portfolio Assessment](../how-to/run-portfolio-assessment.md)
   — flags, options, and edge cases for the `/portfolio-assess` command
-- [How-to: Build a Portfolio Dashboard](build-portfolio-dashboard.md)
+- [How-to: Build a Portfolio Dashboard](../how-to/build-portfolio-dashboard.md)
   — prompt variations and customisation recipes for the dashboard
-- [Reference: Commands](commands.md) — full specification for
+- [Reference: Commands](../reference/commands.md) — full specification for
   `/portfolio-assess` and related commands

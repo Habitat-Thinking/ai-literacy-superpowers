@@ -77,7 +77,7 @@ Adjacent GC rules touch the loop's other surfaces during the same agent run: `do
 
 ## Stage 3 — Promote a proposal into HARNESS.md
 
-This is the only stage that writes new constraints into `HARNESS.md`, and it is deliberately interactive. No agent can bypass the human here. The command is `/harness-constrain`, supported by the [constraint-design](constraints-and-enforcement.md) and [verification-slots](set-up-verification-slots.md) skills. No agents are dispatched.
+This is the only stage that writes new constraints into `HARNESS.md`, and it is deliberately interactive. No agent can bypass the human here. The command is `/harness-constrain`, supported by the [constraint-design](constraints-and-enforcement.md) and [verification-slots](../how-to/set-up-verification-slots.md) skills. No agents are dispatched.
 
 The interaction has two responsibilities. The first is to write the constraint into `HARNESS.md` in the canonical five-field format (rule, frequency, enforcement, tool, auto-fix). The second, when deterministic enforcement is selected, is to **configure the verification slot** -- the integration point that wires the named tool to the harness's enforcement engine. A constraint without a wired slot is a claim, not a check.
 
@@ -105,7 +105,7 @@ The auditor is the **only** agent permitted to update the Status section of `HAR
 
 ### 5a — AGENTS.md / CLAUDE.md (turn-time context)
 
-This is what the AI sees at session start. The relevant commands are `/extract-conventions` (when a new tacit convention surfaces through the cycle, supported by the convention-extraction skill), `/convention-sync` (which generates Cursor / Copilot / Windsurf rule files from `HARNESS.md`), and `/harness-onboarding` (which regenerates `ONBOARDING.md` from `HARNESS.md` + `AGENTS.md` + `REFLECTION_LOG.md`). The unified entry point that runs `/convention-sync` and `/harness-onboarding` together in one interactive pass — detecting drift across all push-direction surfaces, presenting the full picture, applying the user's selected fixes — is `/harness-sync`. See [Sync Harness Surfaces](sync-harness.md). The single-surface commands remain available for focused work.
+This is what the AI sees at session start. The relevant commands are `/extract-conventions` (when a new tacit convention surfaces through the cycle, supported by the convention-extraction skill), `/convention-sync` (which generates Cursor / Copilot / Windsurf rule files from `HARNESS.md`), and `/harness-onboarding` (which regenerates `ONBOARDING.md` from `HARNESS.md` + `AGENTS.md` + `REFLECTION_LOG.md`). The unified entry point that runs `/convention-sync` and `/harness-onboarding` together in one interactive pass — detecting drift across all push-direction surfaces, presenting the full picture, applying the user's selected fixes — is `/harness-sync`. See [Sync Harness Surfaces](../how-to/sync-harness.md). The single-surface commands remain available for focused work.
 
 The GC rules that catch lag on this surface are `convention file sync` (weekly, agent-enforced), `command-prompt sync` (weekly, agent-enforced), and the monthly `ONBOARDING.md` staleness check. Together they ensure that when `HARNESS.md` changes, the convention files every AI assistant reads do not silently fall behind.
 
@@ -131,9 +131,9 @@ The combination of all three surfaces -- session-start context, edit-time hooks,
 
 Two commands sit one level out from the per-surprise loop and tune at quarterly cadence. They catch what the per-surprise path misses: gaps that no individual surprise has surfaced yet, or governance constraints that have drifted in meaning rather than in enforcement.
 
-`/assess` (supported by the [ai-literacy-assessment](run-an-assessment.md) skill, dispatching the `assessor` agent) reassesses the literacy level, surfaces gaps, and produces an improvement plan that may itself add constraints, hooks, or CI workflows. It is the loop's check on its own progress: are we catching surprises faster, are recurring patterns getting promoted, are constraints getting tighter over time.
+`/assess` (supported by the [ai-literacy-assessment](../how-to/run-an-assessment.md) skill, dispatching the `assessor` agent) reassesses the literacy level, surfaces gaps, and produces an improvement plan that may itself add constraints, hooks, or CI workflows. It is the loop's check on its own progress: are we catching surprises faster, are recurring patterns getting promoted, are constraints getting tighter over time.
 
-`/governance-audit` (supported by the [governance-audit-practice](run-a-governance-audit.md) and [governance-observability](build-a-governance-dashboard.md) skills, dispatching the `governance-auditor` agent) does the same job for governance constraints specifically, with semantic-drift detection. Its trust boundary mirrors `harness-gc`: it writes audit reports, never modifies `HARNESS.md` directly.
+`/governance-audit` (supported by the [governance-audit-practice](../how-to/run-a-governance-audit.md) and [governance-observability](../how-to/build-a-governance-dashboard.md) skills, dispatching the `governance-auditor` agent) does the same job for governance constraints specifically, with semantic-drift detection. Its trust boundary mirrors `harness-gc`: it writes audit reports, never modifies `HARNESS.md` directly.
 
 These commands sit outside the per-surprise loop because they answer different questions. The per-surprise loop asks "did anything surprising happen?" The quarterly frame asks "are we still working on the right things?"
 

@@ -235,6 +235,6 @@ After completing this tutorial:
   will alert you when governance-related files change and the audit
   is stale
 - **Explore the how-to guides** for specific tasks:
-  [write a constraint](write-a-governance-constraint.md),
-  [detect drift](detect-semantic-drift.md),
-  [build a dashboard](build-a-governance-dashboard.md)
+  [write a constraint](../how-to/write-a-governance-constraint.md),
+  [detect drift](../how-to/detect-semantic-drift.md),
+  [build a dashboard](../how-to/build-a-governance-dashboard.md)

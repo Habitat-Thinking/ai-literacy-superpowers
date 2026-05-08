@@ -387,9 +387,9 @@ no path to enforcement is a candidate for removal.
   the promotion ladder for constraints
 - [Agent Orchestration](agent-orchestration.md) —
   how `AGENTS.md` and `HARNESS.md` interact in the spec-first pipeline
-- [HARNESS.md format reference](harness-md-format.md) —
+- [HARNESS.md format reference](../reference/harness-md-format.md) —
   the field-by-field reference for the document itself
-- [How to: Add a Constraint](add-a-constraint.md) —
+- [How to: Add a Constraint](../how-to/add-a-constraint.md) —
   practical guide for amending `HARNESS.md`
 
 External: Addy Osmani's
