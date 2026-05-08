@@ -1,14 +1,6 @@
 ---
 title: Governance as meaning-alignment
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 16
-redirect_from:
-  - /explanation/governance-as-meaning-alignment/
-  - /explanation/governance-as-meaning-alignment.html
 ---
-
 # Governance as Meaning-Alignment
 
 Governance failures are not primarily technical failures. They are

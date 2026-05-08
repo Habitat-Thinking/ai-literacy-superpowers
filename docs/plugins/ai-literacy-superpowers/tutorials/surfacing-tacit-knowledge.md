@@ -1,14 +1,6 @@
 ---
 title: Surfacing Tacit Knowledge
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 9
-redirect_from:
-  - /tutorials/surfacing-tacit-knowledge/
-  - /tutorials/surfacing-tacit-knowledge.html
 ---
-
 # Surfacing Tacit Knowledge
 
 Most of what makes a team effective in a complex domain is not

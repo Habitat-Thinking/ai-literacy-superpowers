@@ -1,14 +1,6 @@
 ---
 title: Configure Observability
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 35
-redirect_from:
-  - /how-to/configure-observability/
-  - /how-to/configure-observability.html
 ---
-
 # Configure Observability
 
 Set snapshot cadence, operating targets, health thresholds, and regression detection in HARNESS.md.

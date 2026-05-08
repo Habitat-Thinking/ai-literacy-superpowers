@@ -1,14 +1,6 @@
 ---
 title: Run a Portfolio Assessment
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 20
-redirect_from:
-  - /how-to/run-portfolio-assessment/
-  - /how-to/run-portfolio-assessment.html
 ---
-
 # Run a Portfolio Assessment
 
 Aggregate AI literacy assessments across multiple repositories into an

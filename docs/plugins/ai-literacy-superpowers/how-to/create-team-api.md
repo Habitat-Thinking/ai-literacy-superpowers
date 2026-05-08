@@ -1,14 +1,6 @@
 ---
 title: Create a Team API
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 23
-redirect_from:
-  - /how-to/create-team-api/
-  - /how-to/create-team-api.html
 ---
-
 # Create a Team API
 
 Generate or update a Team Topologies Team API document populated with AI

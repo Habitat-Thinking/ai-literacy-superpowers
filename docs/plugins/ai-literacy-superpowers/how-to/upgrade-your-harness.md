@@ -1,14 +1,6 @@
 ---
 title: Upgrade Your Harness
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 34
-redirect_from:
-  - /how-to/upgrade-your-harness/
-  - /how-to/upgrade-your-harness.html
 ---
-
 # Upgrade Your Harness
 
 Run `/harness-upgrade` to adopt new template content after updating the plugin.

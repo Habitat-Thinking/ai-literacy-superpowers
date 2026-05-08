@@ -1,14 +1,6 @@
 ---
 title: Agent — model-card-researcher
-layout: default
-parent: Reference
-grand_parent: model-cards
-nav_order: 1
-redirect_from:
-  - /plugins/model-cards/agents/
-  - /plugins/model-cards/agents.html
 ---
-
 <!-- redirect-sunset: 2027-05-08 -->
 
 # Agent: model-card-researcher

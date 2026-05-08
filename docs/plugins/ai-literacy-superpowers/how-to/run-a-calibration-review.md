@@ -1,14 +1,6 @@
 ---
 title: Run a Determinacy Calibration Review
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 40
-redirect_from:
-  - /how-to/run-a-calibration-review/
-  - /how-to/run-a-calibration-review.html
 ---
-
 # Run a Determinacy Calibration Review
 
 Run a periodic calibration review to interpret the signal from

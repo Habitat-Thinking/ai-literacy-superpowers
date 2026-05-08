@@ -1,14 +1,6 @@
 ---
 title: Regression Detection
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 17
-redirect_from:
-  - /explanation/regression-detection/
-  - /explanation/regression-detection.html
 ---
-
 # Regression Detection
 
 In harness engineering, regression means something different than it does in software testing. Code regression is a broken feature. Harness regression is a broken habit. When the practices that keep a harness alive stop happening -- when audits are skipped, when reflections dry up, when snapshots go stale -- the harness degrades silently. The constraints still fire. The rules still exist. But the human-in-the-loop activities that evolved and maintained the harness have stopped, and the harness slowly becomes cargo cult: a system that looks correct but is no longer serving the purpose it was designed for.

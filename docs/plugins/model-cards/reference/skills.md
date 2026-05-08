@@ -1,14 +1,6 @@
 ---
 title: Skill — model-cards
-layout: default
-parent: Reference
-grand_parent: model-cards
-nav_order: 4
-redirect_from:
-  - /plugins/model-cards/skills/
-  - /plugins/model-cards/skills.html
 ---
-
 <!-- redirect-sunset: 2027-05-08 -->
 
 # Skill: model-cards

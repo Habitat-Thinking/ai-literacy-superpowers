@@ -1,14 +1,6 @@
 ---
 title: Build a Governance Dashboard
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 33
-redirect_from:
-  - /how-to/build-a-governance-dashboard/
-  - /how-to/build-a-governance-dashboard.html
 ---
-
 # Build a Governance Dashboard
 
 Generate an HTML dashboard visualising governance health, constraint

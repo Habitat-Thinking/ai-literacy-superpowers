@@ -1,14 +1,6 @@
 ---
 title: The Self-Improving Harness
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 11
-redirect_from:
-  - /explanation/self-improving-harness/
-  - /explanation/self-improving-harness.html
 ---
-
 # The Self-Improving Harness
 
 > A harness that doesn't evolve becomes a museum exhibit. The

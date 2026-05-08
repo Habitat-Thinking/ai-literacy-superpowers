@@ -1,14 +1,6 @@
 ---
 title: Skills
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 1
-redirect_from:
-  - /reference/skills/
-  - /reference/skills.html
 ---
-
 # Skills
 
 The plugin ships 30 skills. Each skill is a focused unit of domain knowledge that Claude can invoke during a session. They are grouped below by category.

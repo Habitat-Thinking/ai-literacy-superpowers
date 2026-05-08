@@ -1,14 +1,6 @@
 ---
 title: Compound Learning
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 6
-redirect_from:
-  - /explanation/compound-learning/
-  - /explanation/compound-learning.html
 ---
-
 # Compound Learning
 
 This page explains how AI development environments improve over time through captured learnings. For the detailed mechanics of self-improvement, see [The Self-Improving Harness](self-improving-harness.md).

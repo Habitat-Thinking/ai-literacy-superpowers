@@ -1,14 +1,6 @@
 ---
 title: Sync Harness Surfaces
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 7
-redirect_from:
-  - /how-to/sync-harness/
-  - /how-to/sync-harness.html
 ---
-
 # Sync the harness
 
 > Run `/harness-sync` to bring every surface into alignment with

@@ -1,14 +1,6 @@
 ---
 title: Harden GitHub Actions
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 15
-redirect_from:
-  - /how-to/harden-github-actions/
-  - /how-to/harden-github-actions.html
 ---
-
 # Harden GitHub Actions
 
 This guide walks you through reviewing and hardening your GitHub Actions workflows against supply chain attacks — covering SHA pinning, permissions scoping, and automated update configuration.

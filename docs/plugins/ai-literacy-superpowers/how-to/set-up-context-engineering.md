@@ -1,14 +1,6 @@
 ---
 title: Set Up Context Engineering
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 11
-redirect_from:
-  - /how-to/set-up-context-engineering/
-  - /how-to/set-up-context-engineering.html
 ---
-
 # Set Up Context Engineering
 
 This guide walks you through writing enforceable conventions for the Context section of your `HARNESS.md` so that LLMs and new team members work from the same shared understanding of your codebase.

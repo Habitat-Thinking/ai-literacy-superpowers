@@ -1,14 +1,6 @@
 ---
 title: Set Up Auto-Enforcer
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 5
-redirect_from:
-  - /how-to/set-up-auto-enforcer/
-  - /how-to/set-up-auto-enforcer.html
 ---
-
 # Set Up Auto-Enforcer
 
 Wire the auto-enforcer GitHub Action to check every PR against the constraints in

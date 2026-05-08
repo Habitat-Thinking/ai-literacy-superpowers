@@ -1,14 +1,6 @@
 ---
 title: Set Up Verification Slots
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 18
-redirect_from:
-  - /how-to/set-up-verification-slots/
-  - /how-to/set-up-verification-slots.html
 ---
-
 # Set Up Verification Slots
 
 Integrate a deterministic tool into a harness constraint so the enforcer

@@ -1,14 +1,6 @@
 ---
 title: Run a Harness Audit
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 4
-redirect_from:
-  - /how-to/run-a-harness-audit/
-  - /how-to/run-a-harness-audit.html
 ---
-
 # Run a Harness Audit
 
 > `/harness-audit` is the read-only diagnostic. It runs the shared

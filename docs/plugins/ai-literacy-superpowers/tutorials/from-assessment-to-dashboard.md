@@ -1,14 +1,6 @@
 ---
 title: From Assessment to Dashboard
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 5
-redirect_from:
-  - /tutorials/from-assessment-to-dashboard/
-  - /tutorials/from-assessment-to-dashboard.html
 ---
-
 # From Assessment to Dashboard
 
 This tutorial walks you through running a portfolio assessment across

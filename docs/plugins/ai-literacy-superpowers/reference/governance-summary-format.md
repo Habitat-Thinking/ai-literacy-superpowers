@@ -1,14 +1,6 @@
 ---
 title: Governance Summary Format
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 8
-redirect_from:
-  - /reference/governance-summary-format/
-  - /reference/governance-summary-format.html
 ---
-
 # Governance Summary Format
 
 The machine-readable section in governance audit reports that the

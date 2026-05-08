@@ -1,14 +1,6 @@
 ---
 title: Output Validation
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 7
-redirect_from:
-  - /reference/output-validation/
-  - /reference/output-validation.html
 ---
-
 # Output Validation
 
 Output validation checkpoints verify that structured output matches expected formats before committing or proceeding. Eight commands implement this pattern to catch format deviations early.

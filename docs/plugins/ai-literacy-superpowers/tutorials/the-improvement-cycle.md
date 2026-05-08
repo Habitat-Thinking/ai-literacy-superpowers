@@ -1,14 +1,6 @@
 ---
 title: The Improvement Cycle
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 6
-redirect_from:
-  - /tutorials/the-improvement-cycle/
-  - /tutorials/the-improvement-cycle.html
 ---
-
 # The Improvement Cycle
 
 This tutorial walks you through one complete improvement cycle: a

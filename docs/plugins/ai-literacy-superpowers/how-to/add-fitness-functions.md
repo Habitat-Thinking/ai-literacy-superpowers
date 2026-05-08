@@ -1,14 +1,6 @@
 ---
 title: Add Fitness Functions
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 3
-redirect_from:
-  - /how-to/add-fitness-functions/
-  - /how-to/add-fitness-functions.html
 ---
-
 # Add Fitness Functions
 
 Add architectural fitness functions to HARNESS.md as weekly GC rules that detect system-wide

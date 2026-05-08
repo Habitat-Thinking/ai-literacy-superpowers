@@ -1,14 +1,6 @@
 ---
 title: Generate an Improvement Plan
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 21
-redirect_from:
-  - /how-to/generate-improvement-plan/
-  - /how-to/generate-improvement-plan.html
 ---
-
 # Generate an Improvement Plan
 
 Generate a prioritised improvement plan from assessment gaps and work

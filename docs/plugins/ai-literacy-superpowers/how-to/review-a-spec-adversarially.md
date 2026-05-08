@@ -1,14 +1,6 @@
 ---
 title: Review a Spec Adversarially
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 38
-redirect_from:
-  - /how-to/review-a-spec-adversarially/
-  - /how-to/review-a-spec-adversarially.html
 ---
-
 # Review a Spec Adversarially
 
 Run `/diaboli` to get an adversarial review of a spec (before plan approval) or an

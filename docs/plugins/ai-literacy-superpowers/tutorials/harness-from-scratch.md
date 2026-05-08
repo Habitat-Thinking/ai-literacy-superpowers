@@ -1,14 +1,6 @@
 ---
 title: Harness for an Existing Codebase
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 3
-redirect_from:
-  - /tutorials/harness-from-scratch/
-  - /tutorials/harness-from-scratch.html
 ---
-
 # Harness for an Existing Codebase
 
 Most projects already have conventions — they just aren't written down

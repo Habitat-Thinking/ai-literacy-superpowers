@@ -1,14 +1,6 @@
 ---
 title: The Harness Tuning Loop
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 18
-redirect_from:
-  - /explanation/the-harness-tuning-loop/
-  - /explanation/the-harness-tuning-loop.html
 ---
-
 # The Harness Tuning Loop
 
 > A harness improves over time through a specific sub-flow: surprises

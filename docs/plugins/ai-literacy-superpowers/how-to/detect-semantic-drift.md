@@ -1,14 +1,6 @@
 ---
 title: Detect Semantic Drift
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 32
-redirect_from:
-  - /how-to/detect-semantic-drift/
-  - /how-to/detect-semantic-drift.html
 ---
-
 # Detect Semantic Drift in Your Constraints
 
 Find governance constraints whose meaning has diverged from the

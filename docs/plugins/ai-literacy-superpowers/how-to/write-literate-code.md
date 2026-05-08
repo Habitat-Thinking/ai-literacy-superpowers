@@ -1,14 +1,6 @@
 ---
 title: Write Literate Code
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 17
-redirect_from:
-  - /how-to/write-literate-code/
-  - /how-to/write-literate-code.html
 ---
-
 # Write Literate Code
 
 This guide walks you through applying the literate programming discipline to your code — writing files whose structure and documentation make the reasoning visible to the next reader.

@@ -1,14 +1,6 @@
 ---
 title: Adversarial Review
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 19
-redirect_from:
-  - /explanation/adversarial-review/
-  - /explanation/adversarial-review.html
 ---
-
 # Adversarial Review
 
 The advocatus-diaboli agent runs at two points in the pipeline: once before plan

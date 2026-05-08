@@ -1,14 +1,6 @@
 ---
 title: The Environment Hypothesis
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 1
-redirect_from:
-  - /explanation/the-environment-hypothesis/
-  - /explanation/the-environment-hypothesis.html
 ---
-
 # The Environment Hypothesis
 
 The quality of AI-generated code is a function of the environment, not the model.

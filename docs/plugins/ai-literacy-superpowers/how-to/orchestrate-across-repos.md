@@ -1,14 +1,6 @@
 ---
 title: Orchestrate Changes Across Repos
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 22
-redirect_from:
-  - /how-to/orchestrate-across-repos/
-  - /how-to/orchestrate-across-repos.html
 ---
-
 # Orchestrate Changes Across Repos
 
 Coordinate changes — skills, templates, hooks, and harness policies —

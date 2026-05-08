@@ -1,14 +1,6 @@
 ---
 title: Getting Started
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 1
-redirect_from:
-  - /tutorials/getting-started/
-  - /tutorials/getting-started.html
 ---
-
 # Getting Started
 
 This tutorial walks you through installing the ai-literacy-superpowers plugin,

@@ -1,14 +1,6 @@
 ---
 title: Track AI Costs
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 25
-redirect_from:
-  - /how-to/track-ai-costs/
-  - /how-to/track-ai-costs.html
 ---
-
 # Track AI Costs
 
 Capture AI tool spending data and integrate it into your health

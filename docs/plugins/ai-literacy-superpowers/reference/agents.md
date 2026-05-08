@@ -1,14 +1,6 @@
 ---
 title: Agents
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 2
-redirect_from:
-  - /reference/agents/
-  - /reference/agents.html
 ---
-
 # Agents
 
 The plugin ships 13 agents organised into three groups: the

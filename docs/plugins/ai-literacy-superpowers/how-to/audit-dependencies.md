@@ -1,14 +1,6 @@
 ---
 title: Audit Dependencies
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 13
-redirect_from:
-  - /how-to/audit-dependencies/
-  - /how-to/audit-dependencies.html
 ---
-
 # Audit Dependencies
 
 This guide walks you through auditing your project dependencies for known vulnerabilities, supply chain risk, and staleness — covering Go modules and Maven/JVM projects.

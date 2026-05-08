@@ -1,14 +1,6 @@
 ---
 title: A First-Time Tour of Every Capability
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 7
-redirect_from:
-  - /tutorials/first-time-tour/
-  - /tutorials/first-time-tour.html
 ---
-
 # A First-Time Tour of Every Capability
 
 The plugin ships with twenty-two slash commands, a dozen agents, and

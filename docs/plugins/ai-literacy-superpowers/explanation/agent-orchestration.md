@@ -1,14 +1,6 @@
 ---
 title: Agent Orchestration
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 5
-redirect_from:
-  - /explanation/agent-orchestration/
-  - /explanation/agent-orchestration.html
 ---
-
 # Agent Orchestration
 
 Agent orchestration is the practice of distributing AI-assisted development work across multiple specialised agents, each with a defined role and bounded permissions, rather than funnelling all tasks through a single omniscient conversation. This page explains why that separation matters, how trust boundaries enforce it, and where the approach breaks down.

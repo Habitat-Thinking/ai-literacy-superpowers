@@ -1,14 +1,6 @@
 ---
 title: Templates
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 6
-redirect_from:
-  - /reference/templates/
-  - /reference/templates.html
 ---
-
 # Templates
 
 The plugin ships 11 template files in `templates/`. Commands like

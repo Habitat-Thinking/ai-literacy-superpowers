@@ -1,14 +1,6 @@
 ---
 title: Write a Governance Constraint
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 29
-redirect_from:
-  - /how-to/write-a-governance-constraint/
-  - /how-to/write-a-governance-constraint.html
 ---
-
 # Write a Governance Constraint
 
 Translate a governance requirement into a falsifiable HARNESS.md

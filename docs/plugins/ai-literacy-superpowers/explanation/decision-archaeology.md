@@ -1,14 +1,6 @@
 ---
 title: Decision Archaeology
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 20
-redirect_from:
-  - /explanation/decision-archaeology/
-  - /explanation/decision-archaeology.html
 ---
-
 # Decision Archaeology
 
 The Choice Cartographer agent runs after the spec-mode `/diaboli`

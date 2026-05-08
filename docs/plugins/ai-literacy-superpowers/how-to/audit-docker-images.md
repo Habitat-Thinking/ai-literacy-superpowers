@@ -1,14 +1,6 @@
 ---
 title: Audit Docker Images
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 14
-redirect_from:
-  - /how-to/audit-docker-images/
-  - /how-to/audit-docker-images.html
 ---
-
 # Audit Docker Images
 
 This guide walks you through using Docker Scout to audit your Docker images for CVEs, assess base image staleness, and apply hardening recommendations.

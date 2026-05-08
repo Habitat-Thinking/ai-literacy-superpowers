@@ -1,14 +1,6 @@
 ---
 title: Extract Conventions
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 10
-redirect_from:
-  - /how-to/extract-conventions/
-  - /how-to/extract-conventions.html
 ---
-
 # Extract Conventions
 
 Run a guided convention extraction session to surface tacit team knowledge and encode

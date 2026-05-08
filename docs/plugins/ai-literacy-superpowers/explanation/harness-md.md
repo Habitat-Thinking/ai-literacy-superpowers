@@ -1,14 +1,6 @@
 ---
 title: HARNESS.md, the Document
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 9
-redirect_from:
-  - /explanation/harness-md/
-  - /explanation/harness-md.html
 ---
-
 # HARNESS.md, the Document
 
 `HARNESS.md` is the human-readable, central description of how the

@@ -1,14 +1,6 @@
 ---
 title: Habitat Engineering
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 0
-redirect_from:
-  - /explanation/habitat-engineering/
-  - /explanation/habitat-engineering.html
 ---
-
 # Habitat Engineering
 
 Habitat engineering is the discipline of designing your entire development environment -- code, configuration, documentation, conventions, specifications, agents, and the feedback loops that bind them -- as a habitat for the combined intelligence of humans and AI working together. It is the central organising idea behind this plugin and the AI Literacy framework it implements.

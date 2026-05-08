@@ -1,11 +1,6 @@
 ---
 title: model-cards
-layout: default
-parent: Plugins
-nav_order: 1
-has_children: true
 ---
-
 # model-cards
 
 Research and author Mitchell-extended model cards from a model name.

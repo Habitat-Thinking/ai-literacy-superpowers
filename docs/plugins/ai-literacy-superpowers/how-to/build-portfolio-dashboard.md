@@ -1,14 +1,6 @@
 ---
 title: Build an AI Literacy Portfolio Dashboard
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 8
-redirect_from:
-  - /how-to/build-portfolio-dashboard/
-  - /how-to/build-portfolio-dashboard.html
 ---
-
 # Build an AI Literacy Portfolio Dashboard
 
 Turn your portfolio assessment data into a shareable HTML dashboard

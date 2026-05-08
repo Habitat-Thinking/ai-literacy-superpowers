@@ -1,14 +1,6 @@
 ---
 title: Add a Constraint
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 2
-redirect_from:
-  - /how-to/add-a-constraint/
-  - /how-to/add-a-constraint.html
 ---
-
 # Add a Constraint
 
 Add or promote a constraint in HARNESS.md using `/harness-constrain` to capture the rule,

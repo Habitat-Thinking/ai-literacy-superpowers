@@ -1,14 +1,6 @@
 ---
 title: The Harness Lifecycle
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 19
-redirect_from:
-  - /explanation/the-harness-lifecycle/
-  - /explanation/the-harness-lifecycle.html
 ---
-
 # The Harness Lifecycle
 
 > The harness has a simple lifecycle: **detect drift, heal it, pull

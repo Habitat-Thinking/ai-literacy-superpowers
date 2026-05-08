@@ -1,14 +1,6 @@
 ---
 title: Sync Conventions
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 6
-redirect_from:
-  - /how-to/sync-conventions/
-  - /how-to/sync-conventions.html
 ---
-
 # Sync Conventions
 
 `/convention-sync` is one of the underlying primitives that

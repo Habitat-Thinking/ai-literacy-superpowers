@@ -1,14 +1,6 @@
 ---
 title: The Loops That Learn
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 7
-redirect_from:
-  - /explanation/the-loops-that-learn/
-  - /explanation/the-loops-that-learn.html
 ---
-
 # The Loops That Learn
 
 Four practices, four timescales, one compounding system.

@@ -1,12 +1,6 @@
 ---
 title: Reference
-nav_label: Reference
-parent: model-cards
-grand_parent: Plugins
-has_children: true
-nav_order: 3
 ---
-
 # Reference
 
 Lookup material for the `model-cards` plugin's components and

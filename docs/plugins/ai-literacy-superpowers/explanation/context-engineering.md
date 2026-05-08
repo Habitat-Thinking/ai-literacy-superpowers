@@ -1,14 +1,6 @@
 ---
 title: Context Engineering
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 2
-redirect_from:
-  - /explanation/context-engineering/
-  - /explanation/context-engineering.html
 ---
-
 # Context Engineering
 
 This page expands on the context engineering component introduced in [Harness Engineering](harness-engineering.md).

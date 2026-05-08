@@ -1,14 +1,6 @@
 ---
 title: Generate an Onboarding Guide
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 36
-redirect_from:
-  - /how-to/generate-onboarding/
-  - /how-to/generate-onboarding.html
 ---
-
 # Generate an Onboarding Guide
 
 `/harness-onboarding` is one of the underlying primitives that

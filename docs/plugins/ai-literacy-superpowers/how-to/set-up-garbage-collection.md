@@ -1,14 +1,6 @@
 ---
 title: Set Up Garbage Collection
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 16
-redirect_from:
-  - /how-to/set-up-garbage-collection/
-  - /how-to/set-up-garbage-collection.html
 ---
-
 # Set Up Garbage Collection
 
 This guide walks you through designing and adding garbage collection (GC) rules to your `HARNESS.md` — periodic checks that fight the entropy that real-time hooks and PR gates cannot catch.

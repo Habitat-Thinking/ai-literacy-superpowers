@@ -1,14 +1,6 @@
 ---
 title: Understand Harness Engineering
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 24
-redirect_from:
-  - /how-to/understand-harness-engineering/
-  - /how-to/understand-harness-engineering.html
 ---
-
 # Understand Harness Engineering
 
 Apply the harness engineering framework to your project — understand the

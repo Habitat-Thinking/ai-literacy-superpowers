@@ -1,14 +1,6 @@
 ---
 title: Run the Choice Cartographer
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 39
-redirect_from:
-  - /how-to/run-choice-cartograph/
-  - /how-to/run-choice-cartograph.html
 ---
-
 # Run the Choice Cartographer
 
 Run `/choice-cartograph` to map the implicit decisions a spec has made — the

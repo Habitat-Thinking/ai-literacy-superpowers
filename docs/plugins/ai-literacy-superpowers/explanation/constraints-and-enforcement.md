@@ -1,14 +1,6 @@
 ---
 title: Constraints and Enforcement
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 3
-redirect_from:
-  - /explanation/constraints-and-enforcement/
-  - /explanation/constraints-and-enforcement.html
 ---
-
 # Constraints and Enforcement
 
 This page introduces the concepts of constraint maturity and enforcement timing. For detailed mechanics, see [Progressive Hardening](progressive-hardening.md) and [The Three Enforcement Loops](three-enforcement-loops.md).

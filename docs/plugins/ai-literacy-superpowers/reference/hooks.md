@@ -1,14 +1,6 @@
 ---
 title: Hooks
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 4
-redirect_from:
-  - /reference/hooks/
-  - /reference/hooks.html
 ---
-
 # Hooks
 
 All hooks are registered in `hooks/hooks.json` and active in every

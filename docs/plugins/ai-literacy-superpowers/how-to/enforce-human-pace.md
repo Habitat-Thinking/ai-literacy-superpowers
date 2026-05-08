@@ -1,14 +1,6 @@
 ---
 title: Enforce Human Pace
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 26
-redirect_from:
-  - /how-to/enforce-human-pace/
-  - /how-to/enforce-human-pace.html
 ---
-
 # Enforce Human Pace
 
 Add the Human Pace constraint and cadence drift GC rule to keep

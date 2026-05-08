@@ -1,14 +1,6 @@
 ---
 title: HARNESS.md Format
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 5
-redirect_from:
-  - /reference/harness-md-format/
-  - /reference/harness-md-format.html
 ---
-
 # HARNESS.md Format
 
 Section-by-section reference for the `HARNESS.md` file. This file is

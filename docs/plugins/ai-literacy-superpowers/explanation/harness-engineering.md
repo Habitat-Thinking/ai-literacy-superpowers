@@ -1,14 +1,6 @@
 ---
 title: Harness Engineering
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 8
-redirect_from:
-  - /explanation/harness-engineering/
-  - /explanation/harness-engineering.html
 ---
-
 # Harness Engineering
 
 Harness engineering is the practice of surrounding AI-assisted code generation with deterministic tooling, agent-based review, and periodic entropy checks so that AI-generated code stays correct and coherent over time. This document explains where the idea came from, what it consists of, and how this plugin implements it.

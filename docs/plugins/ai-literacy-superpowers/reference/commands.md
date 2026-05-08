@@ -1,14 +1,6 @@
 ---
 title: Commands
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 3
-redirect_from:
-  - /reference/commands/
-  - /reference/commands.html
 ---
-
 # Commands
 
 All 24 slash commands registered in `commands/`. Each command is

@@ -1,10 +1,6 @@
 ---
 title: Plugins
-layout: default
-nav_order: 6
-has_children: true
 ---
-
 # Plugins
 
 The `ai-literacy-superpowers` marketplace ships more than one plugin.

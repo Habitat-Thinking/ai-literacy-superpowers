@@ -1,14 +1,6 @@
 ---
 title: Update the Plugin
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 27
-redirect_from:
-  - /how-to/update-the-plugin/
-  - /how-to/update-the-plugin.html
 ---
-
 # Update the Plugin
 
 Keep the plugin current when new versions are released, and adopt new

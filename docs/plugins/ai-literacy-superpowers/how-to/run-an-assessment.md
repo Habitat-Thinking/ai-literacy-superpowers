@@ -1,14 +1,6 @@
 ---
 title: Run an Assessment
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 9
-redirect_from:
-  - /how-to/run-an-assessment/
-  - /how-to/run-an-assessment.html
 ---
-
 # Run an Assessment
 
 Run an AI literacy assessment to determine where your team sits on the ALCI framework,

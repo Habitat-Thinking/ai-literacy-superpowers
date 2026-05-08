@@ -1,14 +1,6 @@
 ---
 title: Progressive Hardening
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 10
-redirect_from:
-  - /explanation/progressive-hardening/
-  - /explanation/progressive-hardening.html
 ---
-
 # Progressive Hardening
 
 Progressive hardening is the constraint promotion ladder: constraints begin as unverified declarations in `HARNESS.md`, are promoted to agent-based review once you have a prompt that catches violations reliably, and are promoted again to deterministic enforcement once the constraint is understood precisely enough to express as a script or linter rule. Movement is always toward deterministic. Patterns of repeated agent catches are the signal that a constraint is ready to be promoted.

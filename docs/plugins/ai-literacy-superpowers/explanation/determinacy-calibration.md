@@ -1,14 +1,6 @@
 ---
 title: Determinacy Calibration
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 14
-redirect_from:
-  - /explanation/determinacy-calibration/
-  - /explanation/determinacy-calibration.html
 ---
-
 # Determinacy Calibration
 
 Progressive hardening describes the promotion ladder for constraints —

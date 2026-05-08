@@ -1,14 +1,6 @@
 ---
 title: Discover Affordances
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 39
-redirect_from:
-  - /how-to/discover-affordances/
-  - /how-to/discover-affordances.html
 ---
-
 # Discover Affordances
 
 Run the affordance discovery scanner against your project's existing

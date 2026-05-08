@@ -1,14 +1,6 @@
 ---
 title: Set Up Model Routing
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 19
-redirect_from:
-  - /how-to/set-up-model-routing/
-  - /how-to/set-up-model-routing.html
 ---
-
 # Set Up Model Routing
 
 Decide which models handle which workloads, document those routing rules

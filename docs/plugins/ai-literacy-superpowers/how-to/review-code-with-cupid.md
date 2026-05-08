@@ -1,14 +1,6 @@
 ---
 title: Review Code with CUPID
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 12
-redirect_from:
-  - /how-to/review-code-with-cupid/
-  - /how-to/review-code-with-cupid.html
 ---
-
 # Review Code with CUPID
 
 This guide walks you through reviewing code using the five CUPID properties — Composable, Unix philosophy, Predictable, Idiomatic, Domain-based — as a structured lens for surfacing improvement opportunities.

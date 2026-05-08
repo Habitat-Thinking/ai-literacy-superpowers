@@ -1,12 +1,6 @@
 ---
 title: How-to Guides
-nav_label: How-to Guides
-parent: model-cards
-grand_parent: Plugins
-has_children: true
-nav_order: 2
 ---
-
 # How-to Guides
 
 Task-oriented guides for the `model-cards` plugin. Pick the page that

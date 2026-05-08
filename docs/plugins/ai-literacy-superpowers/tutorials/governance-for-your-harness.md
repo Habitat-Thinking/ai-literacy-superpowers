@@ -1,14 +1,6 @@
 ---
 title: Governance for Your Harness
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 8
-redirect_from:
-  - /tutorials/governance-for-your-harness/
-  - /tutorials/governance-for-your-harness.html
 ---
-
 # Governance for Your Harness
 
 Take your harness from "governance language without operational meaning"

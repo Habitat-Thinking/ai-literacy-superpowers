@@ -1,14 +1,6 @@
 ---
 title: Verify Observatory Signals
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 37
-redirect_from:
-  - /how-to/verify-observatory-signals/
-  - /how-to/verify-observatory-signals.html
 ---
-
 # Verify Observatory Signals
 
 Run `/observatory-verify` to check that all data signals the Habitat

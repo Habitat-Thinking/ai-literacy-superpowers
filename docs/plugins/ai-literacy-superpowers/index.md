@@ -1,16 +1,6 @@
 ---
 title: ai-literacy-superpowers
-layout: default
-parent: Plugins
-nav_order: 2
-has_children: true
-redirect_from:
-  - /tutorials/
-  - /how-to/
-  - /reference/
-  - /explanation/
 ---
-
 # ai-literacy-superpowers
 
 The flagship plugin in this marketplace — harness engineering, agent

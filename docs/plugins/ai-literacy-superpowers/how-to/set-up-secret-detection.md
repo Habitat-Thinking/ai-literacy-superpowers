@@ -1,14 +1,6 @@
 ---
 title: Set Up Secret Detection
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 1
-redirect_from:
-  - /how-to/set-up-secret-detection/
-  - /how-to/set-up-secret-detection.html
 ---
-
 # Set Up Secret Detection
 
 This guide walks you through adding gitleaks-based secret detection to your project and wiring it into the harness so it runs automatically at commit time and in CI.

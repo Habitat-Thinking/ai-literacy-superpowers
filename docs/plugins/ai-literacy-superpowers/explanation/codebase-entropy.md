@@ -1,14 +1,6 @@
 ---
 title: Codebase Entropy
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 4
-redirect_from:
-  - /explanation/codebase-entropy/
-  - /explanation/codebase-entropy.html
 ---
-
 # Codebase Entropy
 
 This page explains why codebases degrade and how AI accelerates the problem. For the mechanical details of fighting entropy, see [Garbage Collection](garbage-collection.md).

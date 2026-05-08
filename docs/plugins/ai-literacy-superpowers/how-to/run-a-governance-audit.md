@@ -1,14 +1,6 @@
 ---
 title: Run a Governance Audit
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 30
-redirect_from:
-  - /how-to/run-a-governance-audit/
-  - /how-to/run-a-governance-audit.html
 ---
-
 # Run a Governance Audit
 
 Investigate governance health — falsifiability, semantic drift,

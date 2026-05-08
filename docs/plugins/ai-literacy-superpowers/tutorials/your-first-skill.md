@@ -1,14 +1,6 @@
 ---
 title: Creating Your First Skill
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 2
-redirect_from:
-  - /tutorials/your-first-skill/
-  - /tutorials/your-first-skill.html
 ---
-
 # Creating Your First Skill
 
 A skill is a Markdown file that agents read when working. It encodes

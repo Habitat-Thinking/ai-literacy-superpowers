@@ -1,14 +1,6 @@
 ---
 title: Your First Assessment
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 4
-redirect_from:
-  - /tutorials/your-first-assessment/
-  - /tutorials/your-first-assessment.html
 ---
-
 # Your First Assessment
 
 An AI literacy assessment tells you where your team stands in its AI

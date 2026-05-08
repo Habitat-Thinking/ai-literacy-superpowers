@@ -1,14 +1,6 @@
 ---
 title: Check Governance Health
-layout: default
-parent: ai-literacy-superpowers
-grand_parent: Plugins
-nav_order: 31
-redirect_from:
-  - /how-to/check-governance-health/
-  - /how-to/check-governance-health.html
 ---
-
 # Check Governance Health
 
 Quick governance pulse check between quarterly audits.
