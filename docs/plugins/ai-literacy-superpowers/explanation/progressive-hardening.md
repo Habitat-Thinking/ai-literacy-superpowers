@@ -26,7 +26,7 @@ This state is not a failure. It is honest accounting. Most teams have dozens of 
 
 **What verification looks like:**
 
-Nothing automated. The constraint appears in `HARNESS.md` with `enforcement: unverified` and `tool: none yet`. The `/harness-status` command reports it as an unverified entry. The harness auditor flags it as an opportunity to improve enforcement coverage.
+Nothing automated. The constraint appears in `HARNESS.md` with `enforcement: unverified` and `tool: none yet`. The `/harness-status` command reports it as an unverified entry. The harness auditor flags it as an opportunity to improve enforcement coverage. `/harness-sync` also surfaces unverified constraints in its drift table as `[manual]` candidates for promotion when the recurring-pattern GC rule has flagged them — sync prints a suggested `/harness-constrain` invocation but does not auto-promote, because picking the right enforcement level is a judgement call.
 
 **Example:**
 

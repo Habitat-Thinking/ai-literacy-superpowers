@@ -210,7 +210,9 @@ Declaring a GC rule in `HARNESS.md` does not, by itself, cause the rule to run. 
 
 **Manual invocation.** Agent-scoped GC rules (documentation freshness, command-prompt sync, convention file sync, plugin manifest currency, reflection-driven regression detection) require LLM judgement and cannot be automated with a shell script. These run when a user invokes `/harness-gc` or `/harness-health --deep`, which dispatches the GC agent to evaluate each rule.
 
-The combination of scheduled CI, opportunistic session hooks, and on-demand agent runs means that deterministic rules are checked continuously while agent rules are checked periodically. This matches the enforcement model: deterministic checks are cheap and reliable enough to run often, while agent checks are expensive and should be reserved for deliberate review moments.
+**`/harness-sync`'s drift table.** The everyday entry to the lifecycle includes GC findings in its unified drift table. Convention file drift, snapshot staleness, and HARNESS.md Status section accuracy appear as `[auto]` rows that sync remediates via the existing primitives. Recurring reflection patterns and constraint regressions appear as `[manual]` rows that sync surfaces but does not auto-fix — the user runs `/harness-constrain` separately. This means GC findings reach the user not only via scheduled CI emails but also when the user runs `/harness-sync` ad-hoc, which is often. See [The Harness Lifecycle](the-harness-lifecycle.md) for the broader detect-heal-pull frame.
+
+The combination of scheduled CI, opportunistic session hooks, on-demand agent runs, and ad-hoc `/harness-sync` invocations means that deterministic rules are checked continuously while agent rules are checked periodically. This matches the enforcement model: deterministic checks are cheap and reliable enough to run often, while agent checks are expensive and should be reserved for deliberate review moments.
 
 ---
 

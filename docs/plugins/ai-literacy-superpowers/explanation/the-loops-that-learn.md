@@ -25,9 +25,20 @@ with brilliant infrastructure that never operate it.
 | Loop | Command | Cadence | What it captures | What it feeds |
 | --- | --- | --- | --- | --- |
 | Reflection | `/reflect` | Every session | Surprises, signals, constraints | AGENTS.md, HARNESS.md |
+| Sync | `/harness-sync` | Ad-hoc / weekly | Drift across every push-direction surface, audit findings, candidate constraints | Convention files, snapshot, Status section; suggestions for manual remediation |
 | Health | `/harness-health` | Monthly | Enforcement ratio, GC status, learning velocity | Snapshots, trends, badges |
 | Assessment | `/assess` | Quarterly | Level, discipline scores, gaps, executable actions | Assessment docs, improvement plans |
 | Cost | `/cost-capture` | Quarterly | Spend, tokens, model mix, budget status | MODEL_ROUTING.md, cost trends |
+
+`/harness-sync` is the everyday entry into the lifecycle. It runs the
+shared audit-engine to detect drift across all surfaces (convention
+files, ONBOARDING.md, snapshot staleness, Status section accuracy,
+template version, recurring reflection patterns), presents a unified
+drift table tagged `[auto]` or `[manual]`, and applies the fixes you
+select. Mechanical fixes auto-apply via existing primitives;
+judgement-required fixes print suggested commands. See
+[The Harness Lifecycle](the-harness-lifecycle.md) for the broader
+detect-heal-pull frame.
 
 ### Reflection — every session
 

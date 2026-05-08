@@ -98,6 +98,16 @@ The outer loop produces reports, not blocks. But those reports are not just for 
 
 The outer loop's output is input to the other two loops. A GC finding about documentation staleness may lead to a new constraint in `HARNESS.md`, which the inner loop will then check at edit time and the middle loop will enforce at PR time. This is the feedback mechanism that prevents the outer loop from becoming a report that nobody reads.
 
+`/harness-sync` is the human-facing surface where outer-loop findings
+become actionable. It runs the same drift-detection engine `harness-audit`
+uses, then presents a unified drift table tagged `[auto]` (mechanical
+fixes that sync applies via existing primitives) or `[manual]`
+(judgement-required findings — recurring reflection patterns, template
+upgrades, constraint regressions — that sync surfaces with a suggested
+command). Without `/harness-sync`, outer-loop reports require the user
+to know which command to run for which finding; with it, the user sees
+one drift picture and selects what to fix.
+
 ---
 
 ## How the Loops Interact

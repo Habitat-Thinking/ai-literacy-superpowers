@@ -116,6 +116,20 @@ reporting which constraints are drifting from their declared state:
 /harness-audit
 ```
 
+For the everyday lifecycle entry — same drift detection as audit, but
+with a multi-select prompt that lets you apply the fixes in one pass:
+
+```bash
+/harness-sync
+```
+
+`/harness-sync` runs `/harness-audit`'s detection internally, presents
+a unified drift table tagged `[auto]` (mechanical fixes) or `[manual]`
+(judgement-required), and applies the auto fixes via existing
+primitives. Most lifecycle hygiene goes through this command. See
+[The Harness Lifecycle](the-harness-lifecycle.md) for when to use
+which command.
+
 ---
 
 ## 7. Run garbage collection

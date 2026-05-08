@@ -61,7 +61,7 @@ The most important property of a well-maintained harness is that it is not stati
 
 This creates a feedback loop. The document is both a specification and a health record. Reading `HARNESS.md` at any point in time tells you not just what the team has agreed should be true about the codebase, but how well those agreements are actually being maintained.
 
-The self-referential property is what distinguishes a living harness from a document that gets outdated and ignored. Because the harness itself is a target of enforcement — the harness-audit agent checks whether `HARNESS.md` accurately reflects the current state of verification — neglecting the harness becomes visible rather than invisible.
+The self-referential property is what distinguishes a living harness from a document that gets outdated and ignored. Because the harness itself is a target of enforcement — the harness-audit agent checks whether `HARNESS.md` accurately reflects the current state of verification — neglecting the harness becomes visible rather than invisible. The everyday entry to this self-check is `/harness-sync`, which runs the audit's detection logic and presents a unified drift table; users see misalignment between the declared harness and reality without having to remember to invoke a separate diagnostic.
 
 ---
 
