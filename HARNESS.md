@@ -662,7 +662,7 @@ the per-reader policy table.
 
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
-Last audit: 2026-04-15
-Constraints enforced: 18/19
-Garbage collection active: 15/15
-Drift detected: no (drift items found on 2026-04-15 resolved same day)
+Last audit: 2026-05-08
+Constraints enforced: 19/20
+Garbage collection active: 18/18
+Drift detected: yes (ONBOARDING.md mtime drift; awaits manual /harness-onboarding)
