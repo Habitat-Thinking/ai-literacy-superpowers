@@ -2,6 +2,16 @@
 
 ## 0.35.1 — 2026-05-08
 
+### Chore — Bump HARNESS.md template-version marker to 0.35.1
+
+Brings the project's HARNESS.md `template-version` comment in line with
+the current plugin release. `/harness-upgrade` confirmed no new template
+constraints, GC rules, or sections to surface — every active and
+commented item from the cached template (baseline `0.29.0`) is already
+present in this project's HARNESS.md, often customised with project-
+specific content. The bump records that the upgrade was reviewed for
+0.34.x and 0.35.x; no semantic change to the harness itself.
+
 ### Refinement — `/harness-sync` no longer auto-invokes `/harness-onboarding`
 
 Removes the auto-invocation of `/harness-onboarding` from
