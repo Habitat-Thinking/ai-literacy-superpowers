@@ -12,7 +12,7 @@
 # Skips: .git/, node_modules/, observability/archive/, reflections/archive/,
 # docs/superpowers/specs/, docs/superpowers/plans/ (may quote old paths in
 # their "before" examples), docs/superpowers/objections/ and stories/
-# (historical), CHANGELOG.md (historical PR descriptions).
+# (historical), any file named CHANGELOG.md (historical PR descriptions).
 
 set -euo pipefail
 
@@ -36,10 +36,17 @@ while IFS=$'\t' read -r old new; do
     continue
   fi
 
+  # Escape regex metacharacters in $old before passing to sed.
+  # grep -qF above already treats it as a fixed string, so $old is unchanged there.
+  old_pat=$(printf '%s\n' "$old" | sed 's/[]\.[*^${}()|+?]/\\&/g')
+
   # Use | as the sed delimiter since paths contain forward slashes.
   while IFS= read -r -d '' file; do
     if grep -qF "$old" "$file"; then
-      sed "s|$old|$new|g" "$file" >"$file.tmp" && mv "$file.tmp" "$file"
+      # No signal trap installed: this is a one-shot migration tool. If killed
+      # mid-rewrite, .md.tmp orphans may remain — they are harmless because find
+      # filters by name "*.md" and the script is idempotent on re-run.
+      sed "s|$old_pat|$new|g" "$file" >"$file.tmp" && mv "$file.tmp" "$file"
     fi
   done < <(find . -type f -name "*.md" \
     -not -path "./.git/*" \
@@ -50,7 +57,6 @@ while IFS=$'\t' read -r old new; do
     -not -path "./docs/superpowers/objections/*" \
     -not -path "./docs/superpowers/stories/*" \
     -not -path "./docs/superpowers/plans/*" \
-    -not -path "./CHANGELOG.md" \
-    -not -path "./model-cards/CHANGELOG.md" \
+    -not -name "CHANGELOG.md" \
     -print0)
 done <"$map"

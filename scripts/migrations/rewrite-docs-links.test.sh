@@ -38,6 +38,13 @@ cat >"$fixture/.git/excluded.md" <<'EOF'
 See [Old Doc](docs/plugins/test-plugin/research-a-model-card.md) — should not be rewritten.
 EOF
 
+# Regression fixture: a file containing a near-miss path where '.' is replaced
+# by a literal 'X'. The old sed pattern without escaping would treat '.' as a
+# wildcard and rewrite this line — the escape fix must prevent that.
+cat >"$fixture/near-miss.md" <<'EOF'
+See [Near Miss](docs/plugins/test-plugin/research-a-model-cardXmd) — must NOT be rewritten.
+EOF
+
 # Run the script against the fixture
 cd "$fixture"
 "$script" move-map.tsv
@@ -57,6 +64,7 @@ fi
 # Assert: unrelated links in sample.md are untouched
 if ! grep -qF "[README](README.md)" sample.md; then
   echo "FAIL: README link was clobbered in sample.md"
+  cat sample.md
   exit 1
 fi
 if ! grep -qF "docs/plugins/other-plugin/agents.md" sample.md; then
@@ -67,25 +75,38 @@ fi
 # Assert: no-matches.md is unchanged
 if ! grep -qF "[README](README.md) link" no-matches.md; then
   echo "FAIL: no-matches.md was modified unexpectedly"
+  cat no-matches.md
   exit 1
 fi
 
 # Assert: .git/excluded.md was NOT rewritten (exclusion must apply)
 if ! grep -qF "docs/plugins/test-plugin/research-a-model-card.md" .git/excluded.md; then
   echo "FAIL: .git/excluded.md was modified despite being in an excluded path"
+  cat .git/excluded.md
+  exit 1
+fi
+
+# Assert: near-miss.md is unchanged — 'X' must not be matched as a wildcard '.'
+# This locks in the regex-metacharacter escaping of $old before passing to sed.
+if ! grep -qF "docs/plugins/test-plugin/research-a-model-cardXmd" near-miss.md; then
+  echo "FAIL: near-miss.md was rewritten — '.' in old path was not escaped for sed"
+  cat near-miss.md
   exit 1
 fi
 
 # Assert: idempotency — running again produces no change
 if command -v md5sum >/dev/null 2>&1; then
-  checksum_cmd="md5sum"
+  md5_before=$(md5sum sample.md no-matches.md | sort)
+  "$script" move-map.tsv
+  md5_after=$(md5sum sample.md no-matches.md | sort)
+elif command -v md5 >/dev/null 2>&1; then
+  md5_before=$(md5 -r sample.md no-matches.md | sort)
+  "$script" move-map.tsv
+  md5_after=$(md5 -r sample.md no-matches.md | sort)
 else
-  checksum_cmd="md5 -r"
+  echo "FAIL: neither md5sum nor md5 available"
+  exit 1
 fi
-
-md5_before=$(eval "$checksum_cmd" sample.md no-matches.md | sort)
-"$script" move-map.tsv
-md5_after=$(eval "$checksum_cmd" sample.md no-matches.md | sort)
 
 if [[ "$md5_before" != "$md5_after" ]]; then
   echo "FAIL: script is not idempotent"
