@@ -193,6 +193,18 @@ are current.
 
 Include docs changes in the same PR as the implementation, not as a follow-up.
 
+## Monthly Operations
+
+Light-touch health check (every 30 days, between quarterly anchor weeks):
+
+1. `/governance-health` — governance constraint health snapshot
+2. Reflection review — scan `REFLECTION_LOG.md` for new entries worth
+   promoting to `AGENTS.md`
+3. `/harness-sync` — bring every push-direction surface into alignment
+   with HARNESS.md (convention files, ONBOARDING.md, snapshot, Status
+   section). Surfaces template drift and recurring reflection patterns
+   as `[manual]` items for follow-up.
+
 ## Project Constraints
 
 <!-- Example:
