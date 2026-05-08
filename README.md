@@ -222,13 +222,13 @@ A coordinated team that handles the full development lifecycle.
 | `/harness-status` | Quick harness health read |
 | `/harness-constrain` | Add or promote a constraint |
 | `/harness-gc` | Manage and run garbage collection rules |
-| `/harness-audit` | Full meta-verification of the harness |
+| `/harness-audit` | Read-only diagnostic. Same engine as `/harness-sync` but prints findings without prompting to fix. Use for inspection-without-commitment, CI scripts, or the quarterly cadence anchor. |
 | `/reflect` | Capture a post-task reflection |
 | `/worktree` | Git worktree lifecycle — spin, merge, clean |
 | `/assess` | AI literacy assessment with immediate fixes, workflow recommendations, and prioritised improvement plans |
 | `/harness-health` | Harness health snapshot — enforcement ratio, trends, meta-observability checks |
 | `/extract-conventions` | Guided session — surfaces tacit team conventions and maps them to CLAUDE.md and HARNESS.md |
-| `/harness-sync` | Multi-surface entry point — detects drift across convention files and ONBOARDING.md, applies fixes via the underlying primitives in one interactive pass |
+| `/harness-sync` | Everyday lifecycle entry. Runs the shared audit-engine to detect drift across every surface (convention files, ONBOARDING.md, snapshot, Status section, template, constraint regressions, recurring reflection patterns), presents a unified drift table tagged `[auto]`/`[manual]`, and applies the fixes you select. Mechanical fixes auto-apply via existing primitives; judgement-required fixes print suggested commands. |
 | `/convention-sync` | Sync HARNESS.md conventions to Cursor, Copilot, and Windsurf convention files |
 | `/portfolio-assess` | Multi-repo AI literacy assessment — aggregate across local repos, GitHub orgs, or topic tags |
 | `/cost-capture` | Capture AI tool cost data — record spend, compare to previous snapshot, update model routing |
