@@ -3,15 +3,19 @@
 
 # Welcome to ai-literacy-superpowers
 
-This is a Claude Code and GitHub Copilot CLI plugin that provides the
-AI Literacy framework's complete development workflow — harness
-engineering, agent orchestration, literate programming, CUPID code
-review, compound learning, and the three enforcement loops. You'll be
-working with markdown skills, bash hook scripts, JSON configuration,
-and YAML CI workflows. There is no compiled application code here; the
-plugin's "code" is content that agents and tools read and execute. The
-project is also a marketplace — `model-cards` is a sister plugin that
-ships from the same repo with its own version line and tag convention.
+This is a Claude Code and GitHub Copilot CLI plugin marketplace that
+ships the AI Literacy framework's complete development workflow —
+harness engineering, agent orchestration, literate programming, CUPID
+code review, compound learning, and the three enforcement loops. You
+will be working with markdown skills, bash hook scripts, JSON
+configuration, and YAML CI workflows. There is no compiled application
+code; the plugin's "code" is content that agents and tools read and
+execute. The flagship plugin is `ai-literacy-superpowers`;
+`model-cards` is a sister plugin that ships from the same repo with
+its own version line and tag convention. The whole project is also
+self-referential — it defines the harness framework, and its own
+`HARNESS.md` uses that framework, so changes to templates do not
+automatically propagate to the project's own root.
 
 ---
 
@@ -27,11 +31,12 @@ ships from the same repo with its own version line and tag convention.
   and hook registration (`hooks/hooks.json`).
 - **YAML** — GitHub Actions CI workflows that enforce constraints on
   PRs and run weekly garbage collection.
+- **Python (test-stage only)** — the TDAD test suite under
+  `tdad_tests/` uses Python plus pytest plus the Claude Agent SDK.
+  Test-stage code stays out of the packaged plugin; consumers never
+  need a Python runtime.
 - **No build system** — this is a plugin, not a compiled application.
-  There is nothing to build or compile.
-- **No test framework** — quality is enforced by linters and
-  deterministic tools (markdownlint, gitleaks, ShellCheck, bash
-  syntax checks), not by a test suite.
+  There is nothing to build.
 
 ---
 
@@ -45,14 +50,21 @@ directory is kebab-case, the file is always `SKILL.md`). Agents are
 **One component per file.** Agents go in `agents/`, skills in
 `skills/<name>/SKILL.md`, commands in `commands/`, hook scripts in
 `hooks/scripts/`, templates in `templates/`, utility scripts in
-`scripts/`. If you're adding something new, put it in the right
+`scripts/`. If you are adding something new, put it in the right
 directory.
+
+**New components ship with a TDAD scenario.** When you add a skill,
+agent, or command, drop a markdown scenario alongside it under
+`tdad_tests/scenarios/<type>/<name>/` so the structural and (where
+relevant) behavioural layers can pick it up. The scenario is a small
+human-readable markdown file with `Given / When / Then / Rubric`
+sections — see `tdad_tests/README.md` for the format.
 
 **Hook scripts are advisory only.** They warn but never block. Output
 uses JSON `systemMessage` format so Claude Code surfaces the message
 without interrupting the session. When writing a hook script, start
 with `set -euo pipefail` and exit silently (`exit 0`) when the hook
-doesn't apply.
+does not apply.
 
 **Everything needs frontmatter.** Every `.agent.md`, `SKILL.md`, and
 command `.md` file must have YAML frontmatter with `name` and
@@ -65,8 +77,8 @@ scripts need a header comment block explaining purpose and behaviour.
 
 ### At commit time
 
-These checks warn you while you're editing. They're advisory — they
-won't stop you from committing, but they'll flag problems early.
+These checks warn you while you are editing. They are advisory — they
+will not stop you from committing, but they flag problems early.
 
 - **Markdown formatting** — all `.md` files must pass markdownlint.
   Run `npx markdownlint-cli2 "**/*.md"` locally to check.
@@ -82,7 +94,7 @@ won't stop you from committing, but they'll flag problems early.
 ### At PR time
 
 These are CI gates that block merges. Your PR will not go green until
-these pass.
+they pass.
 
 - **Frontmatter completeness** — every agent, skill, and command file
   must have `name` and `description` in its frontmatter.
@@ -90,17 +102,17 @@ these pass.
   contain only a spec file in `docs/superpowers/specs/`. Bug-fix and
   maintenance PRs (labelled `bug`, `fix`, `chore`, `maintenance` or
   branch-prefixed `fix/`, `chore/`) are exempt.
-- **Spec scoping** — each feature PR traces to a single spec. Don't
+- **Spec scoping** — each feature PR traces to a single spec. Do not
   bundle unrelated changes.
-- **Spec intent** — the spec must describe the problem, approach, and
-  expected outcome. The implementation should trace back to it.
+- **Spec intent** — the spec must describe the problem, the chosen
+  approach, and the expected outcome. The implementation should
+  trace back to it.
 - **Adjudicated objections** — every feature PR needs a spec-mode and
   a code-mode objection record at
   `docs/superpowers/objections/<spec-slug>.md` and
   `<spec-slug>-code.md`, with all dispositions resolved (no `pending`
   values). Run `/diaboli` after the spec is written and again after
-  the implementation is complete. Bug-fix and maintenance PRs are
-  exempt on the same terms as spec-first ordering.
+  the implementation is complete.
 - **Adjudicated choice stories** — every non-exempt feature PR needs
   a choice-story record at `docs/superpowers/stories/<spec-slug>.md`
   with every story dispositioned. Run `/choice-cartograph` after the
@@ -113,8 +125,8 @@ these pass.
   match `plugin.json` `version`.
 - **Release traceability** — every version needs a matching CHANGELOG
   heading and a git tag. The tag is created automatically on merge.
-  `ai-literacy-superpowers` uses bare `vX.Y.Z` tags;
-  `model-cards` uses `model-cards-vX.Y.Z` tags.
+  `ai-literacy-superpowers` uses bare `vX.Y.Z` tags; `model-cards`
+  uses `model-cards-vX.Y.Z` tags.
 - **Output validation** — commands that produce structured output must
   include a validation checkpoint that reads the output back and
   checks it against the format spec.
@@ -126,9 +138,10 @@ these pass.
   reference in `docs/plugins/<plugin>/` to the older commands must
   be updated to frame them as primitives or alternatives. A "See
   also" callout is not enough.
-- **Tests must pass** — the test suite (such as it is) must pass with
-  zero failures. Currently unverified because there is no application
-  test suite.
+- **Tests must pass** — the TDAD suite at `tdad_tests/` must pass on
+  PRs. Layers 0–1 are free and fast; Layers 2–3 cost API spend and
+  are gated by the `ANTHROPIC_API_KEY` environment variable, so they
+  run nightly or behind a label rather than on every PR.
 
 ### On schedule
 
@@ -185,11 +198,11 @@ codebase first — including files created earlier in the same session.
 ShellCheck found 4 issues in scripts that had already passed LLM
 review. Deterministic tools catch what review misses.
 
-**Don't use worktrees for parallel subagents.** Worktree-isolated
+**Do not use worktrees for parallel subagents.** Worktree-isolated
 subagents lose Bash permissions because `.claude/settings.local.json`
-doesn't propagate to worktree paths. Use regular background agents on
-separate branches instead, but plan for branch cross-contamination and
-cherry-pick cleanup.
+does not propagate to worktree paths. Use regular background agents
+on separate branches instead, but plan for branch cross-contamination
+and cherry-pick cleanup.
 
 **Background subagents may lack write permissions.** For write-heavy
 tasks, use foreground agents so the user can approve tool calls, or
@@ -201,16 +214,11 @@ project already has `version-check.yml`, `lint-markdown.yml`,
 `harness.yml`, `gc.yml`, and `pages.yml` in `.github/workflows/`.
 Proposing a duplicate wastes a branch cycle.
 
-**The plugin is self-referential.** This plugin defines the harness
-framework, and its own HARNESS.md uses that framework. Changes to
-template files (`templates/HARNESS.md`) do not automatically propagate
-to the project's root `HARNESS.md`. The command-prompt sync and
-plugin manifest currency GC rules catch this drift.
-
-**Plugin files live in two locations.** Root-level `skills/`, `hooks/`,
-`templates/` are the plugin's own development files. Files under
-`ai-literacy-superpowers/` are the packaged plugin that gets
-distributed. When a spec references a file path, check both locations.
+**Plugin files live in two locations.** Root-level `skills/`,
+`hooks/`, `templates/` are the plugin's own development files. Files
+under `ai-literacy-superpowers/` are the packaged plugin that gets
+distributed. When a spec references a file path, check both
+locations.
 
 **Apply spec-first exemption labels at PR creation, not after.** When
 a PR needs a `chore`, `fix`, or `cross-repo` label to bypass a CI
@@ -225,11 +233,10 @@ label to use for which kind of change.
 When a new command consolidates or replaces existing functionality,
 the new how-to page is not enough. Grep `docs/plugins/<plugin>/` for
 every reference to the older commands and reframe them as primitives
-or alternatives in the same PR. The new docs-propagation constraint
-encodes this, but the discipline is yours: a PR that ships
-`/harness-sync` without updating `convention-sync.md` and
-`harness-onboarding.md` to acknowledge the new entry point is
-incomplete.
+or alternatives in the same PR. The docs-propagation constraint
+encodes this, but the discipline is yours: shipping `/harness-sync`
+without updating the older `convention-sync.md` and
+`harness-onboarding.md` pages was an incomplete PR.
 
 **Match each file's existing emphasis style for markdown.** The
 project's `.markdownlint.json` runs MD049 in `consistent` mode — it
@@ -241,8 +248,35 @@ Match what the file already uses; do not assume a global convention.
 in README.md are kept correct by the version-bump workflow, but
 prose-embedded counts (the marketplace plugin table row, "Skills
 (N)" headings, anything that looks like `N skills, M agents, K
-commands`) are not. When you ship a command/skill/agent, update
+commands`) are not. When you ship a command, skill, or agent, update
 those prose surfaces in the same PR.
+
+**`git mv` plus content edits plus narrowly-staged commit silently
+drops the edits.** When a single logical change combines a `git mv`
+with content edits to the moved files, a narrow `git add path1 path2
+&& git commit` will commit the rename and leave the in-file edits
+unstaged in the working tree. This bit twice in one session
+(PR #286 → #287, PR #289 → #290), each time landing a broken `main`
+that needed a recovery PR. Verify before committing: `git diff
+--cached --stat` should list every file you intended to modify. If it
+shows only renames where you expected modifications, the edits are
+not staged.
+
+**Specs about extracting logic for testing carry a hidden second
+question.** When a design spec proposes extracting code into a helper
+for test coverage, it almost always also implies a follow-on
+question — *should the extracted helper ship as production code?* The
+two questions have different stakes (test coverage vs plugin
+distribution and language runtimes). PR #293 → #298 amended the
+command-TDAD-testing spec because the original answered the first
+question explicitly and the second only implicitly. The lesson:
+when a spec recommendation crosses a major architectural boundary
+(package contents, language runtimes, distribution shape), name the
+crossing in its own row of the trade-off table. For this project
+specifically: TDAD helpers stay test-stage in
+`tdad_tests/spike_helpers/`; they do **not** ship inside
+`ai-literacy-superpowers/scripts/`, because that would add a Python
+runtime dependency to every consumer.
 
 ---
 
@@ -252,9 +286,9 @@ those prose surfaces in the same PR.
 projects, so blocking hooks could break workflows the plugin authors
 cannot predict. Advisory messages let users decide how to act. The
 alternative of configurable blocking was rejected — the complexity
-wasn't justified.
+was not justified for advisory value.
 
-**Health snapshots are committed directly to main.** They don't
+**Health snapshots are committed directly to main.** They do not
 affect behaviour, and gating them on PR review would add friction to
 the observability cadence. This is an intentional exception to the
 branch-and-PR workflow.
@@ -263,7 +297,7 @@ branch-and-PR workflow.
 pattern is: generate output, read it back, check against the format
 spec, fix in place. This was added because agents consistently drift
 from format specs under cognitive load — reference templates set
-intent but don't guarantee compliance. The checkpoint is the
+intent but do not guarantee compliance. The checkpoint is the
 verification layer, analogous to type checking in compiled code.
 
 **Content-emitting agents follow agent-emit + dispatcher-persist +
@@ -283,6 +317,14 @@ collapses under pressure. Schema-only checks were also rejected —
 "resolved" is a judgment call about rationale quality, not a value
 in a field.
 
+**Diaboli runs at two dispatch points (spec-time and code-time)
+using a single agent.** One agent, two dispatches — not two agents.
+Spec-time runs after spec-writer, before plan approval; code-time
+runs once after the final code-reviewer PASS, before
+integration-agent. A separate code-diaboli agent was rejected as
+duplicating the charter; running diaboli inside the code-reviewer
+loop per cycle was rejected as burning tokens on draft code.
+
 **Cross-cutting methodology lives in
 `skills/<skill-name>/references/<contract>.md`.** When the same
 methodology is consumed by multiple agents, commands, and skills,
@@ -290,6 +332,43 @@ factor it into a reference file. Edits land in one place and
 propagate. Inlining at each consumer site causes silent drift as one
 copy is edited and the others are not — a failure mode caught
 explicitly in code-mode diaboli on the choice-cartographer PR.
+
+**Test-Driven Agentic Discipline (TDAD) uses a four-layer
+architecture that mirrors the framework's promotion ladder.** Layer
+0 is deterministic plumbing (bash scripts and helper libraries —
+free, every PR). Layer 1 is structural (frontmatter, manifest
+schema, cross-references — free, every PR). Layer 2 is trigger
+(does a skill's description match the queries it should fire on —
+~$0.03 per run, mostly deterministic). Layer 3 is behavioural (full
+SDK invocation against fixtures with a rubric judge — $0.05–$0.20
+per run, probabilistic). Layers 0–1 run on every PR; Layers 2–3 are
+nightly or label-gated to keep the API budget bounded. This layout
+was chosen because pure deterministic tests cannot verify whether a
+skill description triggers correctly, but full SDK invocation is too
+expensive to run on every PR. The four layers map directly to the
+harness promotion ladder: Layer 0 is the deterministic tier;
+Layers 1–3 together cover the agent-verified tier.
+
+**TDAD helpers stay test-stage; they do not ship in the plugin.**
+Helper code lives under `tdad_tests/spike_helpers/` and is invoked by
+pytest, not by the plugin's commands at runtime. Shipping the
+helpers in `ai-literacy-superpowers/scripts/` was rejected because it
+would add a hard Python 3.11+ dependency to every consumer machine —
+the plugin today ships shell scripts only and has no language runtime
+requirements beyond bash. The trust-boundary rule is: code that helps
+verify the plugin lives in `tdad_tests/`; code that the plugin
+executes at runtime lives inside `ai-literacy-superpowers/`.
+
+**The auto-fix-vs-manual rule for sync commands.** When a command
+runs an audit and offers to remediate findings, classify each
+remediation as `[auto]` only when (1) it derives from a single
+canonical source, (2) the same input always produces the same output,
+and (3) it requires no user judgement. Multi-source derivations,
+judgement calls, and operations with user-visible side effects belong
+in `[manual]`. ONBOARDING.md is `[manual]` because it derives from
+three sources (HARNESS.md, AGENTS.md, REFLECTION_LOG.md);
+convention-sync surfaces are `[auto]` because they derive from
+HARNESS.md alone.
 
 **Reflection-driven amendments may use `chore`-labelled PRs.** When
 a reflection has been captured, the work is scoped in a tracked
@@ -305,16 +384,51 @@ calibrated rather than codified — judgement, not a rule.
 
 ## How We Test
 
-This project has no application code or test suite. Quality is
-assured by four deterministic tools that run in CI:
+The project has no application code, but it does have a test suite —
+`tdad_tests/` — that applies Test-Driven Agentic Discipline (TDAD,
+after Antony Marcano 2026) to the plugin's own components. The suite
+lives outside the packaged `ai-literacy-superpowers/` directory so it
+does not ship with plugin installs.
 
-1. **markdownlint** — enforces consistent markdown formatting
+**Four layers, mapped to cost and cadence:**
+
+| Layer | What it tests | Cost | Cadence |
+| --- | --- | --- | --- |
+| **0. Deterministic plumbing** | Bash scripts and parser libraries the agents depend on | $0 | every PR |
+| **1. Structural** | Frontmatter well-formed, required sections present, cross-references resolve | $0 | every PR |
+| **2. Trigger** | Skill descriptions match the queries they should fire on (catches description drift) | ~$0.03 / run | nightly + label-gated |
+| **3. Behavioural** | Run an agent or skill in a fixture, assert outputs against a rubric (TDAB proper) | $0.05–$0.20 / run | nightly + label-gated |
+
+**Running locally:**
+
+```bash
+# from the tdad_tests/ directory
+pip install -e .
+
+# Layer 1 only (offline, free):
+pytest tests/test_layer1_structural.py -v
+
+# All layers (needs ANTHROPIC_API_KEY):
+export ANTHROPIC_API_KEY=...
+pytest -v
+```
+
+Layers 0–1 run offline and pass against the real plugin. Layers 2–3
+require an Anthropic API key and skip with a clear message when the
+key is absent.
+
+**Plus the deterministic gates that have always been there:**
+
+1. **markdownlint** — enforces consistent markdown formatting across
+   every `.md` file
 2. **ShellCheck** — catches shell script bugs and style issues
 3. **bash -n** — verifies shell script syntax
 4. **gitleaks** — detects accidentally committed secrets
 
 All four run on every PR via the harness CI workflow. Run them
-locally before pushing to avoid CI failures.
+locally before pushing to avoid CI failures. See
+[`tdad_tests/README.md`](tdad_tests/README.md) for the full TDAD
+status table and scenario format.
 
 ---
 
@@ -324,13 +438,14 @@ The project uses three enforcement loops that protect the codebase
 at different timescales:
 
 - **Advisory loop** — hooks run during editing and warn about
-  potential issues, but never block your work. You'll see system
+  potential issues, but never block your work. You will see system
   messages nudging you to run audits, capture reflections, or check
   for secrets.
 - **Strict loop** — CI workflows run on every PR and block merges
   until all checks pass. This includes markdownlint, gitleaks, shell
   checks, version consistency, spec-first ordering, and the
-  agent-driven `Enforce PR constraints` workflow.
+  agent-driven `Enforce PR constraints` workflow. TDAD Layers 0–1
+  run on every PR; Layers 2–3 run nightly or behind a label.
 - **Investigative loop** — garbage collection rules run weekly (or
   monthly) to catch slow drift that neither hooks nor CI gates
   detect. Things like documentation staleness, marketplace listing
@@ -348,9 +463,9 @@ The project runs on a monthly observability cadence:
 
 ## Your First PR Checklist
 
-1. Create a branch — never commit directly to `main`
+1. Create a branch — never commit directly to `main`.
 2. Pick the right exemption label up front: `fix` for bug fixes,
-   `chore` for docs/maintenance outside the plugin directory,
+   `chore` for docs and maintenance outside the plugin directory,
    `cross-repo` for syncs from another repo. Pass `--label <label>`
    in `gh pr create` — adding labels after the push leaves CI gates
    in their failed state until you push another commit.
@@ -368,22 +483,28 @@ The project runs on a monthly observability cadence:
 8. Ensure all `.agent.md`, `SKILL.md`, and command `.md` files have
    `name` and `description` in their YAML frontmatter.
 9. Run `gitleaks detect --source . --no-banner` to check for secrets.
-10. If you changed files inside `ai-literacy-superpowers/`, bump
-    the version in `plugin.json`, the README badge, and the
-    CHANGELOG heading (all three must match).
-11. Update `marketplace.json` `plugin_version` to match
-    `plugin.json`.
-12. Update `CHANGELOG.md` with a dated section describing your
+10. If you added a skill, agent, or command, drop a TDAD scenario
+    alongside it under `tdad_tests/scenarios/<type>/<name>/` and run
+    `pytest tests/test_layer1_structural.py -v` to confirm the new
+    component picks up structural coverage.
+11. If you changed files inside `ai-literacy-superpowers/`, bump the
+    version in `plugin.json`, the README badge, and the CHANGELOG
+    heading (all three must match).
+12. Update `marketplace.json` `plugin_version` to match `plugin.json`.
+13. Update `CHANGELOG.md` with a dated section describing your
     changes.
-13. If the PR adds, removes, or substantially changes a skill,
-    agent, or command: review every relevant page under
+14. If the PR adds, removes, or substantially changes a skill,
+    agent, or command, review every relevant page under
     `docs/plugins/<plugin>/` and update references in the same PR.
     Update prose-embedded counts in README.md (marketplace table
     row, section headings) too — badges update automatically but
     prose does not.
-14. After the implementation is complete, run `/diaboli` again in
+15. If your change combines a `git mv` with content edits, run
+    `git diff --cached --stat` before committing to confirm every
+    edited file appears in the cached set, not just the renames.
+16. After the implementation is complete, run `/diaboli` again in
     code mode and resolve every disposition before opening the PR.
-15. Push and create the PR — wait for all CI checks to pass before
+17. Push and create the PR — wait for all CI checks to pass before
     requesting review.
 
 ---
@@ -397,8 +518,10 @@ The project runs on a monthly observability cadence:
 - [REFLECTION_LOG.md](REFLECTION_LOG.md) — session-by-session
   learnings from agent pipeline runs
 - [CLAUDE.md](CLAUDE.md) — project conventions for Claude Code
-  sessions
-- [README.md](README.md) — full plugin documentation with component
-  listings
-- [docs/](docs/) — the project's full documentation site (per-plugin
-  how-tos, explanation pages, reference material)
+- [tdad_tests/README.md](tdad_tests/README.md) — the TDAD test suite,
+  layer-by-layer status table, and scenario format
+- [Command-TDAD-testing design spec](docs/superpowers/specs/2026-05-09-command-tdad-testing-design.md)
+  — per-category strategy for testing commands, including the Option I
+  amendment that keeps helpers test-stage
+- [Docs site](https://habitat-thinking.github.io/ai-literacy-superpowers/)
+  — full documentation for the plugin and its sister plugins
