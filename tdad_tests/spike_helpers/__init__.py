@@ -1,25 +1,44 @@
-"""Phase 2 spike helpers.
+"""Test-stage helpers for procedural plugin commands.
 
-These modules implement minimal Python versions of two procedural
-plugin commands (`/convention-sync` and `/observatory-verify`) so that
-their deterministic logic can be unit-tested. The spike's purpose is
-to validate the per-category strategy from the Phase-2 design spec
-(``docs/superpowers/specs/2026-05-09-command-tdad-testing-design.md``):
-extracting procedural command logic into Python (Option C-direct) is
-testable, and the test scaffolding is cheap.
+Each helper here implements the deterministic logic of one
+procedural-category slash command — the "what would the command
+*do* if it were a Python script" core, with the model-mediated
+wrapping (asking the user, formatting, judgement calls) excluded.
 
-Scope is deliberately narrow:
+Tests in ``tdad_tests/tests/`` exercise these helpers against
+fixtures and assert on the resulting structure. Helpers stay
+test-stage per the design spec amendment (PR #298) — they are
+not promoted to ``ai-literacy-superpowers/scripts/`` because the
+plugin ships shell-only and the language-runtime cost of moving
+to Python at consumer machines is not justified by the
+test-coverage benefit. The helpers therefore mirror the documented
+behaviour rather than replacing it; drift between helper and
+prose is a test failure the author resolves manually.
 
-- ``convention_sync`` handles only the Cursor ``.cursor/rules/
-  conventions.mdc`` output. Copilot and Windsurf are left for Phase 3.
-- ``observatory_verify`` handles only one signal source (Snapshot).
-  The remaining four sources (Governance, Reflection log, HARNESS.md,
-  Assessment) are left for Phase 3.
+Helpers shipped here:
 
-The helpers live under ``tdad_tests/`` rather than the packaged plugin
-because they are spike-stage code: a follow-up Phase 3 PR is expected
-to either promote them to ``ai-literacy-superpowers/scripts/`` (where
-the command markdowns can invoke them) or refactor them based on what
-the spike teaches. Keeping them in test scaffolding for now avoids
-accidentally treating a spike artefact as production code.
+| Module | Mirrors | What it covers |
+| --- | --- | --- |
+| ``convention_sync`` | ``/convention-sync`` | HARNESS.md → Cursor conventions.mdc (Cursor only) |
+| ``observatory_verify`` | ``/observatory-verify`` | Snapshot signal source only |
+| ``harness_status`` | ``/harness-status`` | Parse HARNESS.md Status section |
+| ``harness_upgrade`` | ``/harness-upgrade`` | Section-level diff template vs project |
+| ``harness_affordance`` | ``/harness-affordance discover`` | Scan settings/hooks/mcp configs |
+| ``governance_health`` | ``/governance-health`` | Latest audit summary |
+| ``superpowers_status`` | ``/superpowers-status`` | Habitat-file existence sweep |
+| ``reflect`` | ``/reflect`` | Format reflection entry from fields |
+| ``harness_health`` | ``/harness-health`` (quick mode) | Aggregate health snapshot |
+| ``cost_capture`` | ``/cost-capture`` | Latest cost snapshot read |
+| ``markdown`` | (shared utility) | Section + field extraction |
+
+Deliberate omission:
+
+- ``/worktree`` is wholly git operations (``git worktree add``,
+  ``git worktree remove``, ``git worktree prune``). A Python helper
+  would just be a thin wrapper around ``subprocess.run(["git",
+  "worktree", ...])``; the work is already in ``git`` and a wrapper
+  test is testing git, not the command's logic. Layer 1 wiring
+  already verifies the command's references resolve. No helper is
+  built; this is documented in the suite README's "Coverage gaps
+  and deferrals" section.
 """
