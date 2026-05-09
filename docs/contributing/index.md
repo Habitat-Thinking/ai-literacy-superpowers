@@ -8,12 +8,12 @@ This page is the docs-site projection of the project's
 [`ONBOARDING.md`](https://github.com/Habitat-Thinking/ai-literacy-superpowers/blob/main/ONBOARDING.md).
 The source of truth lives in the repo and is regenerated from
 `HARNESS.md`, `AGENTS.md`, and `REFLECTION_LOG.md` by the
-[`/harness-onboarding`](plugins/ai-literacy-superpowers/how-to/generate-onboarding.md)
+[`/harness-onboarding`](../plugins/ai-literacy-superpowers/how-to/generate-onboarding.md)
 command. When ONBOARDING.md is regenerated, this page should be
 updated to mirror it.
 
 If you are setting up your environment for the first time, start with
-the [Getting Started tutorial](plugins/ai-literacy-superpowers/tutorials/getting-started.md).
+the [Getting Started tutorial](../plugins/ai-literacy-superpowers/tutorials/getting-started.md).
 The page below picks up where that tutorial leaves off, covering the
 day-to-day conventions and discipline a contributor needs to ship a
 PR against this repo.
@@ -133,7 +133,7 @@ they pass.
   a code-mode objection record at
   `docs/superpowers/objections/<spec-slug>.md` and
   `<spec-slug>-code.md`, with all dispositions resolved. Run
-  [`/diaboli`](plugins/ai-literacy-superpowers/how-to/review-a-spec-adversarially.md)
+  [`/diaboli`](../plugins/ai-literacy-superpowers/how-to/review-a-spec-adversarially.md)
   after the spec is written and again after the implementation is
   complete.
 - **Adjudicated choice stories** — every non-exempt feature PR needs
@@ -182,7 +182,7 @@ Periodic checks run weekly or monthly to catch slow drift.
 - **Change cadence drift** — watches whether PR sizes or cycle times
   are increasing, which can signal that AI-speed production is
   outpacing human review. See
-  [Enforce the human pace](plugins/ai-literacy-superpowers/how-to/enforce-human-pace.md)
+  [Enforce the human pace](../plugins/ai-literacy-superpowers/how-to/enforce-human-pace.md)
   for the rationale.
 - **Plugin manifest currency** — checks whether `plugin.json` counts
   still match actual skills, agents, and commands.
@@ -478,9 +478,9 @@ at different timescales:
 
 For the conceptual background on each loop, see:
 
-- [Three enforcement loops](plugins/ai-literacy-superpowers/explanation/three-enforcement-loops.md)
-- [The harness lifecycle](plugins/ai-literacy-superpowers/explanation/the-harness-lifecycle.md)
-- [Garbage collection](plugins/ai-literacy-superpowers/explanation/garbage-collection.md)
+- [Three enforcement loops](../plugins/ai-literacy-superpowers/explanation/three-enforcement-loops.md)
+- [The harness lifecycle](../plugins/ai-literacy-superpowers/explanation/the-harness-lifecycle.md)
+- [Garbage collection](../plugins/ai-literacy-superpowers/explanation/garbage-collection.md)
 
 The project runs on a monthly observability cadence:
 
@@ -557,5 +557,5 @@ The project runs on a monthly observability cadence:
 - [Command-TDAD-testing design spec](https://github.com/Habitat-Thinking/ai-literacy-superpowers/blob/main/docs/superpowers/specs/2026-05-09-command-tdad-testing-design.md)
   — per-category strategy for testing commands, including the
   Option I amendment that keeps helpers test-stage
-- [Generate an Onboarding Guide](plugins/ai-literacy-superpowers/how-to/generate-onboarding.md)
+- [Generate an Onboarding Guide](../plugins/ai-literacy-superpowers/how-to/generate-onboarding.md)
   — how to regenerate `ONBOARDING.md` (the source of this page)
