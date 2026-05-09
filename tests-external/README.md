@@ -122,14 +122,27 @@ dispatches via the Claude Agent SDK.
 
 | Component | Layer 1 | Layer 2 | Layer 3 |
 | --- | --- | --- | --- |
-| spec-writer | ✅ structural | n/a (agent, not skill) | wired (needs API key) |
-| cupid-code-review | ✅ structural | wired (needs API key) | wired (needs API key) |
-| harness-init | ✅ structural | n/a (command) | **architectural gap — see scenarios/commands/harness-init/FINDING-command-tdab-gap.md** |
+| spec-writer | ✅ structural | n/a (agent, not skill) | ✅ implemented (gated on API key) |
+| cupid-code-review | ✅ structural | ✅ implemented (gated on API key) | ✅ implemented + LLM-as-judge rubric (gated on API key) |
+| harness-init | ✅ structural | n/a (command) | **architectural gap — see issue #284** |
 
-Layer 1 has been run and passes against the real plugin. Layer 2 and
-Layer 3 wiring has been validated structurally (imports, fixture
-loading, scenario parsing) but not yet exercised against a live API —
-deferred to follow-up work.
+Layer 1 runs offline and passes against the real plugin. Layer 2 and
+Layer 3 are implemented and exercise the Claude Agent SDK. They run
+when ``ANTHROPIC_API_KEY`` is exported in the environment; without the
+key, they skip with a clear message.
+
+## Cost expectations (when API key is set)
+
+Approximate per-run token cost based on Anthropic's published pricing
+(snapshot — see Theme #11 of the framework on vendor velocity):
+
+- Layer 2 trigger tests: ~5 inferences against Haiku, ~$0.01 total
+- Layer 3 spec-writer: 1 multi-turn run against Sonnet, ~$0.05–$0.10
+- Layer 3 cupid-code-review: 1 review run + 1 judge run, ~$0.05
+
+A full Layer 1+2+3 run is around $0.10–$0.20. Tier execution is
+recommended for CI: Layer 1 on every PR, Layer 2+3 nightly or
+label-gated.
 
 ## Issue
 
