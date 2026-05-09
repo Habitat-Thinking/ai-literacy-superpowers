@@ -119,6 +119,35 @@ def _read_frontmatter(file: Path) -> tuple[dict, str | None]:
         return fallback, f"YAML parse error: {exc.__class__.__name__}"
 
 
+def read_component_body(path: Path) -> str:
+    """Return everything in a component file after its YAML frontmatter.
+
+    Layer 3 needs the body of an agent file or a SKILL.md as the
+    system prompt for an SDK invocation. This is the read-only
+    counterpart to ``_read_frontmatter``: same file, opposite half.
+
+    If the file has no frontmatter, the whole file is returned. If
+    the frontmatter is unclosed (malformed), the body is treated as
+    empty — which is the conservative choice, since dispatching a
+    half-parsed body as a system prompt is worse than dispatching an
+    empty one.
+    """
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        return text
+
+    lines = text.split("\n")
+    closing = None
+    for index, line in enumerate(lines[1:], start=1):
+        if line == "---":
+            closing = index
+            break
+    if closing is None:
+        return ""
+
+    return "\n".join(lines[closing + 1 :]).lstrip("\n")
+
+
 def list_agents(plugin_path: Path) -> Iterator[Component]:
     """Yield every agent in the plugin."""
     agents_dir = plugin_path / "agents"

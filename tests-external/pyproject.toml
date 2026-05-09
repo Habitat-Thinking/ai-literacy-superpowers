@@ -6,34 +6,39 @@
 
 [project]
 name = "ai-literacy-superpowers-tests"
-version = "0.1.0"
-description = "External test suite for the ai-literacy-superpowers plugin (TDAB spike)"
+version = "0.2.0"
+description = "External test suite for the ai-literacy-superpowers plugin (TDAB)"
 requires-python = ">=3.11"
 dependencies = [
     # pytest is the runner. Layer 1 needs only this.
     "pytest>=8.0",
+
+    # pytest-asyncio is needed for the @pytest.mark.asyncio decorator
+    # on Layer 2 and Layer 3 tests. Without it, async tests silently
+    # become no-ops (worst possible outcome — they would pass for the
+    # wrong reason). Listed as a runtime dependency rather than dev-only
+    # because the suite cannot actually exercise Layer 2/3 without it.
+    "pytest-asyncio>=0.23",
 
     # PyYAML parses the scenario frontmatter. Layer 1 also uses it to
     # validate the plugin's own component frontmatter.
     "pyyaml>=6.0",
 
     # The Claude Agent SDK is needed only for Layer 2 and Layer 3.
-    # Layer 1 imports nothing from it; tests gate on ANTHROPIC_API_KEY.
+    # Layer 1 imports nothing from it; tests gate on ANTHROPIC_API_KEY,
+    # and the SDK module imports it defensively so Layer 1 still runs
+    # if the SDK is unavailable.
     "claude-agent-sdk>=0.1.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest-asyncio>=0.23",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
-# Markers mirror the three-layer architecture and the api-key gate.
-# ``asyncio_mode`` is intentionally absent — the spike's tests are all
-# sync. When the SDK runner is implemented, pytest-asyncio's mode goes
-# in alongside it (or we use the synchronous facade the SDK exposes).
+# ``auto`` mode means every async test is wrapped automatically; no
+# per-test ``@pytest.mark.asyncio`` decorator is strictly required,
+# though we keep the decorators for explicitness so a reader of an
+# individual test can see which layer it belongs to.
+asyncio_mode = "auto"
 markers = [
     "needs_api: requires ANTHROPIC_API_KEY (Layer 2 and Layer 3 tests)",
     "behavioural: full SDK-driven test (Layer 3)",
