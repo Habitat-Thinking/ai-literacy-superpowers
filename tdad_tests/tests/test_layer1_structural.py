@@ -28,7 +28,7 @@ from pathlib import Path
 import pytest
 
 # Make the runner package importable when pytest is invoked from the
-# tests-external/ directory without an editable install.
+# tdad_tests/ directory without an editable install.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from runner import plugin as plugin_runner  # noqa: E402
