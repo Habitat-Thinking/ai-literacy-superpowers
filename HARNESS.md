@@ -197,6 +197,21 @@
 - **Frame check**: engineering / compliance / AI system interpretations
   confirmed aligned (see spec 2026-04-15-release-governance-constraint-design.md)
 
+### Docs site builds in strict mode
+
+- **Rule**: All PRs that change `docs/**`, `mkdocs.yml`, or
+  `requirements.txt` must pass `mkdocs build --strict` without
+  aborting. The strict build catches broken internal links, missing
+  pages, and other issues that the post-merge Pages deploy would
+  otherwise fail on. Driven by the PR #306 → #307 incident
+  (2026-05-09): broken docs-internal links shipped to `main` because
+  the strict build only ran post-merge on the Pages deploy. This
+  closes the verification gap.
+- **Enforcement**: deterministic
+- **Tool**: .github/workflows/docs-build-check.yml (runs
+  `mkdocs build --strict`)
+- **Scope**: pr
+
 ### Output validation checkpoints
 
 - **Rule**: Every command that produces structured output parsed by
@@ -663,6 +678,6 @@ the per-reader policy table.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-05-08
-Constraints enforced: 19/20
+Constraints enforced: 20/21
 Garbage collection active: 18/18
-Drift detected: yes (ONBOARDING.md mtime drift; awaits manual /harness-onboarding)
+Drift detected: no (ONBOARDING.md regenerated 2026-05-09)
