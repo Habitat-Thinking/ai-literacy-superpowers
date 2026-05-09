@@ -49,6 +49,9 @@ tdad_tests/
 │   ├── plugin.py                          plugin component discovery
 │   ├── scenario.py                        markdown scenario parser
 │   └── sdk.py                             Claude Agent SDK helpers (L2/L3)
+├── spike_helpers/                         Phase 2 Option C helpers (test-stage)
+│   ├── convention_sync.py                 HARNESS.md → Cursor conventions.mdc
+│   └── observatory_verify.py              snapshot signal verification
 ├── scenarios/                             human-readable scenarios (L1-L3)
 │   ├── agents/spec-writer/
 │   ├── skills/cupid-code-review/
@@ -142,6 +145,8 @@ dispatches via the Claude Agent SDK.
 | spec-writer | n/a | ✅ structural | n/a (agent, not skill) | ✅ implemented (gated on API key) |
 | cupid-code-review | n/a | ✅ structural | ✅ implemented (gated on API key) | ✅ implemented + LLM-as-judge rubric (gated on API key) |
 | All 25 commands | n/a | ✅ structural + wiring (Phase 1) | n/a | per-category strategy in spec — see [#284 design](../docs/superpowers/specs/2026-05-09-command-tdad-testing-design.md) |
+| convention-sync (P, Phase 2 spike) | n/a | ✅ structural | n/a | ✅ Option C-direct helper + 8 tests |
+| observatory-verify (P, Phase 2 spike) | n/a | ✅ structural | n/a | ✅ Option C-direct helper + 11 tests |
 
 Layer 1 runs offline and passes against the real plugin. Layer 2 and
 Layer 3 are implemented and exercise the Claude Agent SDK. They run
