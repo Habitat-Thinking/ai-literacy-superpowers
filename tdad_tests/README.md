@@ -1,12 +1,15 @@
-# tests-external
+# tdad_tests
 
-External test suite for the ai-literacy-superpowers plugin. Lives outside
-the packaged `ai-literacy-superpowers/` directory so it does not ship with
-plugin installs.
+TDAD test suite for the ai-literacy-superpowers plugin — Test-Driven
+Agentic Discipline applied to the plugin's own components. Lives
+outside the packaged `ai-literacy-superpowers/` directory so it does
+not ship with plugin installs.
 
-This is a **spike** — minimal scaffolding for a three-layer architecture,
-exercised against three representative components. Spike outcomes inform
-whether to scale to the full plugin (~71 components).
+The suite started as a spike against three representative components
+(one agent, one skill, one command) to validate the three-layer
+architecture. The spike landed; this directory now carries the runnable
+suite plus the scenario corpus needed to scale to the rest of the
+plugin's ~71 components incrementally.
 
 ## Why this exists
 
@@ -32,13 +35,14 @@ Layer 1 runs always. Layers 2–3 require an Anthropic API key
 ## Layout
 
 ```text
-tests-external/
+tdad_tests/
 ├── README.md                              this file
 ├── pyproject.toml                         dependencies
 ├── conftest.py                            pytest fixtures
 ├── runner/
-│   ├── plugin.py                          plugin path discovery
-│   └── scenario.py                        markdown scenario parser
+│   ├── plugin.py                          plugin component discovery
+│   ├── scenario.py                        markdown scenario parser
+│   └── sdk.py                             Claude Agent SDK helpers (L2/L3)
 ├── scenarios/                             human-readable scenarios
 │   ├── agents/spec-writer/
 │   ├── skills/cupid-code-review/
@@ -54,7 +58,7 @@ tests-external/
 ## Running
 
 ```bash
-# from the tests-external/ directory
+# from the tdad_tests/ directory
 pip install -e .
 
 # Layer 1 only (offline, free):
@@ -65,9 +69,9 @@ export ANTHROPIC_API_KEY=...
 pytest -v
 ```
 
-## What the spike validates
+## What the suite covers today
 
-The three target components are chosen to exercise different
+The three target components were chosen to exercise different
 characteristics:
 
 - **spec-writer (agent)** — has a clear input/output shape (a feature
@@ -77,11 +81,11 @@ characteristics:
   (description match) and Layer 3 (output rubric) both apply.
 - **harness-init (command)** — interactive, multi-step, dispatches
   subagents. Layer 3 surfaces an architectural question: how do you
-  TDAB a slash command?
+  apply TDAB to a slash command? See issue #284.
 
-The third component is deliberately the awkward case. If the spike
-demonstrates a clean path for it, the architecture scales. If not, the
-spike has done its job by surfacing the gap.
+The third component is deliberately the awkward case. The spike
+validated agents and skills cleanly and surfaced commands as needing
+their own design pass.
 
 ## Scenario format
 

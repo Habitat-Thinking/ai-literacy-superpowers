@@ -1,8 +1,7 @@
-# Project metadata for the tests-external/ spike. Kept deliberately small —
-# this is exploratory infrastructure and the dependency surface should not
-# grow without justification. Dependencies are pinned to ranges, not exact
-# versions, so updates surface through the pip resolver rather than through
-# silent drift.
+# Project metadata for the tdad_tests/ suite. Kept deliberately small —
+# the dependency surface should not grow without justification.
+# Dependencies are pinned to ranges, not exact versions, so updates
+# surface through the pip resolver rather than through silent drift.
 
 [project]
 name = "ai-literacy-superpowers-tests"

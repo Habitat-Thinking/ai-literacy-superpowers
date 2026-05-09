@@ -35,7 +35,7 @@ import pytest
 @pytest.fixture(scope="session")
 def plugin_path() -> Path:
     """Resolve the packaged plugin directory."""
-    # tests-external/ is a sibling of the inner ai-literacy-superpowers/
+    # tdad_tests/ is a sibling of the inner ai-literacy-superpowers/
     # packaged directory inside the repo. The repo root sits one level up
     # from this conftest.
     repo_root = Path(__file__).resolve().parent.parent
