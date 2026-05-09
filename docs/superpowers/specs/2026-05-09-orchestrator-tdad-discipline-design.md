@@ -3,11 +3,251 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-05-09 |
-| Status | Draft — pending user review |
+| Status | Draft — Amendment 1 applied 2026-05-09 in response to spec-mode `/diaboli` findings; awaiting re-review |
 | Author | claude-opus-4-7[1m] (interactive session) |
 | Plugin version target | v0.36.0 (minor — behavioural change to two agents) |
 | PR ceremony | feature — full diaboli (spec + code) and choice-cartograph |
 | Related work | PR #285 (SDK runner for Layer 2/3), PR #305 (ONBOARDING regen with TDAD content), PR #308 (docs-strict-build constraint), `tdad_tests/` suite, design spec `2026-05-09-command-tdad-testing-design.md` |
+
+---
+
+## Amendment 1 — 2026-05-09: closing the enforcement gap, owning the limits
+
+The first spec-mode `/diaboli` pass surfaced 12 objections; 7 at high
+severity. The four load-bearing concerns are taken in directly:
+
+- **O1 — Layer 1 isn't actually the forcing function.** The original
+  spec asserted that the existing Layer 1 structural test catches
+  missing scenarios. Reading `tdad_tests/tests/test_layer1_structural.py`
+  shows it only enforces scenario coverage for the three named spike
+  targets (`spec-writer`, `cupid-code-review`, `harness-init`), not
+  the broader corpus. A new component shipped without a scenario
+  passes Layer 1 silently today.
+- **O4 — the spec doesn't apply its own discipline to itself.** The
+  PR modifies two agent artefacts (`orchestrator.agent.md` and
+  `tdd-agent.agent.md`) but the original implementation plan listed
+  no scenario authoring step.
+- **O5 — the "30-day observation" deferral is unowned.** Without a
+  counter, owner, or scheduled review, the deferral is a silent
+  no-op.
+- **O8 — the filename convention is not what the corpus uses.** The
+  existing scenario directories already use descriptive `<aspect>.md`
+  filenames (`creates-spec-with-acceptance-scenarios.md`,
+  `identifies-violations.md`, `triggers-on-cupid-query.md`), not
+  `scenario.md`. The original spec invented a convention.
+
+Amendment 1 supersedes the relevant parts of §1, §3, §4, §5, §6,
+and §7 below. Where this Amendment contradicts the original text,
+**this Amendment governs**. The original sections are preserved
+unchanged after this Amendment for auditability.
+
+### A1.1 Add a HARNESS constraint, drop the "Layer 1 catches it" claim
+
+Replace the original spec's appeal to Layer 1 with an explicit
+HARNESS constraint added in this same PR:
+
+```text
+### New plugin components must ship with a TDAD scenario
+
+- **Rule**: When a PR adds a new file under
+  `ai-literacy-superpowers/skills/<name>/SKILL.md`,
+  `ai-literacy-superpowers/agents/<name>.agent.md`, or
+  `ai-literacy-superpowers/commands/<name>.md`, the same PR must
+  include at least one scenario file at
+  `tdad_tests/scenarios/<type>/<name>/<aspect>.md` with valid TDAD
+  frontmatter (`component`, `component_type`, `tier`).
+- **Enforcement**: agent
+- **Tool**: harness-enforcer agent (when the PR's diff adds files
+  matching the canonical paths above, verify a corresponding
+  scenario file exists)
+- **Scope**: pr
+```
+
+This constraint becomes the post-merge forcing function the original
+spec claimed. The "Tests must pass" unverified entry in HARNESS.md
+remains as a separate item (TDAD layers run on PRs but apply to
+scenario coverage of the suite, not to component-level scenario
+existence).
+
+### A1.2 The 30-day observation paragraph is removed
+
+Per A1.1, the constraint provides ongoing enforcement. The original
+"observe for 30 days; add the constraint if violations occur"
+deferral is replaced by adding the constraint up front. Drop the
+final paragraph of the original §5 "Trade-off — pipeline-only vs
+pipeline + constraint" subsection.
+
+### A1.3 Author scenarios for this PR's own changes
+
+Both `orchestrator.agent.md` and `tdd-agent.agent.md` change
+contract in this PR. Per the modification heuristic in §5 of the
+original spec, scenarios should be authored or updated. The
+revised implementation plan (A1.7 below) adds two scenarios:
+
+- `tdad_tests/scenarios/agents/orchestrator/detects-agent-artefact-scope.md`
+  — scenario describing how step 2 detects agent-artefact paths and
+  passes the type to `tdd-agent`.
+- `tdad_tests/scenarios/agents/tdd-agent/authors-scenario-for-agent-artefact.md`
+  — scenario describing the RED-phase deliverable for agent-artefact
+  scope.
+
+Both scenarios target Layer 1 (structural — frontmatter and section
+presence). Layer 3 (behavioural — full SDK invocation) is deferred
+case-by-case per the companion `command-tdad-testing-design.md`
+amendment.
+
+### A1.4 Filename convention: descriptive `<aspect>.md`
+
+The original spec specified `scenario.md` (or `<descriptor>.md` if
+multiple). The existing corpus uses descriptive `<aspect>.md`
+filenames consistently:
+
+- `tdad_tests/scenarios/agents/spec-writer/creates-spec-with-acceptance-scenarios.md`
+- `tdad_tests/scenarios/skills/cupid-code-review/identifies-violations.md`
+- `tdad_tests/scenarios/skills/cupid-code-review/triggers-on-cupid-query.md`
+
+The convention is therefore: **`tdad_tests/scenarios/<type>/<name>/<aspect>.md`**,
+where `<aspect>` is a kebab-case description of what the scenario
+tests (typically a verb-phrase). One scenario per `<aspect>` file;
+multiple files when a component has multiple distinct aspects to
+verify. `scenario.md` is not used. The `tdd-agent`'s instructions
+must reflect this convention.
+
+### A1.5 Modification "RED" semantics
+
+For modifications, the structural-layer test may pass before the
+implementation is changed (the component file already exists). The
+`tdd-agent`'s prose must define "red" for this branch as: *the
+existing scenario does not yet capture the new behaviour described
+in this spec* — not "the test fails." This is a semantic extension
+of the agent's existing "Confirming red" charter, not a contradiction;
+the agent's prose should make the extension explicit rather than
+silently overload the term.
+
+### A1.6 Layer-targeting precedence note
+
+When this spec's tdd-agent output contract ("Layers targeted:
+`[structural]` always; `[trigger]` for skills by default;
+`[behavioural]` only when the spec calls it out") conflicts with
+the per-component judgement in `command-tdad-testing-design.md`,
+the per-component judgement governs. The defaults listed in this
+spec are what the agent emits when the spec it is implementing is
+silent on layer targeting; an explicit decision in the
+implementation spec takes precedence.
+
+### A1.7 Revised implementation plan
+
+Replaces §7 of the original spec:
+
+1. **Author scenario for orchestrator change** at
+   `tdad_tests/scenarios/agents/orchestrator/detects-agent-artefact-scope.md`.
+   This is the RED phase for the orchestrator modification.
+2. **Author scenario for tdd-agent change** at
+   `tdad_tests/scenarios/agents/tdd-agent/authors-scenario-for-agent-artefact.md`.
+   This is the RED phase for the tdd-agent modification.
+3. **Edit `ai-literacy-superpowers/agents/tdd-agent.agent.md`** —
+   add the agent-artefact branch with corrected RED semantics
+   (per A1.5), filename convention (per A1.4), and layer-targeting
+   precedence note (per A1.6).
+4. **Edit `ai-literacy-superpowers/agents/orchestrator.agent.md`** —
+   add the path-based detection step before step 2, with the scope
+   acknowledgement note (per A1.10 below) for the surfaces the
+   detection rule does not cover.
+5. **Add HARNESS constraint** "New plugin components must ship with
+   a TDAD scenario" (per A1.1), increment the `Constraints enforced`
+   count in HARNESS.md Status and the README badge accordingly.
+6. **Bump plugin version** 0.35.5 → 0.36.0; update `plugin.json`,
+   the README ai-literacy-superpowers badge, and the marketplace
+   `plugin_version`.
+7. **Add CHANGELOG entry** under v0.36.0 — date-stamped, theme-
+   grouped per project conventions, naming the two agent edits, the
+   new HARNESS constraint, and the two new scenarios.
+8. **Update at least one docs page** that explains the orchestrator
+   pipeline (likely `docs/plugins/ai-literacy-superpowers/explanation/agent-orchestration.md`)
+   to mention the new artefact-type branch.
+9. **Run `python3 -m mkdocs build --strict` locally** to verify the
+   new docs change doesn't introduce broken links (closing the
+   verification gap surfaced by PR #306 → #307; the PR-time
+   `docs-build-check.yml` workflow added in PR #308 is now the
+   primary forcing function but local verification still saves a
+   round-trip).
+10. **Open the PR** with full feature ceremony — no exemption label.
+
+### A1.8 Why feature ceremony for two paragraphs of prose (O10)
+
+Two reasons to keep feature ceremony rather than dropping to chore:
+
+1. **Demonstrate the discipline on its own author.** A change that
+   adds TDAD discipline to the pipeline benefits from being itself
+   subjected to the spec-first / diaboli / cartograph discipline.
+   Skipping ceremony to ship faster would undercut the message the
+   change is trying to send.
+2. **Behavioural change to two shipping agents.** The change isn't
+   just docs; it modifies what `tdd-agent` and `orchestrator`
+   actually do at pipeline run-time. Per CLAUDE.md's semver rules
+   that's a minor bump, and minor-bumps default to feature ceremony
+   in this project.
+
+This rationale is recorded here in response to O10's "ceremony
+calibrated to artefact" question. The choice is deliberate, not
+habitual.
+
+### A1.9 Revised acceptance criteria (replaces §6)
+
+A future PR that **adds** a new skill, agent, or command and runs
+through the orchestrator pipeline must:
+
+1. Include at least one scenario file at
+   `tdad_tests/scenarios/<type>/<name>/<aspect>.md` (per A1.4).
+2. Have the scenario referenced in the implementer's context.
+3. Pass the new HARNESS constraint "New plugin components must
+   ship with a TDAD scenario" at PR time.
+
+A PR that **modifies** an existing skill, agent, or command:
+
+1. Should review the existing scenario(s) and update them when the
+   spec changes the contract; leave them unchanged when the spec is
+   a non-behavioural refactor. This is acknowledged as a judgement
+   call (per O3) — no automated check exists for it.
+2. Is not blocked by the HARNESS constraint (which scopes to *new*
+   files), but the orchestrator-pipeline path-detection still fires
+   to surface the question.
+
+A PR that does NOT touch agent artefacts must not have a TDAD
+scenario authored unnecessarily; the orchestrator's detection step
+exits early.
+
+### A1.10 Known limitations carried over (the residual minors)
+
+Three of the diaboli's remaining concerns are not closed by this
+Amendment; they are owned as known limitations of the discipline:
+
+- **O2 — `hooks/`, `templates/`, `scripts/` are not in scope.** The
+  detection rule remains skills/agents/commands only. Rationale:
+  `templates/` are passive content (no agent behaviour to test);
+  `scripts/` are tested at Layer 0 via the bash test suite (no
+  scenario needed); `hooks/` are advisory and small enough that
+  Layer 1 manifest validation is sufficient. If a future hook gains
+  enough complexity to warrant a scenario, extend the rule then.
+  The orchestrator's detection step prose names this exclusion
+  explicitly so future readers do not read "all plugin surfaces."
+- **O3 — modification heuristic is judgement-bound.** No automated
+  test exists to falsify the modification-vs-refactor decision the
+  `tdd-agent` makes for an existing-component change. The discipline
+  fires reliably for new components (per A1.1's constraint); for
+  modifications it surfaces the question but does not enforce an
+  answer. This is accepted; if practice shows the discipline
+  silently skipping legitimate modification cases, a tighter rule
+  is a follow-up spec.
+- **O6 — LLM authoring scenarios is a quality risk.** Mitigation:
+  the `tdd-agent`'s RED-phase output is surfaced to the user before
+  the implementer is dispatched (the orchestrator's existing user-
+  surface pattern at gates). The user should review the scenario
+  for falsifiability before approving. This is added to the
+  orchestrator's pipeline as a soft surface; not a hard gate.
+
+These limitations are not closed by this Amendment; they are
+explicitly *acknowledged* and the spec ships with them named.
 
 ---
 
