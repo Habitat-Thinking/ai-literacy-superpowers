@@ -3,11 +3,105 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-05-09 |
-| Status | Draft — pending user review |
+| Status | **Amended 2026-05-09 — see Amendment 1 below** (originally: Draft pending user review) |
 | Author | claude-opus-4-7[1m] (interactive session) |
 | Plugin version target | none (design-only PR; implementation lands separately) |
 | PR ceremony | `chore`-labelled — design-only document; diaboli and choice-cartograph deliberately skipped per AGENTS.md STYLE on architecture decisions captured in spec form |
-| Related work | TDAD spike PR #282, SDK runner PR #285, finding scenario `tdad_tests/scenarios/commands/harness-init/FINDING-command-tdab-gap.md`, issue #284 |
+| Related work | TDAD spike PR #282, SDK runner PR #285, finding scenario `tdad_tests/scenarios/commands/harness-init/FINDING-command-tdab-gap.md`, issue #284, Phase 1 PR #294, Phase 2 PR #295, Phase 3 PR #296, Phase 4 PR #297 |
+
+---
+
+## Amendment 1 — 2026-05-09: helpers stay test-stage (Option I)
+
+**Supersedes**: §4's framing of Option C-direct as "the markdown command becomes glue between the user and the helper", and §5's Phase 2 expansion line ("If the spike works, expand to the remaining 9 P commands in a single follow-up PR" — read as "and update the command markdowns to invoke the helpers").
+
+**Decision**: For all P commands, helpers stay in `tdad_tests/spike_helpers/`
+as test-stage code. Command markdowns continue as prose-driven instructions
+to the model. Tests verify the *documented behaviour*; drift between the
+helper and the command's prose is a test failure the author resolves
+manually.
+
+### Why this changes
+
+The original §4 Option C-direct conflated two distinct decisions:
+
+1. *Can the deterministic core be extracted into Python and tested
+   with fixtures?* — yes; Phase 2 (PR #295) demonstrated this for
+   `convention-sync` and `observatory-verify`.
+2. *Should that extracted logic ship inside the plugin and be invoked
+   by the command at runtime?* — the original spec answered "yes"
+   implicitly; this amendment answers "no" deliberately.
+
+The two questions look related but have different cost/benefit
+profiles. The first is about test coverage; the second is about plugin
+distribution.
+
+### The cost the original spec did not weigh
+
+The plugin today ships shell scripts only — `archive-promoted-reflections.sh`,
+`migrate-reflection-log.sh`, `update-badge.sh`, etc. Zero language-runtime
+requirements beyond bash. Every consumer can install the plugin and use
+every command with whatever they already have on their machine.
+
+Promoting Python helpers into `ai-literacy-superpowers/scripts/` would
+add a hard runtime dependency: every plugin user would need Python 3.11+
+installed (the SDK requires it; the helpers should target the same
+minimum). That is a meaningful regression in plugin friction — much
+harder to undo than to avoid.
+
+### The three options re-weighed
+
+| Option | Test verifies | Plugin runtime deps | Drift between helper and prose |
+| --- | --- | --- | --- |
+| **I — Helpers stay in `tdad_tests/`** | the documented behaviour (a parallel implementation) | unchanged (bash + Unix tools) | silent unless tests fail |
+| **II — Helpers re-implemented as bash, ship in `scripts/`** | the actual production code path | unchanged | caught by test failure |
+| **III — Helpers ship as Python in `scripts/`** | the actual production code path | **+Python 3.11** | caught by test failure |
+
+The original spec's "the command becomes glue" framing was Option III in
+spirit; it skipped past the runtime-deps column.
+
+### Why Option I is the right answer for most commands
+
+The TDAD suite's purpose is *catching regressions in documented
+behaviour*. Option I delivers that purpose without changing the plugin's
+distribution model. The drift-detection cost (a test author has to read
+both the helper and the command prose to confirm they still align) is
+real but small — and at PR-time, an attentive review catches it.
+
+The argument for Option II/III only holds when the test failure mode
+of "drift between helper and prose, caught only when someone notices"
+is genuinely unacceptable for a specific command. That bar should be
+met case-by-case, not blanket.
+
+### What does NOT change
+
+- Phases 1, 3, 4 (the wiring and matrix tests) — still cheap, still
+  applied to every command.
+- Phase 2's spike helpers — they earned their keep by validating that
+  P-command logic *can* be tested. They stay in `tdad_tests/spike_helpers/`.
+- Per-skill Layer 3 tests for M commands — still case-by-case follow-up.
+
+### What changes for the rollout from Phase 2
+
+The work previously framed as "Phase 3 rollout: promote helpers to
+scripts/, update command markdowns, expand to 9 more P commands" is
+now: "expand the test-stage helpers in `tdad_tests/spike_helpers/` to
+cover the remaining 9 P commands, *without* moving them into the plugin
+or changing the command markdowns."
+
+If a specific command has a side-effect severe enough to justify the
+language-runtime dependency, that's a per-command Option III decision —
+write a separate spec for it, weigh the trade-off explicitly, and only
+proceed if the cost is justified.
+
+### Methodological note
+
+The spec's omission was a thinking failure worth recording: I conflated
+"can be extracted for testing" with "should ship as production code".
+Different decisions, different trade-offs. A pre-merge review pass that
+asks "for each architectural recommendation, what are the costs the
+spec hasn't weighed?" would have caught this. Captured in
+REFLECTION_LOG.md alongside this amendment.
 
 ---
 
