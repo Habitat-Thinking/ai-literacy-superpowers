@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.35.3 — 2026-05-09
+
+### Internal reorganisation — bash test scripts moved to tdad_tests/
+
+The three internal bash test scripts and their 11 fixtures have been
+relocated from `ai-literacy-superpowers/tests/` (inside the packaged
+plugin) to `tdad_tests/layer0_deterministic/` (a sibling test
+directory outside the packaged plugin). No functional change for
+plugin consumers — the scripts under test
+(`archive-promoted-reflections.sh`, `migrate-reflection-log.sh`,
+`lib/reflection-log-helpers.sh`) remain in the packaged plugin and
+ship unchanged.
+
+This is purely an internal reorganisation, hence the patch bump:
+
+- The TDAD suite now mirrors the framework's harness promotion ladder
+  (Theme #10) explicitly: Layer 0 (deterministic plumbing, NEW), Layer
+  1 (structural), Layer 2 (trigger), Layer 3 (behavioural).
+- A pytest dispatcher (`tests/test_layer0_deterministic.py`) runs the
+  three bash scripts as subprocesses and surfaces their FAIL output on
+  failure. Bash kept as bash; Python only for the dispatcher.
+- Markdown lint config migrated to `.markdownlint-cli2.jsonc` with an
+  `ignores:` entry for the deliberately-malformed Layer 0 fixtures
+  (one is named `reflection-log-promoted-trailing-space.md` because
+  it tests the parser's trailing-whitespace handling).
+
+Tracked at PR #289.
+
 ## 0.35.2 — 2026-05-08
 
 ### Fix — `/harness-sync` trust-boundary contradiction with HARNESS.md Status auto-fix

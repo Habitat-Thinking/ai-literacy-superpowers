@@ -1,0 +1,23 @@
+{
+  // Rule configuration. ``config`` (cli2) merges with the legacy
+  // .markdownlint.json — keeping rules here means there is one source
+  // of truth for which markdownlint rules are on.
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD025": false,
+    "MD024": false
+  },
+  // Files to ignore. The TDAD Layer 0 fixtures are intentionally
+  // malformed test data — one fixture is named
+  // ``reflection-log-promoted-trailing-space.md`` precisely because
+  // its purpose is to verify the parser strips trailing whitespace.
+  // Linting them would fail by design and drown real regressions.
+  "ignores": [
+    "tdad_tests/layer0_deterministic/fixtures/**",
+    "**/.venv/**",
+    "site/**",
+    "_site/**",
+    "node_modules/**"
+  ]
+}

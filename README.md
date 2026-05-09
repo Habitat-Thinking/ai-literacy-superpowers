@@ -3,7 +3,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.3.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.35.2-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.35.3-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
 [![Skills](https://img.shields.io/badge/Skills-30-2E8B57?style=flat-square)](#skills-30)
 [![Agents](https://img.shields.io/badge/Agents-13-2E8B57?style=flat-square)](#agents-13)
