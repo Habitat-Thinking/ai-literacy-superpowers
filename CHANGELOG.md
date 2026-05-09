@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.35.5 — 2026-05-09
+
+### Fix — `/harness-sync` consistently references `harness-audit-engine`
+
+Three places in `harness-sync.md` referenced the skill informally as
+`audit-engine` when its actual name is `harness-audit-engine`. The
+prose was understandable to a human reader but failed strict
+component-name resolution.
+
+Surfaced by **TDAD Phase 1** (the new command-wiring test in
+`tdad_tests/tests/test_command_wiring.py`), which parses every
+command's body for `Dispatch the X agent` and `Read the X skill`
+patterns and asserts each referenced component exists. This is
+exactly the rename-without-callsite-update failure class Phase 1 was
+designed to catch — and it did, on its first run, against three
+commands (the other two — `assess` and `harness-init` — were false
+positives in the regex's handling of `gh repo edit --add-topic
+agent-harness-enabled`, fixed by adding a `(?!-)` negative lookahead
+on the trailing keyword).
+
+No functional behaviour change — the loader uses the `harness-audit-engine`
+skill correctly today. Patch bump for the prose-consistency edit
+that the new test required.
+
 ## 0.35.4 — 2026-05-09
 
 ### Fix — agent frontmatter now strict-YAML compliant (resolves #283)

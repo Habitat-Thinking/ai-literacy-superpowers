@@ -141,7 +141,7 @@ dispatches via the Claude Agent SDK.
 | reflection-log plumbing | ✅ 23 bash tests via dispatcher | n/a | n/a | n/a |
 | spec-writer | n/a | ✅ structural | n/a (agent, not skill) | ✅ implemented (gated on API key) |
 | cupid-code-review | n/a | ✅ structural | ✅ implemented (gated on API key) | ✅ implemented + LLM-as-judge rubric (gated on API key) |
-| harness-init | n/a | ✅ structural | n/a (command) | **architectural gap — see issue #284** |
+| All 25 commands | n/a | ✅ structural + wiring (Phase 1) | n/a | per-category strategy in spec — see [#284 design](../docs/superpowers/specs/2026-05-09-command-tdad-testing-design.md) |
 
 Layer 1 runs offline and passes against the real plugin. Layer 2 and
 Layer 3 are implemented and exercise the Claude Agent SDK. They run

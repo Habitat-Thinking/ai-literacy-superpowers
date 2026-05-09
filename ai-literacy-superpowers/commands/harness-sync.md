@@ -18,7 +18,7 @@ it composes existing commands and does not introduce new propagation logic.
 - It does _not_ rewrite the body of `HARNESS.md`. The only allowed mutation
   is the Status block — the four lines under the
   `<!-- Auto-updated by /harness-audit — do not edit manually -->` marker —
-  which sync regenerates as the audit-engine's narrowly-scoped Status auto-fix.
+  which sync regenerates as the `harness-audit-engine`'s narrowly-scoped Status auto-fix.
   Everything above the Status block (Context, Constraints, Garbage Collection,
   Observability, Read-side filtering) is off-limits to this command.
 - It does _not_ pull upstream template changes into `HARNESS.md` — that is
@@ -92,7 +92,7 @@ the user:
 
 Exit without making any changes.
 
-### 3. Phase 1 — Drift Scan via audit-engine
+### 3. Phase 1 — Drift Scan via `harness-audit-engine`
 
 **If invoked with `--check`, the command stops after this phase — see exit semantics at the end of this section.**
 
@@ -108,7 +108,7 @@ skill: each finding has `surface`, `status`, `details`, `action_command`,
 and `auto_fixable`.
 
 Surfaces the engine evaluates include (this list mirrors the table in the
-audit-engine skill — when surfaces are added there, they appear here
+`harness-audit-engine` skill — when surfaces are added there, they appear here
 automatically):
 
 - `.cursor/rules/`, `.github/copilot-instructions.md`, `.windsurf/rules/`
