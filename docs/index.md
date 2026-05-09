@@ -32,6 +32,11 @@ framework grows. New plugins land under
 [`/plugins/`](plugins/index.md) with their own tutorials,
 how-to guides, reference, and explanation pages.
 
+Want to contribute to the plugins themselves? See
+[Contributing](contributing/index.md) — the conventions, harness
+constraints, TDAD test discipline, common pitfalls, and first-PR
+checklist that govern day-to-day development.
+
 ---
 
 ## Add the marketplace
