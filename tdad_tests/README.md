@@ -148,6 +148,7 @@ dispatches via the Claude Agent SDK.
 | convention-sync (P, Phase 2 spike) | n/a | ✅ structural | n/a | ✅ Option C-direct helper + 8 tests |
 | observatory-verify (P, Phase 2 spike) | n/a | ✅ structural | n/a | ✅ Option C-direct helper + 11 tests |
 | 6 of 7 O commands (Phase 3) | n/a | ✅ structural + wiring + per-command dispatch matrix | n/a | inherits from agents (Layer 3 covers each agent) |
+| All 7 M commands (Phase 4) | n/a | ✅ structural + wiring + per-command skill-coverage matrix | n/a | per-skill Layer 3 deferred (case-by-case per design spec) |
 
 Layer 1 runs offline and passes against the real plugin. Layer 2 and
 Layer 3 are implemented and exercise the Claude Agent SDK. They run
