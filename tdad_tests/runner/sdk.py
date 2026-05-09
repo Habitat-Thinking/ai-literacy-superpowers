@@ -222,7 +222,20 @@ async def match_skills(
         return []
     if not isinstance(parsed, list):
         return []
-    return [str(name) for name in parsed]
+    # Normalise: when the catalogue spans multiple plugins, the model
+    # sometimes ignores the "exactly as they appear" instruction and
+    # returns plugin-qualified forms like ``"model-cards:model-cards"``
+    # instead of the bare skill name. Strip any ``<prefix>:`` segment
+    # so the matcher's behaviour is the same in single-plugin and
+    # multi-plugin cases. Surfaced by a real Layer 2 run on the
+    # cross-plugin model-cards trigger test.
+    names: list[str] = []
+    for entry in parsed:
+        text = str(entry)
+        if ":" in text:
+            text = text.rsplit(":", 1)[-1]
+        names.append(text)
+    return names
 
 
 # ---------------------------------------------------------------------------

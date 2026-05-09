@@ -135,3 +135,381 @@ class TestCupidCodeReviewTriggers:
                 "the description should mention 'composable' and "
                 "'predictable' explicitly."
             )
+
+
+# ---------------------------------------------------------------------------
+# Layer 2 expansion: five high-value skills (per the recommendation that
+# selected skills loaded primarily through description matching, with
+# clear trigger surfaces and security-class failure costs).
+#
+# Each class follows the same shape:
+# - A scenario fixture (loaded from tdad_tests/scenarios/skills/<name>/)
+# - Pre-flight (offline) — description contains expected trigger terms
+# - Parametrised explicit queries — each must fire the skill
+#
+# The single-inference catalogue match runs against Haiku; cost per
+# class is ~5 inferences ≈ $0.005. All five together stay well under
+# $0.05 per full Layer 2 run.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.trigger
+@pytest.mark.needs_api
+class TestLiterateProgrammingTriggers:
+    """The literate-programming skill should fire when the user is
+    creating new source files, writing new functions/types, or
+    significantly rewriting existing code."""
+
+    @pytest.fixture
+    def scenario(self, scenarios_dir):
+        return parse_scenario(
+            scenarios_dir
+            / "skills"
+            / "literate-programming"
+            / "triggers-on-new-source-file-query.md"
+        )
+
+    TRIGGER_QUERIES = [
+        "I'm about to create a new module for parsing config files — what should it look like?",
+        "Write me a new helper class for handling user authentication",
+        "Create a new Python file that handles snapshot serialisation",
+        "I'm rewriting the renderer module from scratch",
+    ]
+
+    def test_skill_metadata_includes_trigger_terms(
+        self, plugin_path, scenario
+    ):
+        skill = plugin_runner.find_component(
+            plugin_path,
+            name=scenario.component,
+            component_type=scenario.component_type,
+        )
+        description = (
+            skill.frontmatter.get("description") or ""
+        ).lower()
+        # The description's whole point is to fire on source-file
+        # authoring queries. Any of these tokens individually is
+        # enough; absence of all four is a hard regression.
+        for token in ("source", "file", "function", "code"):
+            if token in description:
+                return
+        pytest.fail(
+            "literate-programming description does not mention any "
+            "of: source, file, function, code — model matching is "
+            "extremely unlikely to fire"
+        )
+
+    @pytest.mark.parametrize("query", TRIGGER_QUERIES)
+    @pytest.mark.asyncio
+    async def test_skill_triggers_on_source_file_query(
+        self, needs_api, plugin_path, query: str
+    ):
+        index = _skill_index(plugin_path)
+        matches = await match_skills(query, index)
+        assert "literate-programming" in matches, (
+            f"Query {query!r} did not match literate-programming. "
+            f"Model returned: {matches}. Description drift suspected."
+        )
+
+
+@pytest.mark.trigger
+@pytest.mark.needs_api
+class TestSecretsDetectionTriggers:
+    """The secrets-detection skill should fire on secrets-audit
+    queries — gitleaks setup, scanning, baselining, CI integration."""
+
+    @pytest.fixture
+    def scenario(self, scenarios_dir):
+        return parse_scenario(
+            scenarios_dir
+            / "skills"
+            / "secrets-detection"
+            / "triggers-on-secrets-audit-query.md"
+        )
+
+    TRIGGER_QUERIES = [
+        "Audit this project for committed secrets",
+        "Set up gitleaks for this repository",
+        "Are there any API keys committed in our source?",
+        "Harden our 'no secrets in source' harness constraint",
+    ]
+
+    def test_skill_metadata_includes_trigger_terms(
+        self, plugin_path, scenario
+    ):
+        skill = plugin_runner.find_component(
+            plugin_path,
+            name=scenario.component,
+            component_type=scenario.component_type,
+        )
+        description = (
+            skill.frontmatter.get("description") or ""
+        ).lower()
+        assert "secret" in description, (
+            "secrets-detection description must mention 'secret(s)' "
+            "for the model to fire on secrets-audit queries"
+        )
+
+    @pytest.mark.parametrize("query", TRIGGER_QUERIES)
+    @pytest.mark.asyncio
+    async def test_skill_triggers_on_secrets_query(
+        self, needs_api, plugin_path, query: str
+    ):
+        index = _skill_index(plugin_path)
+        matches = await match_skills(query, index)
+        assert "secrets-detection" in matches, (
+            f"Query {query!r} did not match secrets-detection. "
+            f"Model returned: {matches}. Description drift suspected — "
+            "this is a security-class regression."
+        )
+
+
+@pytest.mark.trigger
+@pytest.mark.needs_api
+class TestDependencyVulnerabilityAuditTriggers:
+    """The dependency-vulnerability-audit skill should fire on
+    dependency-audit queries (Go modules, Maven, supply-chain)."""
+
+    @pytest.fixture
+    def scenario(self, scenarios_dir):
+        return parse_scenario(
+            scenarios_dir
+            / "skills"
+            / "dependency-vulnerability-audit"
+            / "triggers-on-vulnerability-audit-query.md"
+        )
+
+    TRIGGER_QUERIES = [
+        "Check this Go project for vulnerable dependencies",
+        "Audit our Maven dependencies for known CVEs",
+        "Set up govulncheck in our CI",
+        "What's the supply-chain risk in our project's dependency tree?",
+    ]
+
+    def test_skill_metadata_includes_trigger_terms(
+        self, plugin_path, scenario
+    ):
+        skill = plugin_runner.find_component(
+            plugin_path,
+            name=scenario.component,
+            component_type=scenario.component_type,
+        )
+        description = (
+            skill.frontmatter.get("description") or ""
+        ).lower()
+        assert (
+            "vulnerab" in description or "dependenc" in description
+        ), (
+            "dependency-vulnerability-audit description must mention "
+            "vulnerabilities or dependencies"
+        )
+
+    @pytest.mark.parametrize("query", TRIGGER_QUERIES)
+    @pytest.mark.asyncio
+    async def test_skill_triggers_on_vulnerability_query(
+        self, needs_api, plugin_path, query: str
+    ):
+        index = _skill_index(plugin_path)
+        matches = await match_skills(query, index)
+        assert "dependency-vulnerability-audit" in matches, (
+            f"Query {query!r} did not match "
+            "dependency-vulnerability-audit. "
+            f"Model returned: {matches}. Description drift suspected."
+        )
+
+
+@pytest.mark.trigger
+@pytest.mark.needs_api
+class TestGitHubActionsSupplyChainTriggers:
+    """The github-actions-supply-chain skill should fire on
+    workflow-security and CI-hardening queries."""
+
+    @pytest.fixture
+    def scenario(self, scenarios_dir):
+        return parse_scenario(
+            scenarios_dir
+            / "skills"
+            / "github-actions-supply-chain"
+            / "triggers-on-workflow-security-query.md"
+        )
+
+    TRIGGER_QUERIES = [
+        "Review our GitHub Actions workflows for security issues",
+        "Harden our CI pipeline",
+        "Are our actions pinned to commit SHAs?",
+        "Audit this repo's GitHub Actions supply-chain risk",
+    ]
+
+    def test_skill_metadata_includes_trigger_terms(
+        self, plugin_path, scenario
+    ):
+        skill = plugin_runner.find_component(
+            plugin_path,
+            name=scenario.component,
+            component_type=scenario.component_type,
+        )
+        description = (
+            skill.frontmatter.get("description") or ""
+        ).lower()
+        assert (
+            "github actions" in description or "workflow" in description
+        ), (
+            "github-actions-supply-chain description must mention "
+            "GitHub Actions or workflows"
+        )
+
+    @pytest.mark.parametrize("query", TRIGGER_QUERIES)
+    @pytest.mark.asyncio
+    async def test_skill_triggers_on_workflow_security_query(
+        self, needs_api, plugin_path, query: str
+    ):
+        index = _skill_index(plugin_path)
+        matches = await match_skills(query, index)
+        assert "github-actions-supply-chain" in matches, (
+            f"Query {query!r} did not match "
+            "github-actions-supply-chain. "
+            f"Model returned: {matches}. Description drift suspected."
+        )
+
+
+@pytest.mark.trigger
+@pytest.mark.needs_api
+class TestDockerScoutAuditTriggers:
+    """The docker-scout-audit skill should fire on Docker-CVE and
+    base-image-staleness queries."""
+
+    @pytest.fixture
+    def scenario(self, scenarios_dir):
+        return parse_scenario(
+            scenarios_dir
+            / "skills"
+            / "docker-scout-audit"
+            / "triggers-on-docker-cve-query.md"
+        )
+
+    TRIGGER_QUERIES = [
+        "Scan our Docker image for CVEs",
+        "Check if our base image is stale",
+        "Audit Docker images for vulnerabilities",
+        "What CVEs are in our containers?",
+    ]
+
+    def test_skill_metadata_includes_trigger_terms(
+        self, plugin_path, scenario
+    ):
+        skill = plugin_runner.find_component(
+            plugin_path,
+            name=scenario.component,
+            component_type=scenario.component_type,
+        )
+        description = (
+            skill.frontmatter.get("description") or ""
+        ).lower()
+        assert "docker" in description, (
+            "docker-scout-audit description must mention Docker"
+        )
+
+    @pytest.mark.parametrize("query", TRIGGER_QUERIES)
+    @pytest.mark.asyncio
+    async def test_skill_triggers_on_docker_cve_query(
+        self, needs_api, plugin_path, query: str
+    ):
+        index = _skill_index(plugin_path)
+        matches = await match_skills(query, index)
+        assert "docker-scout-audit" in matches, (
+            f"Query {query!r} did not match docker-scout-audit. "
+            f"Model returned: {matches}. Description drift suspected."
+        )
+
+
+# ---------------------------------------------------------------------------
+# Cross-plugin Layer 2: model-cards skill from the model-cards plugin.
+#
+# Difference from the five tests above: the matching catalogue must
+# include skills from BOTH plugins. A real session a user runs with
+# both plugins installed sees both skill catalogues simultaneously,
+# and that combined catalogue is the realistic matching surface. A
+# single-plugin index for model-cards would test only one skill and
+# prove nothing about cross-plugin discrimination.
+#
+# The 5 tests above use single-plugin indexes because their target
+# skills' cross-plugin collision risk is low (no model-cards plugin
+# skill is about secrets, dependencies, Docker, or workflows). For
+# the model-cards skill, however, ai-literacy-superpowers'
+# `model-sovereignty` skill is a plausible competitor (both touch
+# "model" topics), so combined-index is the right test.
+# ---------------------------------------------------------------------------
+
+
+def _combined_skill_index(
+    *plugin_paths: Path,
+) -> list[tuple[str, str]]:
+    """Build a combined catalogue across multiple plugin paths.
+
+    Skills appear in plugin-discovery order; duplicates (same name in
+    two plugins) keep the first one encountered. The duplicate case
+    is unlikely today but worth a deterministic policy if it arises.
+    """
+    seen: set[str] = set()
+    pairs: list[tuple[str, str]] = []
+    for path in plugin_paths:
+        for skill in plugin_runner.list_skills(path):
+            if skill.name in seen:
+                continue
+            description = skill.frontmatter.get("description") or ""
+            if description:
+                pairs.append((skill.name, str(description)))
+                seen.add(skill.name)
+    return pairs
+
+
+@pytest.mark.trigger
+@pytest.mark.needs_api
+class TestModelCardsSkillTriggers:
+    """The model-cards skill (in the model-cards plugin) should fire
+    on model-card authoring queries — including in a session with the
+    ai-literacy-superpowers plugin also loaded."""
+
+    TRIGGER_QUERIES = [
+        "Create a model card for Claude Sonnet 4.6",
+        "Document this model's evals and benchmarks",
+        "Author a Mitchell-style model card for this model",
+        "What sections go into a model card?",
+    ]
+
+    def test_skill_metadata_includes_trigger_terms(
+        self, model_cards_path: Path
+    ):
+        skill = plugin_runner.find_component(
+            model_cards_path,
+            name="model-cards",
+            component_type="skill",
+        )
+        description = (
+            skill.frontmatter.get("description") or ""
+        ).lower()
+        assert "model card" in description, (
+            "model-cards skill description must mention 'model card' "
+            "for matching to fire on model-card queries"
+        )
+
+    @pytest.mark.parametrize("query", TRIGGER_QUERIES)
+    @pytest.mark.asyncio
+    async def test_skill_triggers_on_model_card_query(
+        self,
+        needs_api,
+        plugin_path: Path,
+        model_cards_path: Path,
+        query: str,
+    ):
+        # Combined index: both plugins' skills, so the test reflects
+        # a real user session with both installed.
+        index = _combined_skill_index(plugin_path, model_cards_path)
+        matches = await match_skills(query, index)
+        assert "model-cards" in matches, (
+            f"Query {query!r} did not match the model-cards skill. "
+            f"Model returned: {matches}. Likely cause: description "
+            "drift in model-cards/skills/model-cards/SKILL.md, or "
+            "ai-literacy-superpowers' model-sovereignty skill is "
+            "stealing matches that should go to model-cards."
+        )

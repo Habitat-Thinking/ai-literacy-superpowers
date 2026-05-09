@@ -147,7 +147,12 @@ dispatches via the Claude Agent SDK.
 | All shipped shell scripts | ✅ `bash -n` syntax check (every `.sh` in scripts/, scripts/lib/, hooks/scripts/) | n/a | n/a | n/a |
 | `hooks/hooks.json` | n/a | ✅ structural (manifest schema + every command script resolves) | n/a | n/a |
 | spec-writer | n/a | ✅ structural | n/a (agent, not skill) | ✅ implemented (gated on API key) |
-| cupid-code-review | n/a | ✅ structural | ✅ implemented (gated on API key) | ✅ implemented + LLM-as-judge rubric (gated on API key) |
+| cupid-code-review | n/a | ✅ structural | ✅ trigger tests | ✅ implemented + LLM-as-judge rubric (gated on API key) |
+| literate-programming | n/a | ✅ structural | ✅ trigger tests (4 queries) | not yet (case-by-case) |
+| secrets-detection | n/a | ✅ structural | ✅ trigger tests (4 queries) | not yet (case-by-case) |
+| dependency-vulnerability-audit | n/a | ✅ structural | ✅ trigger tests (4 queries) | not yet (case-by-case) |
+| github-actions-supply-chain | n/a | ✅ structural | ✅ trigger tests (4 queries) | not yet (case-by-case) |
+| docker-scout-audit | n/a | ✅ structural | ✅ trigger tests (4 queries) | not yet (case-by-case) |
 | All 25 commands | n/a | ✅ structural + wiring (Phase 1) | n/a | per-category strategy in spec — see [design](../docs/superpowers/specs/2026-05-09-command-tdad-testing-design.md) |
 | 10 of 11 procedural commands | n/a | ✅ structural | n/a | ✅ Option C-direct test-stage helper per command |
 | `/worktree` (procedural, deliberate skip) | n/a | ✅ structural | n/a | helper would only wrap git; see `spike_helpers/__init__.py` |
@@ -158,7 +163,7 @@ dispatches via the Claude Agent SDK.
 
 | Component / area | Layer 0 | Layer 1 | Layer 2 | Layer 3 |
 | --- | --- | --- | --- | --- |
-| All components (1 agent, 1 skill, 1 command) | n/a | ✅ structural + wiring | n/a | not yet — plugin is small enough that matrices would be overkill |
+| All components (1 agent, 1 skill, 1 command) | n/a | ✅ structural + wiring | ✅ trigger tests on the model-cards skill (cross-plugin index) | not yet — plugin is small enough that matrices would be overkill |
 
 Layer 1 runs offline and passes against the real plugin. Layer 2 and
 Layer 3 are implemented and exercise the Claude Agent SDK. They run
@@ -172,7 +177,7 @@ Approximate per-run token cost based on Anthropic's published pricing
 
 - Layer 0 bash dispatcher: $0, ~3 seconds wall-clock
 - Layer 1 structural: $0, sub-second wall-clock
-- Layer 2 trigger tests: ~5 inferences against Haiku, ~$0.01 total
+- Layer 2 trigger tests: ~28 inferences against Haiku across 6 skills, ~$0.03 total
 - Layer 3 spec-writer: 1 multi-turn run against Sonnet, ~$0.05–$0.10
 - Layer 3 cupid-code-review: 1 review run + 1 judge run, ~$0.05
 
