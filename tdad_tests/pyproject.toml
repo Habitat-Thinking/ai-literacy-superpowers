@@ -30,6 +30,15 @@ dependencies = [
     "claude-agent-sdk>=0.1.0",
 ]
 
+# Tell setuptools exactly what to package. Without this, auto-discovery
+# sees three top-level directories with Python/data files (``runner/``,
+# ``fixtures/``, ``scenarios/``) and refuses to guess which is the
+# package. ``runner`` is the only directory that is actually Python
+# code intended for import; ``fixtures/`` and ``scenarios/`` are
+# data-shaped and should not be installed.
+[tool.setuptools]
+packages = ["runner"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"

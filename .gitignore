@@ -6,3 +6,11 @@
 .claude/affordance-discovery-*.md
 _site/
 site/
+
+# Python build artefacts (tdad_tests/ test suite). The venv, pytest
+# cache, byte-compiled modules, and editable-install metadata are all
+# per-developer and should not be committed.
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/*.egg-info/
