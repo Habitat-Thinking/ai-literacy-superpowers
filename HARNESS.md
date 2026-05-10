@@ -278,6 +278,26 @@
 - **Tool**: none yet
 - **Scope**: pr
 
+### Spec redaction markers must be visible
+
+- **Rule**: When a spec is amended, superseded prose must be marked
+  with a visible blockquote prefix
+  (`> **SUPERSEDED by Amendment N §X.Y**: <reason>`) above the original
+  text. HTML-comment redaction markers
+  (`<!-- amendment-redacted: ... -->`,
+  `<!-- redacted: ... -->`,
+  `<!-- superseded: ... -->`)
+  are forbidden in `docs/superpowers/specs/` because they vanish in
+  every rendered markdown surface (mkdocs, GitHub PR view) — the
+  redaction signal is invisible to the audience the marker claims to
+  serve. Driven by the 2026-05-09 → 2026-05-10 orchestrator-tdad-
+  discipline spec ceremony, where Amendment 2's HTML-comment markers
+  were caught by the third-pass `/diaboli` (post-A2 O3) and replaced
+  with visible blockquotes per cartograph story #9.
+- **Enforcement**: deterministic
+- **Tool**: `.github/workflows/spec-redaction-marker-check.yml`
+- **Scope**: pr
+
 ### New plugin components must ship with a TDAD scenario
 
 - **Rule**: When a PR adds a new file matching one of
@@ -697,6 +717,6 @@ the per-reader policy table.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-05-08
-Constraints enforced: 21/22
+Constraints enforced: 22/23
 Garbage collection active: 18/18
 Drift detected: no (ONBOARDING.md regenerated 2026-05-09)

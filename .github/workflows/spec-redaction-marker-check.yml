@@ -1,0 +1,66 @@
+# Spec redaction-marker check.
+#
+# When a spec is amended, the project's convention (per cartograph
+# story #9 of orchestrator-tdad-discipline-design and per AGENTS.md
+# STYLE) is to mark superseded prose with a visible blockquote
+# prefix:
+#
+#   > **SUPERSEDED by Amendment N §X.Y**: ...
+#
+# HTML-comment redaction markers like `<!-- amendment-redacted -->`
+# vanish on every rendered surface (mkdocs, GitHub PR view) — the
+# redaction signal is invisible to the audience the marker claims to
+# serve.
+#
+# This workflow detects HTML-comment redaction markers in spec files
+# and fails the PR with a pointer to the visible-blockquote convention.
+# Detection is line-anchored to avoid flagging prose that mentions the
+# anti-pattern in code spans or backticked quotations.
+
+name: Spec redaction-marker check
+
+on:
+  pull_request:
+    paths:
+      - 'docs/superpowers/specs/**'
+      - '.github/workflows/spec-redaction-marker-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check spec redaction markers are visible
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Detect HTML-comment redaction markers in specs
+        run: |
+          set -euo pipefail
+
+          # Match HTML comments at line-start containing redact-words.
+          # Line-anchored so backticked prose like `<!-- amendment-redacted -->`
+          # in inline code is not flagged (backticks force a non-zero leading
+          # column, but we additionally require the comment to be at the
+          # markdown-paragraph level).
+          if matches=$(grep -rnE '^[[:space:]]*<!--[^-]*(redact|supersed)' \
+              docs/superpowers/specs/ 2>/dev/null); then
+            echo "::error::HTML-comment redaction markers detected in spec files."
+            echo ""
+            echo "$matches"
+            echo ""
+            echo "These markers are invisible in every rendered markdown surface"
+            echo "(mkdocs, GitHub PR view). Use a visible blockquote prefix instead:"
+            echo ""
+            echo "  > **SUPERSEDED by Amendment N §X.Y**: <reason>"
+            echo "  <original prose preserved beneath>"
+            echo ""
+            echo "See cartograph story #9 of"
+            echo "docs/superpowers/specs/2026-05-09-orchestrator-tdad-discipline-design.md"
+            echo "for the convention's lineage and rationale."
+            exit 1
+          fi
+
+          echo "Spec redaction-marker check passed: no invisible markers found."
