@@ -37,6 +37,11 @@ Want to contribute to the plugins themselves? See
 constraints, TDAD test discipline, common pitfalls, and first-PR
 checklist that govern day-to-day development.
 
+For the methodology behind the plugin's test discipline, see
+[TDAD](tdad/index.md) — Test-Driven Agentic Discipline applied to
+skills, agents, and commands, with the four-layer cost-cadence
+architecture that scales the discipline across the project.
+
 ---
 
 ## Add the marketplace
