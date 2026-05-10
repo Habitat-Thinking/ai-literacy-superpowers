@@ -7,48 +7,48 @@ stories:
   - id: 1
     lens: [forces, coherence]
     title: Forward-only pivot over self-demonstration ceremony
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The forward-only pivot is the right call given the Layer-1-vs-Layer-3 cost trade. The trade was named honestly in A2.6 and mitigated by O7's accepted disposition (in-file forward-pointer in orchestrator.agent.md and tdd-agent.agent.md). The cartographer's concern about future contributors generalising 'forward-only' into a maxim is exactly what governance audits exist to catch — promoting the pattern to a project-level rule now would be premature; the audit cadence is the natural watchpoint."
   - id: 2
     lens: [patterns, defaults]
     title: Deterministic CI inherits spec-first-check shape
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The deterministic-CI shape is already a project pattern (spec-first-check.yml, version-check.yml, docs-build-check.yml). Reusing the pattern is the point — that's leverage, not duplication. The cartographer's flag that future tier-content judgement can't live in this check is acknowledged but speaks to a future spec, not this one."
   - id: 3
     lens: [alternatives, patterns]
     title: Branch on existing agent over new tdad-agent
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The single-agent / two-charters Strategy pattern is correct here. The cartographer's contagion-risk concern (changes to one branch must be checked against the other) is real but is the same risk any conditional structure carries; the alternative (two agents sharing a charter) was the failure mode this project explicitly chose to avoid in the diaboli architectural decision. The branch-boundary preamble per A2.5 is the localised mitigation."
   - id: 4
     lens: [defaults, consequences]
     title: Path-based detection borrows convention as truth
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Path-based detection's correctness is coupled to two HARNESS Context conventions, but those conventions ARE actively enforced — by the harness-enforcer agent at PR time and by the Naming / File structure review during the agent-enforced spec-quality and frontmatter constraints. The dependency is named explicitly in §2 of the spec; the cartographer is right to surface it but not to alarm-bell. The pattern (convention-over-configuration with human-enforced conventions) is well-named for future reference."
   - id: 5
     lens: [consequences, alternatives]
     title: New-files-only scope accepts modification blind spot
-    disposition: pending
-    disposition_rationale: null
+    disposition: revisit
+    disposition_rationale: "The cartographer's question is sharp: the deferred follow-up has no observation surface. Re-evaluation trigger set to the next quarterly /governance-audit (target 2026-07-19 per CLAUDE.md Quarterly Operations cadence). The audit should look at: number of agent-artefact PRs that modified existing components vs added new ones in the trailing 90 days, and whether modifications-without-scenarios surfaced as a real failure mode. If yes, follow-up spec extends the constraint. Paired with #6."
   - id: 6
     lens: [defaults, consequences]
     title: Three directories define the discipline's edge
-    disposition: pending
-    disposition_rationale: null
+    disposition: revisit
+    disposition_rationale: "Same shape as #5 — deferred-without-trigger. Same re-evaluation trigger: next quarterly /governance-audit (target 2026-07-19). The audit should look at: PRs that touched hooks/, templates/, or scripts/ in the trailing 90 days, and whether any of them had behaviour worth a scenario. If a hook gains complexity, follow-up spec extends the constraint's scope."
   - id: 7
     lens: [alternatives, coherence]
     title: FINDING- coexists rather than collapses into scenarios
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "FINDING- as a discriminated-union arm under scenarios/<type>/<name>/ is the right call — the corpus already encodes the distinction and Layer 3 has dedicated tests that depend on it. The pattern naming (discriminated union) is useful for future tooling that walks the directory. The constraint correctly excludes finding-tier files via the tier whitelist (per O5's accepted simplification)."
   - id: 8
     lens: [consequences, alternatives]
     title: Presence-and-tier check defers falsifiability test
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The two-phase verification (deterministic presence-and-tier + human review at orchestrator's RED-phase soft surface) is fragile at the seam, but the deferral matches O8's deferred disposition in the diaboli record — both pointed at the same trade. The Layer 1 non-empty-Then test remains the right long-term home for substantive-quality enforcement; cheap-now grep would expand the deterministic workflow's scope beyond its stated purpose."
   - id: 9
     lens: [patterns, defaults]
     title: Visible blockquote markers over invisible HTML comments
-    disposition: pending
-    disposition_rationale: null
+    disposition: promoted
+    disposition_rationale: "The visible-blockquote redaction convention is small, reusable, and one-line to formalise. Promote to AGENTS.md STYLE at curation time: 'When a spec is amended, mark superseded prose with a visible > **SUPERSEDED by Amendment N §X.Y**: ... blockquote prefix above the original text. Do not use HTML comments — they vanish on every rendered surface (GitHub PR view, mkdocs material). Audit-trail-with-visible-redaction is the named pattern (FDA 21 CFR Part 11 lineage).' Future amended specs inherit the convention without rediscovery. Promotion happens as a separate small commit at the next AGENTS.md curation pass; this PR records the disposition only."
 ---
 
 ## Story #1 — Forward-only pivot over self-demonstration ceremony
