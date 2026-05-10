@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.36.0 — 2026-05-10
+
+### Feature — TDAD discipline for agent artefacts in the orchestrator pipeline
+
+When the orchestrator detects that a feature spec touches a new file
+under `ai-literacy-superpowers/skills/`, `agents/`, or `commands/`, it
+now passes agent-artefact scope context to `tdd-agent`. The tdd-agent's
+new agent-artefact branch authors a TDAD scenario file at
+`tdad_tests/scenarios/<type>/<name>/<aspect>.md` (with `Given/When/Then/Rubric`
+sections and `tier` declared as one of `structural`, `trigger`, or
+`behavioural`) as the RED-phase deliverable, instead of a generic
+test file. Detection is path-based; modification of an existing
+component is acknowledged as a known limitation (the orchestrator
+surfaces the question but does not enforce an answer).
+
+### Constraint — `New plugin components must ship with a TDAD scenario`
+
+New deterministic HARNESS constraint enforced at PR time via
+`.github/workflows/tdad-scenario-check.yml`. The check verifies that
+any added file matching the canonical component paths has a
+corresponding scenario file with a non-`finding` tier. Files with
+`tier: finding` (the documentary-finding category, e.g.
+`FINDING-command-tdab-gap.md` in the corpus) coexist with scenarios
+but do not satisfy the constraint. Modifications are out of scope —
+only additions are gated.
+
+The HARNESS Status `Constraints enforced` count moves from 20/21 to
+21/22; the README badge follows.
+
+### Discipline shipped forward-only
+
+Per the spec at
+`docs/superpowers/specs/2026-05-09-orchestrator-tdad-discipline-design.md`
+(Amendment 2 §A2.6), this PR's modifications to `orchestrator.agent.md`
+and `tdd-agent.agent.md` themselves do not author scenarios. The
+discipline applies forward — to PRs that *add* a component after this
+one merges. Both modified agent files carry an in-place forward-pointer
+comment explaining the exemption (per the diaboli adjudication of O7).
+
+### Spec ceremony
+
+Three spec-mode `/diaboli` passes (12 → 8 → 8 objections, converging
+on implementation polish), one `/choice-cartograph` pass (9 stories),
+and one Amendment 2 pivot from self-demonstration to forward-only.
+Both records have all dispositions resolved — no `pending`. Spec
+preserves original prose with visible `> **SUPERSEDED**: …`
+blockquote redaction markers (the cartograph promoted this convention
+to AGENTS.md STYLE at the next curation pass).
+
 ## 0.35.5 — 2026-05-09
 
 ### Fix — `/harness-sync` consistently references `harness-audit-engine`

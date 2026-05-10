@@ -10,6 +10,18 @@ You are the entry point for all changes to this repository. Your job is to coord
 specialist agents in the correct sequence, passing the right context between them, and
 ensuring the project's conventions are upheld end to end.
 
+<!--
+  No TDAD scenarios exist for this agent at tdad_tests/scenarios/agents/orchestrator/.
+  This is intentional: the discipline introduced by
+  docs/superpowers/specs/2026-05-09-orchestrator-tdad-discipline-design.md
+  applies forward (to PRs that ADD a new component), not retroactively. This file
+  was modified in that PR (gaining step 1c, the agent-artefact scope detection)
+  and is exempt under Amendment 2 §A2.6.
+  Future modifications should review this exemption — see the spec's §A2.8 known
+  limitations and the cartograph stories #5 and #6 (revisit at next quarterly
+  /governance-audit, target 2026-07-19).
+-->
+
 ## Your first action on every task
 
 Read these three files before doing anything else:
@@ -44,12 +56,12 @@ message with multiple Agent tool calls.
      GATE: Objection Adjudication — surface the objection record to the user.
            Refuse to proceed while any disposition is `pending`. The user writes
            dispositions (`accepted`/`deferred`/`rejected`) and rationales inline
-           in docs/superpowers/objections/<spec-slug>.md. Do NOT let any agent
+           in `docs/superpowers/objections/<spec-slug>.md`. Do NOT let any agent
            write dispositions — this is the cognitive-engagement mechanism.
   1b. SEQUENTIAL — choice-cartographer  After 1a dispositions are resolved;
            reads the spec and the matching adjudicated objection record;
            produces the choice-story record at
-           docs/superpowers/stories/<spec-slug>.md.
+           `docs/superpowers/stories/<spec-slug>.md`.
      SOFT GATE: Choice-Story Surface — surface the choice-story record to the
            user. ALLOW progression even if any `disposition: pending` remains.
            Emit a structured `cartograph_pending_count: N` field in the
@@ -61,7 +73,23 @@ message with multiple Agent tool calls.
            choice-story record is surfaced (soft), present the plan summary
            alongside both adjudicated records and `cartograph_pending_count`;
            wait for approval.
-  2. SEQUENTIAL  — tdd-agent          Write failing tests from the new scenarios.
+  1c. SEQUENTIAL — agent-artefact scope detection (no agent dispatch)
+           Before dispatching tdd-agent, inspect the plan for any file path
+           under `ai-literacy-superpowers/skills/<name>/SKILL.md`,
+           `ai-literacy-superpowers/agents/<name>.agent.md`, or
+           `ai-literacy-superpowers/commands/<name>.md`. If one or more
+           paths match, mark the dispatch as **agent-artefact scope** and
+           pass the artefact-type list (skill/agent/command) and slugs to
+           tdd-agent in the dispatch context. If no path matches, dispatch
+           tdd-agent normally (generic-test branch). Detection is path-
+           based per the spec at `docs/superpowers/specs/2026-05-09-orchestrator-tdad-discipline-design.md`;
+           it is deliberately scoped to those three directories — `hooks/`,
+           `templates/`, and `scripts/` are out of scope (rationale in §A1.10
+           of that spec).
+  2. SEQUENTIAL  — tdd-agent          Write failing tests from the new scenarios
+                                       (generic-test branch) or author TDAD scenario
+                                       files at `tdad_tests/scenarios/<type>/<name>/`
+                                       (agent-artefact branch — context passed by 1c).
   3. PARALLEL    — (implementers)     Make tests green — dispatch one agent per
                                        language or implementation domain as needed.
   4. SEQUENTIAL  — code-reviewer      Review all implementations.

@@ -1,0 +1,125 @@
+# TDAD scenario coverage check for pull requests.
+#
+# Verifies that any new plugin component (skill, agent, or command)
+# added under ai-literacy-superpowers/skills/, /agents/, or /commands/
+# ships with at least one TDAD scenario file at the canonical path
+# tdad_tests/scenarios/<type>/<name>/<aspect>.md whose YAML frontmatter
+# declares tier as one of: structural, trigger, behavioural.
+#
+# Files with tier: finding do NOT satisfy the constraint — they are
+# documentary, not falsifiable.
+#
+# This is the post-merge forcing function for the discipline introduced
+# in docs/superpowers/specs/2026-05-09-orchestrator-tdad-discipline-design.md.
+# Modifications to existing components are NOT gated by this check (per
+# Amendment 2 §A2.6 of that spec) — only additions.
+
+name: TDAD scenario check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Verify new components have a TDAD scenario
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Verify scenario coverage for added components
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          # workflow_dispatch has no PR context — skip
+          if [ -z "$BASE_REF" ]; then
+            echo "No base_ref — skipping (manual dispatch without PR context)"
+            exit 0
+          fi
+
+          BASE="origin/$BASE_REF"
+
+          # List files added in this PR (against base ref)
+          ADDED=$(git diff --name-only --diff-filter=A "$BASE..HEAD" || true)
+
+          if [ -z "$ADDED" ]; then
+            echo "No added files — nothing to check."
+            exit 0
+          fi
+
+          echo "Added files in this PR:"
+          echo "$ADDED"
+          echo ""
+
+          # Filter to canonical plugin component paths
+          MISSING=0
+          while IFS= read -r file; do
+            type=""
+            name=""
+
+            if [[ "$file" =~ ^ai-literacy-superpowers/skills/([^/]+)/SKILL\.md$ ]]; then
+              type="skills"
+              name="${BASH_REMATCH[1]}"
+            elif [[ "$file" =~ ^ai-literacy-superpowers/agents/([^/]+)\.agent\.md$ ]]; then
+              type="agents"
+              name="${BASH_REMATCH[1]}"
+            elif [[ "$file" =~ ^ai-literacy-superpowers/commands/([^/]+)\.md$ ]]; then
+              type="commands"
+              name="${BASH_REMATCH[1]}"
+            else
+              continue
+            fi
+
+            scenario_dir="tdad_tests/scenarios/$type/$name"
+            echo "Checking new component: $type/$name (added file: $file)"
+
+            if [ ! -d "$scenario_dir" ]; then
+              echo "::error file=$file::No scenario directory at $scenario_dir/. New plugin components must ship with at least one TDAD scenario file at $scenario_dir/<aspect>.md whose tier is structural, trigger, or behavioural."
+              MISSING=$((MISSING + 1))
+              continue
+            fi
+
+            # Look for at least one scenario file in the directory whose
+            # frontmatter declares tier in the substantive whitelist.
+            # Frontmatter is between two `---` lines at the top of the file.
+            found=0
+            for candidate in "$scenario_dir"/*.md; do
+              [ -e "$candidate" ] || continue
+              tier=$(awk '/^---$/{c++; if(c==2) exit; next} c==1' "$candidate" \
+                     | grep -E '^tier:' \
+                     | head -1 \
+                     | sed -E 's/^tier:[[:space:]]*//; s/[[:space:]]*$//')
+              if [ "$tier" = "structural" ] || [ "$tier" = "trigger" ] || [ "$tier" = "behavioural" ]; then
+                echo "  ✓ Found scenario: $candidate (tier: $tier)"
+                found=1
+                break
+              fi
+            done
+
+            if [ "$found" -eq 0 ]; then
+              echo "::error file=$file::No qualifying scenario in $scenario_dir/. At least one .md file there must declare tier as one of: structural, trigger, behavioural. Files with tier: finding are documentary and do not satisfy this constraint."
+              MISSING=$((MISSING + 1))
+            fi
+          done <<< "$ADDED"
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo ""
+            echo "::error::$MISSING new component(s) lack a qualifying TDAD scenario."
+            echo ""
+            echo "See docs/superpowers/specs/2026-05-09-orchestrator-tdad-discipline-design.md"
+            echo "for the discipline. Author scenario files using the format described in"
+            echo "tdad_tests/README.md (Given / When / Then / Rubric, with frontmatter"
+            echo "declaring component, component_type, and tier)."
+            exit 1
+          fi
+
+          echo ""
+          echo "TDAD scenario check passed."

@@ -278,6 +278,25 @@
 - **Tool**: none yet
 - **Scope**: pr
 
+### New plugin components must ship with a TDAD scenario
+
+- **Rule**: When a PR adds a new file matching one of
+  `ai-literacy-superpowers/skills/<name>/SKILL.md`,
+  `ai-literacy-superpowers/agents/<name>.agent.md`, or
+  `ai-literacy-superpowers/commands/<name>.md`, the same PR must include
+  at least one scenario file at
+  `tdad_tests/scenarios/<type>/<name>/<aspect>.md` whose YAML
+  frontmatter declares `tier` as one of `structural`, `trigger`, or
+  `behavioural`. Files with `tier: finding` do NOT satisfy the
+  constraint (they are documentary, not falsifiable). Modifications to
+  existing components are NOT gated by this constraint — modification-
+  scope is acknowledged as a known limitation per the spec at
+  `docs/superpowers/specs/2026-05-09-orchestrator-tdad-discipline-design.md`
+  Amendment 2 §A2.8.
+- **Enforcement**: deterministic
+- **Tool**: `.github/workflows/tdad-scenario-check.yml`
+- **Scope**: pr
+
 ### Reflections via PR workflow
 
 - **Rule**: Every addition to `REFLECTION_LOG.md` must be committed on a
@@ -678,6 +697,6 @@ the per-reader policy table.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-05-08
-Constraints enforced: 20/21
+Constraints enforced: 21/22
 Garbage collection active: 18/18
 Drift detected: no (ONBOARDING.md regenerated 2026-05-09)
