@@ -303,6 +303,12 @@ cases that warrant them.
 
 ## Where to learn more
 
+- [`component-design-with-tdad` skill](../plugins/ai-literacy-superpowers/reference/skills.md#component-design-with-tdad)
+  — design-time methodology naming the five design questions implied
+  by the four-layer architecture; loadable by `spec-writer`,
+  `tdd-agent`, or human brainstorming. Pairs with this docs page —
+  the page explains *what TDAD is*; the skill packages the design
+  intelligence the methodology assumes
 - [`tdad_tests/README.md`](https://github.com/Habitat-Thinking/ai-literacy-superpowers/blob/main/tdad_tests/README.md)
   — the runnable test suite, layer-by-layer status table, scenario
   format, and cost expectations

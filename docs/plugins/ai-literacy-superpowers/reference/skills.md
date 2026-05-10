@@ -3,7 +3,7 @@ title: Skills
 ---
 # Skills
 
-The plugin ships 30 skills. Each skill is a focused unit of domain knowledge that Claude can invoke during a session. They are grouped below by category.
+The plugin ships 31 skills. Each skill is a focused unit of domain knowledge that Claude can invoke during a session. They are grouped below by category.
 
 ---
 
@@ -173,3 +173,20 @@ agent's reasoning), the cross-reference protocol (deterministic
 resolution of `O\d+` and `#N` tokens in `Refs` fields), and the
 output format. Referenced by `/choice-cartograph` and the
 choice-cartographer agent.
+
+### component-design-with-tdad
+
+Design-time methodology for new plugin components. Names the five
+design questions implied by the four-layer TDAD architecture:
+(1) component type — skill, agent, command, or backing script;
+(2) which TDAD layers the component warrants, with per-type defaults
+and the precedence note for command-tdad-testing-design.md
+per-component judgement; (3) what the scenario's `Then` clause
+asserts and how the fixture sizes; (4) new file or modification of an
+existing component, with the modification-vs-refactor heuristic;
+(5) scenario or finding, with the FINDING- prefix carve-out.
+Loadable by `spec-writer`, `tdd-agent` in its agent-artefact branch,
+or human brainstorming. Not a gate — the forcing functions are the
+deterministic CI workflows shipped in v0.36.0. Pairs with
+advocatus-diaboli (review-time): the skill names the design choices,
+the diaboli challenges them. Added in v0.37.0 (issue #313, PR #314).

@@ -3,9 +3,9 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.3.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.36.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.37.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
-[![Skills](https://img.shields.io/badge/Skills-30-2E8B57?style=flat-square)](#skills-30)
+[![Skills](https://img.shields.io/badge/Skills-31-2E8B57?style=flat-square)](#skills-31)
 [![Agents](https://img.shields.io/badge/Agents-13-2E8B57?style=flat-square)](#agents-13)
 [![Commands](https://img.shields.io/badge/Commands-25-2E8B57?style=flat-square)](#commands-25)
 [![Harness](https://img.shields.io/badge/Harness-23%2F24_enforced-4682B4?style=flat-square)](HARNESS.md)
@@ -27,7 +27,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.36.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **30 skills, 13 agents, 25 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.37.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **31 skills, 13 agents, 25 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 
 The bulk of this README documents the **`ai-literacy-superpowers`** plugin specifically — its skills, agents, commands, hooks, templates, enforcement loops, and pipelines. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md). Future sister plugins will land in this marketplace under `<plugin-name>/` with their own docs at `docs/plugins/<plugin-name>/`.
@@ -156,7 +156,7 @@ This plugin works with both Claude Code and GitHub Copilot CLI from the same rep
 
 The remaining sections of this README document the **`ai-literacy-superpowers`** plugin in detail. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md).
 
-### Skills (30)
+### Skills (31)
 
 Code quality, harness engineering, and governance knowledge that agents read when working in your codebase.
 
@@ -191,6 +191,7 @@ Code quality, harness engineering, and governance knowledge that agents read whe
 | governance-observability | Governance metrics catalogue, snapshot format extension, and HTML dashboard specification |
 | advocatus-diaboli | Adversarial spec review — six-category objection framework, evidence requirements, steel-manned challenge before plan approval |
 | choice-cartographer | Decision archaeology — six-lens map of implicit choices a spec has made (forces, alternatives, defaults, patterns, consequences, coherence); routing rule partitions findings between the Cartographer and the diaboli |
+| component-design-with-tdad | Design-time methodology for new plugin components — names the five design questions implied by the four-layer TDAD architecture (component type, layer targeting, scenario shape, new-vs-modification, scenario-vs-finding); loadable by spec-writer, tdd-agent, or human brainstorming |
 
 ### Agents (13)
 

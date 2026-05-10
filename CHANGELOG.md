@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.37.0 — 2026-05-10
+
+### New skill — `component-design-with-tdad`
+
+Methodology guidance for designing a new plugin component (skill,
+agent, command, or backing script) with TDAD discipline integrated
+from the start. The skill names the five design questions implied
+by the four-layer TDAD architecture:
+
+1. What component type is this?
+2. Which TDAD layers does this component warrant?
+3. What does the scenario's `Then` clause look like?
+4. New file or modification of an existing component?
+5. Scenario or finding?
+
+Loadable by `spec-writer`, `tdd-agent`, or human brainstorming. Not
+a gate — the forcing functions are the deterministic CI workflows
+shipped in v0.36.0 (`tdad-tests-fast.yml`,
+`tdad-scenario-check.yml`). This skill packages the design
+intelligence those gates assume.
+
+The choice of skill rather than a new agent is deliberate: cartograph
+story #3 of the v0.36.0 introducing spec explicitly chose
+single-`tdd-agent` + branch over a separate `tdad-agent`, citing the
+architectural failure mode of "two agents that share a charter." A
+new component-designer agent would have reversed that decision shape
+on the same charter axis. A skill carries the design intelligence
+reusably (loadable by either agent or human) without the dispatch
+overhead.
+
+Skill count: 30 → 31. No agent or command count change.
+
+Issue #313 carries the in-scope / out-of-scope and the chore-PR
+rationale per AGENTS.md STYLE on reflection-driven amendments.
+REFLECTION_LOG.md captures the design-intelligence-gap signal that
+drove the addition.
+
 ## 0.36.0 — 2026-05-10
 
 ### Feature — TDAD discipline for agent artefacts in the orchestrator pipeline
