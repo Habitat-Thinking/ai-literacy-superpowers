@@ -298,6 +298,23 @@
 - **Tool**: `.github/workflows/spec-redaction-marker-check.yml`
 - **Scope**: pr
 
+### TDAD fast-suite passes (Layers 0 + 1)
+
+- **Rule**: Layer 0 (deterministic bash plumbing tests) and Layer 1
+  (structural tests for plugin components and scenario corpus) of the
+  TDAD test suite must pass on every PR that touches plugin code,
+  `tdad_tests/`, `HARNESS.md`, or `AGENTS.md`. Layer 0 covers bash
+  helpers (reflection-log archival, parser library, migration
+  scripts). Layer 1 covers frontmatter well-formedness, component
+  existence, and scenario-target resolution. Both layers run offline
+  (no API key required) and complete in under ten seconds. Layers 2
+  (trigger) and 3 (behavioural) are NOT covered by this gate — they
+  require API key + per-run cost and are deferred to a separate
+  workflow if/when the project decides cadence.
+- **Enforcement**: deterministic
+- **Tool**: `.github/workflows/tdad-tests-fast.yml`
+- **Scope**: pr
+
 ### New plugin components must ship with a TDAD scenario
 
 - **Rule**: When a PR adds a new file matching one of
@@ -717,6 +734,6 @@ the per-reader policy table.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-05-08
-Constraints enforced: 22/23
+Constraints enforced: 23/24
 Garbage collection active: 18/18
 Drift detected: no (ONBOARDING.md regenerated 2026-05-09)

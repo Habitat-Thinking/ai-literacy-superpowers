@@ -1,0 +1,62 @@
+# TDAD Layers 0 + 1 — fast deterministic suite — PR-time gate.
+#
+# Runs the two free, deterministic layers of the TDAD test suite on
+# every PR:
+#
+# - Layer 0: bash plumbing tests for reflection-log helpers, archive
+#            scripts, and the migration helper. Dispatched by the
+#            pytest test_layer0_deterministic.py module which shells
+#            out to bash test scripts.
+# - Layer 1: structural tests for the plugin's own components and
+#            scenario corpus. Frontmatter well-formed, components
+#            exist, scenarios resolve.
+#
+# Both layers run offline (no API key required) and complete in under
+# ten seconds on a stock GitHub-hosted runner. Layers 2 (trigger) and
+# Layer 3 (behavioural) are NOT run here — they require ANTHROPIC_API_KEY
+# and per-run cost ($0.03 per Layer 2 trigger run; $0.05–$0.20 per
+# Layer 3 behavioural run). A separate workflow can be added if the
+# project decides to gate Layer 2/3 nightly or behind a label.
+#
+# This is a hard gate — Layer 0 or Layer 1 failures block the PR.
+
+name: TDAD fast suite (Layers 0 + 1)
+
+on:
+  pull_request:
+    paths:
+      - 'ai-literacy-superpowers/**'
+      - 'tdad_tests/**'
+      - 'HARNESS.md'
+      - 'AGENTS.md'
+      - '.github/workflows/tdad-tests-fast.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fast-suite:
+    name: Run TDAD Layers 0 + 1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tdad_tests/pyproject.toml
+
+      - name: Install tdad_tests
+        working-directory: tdad_tests
+        run: pip install -e .
+
+      - name: Run Layer 0 (deterministic plumbing)
+        working-directory: tdad_tests
+        run: pytest tests/test_layer0_deterministic.py -v
+
+      - name: Run Layer 1 (structural)
+        working-directory: tdad_tests
+        run: pytest tests/test_layer1_structural.py -v
