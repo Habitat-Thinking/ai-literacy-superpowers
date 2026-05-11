@@ -282,6 +282,54 @@ recent file in `observability/costs/` matching `*-costs.md`.
 | Budget status | Read from the most recent cost snapshot |
 | Cost trend | Compare current and previous cost snapshots |
 
+### Sustainable Pace
+
+```text
+## Sustainable Pace
+- This month's pace: sustainable / at-edge / over-the-edge / unknown
+- Note: short free-text note from the snapshot author (optional)
+- Trend: holding / drifting toward edge / recovering (vs previous snapshot)
+```
+
+**Source:** Snapshot author self-report. Captures the "depletable
+collaborator" signal as a longitudinal field so trend lines become
+visible across snapshots.
+
+| Field | How to compute |
+| ------- | --------------- |
+| This month's pace | Self-report from the snapshot author. `sustainable` = no slipping; `at-edge` = cadence held but adding any further pillar would force triage; `over-the-edge` = some streams slipping; `unknown` if no self-report yet |
+| Note | Optional one-line free-text annotation explaining what shaped the pace this month |
+| Trend | Compare to previous snapshot's pace field. `holding` if same or better; `drifting toward edge` if worsened by one band; `recovering` if improved by one band |
+
+If no self-report was captured, record `unknown` rather than guessing.
+Introduced 2026-05-11 per quarterly assessment recommendation.
+
+### Portfolio Adoption
+
+```text
+## Portfolio Adoption
+- Plugin installs (cumulative): N (or "not tracked")
+- /assess invocations from other projects: N (or "not tracked")
+- Upstream PRs into ai-literacy-for-software-engineers: N since last snapshot
+- agent-harness-enabled tagged repos discovered: N
+- Trend: growing / stable / declining (vs previous snapshot)
+```
+
+**Source:** GitHub topic-tag search, marketplace install telemetry
+(when available), and parent repo PR list.
+
+| Field | How to compute |
+| ------- | --------------- |
+| Plugin installs | If install telemetry is available, report cumulative. Otherwise `not tracked` |
+| /assess invocations from other projects | If telemetry is available, report count since previous snapshot. Otherwise `not tracked` |
+| Upstream PRs | Count PRs into `ai-literacy-for-software-engineers` since previous snapshot date (via `gh pr list`) |
+| Tagged repos | `gh search repos --topic agent-harness-enabled` count |
+| Trend | Compare to previous snapshot. `growing` = any field increased; `stable` = no change; `declining` = any field decreased |
+
+Introduced 2026-05-11 per quarterly assessment recommendation. L5 →
+sovereign-across-an-organisation needs adoption telemetry; start
+capturing what's available, even when most fields read `not tracked`.
+
 ### Meta
 
 ```text

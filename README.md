@@ -3,9 +3,9 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.3.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.37.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.38.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
-[![Skills](https://img.shields.io/badge/Skills-31-2E8B57?style=flat-square)](#skills-31)
+[![Skills](https://img.shields.io/badge/Skills-32-2E8B57?style=flat-square)](#skills-32)
 [![Agents](https://img.shields.io/badge/Agents-13-2E8B57?style=flat-square)](#agents-13)
 [![Commands](https://img.shields.io/badge/Commands-25-2E8B57?style=flat-square)](#commands-25)
 [![Harness](https://img.shields.io/badge/Harness-23%2F24_enforced-4682B4?style=flat-square)](HARNESS.md)
@@ -13,7 +13,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-D97757?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
 [![Copilot CLI](https://img.shields.io/badge/Copilot_CLI-Plugin-000000?style=flat-square&logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
 [![Agent Harness Enabled](https://img.shields.io/badge/Agent_Harness-Enabled-000000?style=flat-square)](HARNESS.md)
-[![AI Literacy](https://img.shields.io/badge/AI_Literacy-Level_5-DAA520?style=flat-square)](assessments/2026-04-28-assessment.md)
+[![AI Literacy](https://img.shields.io/badge/AI_Literacy-Level_5-DAA520?style=flat-square)](assessments/2026-05-11-assessment.md)
 
 A plugin marketplace for [Claude Code](https://claude.ai/claude-code) and [GitHub Copilot CLI](https://github.com/features/copilot) shipping opinionated tools for the AI Literacy framework — harness engineering, agent orchestration, decision archaeology, governance, and model evaluation.
 
@@ -27,7 +27,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.37.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **31 skills, 13 agents, 25 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.38.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **32 skills, 13 agents, 25 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 
 The bulk of this README documents the **`ai-literacy-superpowers`** plugin specifically — its skills, agents, commands, hooks, templates, enforcement loops, and pipelines. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md). Future sister plugins will land in this marketplace under `<plugin-name>/` with their own docs at `docs/plugins/<plugin-name>/`.
@@ -156,7 +156,7 @@ This plugin works with both Claude Code and GitHub Copilot CLI from the same rep
 
 The remaining sections of this README document the **`ai-literacy-superpowers`** plugin in detail. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md).
 
-### Skills (31)
+### Skills (32)
 
 Code quality, harness engineering, and governance knowledge that agents read when working in your codebase.
 
@@ -396,7 +396,7 @@ ADVISORY LOOP (edit time — warn, do not block)
 │   ├── CLAUDE.md                       Workflow rules, conventions, disciplines
 │   ├── AGENTS.md                       Compound learning memory (human-curated)
 │   ├── MODEL_ROUTING.md                Model-tier guidance + token budgets
-│   └── Skills (30)                     Domain knowledge for agents
+│   └── Skills (32)                     Domain knowledge for agents
 │
 └── Commands
     ├── /reflect                        Capture post-task learnings
@@ -409,6 +409,10 @@ STRICT LOOP (merge time — block until green)
 │   ├── ci-github-actions.yml           PR-scoped constraint enforcement
 │   │                                    (markdownlint, gitleaks, shell checks)
 │   ├── gc.yml                           Weekly GC for deterministic rules
+│   ├── docs-build-check.yml             mkdocs --strict at PR time
+│   ├── spec-redaction-marker-check.yml  Blocks HTML-comment redaction in specs
+│   ├── tdad-tests-fast.yml              TDAD Layers 0+1 fast-suite at PR time
+│   ├── tdad-scenario-check.yml          New plugin components must ship a scenario
 │   └── ci-mutation-testing.yml         Language-specific mutation testing
 │
 ├── Agent Pipeline
