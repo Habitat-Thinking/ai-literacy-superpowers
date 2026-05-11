@@ -1,5 +1,75 @@
 # Changelog
 
+## 0.38.0 — 2026-05-11
+
+### Snapshot template gains two new sections
+
+Two new sections added to the health snapshot template defined in
+`ai-literacy-superpowers/skills/harness-observability/references/snapshot-format.md`
+and the writer/validator in
+`ai-literacy-superpowers/commands/harness-health.md`:
+
+- **Sustainable Pace** — longitudinal self-report capturing the
+  depletable-collaborator signal (this month's pace: sustainable /
+  at-edge / over-the-edge / unknown; optional note; trend vs previous
+  snapshot). Closes the depletion-management gap raised in successive
+  literacy assessments — pace becomes a tracked field instead of a
+  by-feel judgement.
+- **Portfolio Adoption** — adoption telemetry capturing the L5 →
+  sovereign-across-an-organisation progression (plugin installs,
+  /assess invocations from other projects, upstream PRs into
+  `ai-literacy-for-software-engineers`, `agent-harness-enabled`
+  tagged-repo count, trend). Most fields read `not tracked` until
+  install telemetry is available, but capturing what *is* available
+  starts the longitudinal record.
+
+Section count moves from 14 to 16. Next `/harness-health` invocation
+populates the new sections.
+
+### Quarterly literacy assessment — Level 5 continuation
+
+`assessments/2026-05-11-assessment.md` records the quarterly
+re-assessment. Level 5 confirmed for the third consecutive sitting,
+with deepening evidence: 81 commits, 6 minor releases, the TDAD
+pillar shipped end-to-end and operationally adopted, governance
+subsystem operating quarterly, monthly curation practised, ONBOARDING
+regenerated immediately after TDAD landed.
+
+Five workflow recommendations walked interactively and all five
+accepted:
+
+- R1 — run `/cost-capture` in this quarterly sitting (closes
+  three-assessment-old gap)
+- R2 — add a SessionStart hook surfacing AGENTS.md promoted patterns
+  (filed as follow-up PR with its own spec)
+- R3 — run `/harness-audit` in this sitting to refresh HARNESS.md
+  Status counts via the proper mechanism
+- R4 — sustainable-pace snapshot field (shipped in this PR)
+- R5 — portfolio-adoption snapshot field (shipped in this PR)
+
+### Habitat hygiene
+
+- README Skills badge: 31 → 32 (catches the
+  `component-design-with-tdad` skill added in v0.37.0)
+- README marketplace table and Skills heading anchor: same
+- README AI Literacy badge: link updated to point to the new
+  2026-05-11 assessment
+- README mechanism map: Skills count updated; STRICT loop CI workflow
+  list now includes `docs-build-check.yml`,
+  `spec-redaction-marker-check.yml`, `tdad-tests-fast.yml`, and
+  `tdad-scenario-check.yml`
+
+### Reflection
+
+`REFLECTION_LOG.md` gains a new entry for the 2026-05-11 assessment.
+Notable observations: drift on entry was immediate and mechanical
+signal (README/HARNESS Status counts visibly stale within seconds —
+the L5 epistemic gain at work); the TDAD pillar followed the same
+six-step shipping arc as the governance subsystem six weeks ago,
+making the arc a tacit pattern worth promoting to AGENTS.md
+ARCH_DECISIONS; cost capture has been flagged in three consecutive
+assessments and the gap is *operational habit*, not tool friction.
+
 ## 0.37.0 — 2026-05-10
 
 ### New skill — `component-design-with-tdad`
