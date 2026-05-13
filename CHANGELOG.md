@@ -49,6 +49,12 @@ accepted:
 
 ### Habitat hygiene
 
+- New `decks/` directory with `cognitive-debt-paydown.md` — a
+  slide-deck source mapping the four-debt cycle onto the framework's
+  three human-cognition gates (Choice Cartographer, Advocatus
+  Diaboli, alternative-options agent architecture). Markdown-source
+  format intended for Claude Design or any deck tool that consumes
+  per-slide headings.
 - HARNESS.md template-version marker bumped from `0.35.1` to `0.38.0`
   after `/harness-upgrade` confirmed the project's harness already
   contains every active and commented-out item present in the current
