@@ -49,6 +49,10 @@ accepted:
 
 ### Habitat hygiene
 
+- HARNESS.md template-version marker bumped from `0.35.1` to `0.38.0`
+  after `/harness-upgrade` confirmed the project's harness already
+  contains every active and commented-out item present in the current
+  template (24 constraints + 18 GC rules vs the template's 5 + 14).
 - README Skills badge: 31 → 32 (catches the
   `component-design-with-tdad` skill added in v0.37.0)
 - README marketplace table and Skills heading anchor: same
