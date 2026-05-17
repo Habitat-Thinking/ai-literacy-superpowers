@@ -14,3 +14,5 @@ site/
 **/__pycache__/
 **/.pytest_cache/
 **/*.egg-info/
+
+.DS_Store
