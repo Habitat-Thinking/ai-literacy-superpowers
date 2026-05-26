@@ -370,7 +370,7 @@ And no further pipeline step is invoked
 | `skills/carpaccio/references/slicing-lenses.md` | Detailed lens definitions. |
 | `agents/carpaccio.agent.md` | Orchestrator-facing dispatch contract. |
 | `commands/carpaccio.md` | `/carpaccio <task>` manual invocation. |
-| `tdad_tests/scenarios/agents/carpaccio/*.yaml` | TDAD scenarios (see §10). |
+| `tdad_tests/scenarios/agents/carpaccio/*.md` | TDAD scenarios (see §10). |
 
 ### 9.2 New directory
 
@@ -402,12 +402,12 @@ Minimum scenario set at `tdad_tests/scenarios/agents/carpaccio/`:
 
 | Scenario | What it exercises |
 | --- | --- |
-| `multi-decision-task.yaml` | Task body with ≥ 3 implied decisions → ≥ 2 slices, `lens_used: decision-boundary`, `inseparable: false`. |
-| `atomic-task.yaml` | Task body describing an atomic operation → exactly 1 slice, `inseparable: true`, `lens_used: inseparability`, substantive inseparability rationale. |
-| `mixed-independence.yaml` | Task with independent and sequential sub-work → sequencing-recommendation describes ordering; at least one slice with `lens_used: independence`. |
-| `vague-task-falls-back.yaml` | Task with no clear decision boundaries → falls back to `acceptance-criterion`. |
-| `revise-redispatch.yaml` | Prior slicing record + a `revised` slice → agent regenerates with rationale incorporated. |
-| `selectivity-respected.yaml` | Sprawling task that could yield 20+ candidates → caps at ≤ 9; documents what was considered in `## Explicitly not slicing on`. |
+| `multi-decision-task.md` | Task body with ≥ 3 implied decisions → ≥ 2 slices, `lens_used: decision-boundary`, `inseparable: false`. |
+| `atomic-task.md` | Task body describing an atomic operation → exactly 1 slice, `inseparable: true`, `lens_used: inseparability`, substantive inseparability rationale. |
+| `mixed-independence.md` | Task with independent and sequential sub-work → sequencing-recommendation describes ordering; at least one slice with `lens_used: independence`. |
+| `vague-task-falls-back.md` | Task with no clear decision boundaries → falls back to `acceptance-criterion`. |
+| `revise-redispatch.md` | Prior slicing record + a `revised` slice → agent regenerates with rationale incorporated. |
+| `selectivity-respected.md` | Sprawling task that could yield 20+ candidates → caps at ≤ 9; documents what was considered in `## Explicitly not slicing on`. |
 
 ### 10.2 Validation-contract self-tests
 
