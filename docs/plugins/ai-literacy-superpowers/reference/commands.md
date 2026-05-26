@@ -327,6 +327,43 @@ tool-specific convention files for Cursor, Copilot, and Windsurf.
 Ensures all AI coding tools in the team share the same project rules
 regardless of which editor is used.
 
+### /carpaccio
+
+- **Skills read**: carpaccio
+- **Agents dispatched**: carpaccio
+
+Run the cadence governor against a task description and produce a
+structured slicing record. Takes either a GitHub issue reference
+(`/carpaccio #326`) or a plain-English task description and writes the
+record to `docs/superpowers/slices/<task-slug>.md`.
+
+The record contains 1–9 slices across five lenses — `decision-boundary`
+(primary), `acceptance-criterion` (fallback), `end-to-end`, `independence`,
+and `inseparability`. Each slice ships with `disposition: pending`,
+`file_as_issue: pending`, `issue_url: null`, and `merged_into: null`.
+The agent never pre-fills these — the human writes them inline in the
+record before the orchestrator's step-0 gate will advance.
+
+Disposition values: `accepted` (this slice is a unit of work), `merged`
+(fold into another slice by id), `dropped` (do not pursue), `revised`
+(push back; the agent will re-slice on the next dispatch). The human
+also sets `progressed_slice:` at the top of the frontmatter to mark
+which slice this iteration will work on. For `accepted` slices that
+are not the progressed slice, the human sets `file_as_issue: true`
+(orchestrator runs `gh issue create` and writes the returned URL to
+`issue_url:`) or `false` (tracked elsewhere).
+
+When a task is genuinely atomic, the agent emits a single-slice record
+with `inseparable: true` and a defended `## Inseparability rationale`
+section. The single slice still requires disposition. The orchestrator
+then passes the full task description to spec-writer rather than a
+slice scope.
+
+Run `/carpaccio` at orchestrator step 0 (the orchestrator invokes it
+automatically) or manually before spec-writer when running the
+pipeline by hand. Re-run on `disposition: revised` — the prior record
+is overwritten, prior dispositions reset.
+
 ### /diaboli
 
 - **Skills read**: advocatus-diaboli
