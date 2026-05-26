@@ -3,7 +3,7 @@
   "owner": {
     "name": "Russ Miles"
   },
-  "version": "0.3.0",
+  "version": "0.4.0",
   "plugin_version": "0.39.0",
   "description": "Marketplace listing for the ai-literacy-superpowers Copilot plugin — provides easy install and canonical plugin metadata.",
   "repository": {
@@ -21,6 +21,12 @@
       "name": "model-cards",
       "source": "./model-cards",
       "description": "Researches and authors Mitchell-extended model cards from a model name.",
+      "version": "0.1.0"
+    },
+    {
+      "name": "diagnostic-legibility",
+      "source": "./diagnostic-legibility",
+      "description": "Agents accountable for helping to maintain human understanding. First agent (in development) builds, self-challenges, and cross-checks two models of a codebase scope.",
       "version": "0.1.0"
     }
   ]
