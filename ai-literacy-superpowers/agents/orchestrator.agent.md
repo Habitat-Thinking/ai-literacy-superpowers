@@ -51,6 +51,21 @@ pitfalls.
 Run the agents in this order. Steps marked PARALLEL may be dispatched in a single
 message with multiple Agent tool calls.
 
+  0. SEQUENTIAL  — carpaccio          Slice the raw task description into
+                                       thin, end-to-end-complete pieces.
+     GATE: Slice Adjudication — surface the slicing record to the user.
+           Refuse to proceed while any `disposition: pending` or any
+           required `file_as_issue: pending`. The user writes
+           dispositions and sets `progressed_slice` inline in
+           `docs/superpowers/slices/<task-slug>.md`. Re-dispatch on any
+           `disposition: revised` slice; overwrite the record on
+           re-dispatch (matches `/diaboli` and `/choice-cartograph`).
+           Do NOT let any agent write dispositions.
+     POST-GATE: for each slice with `disposition: accepted` AND
+           `id != progressed_slice` AND `file_as_issue: true`, run
+           `gh issue create` and write the URL to `issue_url:` on
+           that slice (audit trail). Then dispatch spec-writer against
+           the progressed slice's `scope`, not the original task.
   1. SEQUENTIAL  — spec-writer        Update spec and plan files first.
   1a. SEQUENTIAL — advocatus-diaboli  Read the spec; produce objection record.
      GATE: Objection Adjudication — surface the objection record to the user.
@@ -114,7 +129,7 @@ message with multiple Agent tool calls.
            agent write dispositions.
   5. SEQUENTIAL  — integration-agent  CHANGELOG, commit, PR, CI, merge, cleanup.
 
-## Before dispatching spec-writer
+## Before dispatching carpaccio
 
 1. Confirm you are on a branch (not main). If on main, create a branch:
    `git checkout -b BRANCH-NAME` (lowercase, hyphen-separated)
@@ -122,6 +137,98 @@ message with multiple Agent tool calls.
 2. Create a GitHub issue for the task:
    `gh issue create --title "TITLE" --body "DESCRIPTION"`
    Record the issue number — pass it to integration-agent at the end.
+
+## After carpaccio completes — Slice Adjudication Gate
+
+### Step 1: Dispatch carpaccio
+
+Dispatch the carpaccio agent with the raw task description (the
+issue body, or the user's plain-English task). The agent returns
+the full slicing-record content. Write that content to
+`docs/superpowers/slices/<task-slug>.md`.
+
+The task slug is derived from the issue branch name when
+available; otherwise kebab-case the issue title or a short summary
+of the task.
+
+### Step 2: Validate the slicing record
+
+Read back the written file and apply the validation checks defined
+in:
+
+```text
+ai-literacy-superpowers/skills/carpaccio/references/validation-checks.md
+```
+
+That file is the single source of truth. Apply each check in order
+and apply the fix-recipe in place when a check fails. Do not
+re-dispatch the agent for validation failures.
+
+### Step 3: Surface the slicing record (HARD GATE — Slice Adjudication)
+
+PAUSE and present the record to the user. Show:
+
+- Output path
+- Slice count and lens distribution
+- `inseparable: true|false`
+- Each slice's title, scope, and `decision_focus`
+
+Tell the user: "Edit `docs/superpowers/slices/<slug>.md`. For each
+slice set `disposition` (`accepted | merged | dropped | revised`)
+and write a `disposition_rationale`. For each `accepted` slice that
+you are not progressing now, set `file_as_issue: true|false`. Set
+`progressed_slice:` at the top of the frontmatter to the slice id
+you will work on this iteration."
+
+Do NOT proceed while any `disposition: pending` or any required
+`file_as_issue: pending`.
+
+### Step 4: Re-dispatch on revised
+
+If any slice's `disposition` is `revised` after the user fills the
+record, re-dispatch carpaccio with the prior record (so the agent
+can read the `disposition_rationale` strings) and the original task
+description. Overwrite the slicing record with the new content and
+return to Step 2. Warn the user that prior dispositions are reset.
+
+### Step 5: Create issues for accepted-not-progressed slices
+
+For each slice where `disposition: accepted` AND `id !=
+progressed_slice` AND `file_as_issue: true`:
+
+1. Run `gh issue create --title "<slice.title>" --body "<slice.scope>
+
+<slice.decision_focus>
+
+Sliced from parent #<parent-issue> via carpaccio slicing record:
+docs/superpowers/slices/<task-slug>.md"`
+2. Capture the returned URL.
+3. Edit the slicing record to set that slice's `issue_url:` field
+   to the captured URL.
+
+If `gh issue create` fails for any slice, leave `issue_url: null`
+for that slice and surface the failure to the user. Do not abort
+the pipeline; the user can retry manually.
+
+### Step 6: Update the context object
+
+Add to the orchestrator context:
+
+```
+progressed_slice_id: <S-id>
+carpaccio_slug: <task-slug>
+carpaccio_total_slices: N
+carpaccio_inseparable: true | false
+```
+
+Pass these to every downstream agent.
+
+### Step 7: Dispatch spec-writer against the progressed slice
+
+If `inseparable: true`, dispatch spec-writer against the full task
+description as today. If multi-slice, dispatch spec-writer against
+the progressed slice's `scope`, not the original task. The
+slice-level scope becomes the spec's scope.
 
 ## After spec-writer completes — Diaboli (spec mode), Choice Cartographer, and Plan Approval Gate
 
@@ -221,6 +328,9 @@ adjudicated records. Show:
 - **`cartograph_pending_count: N`** — the count of choice-story dispositions
   still `pending`. Surface this as a structured field, not just prose, so
   observability tooling (`/superpowers-status`, harness-health) can read it
+- **`carpaccio_progressed_slice: S<N>`** — the slice id this plan
+  covers; surfaces "this plan covers only slice S2 of 4" so the
+  plan review isn't confused about scope.
 - Lens distribution of the choice-story record
 
 Then ask the user to choose:
@@ -303,6 +413,10 @@ and pass to the next. It should always contain:
   failing_tests: test names confirmed red (from tdd-agent)
   review_result: PASS or findings summary (from code-reviewer)
   code_diaboli_slug: slug used for the code-mode objection record
+  progressed_slice_id: S<N> | null
+  carpaccio_slug: <task-slug>
+  carpaccio_total_slices: N
+  carpaccio_inseparable: true | false
 
 ## Skipping stages
 
@@ -311,6 +425,9 @@ and pass to the next. It should always contain:
 - If the task only touches one implementation domain, skip unrelated implementers.
   Note why.
 - Never skip tdd-agent, code-reviewer, or integration-agent.
+- Never skip carpaccio. The single-slice inseparability path is the
+  release valve for atomic tasks — it produces a one-slice record
+  the user accepts, not a bypass.
 
 ## What you do NOT do
 
