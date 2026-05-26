@@ -27,7 +27,7 @@
       "name": "diagnostic-legibility",
       "source": "./diagnostic-legibility",
       "description": "Agents accountable for helping to maintain human understanding. First agent (in development) builds, self-challenges, and cross-checks two models of a codebase scope.",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }
