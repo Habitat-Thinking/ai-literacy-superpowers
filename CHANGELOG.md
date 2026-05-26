@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.39.0 — 2026-05-26
+
+### Carpaccio agent — cadence governor for AI-generated decision streams
+
+Adds the `carpaccio` agent — the third member of the decision-discipline
+triad alongside `advocatus-diaboli` (objections) and
+`choice-cartographer` (decision visibility). Carpaccio is the cadence
+governor: it sits at orchestrator step 0, before spec-writer, and
+slices the raw task description into end-to-end-complete pieces so the
+human engages with one decision at a time rather than the whole
+proposal at once.
+
+- New skill at `skills/carpaccio/SKILL.md` defining the charter, the
+  routing rule (carpaccio vs spec-writer), the selectivity protocol,
+  and the reasoning protocol.
+- New references at `skills/carpaccio/references/slicing-lenses.md`
+  (the five-lens vocabulary with priority order) and
+  `skills/carpaccio/references/validation-checks.md` (the validation
+  contract — frontmatter checks F1–F8, prose-body checks P1–P5).
+- New agent at `agents/carpaccio.agent.md` with read-only trust
+  boundary (Read/Glob/Grep). The orchestrator writes the slicing
+  record; humans fill dispositions; the orchestrator drives
+  `gh issue create` for accepted-but-not-progressed slices.
+- New command at `commands/carpaccio.md` for manual invocation
+  outside the orchestrator.
+- New TDAD scenarios at `tdad_tests/scenarios/agents/carpaccio/` —
+  six scenarios covering multi-decision slicing, atomic-task
+  inseparability, mixed-independence sequencing, vague-task
+  fallback to acceptance-criterion, revise-redispatch behaviour,
+  and selectivity-cap respect.
+- Orchestrator gains a new **Step 0** before spec-writer:
+  dispatches carpaccio, validates the slicing record, hard-gates
+  on `disposition` and `file_as_issue`, drives issue creation for
+  accepted-not-progressed slices, dispatches spec-writer against
+  the progressed slice's scope.
+- New directory `docs/superpowers/slices/` holds slicing records,
+  sibling to `objections/` and `stories/`.
+
+Tracks issue #326.
+
 ## 0.38.0 — 2026-05-11
 
 ### Snapshot template gains two new sections
