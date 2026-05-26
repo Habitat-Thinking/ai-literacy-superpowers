@@ -3,11 +3,11 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.3.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.38.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.39.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
-[![Skills](https://img.shields.io/badge/Skills-32-2E8B57?style=flat-square)](#skills-32)
-[![Agents](https://img.shields.io/badge/Agents-13-2E8B57?style=flat-square)](#agents-13)
-[![Commands](https://img.shields.io/badge/Commands-25-2E8B57?style=flat-square)](#commands-25)
+[![Skills](https://img.shields.io/badge/Skills-33-2E8B57?style=flat-square)](#skills-33)
+[![Agents](https://img.shields.io/badge/Agents-14-2E8B57?style=flat-square)](#agents-14)
+[![Commands](https://img.shields.io/badge/Commands-26-2E8B57?style=flat-square)](#commands-26)
 [![Harness](https://img.shields.io/badge/Harness-23%2F24_enforced-4682B4?style=flat-square)](HARNESS.md)
 [![Harness Health](https://img.shields.io/badge/Harness_Health-Healthy-2E8B57?style=flat-square)](observability/snapshots/2026-05-10-snapshot.md)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-D97757?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
@@ -27,7 +27,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.38.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **32 skills, 13 agents, 25 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.39.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **33 skills, 14 agents, 26 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 
 The bulk of this README documents the **`ai-literacy-superpowers`** plugin specifically — its skills, agents, commands, hooks, templates, enforcement loops, and pipelines. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md). Future sister plugins will land in this marketplace under `<plugin-name>/` with their own docs at `docs/plugins/<plugin-name>/`.
@@ -156,7 +156,7 @@ This plugin works with both Claude Code and GitHub Copilot CLI from the same rep
 
 The remaining sections of this README document the **`ai-literacy-superpowers`** plugin in detail. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md).
 
-### Skills (32)
+### Skills (33)
 
 Code quality, harness engineering, and governance knowledge that agents read when working in your codebase.
 
@@ -193,7 +193,7 @@ Code quality, harness engineering, and governance knowledge that agents read whe
 | choice-cartographer | Decision archaeology — six-lens map of implicit choices a spec has made (forces, alternatives, defaults, patterns, consequences, coherence); routing rule partitions findings between the Cartographer and the diaboli |
 | component-design-with-tdad | Design-time methodology for new plugin components — names the five design questions implied by the four-layer TDAD architecture (component type, layer targeting, scenario shape, new-vs-modification, scenario-vs-finding); loadable by spec-writer, tdd-agent, or human brainstorming |
 
-### Agents (13)
+### Agents (14)
 
 A coordinated team that handles the full development lifecycle.
 
@@ -212,8 +212,9 @@ A coordinated team that handles the full development lifecycle.
 | governance-auditor | Governance specialist — semantic drift analysis, debt inventory, three-frame alignment | Read + limited Write |
 | advocatus-diaboli | Adversarial reviewer — spec-time (premise/design focus, before plan approval) and code-time (risk/implementation focus, before integration); six-category objection record, read-only trust boundary, human-cognition gate on dispositions at both gates | Read only |
 | choice-cartographer | Decision-archaeology mapper — runs after spec-mode diaboli dispositions are resolved; emits choice stories (Henney pattern stories) for each material implicit decision; soft gate at plan approval, merge-time HARNESS constraint enforces resolution | Read only |
+| carpaccio | Cadence governor — runs at orchestrator step 0 before spec-writer; slices the raw task description into thin, end-to-end-complete pieces; hard gate on slice dispositions; the third member of the decision-discipline triad alongside diaboli and choice-cartographer | Read only |
 
-### Commands (25)
+### Commands (26)
 
 | Command | What it does |
 | ------- | ------------ |
@@ -239,6 +240,7 @@ A coordinated team that handles the full development lifecycle.
 | `/harness-upgrade` | Discover and adopt new template content after a plugin upgrade |
 | `/harness-onboarding` | Generate a human-readable onboarding guide from harness state |
 | `/observatory-verify` | Verify all Observatory signal contracts against latest output files |
+| `/carpaccio` | Slice a task description into thin, end-to-end-complete pieces before spec-writer (cadence governor; runs at orchestrator step 0) |
 | `/diaboli` | Run the adversarial spec reviewer — produces objection record at `docs/superpowers/objections/<slug>.md` |
 | `/choice-cartograph` | Run the Choice Cartographer — produces choice-story record at `docs/superpowers/stories/<slug>.md` after spec-mode diaboli dispositions are resolved |
 | `/harness-affordance` | Manage the project's affordance inventory — `discover` scans config to produce a draft inventory; `add` and `review` planned |
@@ -396,7 +398,7 @@ ADVISORY LOOP (edit time — warn, do not block)
 │   ├── CLAUDE.md                       Workflow rules, conventions, disciplines
 │   ├── AGENTS.md                       Compound learning memory (human-curated)
 │   ├── MODEL_ROUTING.md                Model-tier guidance + token budgets
-│   └── Skills (32)                     Domain knowledge for agents
+│   └── Skills (33)                     Domain knowledge for agents
 │
 └── Commands
     ├── /reflect                        Capture post-task learnings
