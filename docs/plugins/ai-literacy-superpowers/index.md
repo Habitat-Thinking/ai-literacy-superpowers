@@ -158,6 +158,8 @@ from first principles to the complete system:
 - [The Self-Improving Harness](explanation/self-improving-harness.md) — the audit-and-amendment feedback loop that keeps the harness honest
 - [Habitat Engineering](explanation/habitat-engineering.md) — the broader environment around the harness
 - [Harness Engineering](explanation/harness-engineering.md) — what the harness is and isn't
+- [Cadence Governance](explanation/cadence-governance.md) — the carpaccio agent's role; slicing the task before any spec exists
+- [The Decision-Discipline Triad](explanation/decision-discipline-triad.md) — how carpaccio, advocatus-diaboli, and choice-cartographer relate
 - [Decision Archaeology](explanation/decision-archaeology.md) — the choice-cartographer's role; intent debt and cognitive debt
 - [Adversarial Review](explanation/adversarial-review.md) — the advocatus-diaboli's role and the human-cognition gate
 - [Progressive Hardening](explanation/progressive-hardening.md) — the promotion ladder from unverified to agent to deterministic

@@ -145,11 +145,28 @@ Governance metrics and dashboard specification. Covers the seven governance metr
 
 ## Spec-First Pipeline
 
-Two paired read-only agents that run between spec-writer and plan
-approval. The diaboli challenges; the cartographer maps. Both have
-read-only trust boundaries that enforce a human-cognition gate on
-dispositions. They share a deterministic Routing Rule that partitions
+Three paired read-only agents form the decision-discipline triad.
+Carpaccio runs before spec-writer to slice the raw task by cadence;
+the diaboli challenges the resulting spec; the cartographer maps its
+silent decisions. All three have read-only trust boundaries that
+enforce a human-cognition gate on dispositions. The diaboli and
+cartographer share a deterministic Routing Rule that partitions
 findings between them.
+
+### carpaccio
+
+Cadence governance. Covers the five lenses (decision-boundary as
+primary, acceptance-criterion as fallback, end-to-end as a
+deliverability filter, independence for ordering, inseparability as
+the terminal lens), the lens priority order, the selectivity protocol
+(3–5 slice bias with a self-imposed 9-cap inside the agent's
+reasoning), the slicing-record schema (frontmatter + prose body with
+`## S<N>` sections, `## Sequencing recommendation`, `## Explicitly not
+slicing on`, and `## Inseparability rationale` when applicable), the
+routing rule with spec-writer (carpaccio fires when a task has more
+than one material decision or is plausibly atomic), and the
+re-dispatch protocol on `disposition: revised`. Referenced by
+`/carpaccio` and the carpaccio agent.
 
 ### advocatus-diaboli
 

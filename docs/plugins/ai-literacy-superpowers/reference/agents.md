@@ -17,10 +17,13 @@ makes this explicit.
 
 ## Pipeline Agents
 
-These seven agents form the spec-first development pipeline. After
-spec-writer produces the spec, the advocatus-diaboli reviews it
-adversarially and a human adjudicates the objections (hard gate);
-the choice-cartographer then maps the implicit decisions and a human
+These eight agents form the spec-first development pipeline. Carpaccio
+runs first (step 0) against the raw task description and slices it into
+thin, end-to-end-complete pieces; a human dispositions each slice and
+chooses which one this iteration will progress. After spec-writer
+produces the spec for that slice, the advocatus-diaboli reviews it
+adversarially and a human adjudicates the objections (hard gate); the
+choice-cartographer then maps the implicit decisions and a human
 adjudicates the choice-stories (soft gate); only then is the plan
 approved and tdd-agent, code-reviewer, and integration-agent run.
 
@@ -38,10 +41,54 @@ sequence, passing context between them. Reads `CLAUDE.md`,
 The only agent with the Agent tool, which it uses to dispatch
 the other four pipeline agents and, when needed, harness agents.
 
+### carpaccio
+
+- **Tools**: Read, Glob, Grep
+- **Dispatched by**: orchestrator (step 0, before spec-writer)
+- **Trust boundary**: Read-only
+
+Cadence governor. Reads the raw task description (typically the body of
+a GitHub issue) and slices it into thin, end-to-end-complete pieces.
+Produces a structured slicing record at
+`docs/superpowers/slices/<task-slug>.md`. The third member of the
+decision-discipline triad alongside the advocatus-diaboli (quality
+challenger) and the choice-cartographer (decision archaeologist).
+
+Five lenses applied in priority order: `decision-boundary` (primary, one
+slice per material decision the human will engage with),
+`acceptance-criterion` (fallback when decisions are weak),
+`end-to-end` (each slice ships something observable), `independence`
+(slices can land without blocking each other), `inseparability`
+(terminal lens — slicing would harm correctness). Selectivity is
+enforced inside the agent's reasoning protocol (bias toward 3–5
+slices, hard cap of 9).
+
+Cannot modify the slicing record. Cannot write dispositions. Cannot
+create issues. The read-only boundary forces the human to disposition
+each slice (`accepted | merged | dropped | revised`) and, for accepted
+slices not being progressed this iteration, set `file_as_issue:
+true|false`. The orchestrator drives `gh issue create` after the gate
+clears, writing the returned URL back into the slicing record as the
+audit trail.
+
+The slice the human marks `progressed_slice` becomes the scope for
+spec-writer — not the original task. This is the cognitive-budget
+mechanism: the human engages with one decision at a time rather than
+the whole proposal at once. The intellectual lineage is Alistair
+Cockburn's *Elephant Carpaccio* exercise, reframed for AI-augmented
+work where coherent decision streams arrive faster than human
+attention can engage them.
+
+When the task is genuinely atomic (security patch, schema migration,
+single-coherent refactor), the agent produces a single-slice record
+with `inseparable: true` and a defended `## Inseparability rationale`
+section. The inseparability claim must be argued, not asserted —
+naming the inseparable as inseparable is itself a useful output.
+
 ### spec-writer
 
 - **Tools**: Read, Write, Edit, Glob, Grep
-- **Dispatched by**: orchestrator (first in pipeline)
+- **Dispatched by**: orchestrator (after carpaccio, against the progressed slice's scope)
 - **Trust boundary**: Read-write
 
 First specialist in every pipeline run. Updates `spec.md` and
@@ -259,6 +306,7 @@ governance analysis requires nuanced judgement about meaning.
 | Agent | Read | Write | Edit | Glob | Grep | Bash | Agent | WebFetch | Trust |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | orchestrator | x | x | x | x | x | x | x | x | read-write |
+| carpaccio | x | | | x | x | | | | read-only |
 | spec-writer | x | x | x | x | x | | | | read-write |
 | advocatus-diaboli | x | | | x | x | | | | read-only |
 | choice-cartographer | x | | | x | x | | | | read-only |
