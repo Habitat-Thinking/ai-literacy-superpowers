@@ -1,0 +1,124 @@
+# Docs reference parity check for pull requests.
+#
+# Verifies that any new plugin component (skill, agent, or command)
+# added under ai-literacy-superpowers/skills/, /agents/, or /commands/
+# ships with a matching ### <name> heading in the corresponding
+# Diataxis reference page:
+#
+#   ai-literacy-superpowers/agents/<name>.agent.md
+#     →  docs/plugins/ai-literacy-superpowers/reference/agents.md
+#   ai-literacy-superpowers/skills/<name>/SKILL.md
+#     →  docs/plugins/ai-literacy-superpowers/reference/skills.md
+#   ai-literacy-superpowers/commands/<name>.md
+#     →  docs/plugins/ai-literacy-superpowers/reference/commands.md
+#
+# For the commands page the heading is `### /<name>` (with the leading
+# slash); for skills and agents it is `### <name>`.
+#
+# Modifications to existing components are NOT gated by this check —
+# mirrors the TDAD scenario check's known-limitation precedent. The
+# heading need not be added in the same commit as the component file;
+# what matters is that HEAD of the PR contains both.
+
+name: Docs reference parity check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Verify new components have a reference-page entry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Verify reference-page coverage for added components
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          # workflow_dispatch has no PR context — skip
+          if [ -z "$BASE_REF" ]; then
+            echo "No base_ref — skipping (manual dispatch without PR context)"
+            exit 0
+          fi
+
+          BASE="origin/$BASE_REF"
+
+          # List files added in this PR (against base ref)
+          ADDED=$(git diff --name-only --diff-filter=A "$BASE..HEAD" || true)
+
+          if [ -z "$ADDED" ]; then
+            echo "No added files — nothing to check."
+            exit 0
+          fi
+
+          echo "Added files in this PR:"
+          echo "$ADDED"
+          echo ""
+
+          REF_BASE="docs/plugins/ai-literacy-superpowers/reference"
+
+          MISSING=0
+          while IFS= read -r file; do
+            type=""
+            name=""
+            heading=""
+            ref_page=""
+
+            if [[ "$file" =~ ^ai-literacy-superpowers/skills/([^/]+)/SKILL\.md$ ]]; then
+              type="skills"
+              name="${BASH_REMATCH[1]}"
+              heading="### ${name}"
+              ref_page="$REF_BASE/skills.md"
+            elif [[ "$file" =~ ^ai-literacy-superpowers/agents/([^/]+)\.agent\.md$ ]]; then
+              type="agents"
+              name="${BASH_REMATCH[1]}"
+              heading="### ${name}"
+              ref_page="$REF_BASE/agents.md"
+            elif [[ "$file" =~ ^ai-literacy-superpowers/commands/([^/]+)\.md$ ]]; then
+              type="commands"
+              name="${BASH_REMATCH[1]}"
+              heading="### /${name}"
+              ref_page="$REF_BASE/commands.md"
+            else
+              continue
+            fi
+
+            echo "Checking new component: $type/$name (added file: $file)"
+
+            if [ ! -f "$ref_page" ]; then
+              echo "::error file=$file::Reference page missing at $ref_page. Cannot verify parity entry."
+              MISSING=$((MISSING + 1))
+              continue
+            fi
+
+            if grep -qE "^${heading}\$" "$ref_page"; then
+              echo "  ✓ Found reference entry: $heading in $ref_page"
+            else
+              echo "::error file=$file::No '$heading' heading in $ref_page. New plugin components must ship with a matching reference-page entry in the same PR."
+              MISSING=$((MISSING + 1))
+            fi
+          done <<< "$ADDED"
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo ""
+            echo "::error::$MISSING new component(s) lack a reference-page entry."
+            echo ""
+            echo "When adding a new plugin agent, skill, or command, the same PR"
+            echo "must update the corresponding reference page in"
+            echo "docs/plugins/ai-literacy-superpowers/reference/ to include a"
+            echo "### <name> heading (### /<name> for commands)."
+            exit 1
+          fi
+
+          echo ""
+          echo "Docs reference parity check passed."

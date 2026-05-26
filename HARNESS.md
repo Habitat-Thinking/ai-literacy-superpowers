@@ -334,6 +334,23 @@
 - **Tool**: `.github/workflows/tdad-scenario-check.yml`
 - **Scope**: pr
 
+### New plugin components must ship with a reference-page entry
+
+- **Rule**: When a PR adds a new file matching one of
+  `ai-literacy-superpowers/skills/<name>/SKILL.md`,
+  `ai-literacy-superpowers/agents/<name>.agent.md`, or
+  `ai-literacy-superpowers/commands/<name>.md`, the same PR must add an
+  `### <name>` heading to the matching Diataxis reference page
+  (`docs/plugins/ai-literacy-superpowers/reference/skills.md`,
+  `.../agents.md`, or `.../commands.md` respectively). For commands the
+  heading is `### /<name>` (with the leading slash). Modifications to
+  existing components are NOT gated by this constraint — mirrors the
+  TDAD-scenario-check precedent. Effective from 2026-05-26 — the
+  carpaccio agent surfaced the gap that motivates this constraint.
+- **Enforcement**: deterministic
+- **Tool**: `.github/workflows/docs-reference-parity-check.yml`
+- **Scope**: pr
+
 ### Reflections via PR workflow
 
 - **Rule**: Every addition to `REFLECTION_LOG.md` must be committed on a
