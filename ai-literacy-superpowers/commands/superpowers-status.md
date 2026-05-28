@@ -85,6 +85,65 @@ Check for CI configuration:
 - If on a branch with an open PR, show the PR check status:
   `gh pr checks --json name,status,conclusion 2>/dev/null || echo "No open PR"`
 
+### Disposition counting (shared algorithm for Sections 7 and 8)
+
+`disposition:` and `disposition: pending` appear in objection and choice-story
+records in **two distinct places** and only one of them is a real disposition:
+
+1. **YAML frontmatter list items** — each entry under `objections:` or
+   `stories:` carries a `disposition:` field indented exactly four spaces.
+   These are the only values that count.
+2. **Prose / evidence text** — `evidence:`, `claim:`, body sections, and
+   quoted examples routinely contain the literal string `disposition: pending`
+   when an objection critiques disposition handling. **These must not be
+   counted.**
+
+A naive `grep -c "disposition: pending"` over the whole file produces false
+positives: in 2026-05 the `choice-cartographer.md` record reported as having
+3 pending dispositions when every entry was in fact resolved — the three
+matches were all inside O9's `evidence:` field quoting the spec.
+
+**Counting rule (use this exact awk recipe, or an equivalent YAML-aware
+parser):**
+
+```bash
+# Count entries with disposition: pending in YAML frontmatter only.
+# Matches lines with exactly 4 leading spaces, scoped to the file's first
+# `---`…`---` block, so prose occurrences are ignored.
+count_pending() {
+  awk '
+    /^---$/                                          { fm++; next }
+    fm == 1 && /^    disposition: pending([[:space:]]|$)/ { c++ }
+    END                                              { print c+0 }
+  ' "$1"
+}
+
+# Count total entries (objection IDs or story IDs) the same way.
+count_entries() {
+  awk '
+    /^---$/             { fm++; next }
+    fm == 1 && /^  - id:/ { c++ }
+    END                 { print c+0 }
+  ' "$1"
+}
+```
+
+Why this works: every list-item field in these records is indented exactly
+four spaces; list-item starts (`  - id:`) are indented two. Multi-line YAML
+block scalars (if introduced later) would indent content **deeper** than four
+spaces, so they cannot collide. Quoted-string lines start with the field's
+own key (`    evidence:`, `    claim:`) — the `disposition:` token inside
+those strings is therefore not at column 0–4.
+
+Apply this rule consistently when computing:
+
+- Section 7 spec-mode and code-mode `pending` counts and fully-resolved rates.
+- Section 8 `cartograph_pending_count` and fully-resolved rate.
+- Disposition distributions in both sections.
+
+If a YAML-aware parser (`yq`, `python -c "import yaml; ..."`) is available,
+prefer it — semantics match, parsing is structurally correct.
+
 ### Section 7: Diaboli activity
 
 Check `docs/superpowers/specs/` and `docs/superpowers/objections/`.
@@ -98,6 +157,10 @@ prefix and `.md` extension stripped.
 
 **Error handling**: if any file at `docs/superpowers/objections/` fails YAML parse,
 report it by name as "parse error" and exclude it from all metrics.
+
+**Counting**: use the shared algorithm in "Disposition counting" above for
+all `disposition: pending` and total-objection counts. Do not grep the whole
+file — only the YAML frontmatter list items count.
 
 #### Overall totals (all records, both modes)
 
@@ -147,6 +210,10 @@ A **choice-story record** matches `docs/superpowers/stories/<slug>.md`.
 
 **Error handling**: if any file at `docs/superpowers/stories/` fails YAML parse,
 report it by name as "parse error" and exclude it from all metrics.
+
+**Counting**: use the shared algorithm in "Disposition counting" above for
+all `disposition: pending` and total-story counts. The same prose-vs-frontmatter
+trap that bit Diaboli also applies here — count YAML list items only.
 
 #### Totals
 
