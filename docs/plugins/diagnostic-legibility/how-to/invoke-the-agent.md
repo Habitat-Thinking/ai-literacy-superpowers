@@ -47,7 +47,7 @@ but not as in-scope elements"*).
 
 A single markdown response containing one YAML block. The block
 conforms to the `LegibilityModel` schema at
-[`diagnostic-legibility/templates/legibility-element.md`](../../../../diagnostic-legibility/templates/legibility-element.md).
+`diagnostic-legibility/templates/legibility-element.md`.
 
 A truncated example:
 
@@ -141,5 +141,5 @@ modes that would otherwise be indistinguishable.
 - [Challenge-refine protocol](../explanation/challenge-refine-protocol.md)
   — what the five questions catch and why the agent uses a
   retained-challenge single-pass cycle.
-- [LegibilityElement schema](../../../../diagnostic-legibility/templates/legibility-element.md)
-  — the contract every emitted element follows.
+- `diagnostic-legibility/templates/legibility-element.md` (in the
+  repository) — the contract every emitted element follows.

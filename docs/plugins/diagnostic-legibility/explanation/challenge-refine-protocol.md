@@ -187,7 +187,7 @@ agent layer, where it can evolve without touching the v0.2.0 schema.
 
 - [How to invoke the agent](../how-to/invoke-the-agent.md) —
   task-oriented dispatch guide.
-- [LegibilityElement schema](../../../../diagnostic-legibility/templates/legibility-element.md)
-  — the contract every emitted element follows.
+- `diagnostic-legibility/templates/legibility-element.md` (in the
+  repository) — the contract every emitted element follows.
 - [Sub-S2b design spec](../../../superpowers/specs/2026-05-28-dl-s2b-challenge-protocol-design.md)
   — the full design record this protocol descends from.
