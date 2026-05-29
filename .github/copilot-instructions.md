@@ -91,6 +91,10 @@ plugin.json version, README badge version, and CHANGELOG heading must all match.
 
 Every version of every plugin in this marketplace must have a matching `## X.Y.Z — YYYY-MM-DD` heading in that plugin's CHANGELOG and a corresponding git tag. The changelog heading must match at PR time. The git tag is created automatically on merge by the per-plugin auto-tag workflow. Per-plugin tag conventions: `ai-literacy-superpowers` uses bare `vX.Y.Z` tags with CHANGELOG at the repo root; `model-cards` uses `model-cards-vX.Y.Z` tags with CHANGELOG at `model-cards/CHANGELOG.md`. Future sister plugins follow the same shape. Enforcement: deterministic. Scope: pr + post-merge.
 
+### Docs site builds in strict mode
+
+All PRs that change `docs/**`, `mkdocs.yml`, or `requirements.txt` must pass `mkdocs build --strict` without aborting. The strict build catches broken internal links, missing pages, and other issues that the post-merge Pages deploy would otherwise fail on. Enforcement: deterministic (`.github/workflows/docs-build-check.yml`). Scope: pr.
+
 ### Output validation checkpoints
 
 Every command that produces structured output parsed by downstream consumers (snapshots, assessments, audit reports, reflections, cost snapshots, HARNESS.md sections, habitat files, onboarding documents) must include a validation checkpoint step that reads the output, checks structure against the format spec reference, and fixes deviations in place. Enforcement: agent (harness-enforcer). Scope: pr.
@@ -110,6 +114,22 @@ Every non-exempt PR must have either (a) at least one spec in `docs/superpowers/
 ### Tests must pass
 
 The project's test suite must pass with zero failures before any code is merged. Enforcement: unverified. Scope: pr.
+
+### Spec redaction markers must be visible
+
+When a spec is amended, superseded prose must be marked with a visible blockquote prefix (`> **SUPERSEDED by Amendment N §X.Y**: <reason>`) above the original text. HTML-comment redaction markers are forbidden in `docs/superpowers/specs/` because they vanish in every rendered markdown surface — the redaction signal is invisible to the audience the marker claims to serve. Enforcement: deterministic (`.github/workflows/spec-redaction-marker-check.yml`). Scope: pr.
+
+### TDAD fast-suite passes (Layers 0 + 1)
+
+Layer 0 (deterministic bash plumbing tests) and Layer 1 (structural tests for plugin components and scenario corpus) of the TDAD test suite must pass on every PR that touches plugin code, `tdad_tests/`, `HARNESS.md`, or `AGENTS.md`. Both layers run offline (no API key required) and complete in under ten seconds. Layers 2 (trigger) and 3 (behavioural) are NOT covered by this gate. Enforcement: deterministic (`.github/workflows/tdad-tests-fast.yml`). Scope: pr.
+
+### New plugin components must ship with a TDAD scenario
+
+When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>/SKILL.md`, `ai-literacy-superpowers/agents/<name>.agent.md`, or `ai-literacy-superpowers/commands/<name>.md`, the same PR must include at least one scenario file at `tdad_tests/scenarios/<type>/<name>/<aspect>.md` whose YAML frontmatter declares `tier` as one of `structural`, `trigger`, or `behavioural`. Files with `tier: finding` do NOT satisfy the constraint. Modifications to existing components are NOT gated. Enforcement: deterministic (`.github/workflows/tdad-scenario-check.yml`). Scope: pr.
+
+### New plugin components must ship with a reference-page entry
+
+When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>/SKILL.md`, `ai-literacy-superpowers/agents/<name>.agent.md`, or `ai-literacy-superpowers/commands/<name>.md`, the same PR must add an `### <name>` heading to the matching Diataxis reference page (`docs/plugins/ai-literacy-superpowers/reference/skills.md`, `.../agents.md`, or `.../commands.md`). For commands the heading is `### /<name>` (with the leading slash). Modifications to existing components are NOT gated. Effective from 2026-05-26. Enforcement: deterministic (`.github/workflows/docs-reference-parity-check.yml`). Scope: pr.
 
 ### Reflections via PR workflow
 
