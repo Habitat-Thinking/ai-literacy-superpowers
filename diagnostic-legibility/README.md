@@ -7,13 +7,26 @@ and [model-cards](../model-cards/) in the same marketplace.
 
 ## Status
 
-**v0.1.0 — scaffold only.** This plugin is structurally complete and
-loadable but ships with no functional agents or commands. It is here
-so the next three deliverables can land on a stable foundation:
+**v0.3.0 — working agent.** The plugin ships the
+`diagnostic-legibility` agent (parent S2 / sub-S2b). The agent accepts
+a codebase scope, drafts an architectural model and a domain model
+against the `LegibilityElement` schema, and runs a retained-challenge
+single-pass cycle that fills `challenge_notes[]` on every element
+through five named questions (boundary, evidence, confounders,
+confidence, description integrity).
 
-- [#331](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/331) — S2: Two-model agent (architectural + domain models with per-model self-challenge)
+Cross-checking the two models against each other and the human-facing
+`/diagnose` surfacing command remain ahead:
+
+- ✅ [#331](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/331) — S2: Two-model agent with per-model self-challenge (shipped v0.3.0)
 - [#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332) — S3: Cross-check mechanism (mutual model correction)
 - [#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333) — S4: Surfacing interface (on-demand human legibility command)
+
+## Available agents
+
+- **`diagnostic-legibility`** (at `agents/diagnostic-legibility.agent.md`)
+  — see the [how-to](../docs/plugins/diagnostic-legibility/how-to/invoke-the-agent.md)
+  and the [challenge-refine concept page](../docs/plugins/diagnostic-legibility/explanation/challenge-refine-protocol.md).
 
 The carpaccio slicing record at
 [`docs/superpowers/slices/diagnostic-legibility-plugin.md`](../docs/superpowers/slices/diagnostic-legibility-plugin.md)
@@ -24,11 +37,11 @@ records the full decomposition from parent issue
 
 The plugin's purpose is to host agents that are accountable for
 maintaining human understanding of complex systems. The inaugural
-agent (in development) builds two models of a codebase scope — one
-for architectural moving parts, one for domain concepts — subjects
-each to a challenge–refine cycle, then uses them to cross-check and
-correct each other, producing mutually-corrected models that can be
-surfaced on demand.
+agent builds two models of a codebase scope — one for architectural
+moving parts, one for domain concepts — subjects each to a
+challenge–refine cycle, then (in later slices) uses them to
+cross-check and correct each other, producing mutually-corrected
+models that can be surfaced on demand.
 
 The framing is deliberately broad: codebase legibility is the first
 instance, but the discipline (two-model + cross-check + on-demand
@@ -45,8 +58,15 @@ claude plugin install diagnostic-legibility@ai-literacy-superpowers
 copilot plugin install diagnostic-legibility@ai-literacy-superpowers
 ```
 
-The plugin will install successfully but offer no commands at v0.1.0.
-Wait for S2 (#331) to land before expecting functional behaviour.
+At v0.3.0 the `diagnostic-legibility` agent is dispatchable via
+Claude Code's bare Task tool — see the
+[how-to](../docs/plugins/diagnostic-legibility/how-to/invoke-the-agent.md)
+for the invocation pattern. A wrapping `/diagnose` slash-command and
+the cross-check between the two models are deferred to parent S4
+([#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333))
+and parent S3
+([#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332))
+respectively.
 
 ## Sister plugins in the same marketplace
 
