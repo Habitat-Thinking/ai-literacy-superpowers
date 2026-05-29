@@ -70,6 +70,38 @@ matches the three sibling read-only emitters: `advocatus-diaboli`,
 `choice-cartographer`, `model-card-researcher`. The pattern is
 named and load-bearing in AGENTS.md.
 
+### 2.4 Invocation surface (v0.3.0)
+
+At v0.3.0 the agent is dispatched via Claude Code's bare `Task`
+tool — there is no `/diagnose` slash-command in this slice. The
+invocation contract:
+
+- `subagent_type`: `diagnostic-legibility`
+- `description`: a short imperative (e.g. "Model the auth module")
+- `prompt`: free-text that names the `scope` and any additional
+  context. The minimum prompt shape is:
+
+  ```text
+  scope: <directory path | file list | free-text description>
+  ```
+
+  Additional context (e.g. "focus on the public API surface only")
+  is appended as a second paragraph.
+
+The dispatcher (orchestrator agent, command, or human) is
+responsible for persisting the agent's returned YAML to a path of
+its choosing — the agent itself does not write. This is the
+"agent-emit + dispatcher-persist + human-disposes" pattern from
+AGENTS.md ARCH_DECISIONS, shared with `model-card-researcher`,
+`advocatus-diaboli`, and `choice-cartographer`.
+
+A `/diagnose` slash-command that wraps this dispatch and handles
+file-write conventions is the deliverable of parent S4 (issue
+#333), out of scope here. The how-to page in this slice (§6.5,
+§7.1) documents the bare-Task-tool pattern as the v0.3.0
+invocation surface and links forward to S4 for the eventual
+command surface.
+
 ## 3. The challenge-refine cycle — decision
 
 The decision focus of this slice. Three candidates from the
@@ -122,33 +154,111 @@ The challenge protocol is **the same shape** for both architectural
 and domain elements, parameterised on the dimension. The schema is
 shared (PR #336 settled this); the prompt construction is symmetric;
 the challenge questions are dimension-flavoured but follow the same
-five-question structure (§3.5). Sub-slicing notes (line 140 of the
-slicing record) explicitly excluded "per-model bespoke vs.
-parameterised prompts" as a separate slice — the schema decision
-already implied parameterisation.
+five-question structure (§3.5).
 
-### 3.4 Self-challenge in one multi-turn context, not dispatch
+Shared construction is a **design choice**, not a logical
+consequence of the shared schema. The two are independent
+decisions: one could legitimately ship two construction loops — one
+targeting architectural moving parts, one targeting domain concepts
+— against the same record type, with each loop's prompts tuned for
+its dimension's failure modes. The schema does not foreclose that.
+Shared construction is chosen here for three reasons:
 
-The agent runs the challenge-revise as a single self-directed
-sequence inside its own context, not as a second agent dispatch.
-Rationale:
+1. **Complexity scaling.** The agent file's prompt complexity scales
+   roughly linearly with the number of distinct construction loops.
+   One shared loop is one prompt section to write, maintain, and
+   reason about; two bifurcated loops are two. At v0.3.0 there is
+   no signal that one shared loop under-serves either dimension.
 
-- A second-pass dispatch would need a separate challenger agent
-  with its own file, charter, and tool boundary. That doubles the
-  surface area to maintain for a v0.3.0 capability.
-- A self-challenge in one context preserves the agent's
-  evidence chain: the same context that drafted the element raises
-  objections against it. The challenge prompt can reference the
-  evidence the constructor saw directly.
-- Other sibling agents (advocatus-diaboli is the closest reference)
-  emit in a single pass; the diagnostic-legibility agent's
-  self-challenge is one more step in that pass, not a separate
-  dispatch.
+2. **Dimension-flavoured emphasis already gives dimension-aware
+   behaviour.** Per O4 / §3.5 / §4.3, the agent explicitly
+   weights Q5 heavily for domain elements and Q1 heavily for
+   architectural elements. The cross-dimension differentiation is
+   already operational without bifurcating the construction loop.
 
-A later slice may revisit this if disposition data shows that
-self-blindness is a recurring failure mode. The agent's own context
-can fail to see things a fresh context would catch; that is real.
-But again, no signal yet — ship the simpler shape first.
+3. **Recoverable.** If signal emerges from disposition data that
+   the two dimensions need genuinely different construction
+   sequences (not just weightings), the agent file can be split
+   into two construction loops without changing the schema, the
+   spec's external contract, or downstream consumers. The
+   architectural cost of starting shared and splitting later is
+   bounded; the cost of starting bifurcated and merging later is
+   roughly equivalent. The default of *one shape* wins on Occam.
+
+Sub-slicing notes (line 140 of the slicing record) excluded
+"per-model bespoke vs. parameterised prompts" as a separate slice
+on the grounds that the construction-loop question is
+implementation-level prompt crafting — that exclusion still holds,
+but the *choice* of shared-vs-bespoke is named here explicitly so
+future readers know it was deliberate rather than inherited from
+the schema decision.
+
+### 3.4 Fresh-sub-context self-challenge — three alternatives weighed
+
+Three candidate architectures for the challenge step were
+considered:
+
+1. **One-context self-challenge.** The agent drafts each element
+   and, in the same continuous reasoning context, asks the five
+   challenge questions of its own draft and revises in place.
+   Simplest. The named failure mode is **self-confirmation**: an
+   LLM in a single context that has just argued for a draft is
+   statistically biased toward defending it rather than disagreeing
+   with it. The challenge step risks degenerating into
+   rubber-stamping, which makes the `challenge_notes[]` field
+   window-dressing rather than evidence of due diligence.
+
+2. **Two-agent dispatch.** A separate `diagnostic-legibility-challenger`
+   agent file with its own charter and tool boundary. The constructor
+   emits draft elements; the challenger reads them and emits
+   challenge notes; the constructor (or dispatcher) merges.
+   Maximal independence. Cost: doubles the agent-file surface for a
+   v0.3.0 capability — twice the prompt to maintain, twice the
+   versioning ceremony, twice the place a future reader needs to
+   look to understand the cycle.
+
+3. **Fresh-sub-context self-challenge (selected).** The same agent
+   file runs the challenge step in an explicit context-separation
+   segment: the construction protocol ends, the agent re-reads the
+   evidence as an adversarial reviewer, and the five questions are
+   asked from that adversarial framing with the explicit instruction
+   to **disagree where the evidence allows**. One agent file, one
+   dispatch, but two reasoning postures within it — *construct* and
+   *challenge* — separated by an explicit prompt-segment boundary.
+
+The middle option is selected because it addresses the
+self-confirmation failure mode named in (1) without doubling the
+agent-file surface named in (2). The independence comes from the
+explicit re-framing rather than from a separate context; the cost
+is a few extra paragraphs in the agent file's reasoning protocol
+(operationalised in §4.3) rather than a whole second file.
+
+The mechanism is the agent file's prompt itself: §4.3's
+"Construction protocol" section will name an explicit
+**Challenge segment** that begins after all elements are drafted.
+That segment includes:
+
+- An instruction to re-read the evidence cited on each draft
+  element with no prior commitment to the draft's conclusions.
+- An adversarial framing line ("You are now the challenger. Your
+  job is to find what is wrong with the draft, not to confirm it.").
+- The five questions (§3.5), asked with explicit permission and
+  instruction to **disagree where the evidence allows** — silence is
+  not the safe answer.
+- The dimension-flavoured weighting from §3.5 applied per element.
+
+This is structurally a "fresh sub-context" without invoking a second
+agent: the framing instructions induce the agent to treat the
+challenge segment as separate work, even though the model context
+window is shared. If disposition data shows this still degenerates to
+self-confirmation (e.g. an unusually high rate of sentinel-only
+`challenge_notes[]` across diverse scopes), the architecture can
+escalate to (2) — a separate challenger agent — without changing the
+schema or the spec's external contract.
+
+The progression (1) → (3) → (2) is the natural escalation path; we
+ship the middle option first because it is the cheapest move that
+takes the failure mode seriously rather than deferring it.
 
 ### 3.5 The five-question challenge structure
 
@@ -166,17 +276,109 @@ once per element (the single pass in 3.1):
 5. **Description integrity** — is the description specific to this
    codebase, or am I writing a generic textbook definition?
 
+#### What each question is meant to catch (rationale)
+
+The five questions are not a primitive — they are a working hypothesis
+about what failure modes the agent's drafts most commonly exhibit.
+Each question targets a distinct failure mode:
+
+- **Q1 (Boundary)** catches **smearing** — drafting a single element
+  whose `name` covers two genuinely separable things. Most common for
+  architectural elements ("auth + session" treated as one component
+  when they are two).
+- **Q2 (Evidence)** catches **ungrounded claim** — the description
+  asserts something the cited evidence does not actually support.
+  This is the closest analogue to a fabrication check.
+- **Q3 (Confounders)** catches **near-misses** — neighbouring
+  artefacts in the codebase that share enough surface with the
+  element to be confused with it (e.g. two similarly-named domain
+  terms with different semantics). The element's identity is
+  sharpened by naming what it is *not*.
+- **Q4 (Confidence)** catches **calibration drift** — claiming
+  `confidence: high` when the evidence is thin, or `low` when the
+  evidence is in fact dense. This is the meta-level honesty check
+  that the schema's `confidence` field exists to support.
+- **Q5 (Description integrity)** catches **textbook-definition
+  drift** — writing a generic definition that could apply to any
+  codebase rather than describing what this specific concept means
+  here. Most common for domain elements (writing "an aggregate is a
+  cluster of related entities" instead of "the `Cart` aggregate
+  groups line items and applied promotions for one checkout session").
+
+These five together are the working cover — *boundary, ground,
+identity-by-contrast, calibration, specificity*. They are not
+claimed to be complete. The choice of five (and not three or seven)
+is a hypothesis revisable from disposition data: the agent's own
+`challenge_notes` corpus across real invocations is the falsification
+surface. If a recurring failure mode does not map to any of the five,
+the cover is missing a question. If two questions consistently produce
+identical notes, the cover has redundancy. Both signals are observable
+without changing the schema. A later slice may add, drop, or merge
+questions on that evidence.
+
 Each question is asked of the draft element. Where a question
 surfaces a change, the element is revised and the surfacing-question
-+ resolution is appended to `challenge_notes[]`. Questions that
-surface nothing add no note (avoid noise — empty notes are not
-evidence of due diligence).
++ resolution is appended to `challenge_notes[]` as a single string
+prefixed with `Q<N> (question name):` — e.g. `Q1 (boundary):`,
+`Q5 (description integrity):` — followed by a description of what
+surfaced and how it was resolved. The `Q<N>` prefix is mandatory and
+machine-parseable; the parent S3 cross-check (issue #332) groups
+notes by question prefix.
+
+When a challenge runs and all five questions surface no changes, the
+element receives the single sentinel note:
+
+```text
+Challenge applied; no questions surfaced changes
+```
+
+verbatim, with no `Q<N>` prefix. The sentinel is the only exception
+to the prefix convention. This rule makes the field unambiguous:
+**empty `challenge_notes[]` means the challenge protocol did not
+run; a non-empty list means it did.** Without the sentinel, an empty
+list would be observationally indistinguishable from a skipped
+challenge — a problem for the downstream S3 cross-check, which
+relies on `challenge_notes[]` as evidence of due diligence.
 
 The five questions are dimension-agnostic but apply with
 dimension-flavoured emphasis: domain elements pressure-test against
 question 5 most heavily (the "textbook definition" trap), and
 architectural elements pressure-test against question 1 most heavily
-(the "smeared two services" trap).
+(the "smeared two services" trap). The agent file operationalises
+this in its construction protocol (§4.3) as an explicit per-element
+weighting step, not as decorative guidance.
+
+### 3.6 Sentinel for the empty-scope degenerate case
+
+When the agent inspects the scope and finds no architectural or
+domain elements to draft (e.g. the scope is an empty directory, or
+a file list containing only generated artefacts with no human
+content), it does not return two empty collections. Instead it
+emits a single placeholder element under whichever collection it
+attempts first (architectural by convention) with the literal
+`name` value:
+
+```text
+(empty scope)
+```
+
+— exactly this string, parentheses included. The element carries
+`confidence: low`, an empty `evidence: []`, and a description that
+names the degenerate scope condition (e.g. "Scope `./src/foo/` was
+inspected and yielded no architectural moving parts or domain
+concepts; this placeholder marks the empty result"). The
+`challenge_notes[]` field carries the O2 sentinel
+(`Challenge applied; no questions surfaced changes`).
+
+Why the literal `(empty scope)` and not a low-confidence
+candidate? Per the schema, low confidence with empty evidence is
+already permitted for "agent flagged a candidate without ground"
+cases. The sentinel `name` lets a downstream consumer
+pattern-match exactly on `name == "(empty scope)"` to distinguish
+"scope yielded nothing" from "agent flagged an evidence-less
+candidate" — the two failure modes that would otherwise be
+indistinguishable. Avoids changing the schema. Documented in §6.3
+and again in the agent file's anti-patterns section.
 
 ## 4. The agent file
 
@@ -210,24 +412,72 @@ The agent file follows the sibling-agent shape:
   response, no file write.
 - `## Trust boundary` — Read/Glob/Grep, the rationale from §2.3.
 - `## Construction protocol` — how the agent reads the scope and
-  drafts the two collections. Calls out:
+  drafts the two collections. Two explicit phases separated by a
+  prompt-segment boundary, per §3.4:
+
+  **Phase A — Construction** (one continuous reasoning context):
   - read the schema template first
+    (`diagnostic-legibility/templates/legibility-element.md`)
   - inspect the scope (Glob/Grep/Read)
-  - draft architectural elements (one per evident "moving part")
+  - draft architectural elements (one per evident "moving part") —
+    populate `name`, `description`, `evidence[]`, and a starting
+    `confidence` per the honesty rules
   - draft domain elements (one per evident concept term)
-  - apply the five-question challenge to each, populating
-    `challenge_notes[]`
+  - if the scope yields nothing, emit the `(empty scope)` sentinel
+    placeholder per §3.6 and skip to emission with the O2 sentinel
+    note pre-populated
+
+  **Phase B — Challenge segment** (explicit re-framing per §3.4):
+  - begin with the framing instruction: *"You are now the
+    challenger. Your job is to find what is wrong with the drafts
+    above, not to confirm them. Re-read the evidence on each
+    element with no prior commitment to the draft's conclusions.
+    Disagree where the evidence allows — silence is not the safe
+    answer."*
+  - for each draft element, apply the five questions (§3.5) with
+    **dimension-flavoured weighting** as an explicit per-element
+    step:
+    - **When challenging a domain element**, weight Q5
+      (description integrity) heavily and probe specifically for
+      textbook-definition drift — does this description say
+      something specific about *this* codebase, or could it be
+      lifted verbatim into another project?
+    - **When challenging an architectural element**, weight Q1
+      (boundary) heavily and probe specifically for smeared
+      services — is this one moving part, or two that share a
+      directory or a name prefix and got collapsed into one?
+    - The remaining three questions (Q2 evidence, Q3 confounders,
+      Q4 confidence) are asked of every element with equal
+      weight.
+  - where a question surfaces a change, revise the element and
+    append a `challenge_notes[]` entry prefixed `Q<N> (question
+    name):` per §3.5
+  - where all five surface nothing for an element, append the
+    sentinel `Challenge applied; no questions surfaced changes`
   - emit the full `LegibilityModel` YAML
+
 - `## The five-question challenge` — the questions from §3.5,
-  copy-pasted, with one paragraph per question explaining what it
-  is looking for.
+  copy-pasted verbatim, with one paragraph per question explaining
+  what it is meant to catch (the rationale from the new §3.5
+  rationale block). The dimension-flavoured weighting is repeated
+  here as a one-paragraph reminder; the full operational guidance
+  lives in the Construction protocol Phase B above.
 - `## Honesty rules` — `confidence: low` for unevidenced candidates,
   empty `evidence: []` permitted only when confidence is `low`,
-  prefer "I am not sure" over fabrication.
+  prefer "I am not sure" over fabrication. The `(empty scope)`
+  sentinel from §3.6 is documented here too as the honest answer
+  to "scope yielded nothing".
 - `## Anti-patterns` — list of failure modes the agent should
-  avoid: padding `challenge_notes[]` with no-op resolutions,
-  generic textbook descriptions, two architectural elements that
-  are really one, etc.
+  avoid:
+  - padding `challenge_notes[]` with no-op resolutions to look
+    diligent
+  - writing generic textbook descriptions (Q5 failure)
+  - two architectural elements that are really one (Q1 failure)
+  - omitting the `Q<N>` prefix on challenge notes
+  - leaving `challenge_notes[]` empty when the challenge ran
+    (must use the sentinel)
+  - skipping the Phase B re-framing and conflating construction
+    with challenge in one continuous flow
 
 ### 4.4 Length
 
@@ -299,8 +549,11 @@ And the response contains a LegibilityModel YAML block
 And the block has scope, generated_at, generated_by, architectural,
     and domain fields per the LegibilityModel schema
 And at least one of architectural or domain is non-empty
-And every element has populated challenge_notes (or an explicit
-    empty list when no question surfaced a change)
+And every element has a non-empty challenge_notes list — either
+    one or more "Q<N> (question name): ..." entries when a question
+    surfaced a change, or the single sentinel
+    "Challenge applied; no questions surfaced changes" when no
+    question surfaced a change
 ```
 
 ### 6.2 Story — challenge notes carry diagnostic context
@@ -322,19 +575,28 @@ And the note is grounded in the element's evidence, not a generic
 ### 6.3 Story — the agent refuses degenerate outputs
 
 **As** the dispatching command
-**I want** the agent to surface a low-confidence placeholder rather
+**I want** the agent to surface a sentinel placeholder rather
 than emit two empty lists
-**So that** I can distinguish "scope yielded nothing" from "agent
-failed silently".
+**So that** I can distinguish "scope yielded nothing" from
+"agent flagged an evidence-less candidate" from "agent failed
+silently".
 
 ```gherkin
 Given a scope that the agent cannot find architectural or domain
     elements in (e.g., an empty directory)
 When the agent runs
-Then the output contains at least one LegibilityElement
+Then the output contains exactly one LegibilityElement
+And that element's name is the literal string "(empty scope)"
 And that element has confidence: low
-And its description names the degenerate scope condition
+And that element has an empty evidence list
+And that element's description names the degenerate scope condition
+And that element's challenge_notes carries the sentinel
+    "Challenge applied; no questions surfaced changes"
 ```
+
+The literal `(empty scope)` name (parentheses included) is the
+pattern-match handle for downstream consumers. See §3.6 for the
+rationale and §3.5 for the challenge-notes sentinel.
 
 ### 6.4 Story — the plugin version reflects the new agent
 
@@ -410,8 +672,12 @@ The slice narrowing keeps the following out of scope:
   S4 / issue #333.
 - **An iterative challenge loop.** §3.2 explicitly defers this; the
   ship is single-pass retained-challenge.
-- **A second-pass challenger agent dispatch.** §3.4 explicitly
-  defers this; the ship is self-challenge in one context.
+- **A separate challenger agent file (two-agent dispatch).** §3.4
+  weighs this as alternative (2) and defers it; the ship is the
+  middle option — fresh-sub-context self-challenge within one
+  agent file. Escalation to a separate challenger remains
+  available if disposition data shows the middle option still
+  degenerates to self-confirmation.
 - **A runtime validator for `LegibilityElement` instances.** The
   schema spec (sub-S2a) explicitly deferred this; nothing changes
   here.
@@ -447,6 +713,27 @@ The slice narrowing keeps the following out of scope:
   this PR triggers it because the per-plugin version bumps.
   `sync-to-global-cache.sh` rsyncs the new agent into the
   versioned plugin cache.
+- **`plugin_version` at integration time:** the `plugin_version`
+  field in `.claude-plugin/marketplace.json` is a pointer to the
+  current `ai-literacy-superpowers` plugin release. It is **not
+  owned by this PR**. The header and §6.4 acceptance hard-code
+  `0.39.1` as the spec-time snapshot, but the operative rule at
+  merge-time is:
+
+  > If `main` has bumped `ai-literacy-superpowers`'s
+  > `plugin_version` between spec-time and merge-time, take
+  > `main`'s value verbatim during the integration-agent's rebase.
+  > This PR only owns the `diagnostic-legibility` entry's
+  > `plugins[]` version bump (0.2.0 → 0.3.0). Conflicts on
+  > `plugin_version` are resolved in favour of `main`.
+
+  The version-consistency CI check passes as long as the
+  `diagnostic-legibility` entry's `version` matches
+  `diagnostic-legibility/.claude-plugin/plugin.json`; the
+  `plugin_version` pointer is checked independently against the
+  `ai-literacy-superpowers` plugin and is not coupled to this
+  slice.
+
 - **CI gates:**
   - Spec-first is satisfied by this spec being the first commit
     on the branch.
@@ -463,12 +750,17 @@ The slice narrowing keeps the following out of scope:
 | Question | Decision |
 | --- | --- |
 | Challenge protocol shape | Retained-challenge single-pass (§3.1) |
-| Shared vs bespoke protocol across dimensions | Shared, parameterised (§3.3) |
-| Self-challenge in one context vs second-pass dispatch | Single-context self-challenge (§3.4) |
-| Number and form of challenge questions | Five questions: boundary, evidence, confounders, confidence, description integrity (§3.5) |
+| Shared vs bespoke protocol across dimensions | Shared, parameterised — design choice not inherited from schema (§3.3) |
+| Challenge step independence: one-context vs fresh-sub-context vs dispatch | Fresh-sub-context self-challenge — explicit re-framing within one agent file (§3.4) |
+| Number and form of challenge questions | Five questions (boundary, evidence, confounders, confidence, description integrity) — working hypothesis revisable from disposition data (§3.5) |
+| `challenge_notes[]` semantics for "challenged but clean" | Sentinel note `Challenge applied; no questions surfaced changes`; empty list means "not challenged" (§3.5) |
+| `challenge_notes[]` entry prefix format | Mandatory `Q<N> (question name):` prefix, sentinel exempt (§3.5) |
+| Dimension-flavoured emphasis operationalisation | Explicit per-element weighting step in Construction protocol Phase B (§4.3) — Q5 heavy for domain, Q1 heavy for architectural |
+| Degenerate "empty scope" output | Literal sentinel name `(empty scope)`, parens included, with O2 sentinel note (§3.6, §6.3) |
+| Invocation surface at v0.3.0 | Bare Task-tool dispatch (`subagent_type: diagnostic-legibility`); `/diagnose` command deferred to parent S4 / #333 (§2.4) |
 | Agent name | `diagnostic-legibility` (the only agent in the plugin at v0.3.0) |
 | Tool boundary | Read, Glob, Grep — matches the three sibling read-only emitters |
-| Per-version bump | diagnostic-legibility 0.2.0 → 0.3.0 (minor: new behaviour and new component); marketplace listing unchanged at 0.4.0; plugin_version pointer unchanged at 0.39.1 |
+| Per-version bump | diagnostic-legibility 0.2.0 → 0.3.0 (minor: new behaviour and new component); marketplace listing unchanged at 0.4.0; `plugin_version` pointer taken from `main` at integration time (§9) |
 
 ## 11. References
 
