@@ -689,6 +689,27 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 - **Auto-fix**: false
 -->
 
+### Docs-site strict-build sweep
+
+- **What it checks**: Whether `mkdocs build --strict` currently succeeds
+  on the docs site. Catches relative links in `docs/plugins/**/*.md`
+  that resolve to files outside the `docs/` tree (mkdocs strict mode
+  rejects them and aborts), plus missing pages, missing anchors, and
+  other strict-mode violations — before they hit the PR-time
+  `docs-build-check` gate. Driven by the PR #341 → 341-fixup cycle
+  (2026-05-29): the diagnostic-legibility how-to and explanation pages
+  linked to `diagnostic-legibility/templates/legibility-element.md` via
+  `../../../../` relative paths that mkdocs strict mode rejected. The
+  PR-time check caught it, but a weekly sweep would have caught it on
+  the previous run and prevented the iteration cost. **Convention to
+  apply**: for repo-internal paths outside `docs/`, use a plain code
+  span (`` `path/to/file.md` ``) rather than a markdown link; the
+  model-cards plugin already follows this.
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: `mkdocs build --strict --quiet --site-dir /tmp/mkdocs-gc-check 2>&1 >/dev/null; rc=$?; rm -rf /tmp/mkdocs-gc-check; exit $rc`
+- **Auto-fix**: false
+
 ---
 
 ## Observability
@@ -752,5 +773,5 @@ the per-reader policy table.
 
 Last audit: 2026-05-29
 Constraints enforced: 24/25
-Garbage collection active: 18/18
-Drift detected: no (convention files + snapshot synced via /harness-sync 2026-05-29; ONBOARDING.md staleness surfaced as [manual], not auto-fixed)
+Garbage collection active: 19/19
+Drift detected: no (convention files + snapshot + ONBOARDING synced via /harness-sync + /harness-onboarding 2026-05-29; docs-site strict-build GC rule added)
