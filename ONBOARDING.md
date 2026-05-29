@@ -142,6 +142,39 @@ they pass.
   PRs. Layers 0–1 are free and fast; Layers 2–3 cost API spend and
   are gated by the `ANTHROPIC_API_KEY` environment variable, so they
   run nightly or behind a label rather than on every PR.
+- **TDAD fast-suite passes (Layers 0 + 1)** — Layer 0 (deterministic
+  bash plumbing) and Layer 1 (structural checks for plugin
+  components and scenario corpus) run on every PR that touches
+  plugin code, `tdad_tests/`, `HARNESS.md`, or `AGENTS.md`. Both
+  layers run offline (no API key required) and complete in under
+  ten seconds. Enforced by `tdad-tests-fast.yml`.
+- **New plugin components must ship with a TDAD scenario** — when a
+  PR adds a new file at `ai-literacy-superpowers/skills/<name>/SKILL.md`,
+  `ai-literacy-superpowers/agents/<name>.agent.md`, or
+  `ai-literacy-superpowers/commands/<name>.md`, the same PR must
+  include at least one scenario file at
+  `tdad_tests/scenarios/<type>/<name>/<aspect>.md` whose YAML
+  frontmatter declares `tier` as one of `structural`, `trigger`, or
+  `behavioural`. `tier: finding` does NOT satisfy the constraint.
+  Modifications to existing components are NOT gated.
+- **New plugin components must ship with a reference-page entry** —
+  the same component-add trigger as the TDAD scenario constraint also
+  requires an `### <name>` heading on the matching Diataxis reference
+  page (`docs/plugins/ai-literacy-superpowers/reference/<type>.md`).
+  Commands use `### /<name>` with the leading slash. Effective from
+  2026-05-26 — the carpaccio agent surfaced the gap that motivated it.
+- **Docs site builds in strict mode** — all PRs that change
+  `docs/**`, `mkdocs.yml`, or `requirements.txt` must pass
+  `mkdocs build --strict` without aborting. The strict build catches
+  broken internal links, missing pages, and links escaping the
+  `docs/` tree. Enforced by `docs-build-check.yml`.
+- **Spec redaction markers must be visible** — when a spec is
+  amended, superseded prose must be marked with a visible blockquote
+  prefix (`> **SUPERSEDED by Amendment N §X.Y**: <reason>`) above the
+  original text. HTML-comment redaction markers are forbidden in
+  `docs/superpowers/specs/` because they vanish in every rendered
+  markdown surface (mkdocs, GitHub PR view). Enforced by
+  `spec-redaction-marker-check.yml`.
 
 ### On schedule
 
@@ -187,6 +220,12 @@ Periodic checks run weekly or monthly to catch slow drift.
   commits to `main` that modify the log are forbidden.
 - **Observability archive** — moves snapshots older than 6 months to
   the archive directory.
+- **Docs-site strict-build sweep** — runs `mkdocs build --strict`
+  weekly to catch relative links in `docs/plugins/**/*.md` resolving
+  outside the `docs/` tree (mkdocs rejects them), plus missing pages
+  and other strict-mode violations, before they hit the PR gate.
+  Added 2026-05-29 after the diagnostic-legibility PR cycle surfaced
+  the pattern.
 
 ---
 
@@ -277,6 +316,36 @@ specifically: TDAD helpers stay test-stage in
 `tdad_tests/spike_helpers/`; they do **not** ship inside
 `ai-literacy-superpowers/scripts/`, because that would add a Python
 runtime dependency to every consumer.
+
+**Docs-site markdown links cannot escape `docs/`.** mkdocs strict
+mode rejects relative links from a page inside `docs/` to a repo
+file outside `docs/` and aborts the build. The diagnostic-legibility
+PR (PR #341, 2026-05-29) shipped how-to and explanation pages with
+`[link](../../../../diagnostic-legibility/templates/...)` markdown
+links that caught a CI fail on first push. The convention: for
+repo-internal paths outside `docs/`, use a plain code span
+(`` `diagnostic-legibility/templates/legibility-element.md` ``)
+rather than a markdown link. The model-cards plugin already follows
+this. The weekly `docs-site strict-build sweep` GC rule catches this
+before push if you run it locally.
+
+**Human-cognition gates require propose-with-rationale-and-wait, not
+silent adjudication.** The advocatus-diaboli and choice-cartographer
+gates exist to force human engagement with substantive decisions.
+When the agent writes dispositions on the user's behalf — even when
+the user is in auto-mode and says "continue" — the gate becomes
+documentation-only and the decisions still get made, but without the
+friction the gate was designed to introduce. The proven-working
+pattern (today's PR #342 reflection captures this): surface the
+record with a structured summary, propose dispositions-with-rationale
+via `AskUserQuestion` offering "I propose, you confirm" / "You
+adjudicate, I wait" / "Accept all as-is" / "Take over manually", and
+only after explicit user choice write the dispositions to disk. The
+auto-mode classifier intervened on PR #341 when downstream action
+(issue filing) was attempted on dispositions the agent had
+self-written — a useful safety net, but the right pattern is to
+propose-and-wait at the gate itself rather than rely on the
+classifier to catch the downstream consequence.
 
 ---
 
@@ -379,6 +448,33 @@ ceremony (spec → diaboli → adjudicate → implement → diaboli code-
 mode → adjudicate) for net-new capability. Use chore for refining
 existing capability driven by captured signal. The distinction is
 calibrated rather than codified — judgement, not a rule.
+
+**The decision-discipline triad: diaboli + cartographer + carpaccio.**
+Three agents now sit on the pipeline at different stages, each with
+a distinct discipline:
+
+- **carpaccio** (orchestrator step 0, before spec-writer) — *cadence
+  governor*. Slices a raw task description into thin, end-to-end-
+  complete pieces so the human engages with one decision at a time
+  rather than the whole proposal at once. Five lenses with
+  `decision-boundary` primary. Slice count bounded 1–9, bias
+  toward 3–5.
+- **advocatus-diaboli** (spec-mode after spec-writer; code-mode after
+  the final code-reviewer PASS) — *adversarial reviewer*. Steel-mans
+  objections across six categories. Halts the pipeline at a hard
+  gate while any disposition is `pending`.
+- **choice-cartographer** (after spec-mode diaboli adjudication,
+  before plan approval) — *decision archaeology*. Surfaces the
+  silent decisions a spec implies and emits them as Henney-style
+  pattern stories for human disposition. Soft gate at plan
+  approval; merge-time HARNESS constraint at PR time. (Renamed from
+  "Henney" at agent boundary; format and Henney pattern-stories
+  lineage preserved.)
+
+All three follow the read-only emitter + dispatcher-persist + human-
+disposes pattern. The triad covers cadence (carpaccio), risk
+(diaboli), and decision visibility (cartographer) — the three
+substantive disciplines a spec-first pipeline benefits from.
 
 ---
 
@@ -525,3 +621,10 @@ The project runs on a monthly observability cadence:
   amendment that keeps helpers test-stage
 - [Docs site](https://habitat-thinking.github.io/ai-literacy-superpowers/)
   — full documentation for the plugin and its sister plugins
+- [diagnostic-legibility plugin](diagnostic-legibility/README.md) —
+  sister plugin that ships the `diagnostic-legibility` agent (two-
+  model construction + retained-challenge self-challenge cycle) for
+  scoped codebase legibility analysis
+- [model-cards plugin](model-cards/README.md) — sister plugin that
+  ships the `model-card-researcher` agent for Mitchell-extended
+  model cards via a tiered source strategy
