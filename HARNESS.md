@@ -750,7 +750,7 @@ the per-reader policy table.
 
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
-Last audit: 2026-05-08
-Constraints enforced: 23/24
+Last audit: 2026-05-29
+Constraints enforced: 24/25
 Garbage collection active: 18/18
-Drift detected: no (ONBOARDING.md regenerated 2026-05-09)
+Drift detected: no (convention files + snapshot synced via /harness-sync 2026-05-29; ONBOARDING.md staleness surfaced as [manual], not auto-fixed)
