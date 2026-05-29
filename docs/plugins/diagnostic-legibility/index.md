@@ -23,15 +23,20 @@ instance, but the discipline (two-model + cross-check + on-demand
 surfacing) generalises to other domains. Future agents may apply it
 to governance artefacts, decision records, or other complex systems.
 
-## Status: v0.1.0 — scaffold only
+## Status: v0.3.0 — working agent
 
-This plugin is structurally complete and loadable but ships with no
-functional agents or commands yet. The next three deliverables are
-filed as separate issues:
+The plugin ships the `diagnostic-legibility` agent. It accepts a
+codebase scope, drafts an architectural model and a domain model
+against the `LegibilityElement` schema, and runs a retained-challenge
+single-pass cycle that fills `challenge_notes[]` on every element via
+five named questions (boundary, evidence, confounders, confidence,
+description integrity).
 
-- [#331](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/331) — S2: Two-model agent
+Cross-check and the `/diagnose` command remain ahead:
+
+- ✅ [#331](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/331) — S2: Two-model agent (shipped v0.3.0)
 - [#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332) — S3: Cross-check mechanism
-- [#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333) — S4: Surfacing interface
+- [#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333) — S4: Surfacing interface (`/diagnose`)
 
 The carpaccio slicing that produced this decomposition is recorded at
 [`docs/superpowers/slices/diagnostic-legibility-plugin.md`](../../superpowers/slices/diagnostic-legibility-plugin.md)
@@ -40,7 +45,9 @@ and traces back to parent issue
 
 ## Quadrant pages
 
-No tutorials, how-to guides, reference, or concept pages exist yet.
-Per the project convention, each Diataxis quadrant folder will be
-scaffolded when its first page is written. Watch the three deferred
-issues above to see what lands when.
+- **How-to**: [Invoke the diagnostic-legibility agent](how-to/invoke-the-agent.md)
+- **Concepts**: [The challenge-refine protocol](explanation/challenge-refine-protocol.md)
+
+Tutorials and reference pages remain to be written; per the project
+convention, each Diataxis quadrant folder is scaffolded when its first
+page lands.

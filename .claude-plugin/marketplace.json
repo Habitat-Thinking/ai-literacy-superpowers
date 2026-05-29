@@ -26,8 +26,8 @@
     {
       "name": "diagnostic-legibility",
       "source": "./diagnostic-legibility",
-      "description": "Agents accountable for helping to maintain human understanding. First agent (in development) builds, self-challenges, and cross-checks two models of a codebase scope.",
-      "version": "0.2.0"
+      "description": "Agents accountable for helping to maintain human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle. Cross-check and the `/diagnose` command land in later slices.",
+      "version": "0.3.0"
     }
   ]
 }
