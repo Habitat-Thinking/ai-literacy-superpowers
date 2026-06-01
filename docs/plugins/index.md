@@ -14,6 +14,7 @@ using the [Diataxis framework](https://diataxis.fr/).
 | ------ | ------------ | ---- |
 | [ai-literacy-superpowers](ai-literacy-superpowers/index.md) | Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. The flagship plugin. | [→ ai-literacy-superpowers docs](ai-literacy-superpowers/index.md) |
 | [model-cards](model-cards/index.md) | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy, refusal-on-unconfirmed-existence honesty rule. | [→ model-cards docs](model-cards/index.md) |
+| [diagnostic-legibility](diagnostic-legibility/index.md) | Agents accountable for maintaining human understanding. Builds, self-challenges, and cross-checks two models of a codebase scope — architectural and domain — and surfaces the corrected models on demand via the `/diagnose` command. | [→ diagnostic-legibility docs](diagnostic-legibility/index.md) |
 
 ## Why per-plugin documentation
 
