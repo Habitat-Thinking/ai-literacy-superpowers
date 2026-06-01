@@ -10,12 +10,13 @@ code review, compound learning, and the three enforcement loops. You
 will be working with markdown skills, bash hook scripts, JSON
 configuration, and YAML CI workflows. There is no compiled application
 code; the plugin's "code" is content that agents and tools read and
-execute. The flagship plugin is `ai-literacy-superpowers`;
-`model-cards` is a sister plugin that ships from the same repo with
-its own version line and tag convention. The whole project is also
-self-referential — it defines the harness framework, and its own
-`HARNESS.md` uses that framework, so changes to templates do not
-automatically propagate to the project's own root.
+execute. The flagship plugin is `ai-literacy-superpowers` (33 skills,
+14 agents, 26 commands); `model-cards` and `diagnostic-legibility` are
+sister plugins that ship from the same repo, each with its own version
+line and tag convention. The whole project is also self-referential —
+it defines the harness framework, and its own `HARNESS.md` uses that
+framework, so changes to templates do not automatically propagate to
+the project's own root.
 
 ---
 
@@ -26,17 +27,19 @@ automatically propagate to the project's own root.
   frontmatter. Markdownlint enforces consistent formatting across
   every `.md` file.
 - **Bash** — hook scripts and utility scripts. Every `.sh` file uses
-  strict mode (`set -euo pipefail`) and passes ShellCheck.
+  strict mode (`set -euo pipefail`) and passes both `bash -n` and
+  ShellCheck.
 - **JSON** — plugin configuration (`plugin.json`, `marketplace.json`)
-  and hook registration (`hooks/hooks.json`).
+  and hook registration.
 - **YAML** — GitHub Actions CI workflows that enforce constraints on
-  PRs and run weekly garbage collection.
+  PRs and run scheduled garbage collection.
 - **Python (test-stage only)** — the TDAD test suite under
   `tdad_tests/` uses Python plus pytest plus the Claude Agent SDK.
   Test-stage code stays out of the packaged plugin; consumers never
   need a Python runtime.
 - **No build system** — this is a plugin, not a compiled application.
-  There is nothing to build.
+  There is nothing to build. Quality comes entirely from linters,
+  scanners, and review.
 
 ---
 
@@ -49,582 +52,329 @@ directory is kebab-case, the file is always `SKILL.md`). Agents are
 
 **One component per file.** Agents go in `agents/`, skills in
 `skills/<name>/SKILL.md`, commands in `commands/`, hook scripts in
-`hooks/scripts/`, templates in `templates/`, utility scripts in
-`scripts/`. If you are adding something new, put it in the right
-directory.
+`hooks/scripts/`, templates in `templates/`, and utility scripts in
+`scripts/`. Find a file by its type and you find it fast.
 
-**New components ship with a TDAD scenario.** When you add a skill,
-agent, or command, drop a markdown scenario alongside it under
-`tdad_tests/scenarios/<type>/<name>/` so the structural and (where
-relevant) behavioural layers can pick it up. The scenario is a small
-human-readable markdown file with `Given / When / Then / Rubric`
-sections — see `tdad_tests/README.md` for the format.
+**Frontmatter is mandatory.** Every skill, agent, and command file
+carries YAML frontmatter with at least `name` and `description`.
+Skills also include an Overview section. This isn't bureaucracy — the
+plugin loader and the assessment tooling read those fields, so a
+missing one breaks discovery.
 
-**Hook scripts are advisory only.** They warn but never block. Output
-uses JSON `systemMessage` format so Claude Code surfaces the message
-without interrupting the session. When writing a hook script, start
-with `set -euo pipefail` and exit silently (`exit 0`) when the hook
-does not apply.
+**Error handling in shell is uniform.** Every hook script opens with
+`set -euo pipefail`. Hooks are advisory only: they warn but never
+block, and they emit JSON `systemMessage` output so Claude Code
+surfaces the note without interrupting your flow. Guard clauses exit
+silently (`exit 0`) when a hook doesn't apply.
 
-**Everything needs frontmatter.** Every `.agent.md`, `SKILL.md`, and
-command `.md` file must have YAML frontmatter with `name` and
-`description` fields. Skills also need an Overview section. Bash
-scripts need a header comment block explaining purpose and behaviour.
+**Document for the next human.** Bash scripts carry a header comment
+explaining purpose and behaviour. The README documents the full
+plugin. When in doubt, write the sentence you'd have wanted to read
+before you started.
 
 ---
 
 ## What's Enforced
 
+The harness declares 26 constraints. Here's what fires, grouped by
+when you'll meet it.
+
 ### At commit time
 
-These checks warn you while you are editing. They are advisory — they
-will not stop you from committing, but they flag problems early.
+These are fast, local checks — run them before you push and you'll
+sail through CI:
 
-- **Markdown formatting** — all `.md` files must pass markdownlint.
-  Run `npx markdownlint-cli2 "**/*.md"` locally to check.
-- **No secrets** — no API keys, tokens, passwords, or private keys in
-  source files. Gitleaks scans for these automatically.
-- **Shell syntax** — all `.sh` files must pass `bash -n` syntax
-  checking.
-- **Strict mode** — every `.sh` file must contain `set -euo pipefail`
-  within the first 15 lines.
-- **ShellCheck** — all `.sh` files must pass ShellCheck with no
-  errors.
+- **No secrets in source** — gitleaks scans for API keys, tokens,
+  passwords, and private keys. A hit blocks the commit.
+- **Consistent markdown formatting** — every `.md` file must pass
+  markdownlint with the project's config, no warnings.
+- **Shell scripts pass syntax check** — every `.sh` file must pass
+  `bash -n`.
+- **Shell scripts use strict mode** — every `.sh` file must contain
+  `set -euo pipefail` within its first 15 lines.
+- **ShellCheck compliance** — every `.sh` file must pass ShellCheck
+  with no errors.
 
 ### At PR time
 
-These are CI gates that block merges. Your PR will not go green until
-they pass.
+These are the CI gates that block a merge:
 
-- **Frontmatter completeness** — every agent, skill, and command file
-  must have `name` and `description` in its frontmatter.
-- **Spec-first ordering** — for feature PRs, the first commit must
-  contain only a spec file in `docs/superpowers/specs/`. Bug-fix and
-  maintenance PRs (labelled `bug`, `fix`, `chore`, `maintenance` or
-  branch-prefixed `fix/`, `chore/`) are exempt.
-- **Spec scoping** — each feature PR traces to a single spec. Do not
-  bundle unrelated changes.
-- **Spec intent** — the spec must describe the problem, the chosen
-  approach, and the expected outcome. The implementation should
-  trace back to it.
-- **Adjudicated objections** — every feature PR needs a spec-mode and
-  a code-mode objection record at
-  `docs/superpowers/objections/<spec-slug>.md` and
-  `<spec-slug>-code.md`, with all dispositions resolved (no `pending`
-  values). Run `/diaboli` after the spec is written and again after
-  the implementation is complete.
-- **Adjudicated choice stories** — every non-exempt feature PR needs
-  a choice-story record at `docs/superpowers/stories/<spec-slug>.md`
-  with every story dispositioned. Run `/choice-cartograph` after the
-  spec-mode `/diaboli` dispositions are resolved. The exempt-label
-  list is the same as objections plus `cross-repo`.
-- **Version consistency** — `plugin.json` version, README badge, and
-  CHANGELOG heading must all match. Changes inside
-  `ai-literacy-superpowers/` require a version bump.
-- **Marketplace sync** — `marketplace.json` `plugin_version` must
-  match `plugin.json` `version`.
-- **Release traceability** — every version needs a matching CHANGELOG
-  heading and a git tag. The tag is created automatically on merge.
-  `ai-literacy-superpowers` uses bare `vX.Y.Z` tags; `model-cards`
-  uses `model-cards-vX.Y.Z` tags.
-- **Output validation** — commands that produce structured output must
-  include a validation checkpoint that reads the output back and
-  checks it against the format spec.
-- **Docs site kept current** — when a PR adds, removes, or changes a
-  skill, agent, or command, the corresponding pages under `docs/`
-  must be reviewed and updated in the same PR.
-- **Docs propagation when shipping new commands** — when a new
-  command consolidates or replaces existing functionality, every
-  reference in `docs/plugins/<plugin>/` to the older commands must
-  be updated to frame them as primitives or alternatives. A "See
-  also" callout is not enough.
-- **Tests must pass** — the TDAD suite at `tdad_tests/` must pass on
-  PRs. Layers 0–1 are free and fast; Layers 2–3 cost API spend and
-  are gated by the `ANTHROPIC_API_KEY` environment variable, so they
-  run nightly or behind a label rather than on every PR.
-- **TDAD fast-suite passes (Layers 0 + 1)** — Layer 0 (deterministic
-  bash plumbing) and Layer 1 (structural checks for plugin
-  components and scenario corpus) run on every PR that touches
-  plugin code, `tdad_tests/`, `HARNESS.md`, or `AGENTS.md`. Both
-  layers run offline (no API key required) and complete in under
-  ten seconds. Enforced by `tdad-tests-fast.yml`.
-- **New plugin components must ship with a TDAD scenario** — when a
-  PR adds a new file at `ai-literacy-superpowers/skills/<name>/SKILL.md`,
-  `ai-literacy-superpowers/agents/<name>.agent.md`, or
-  `ai-literacy-superpowers/commands/<name>.md`, the same PR must
-  include at least one scenario file at
-  `tdad_tests/scenarios/<type>/<name>/<aspect>.md` whose YAML
-  frontmatter declares `tier` as one of `structural`, `trigger`, or
-  `behavioural`. `tier: finding` does NOT satisfy the constraint.
-  Modifications to existing components are NOT gated.
-- **New plugin components must ship with a reference-page entry** —
-  the same component-add trigger as the TDAD scenario constraint also
-  requires an `### <name>` heading on the matching Diataxis reference
-  page (`docs/plugins/ai-literacy-superpowers/reference/<type>.md`).
-  Commands use `### /<name>` with the leading slash. Effective from
-  2026-05-26 — the carpaccio agent surfaced the gap that motivated it.
-- **Docs site builds in strict mode** — all PRs that change
-  `docs/**`, `mkdocs.yml`, or `requirements.txt` must pass
-  `mkdocs build --strict` without aborting. The strict build catches
-  broken internal links, missing pages, and links escaping the
-  `docs/` tree. Enforced by `docs-build-check.yml`.
-- **Spec redaction markers must be visible** — when a spec is
-  amended, superseded prose must be marked with a visible blockquote
-  prefix (`> **SUPERSEDED by Amendment N §X.Y**: <reason>`) above the
-  original text. HTML-comment redaction markers are forbidden in
-  `docs/superpowers/specs/` because they vanish in every rendered
-  markdown surface (mkdocs, GitHub PR view). Enforced by
-  `spec-redaction-marker-check.yml`.
+- **All frontmatter has name and description** — every skill, agent,
+  and command file must have both.
+- **Spec-first commit ordering** — for feature or behaviour-change
+  PRs, the first commit on the branch contains only a spec file in
+  `docs/superpowers/specs/`. Bug-fix, dependency, and maintenance PRs
+  (labelled `bug`, `fix`, `chore`, `maintenance`, or branch-prefixed
+  `fix/`, `chore/`) are exempt.
+- **Spec-scoped changes / Spec captures intent** — one concern per
+  PR, traceable to a spec that states the problem, approach, and
+  outcome.
+- **PRs have adjudicated objections** — feature PRs carry a spec-mode
+  and a code-mode objection record (`/diaboli`) with every disposition
+  resolved.
+- **PRs have adjudicated choice stories** — non-exempt PRs carry a
+  choice-story record (`/choice-cartograph`) with every story
+  dispositioned, or claim an exempt label.
+- **Version consistency / Marketplace plugin version sync / Release
+  traceability** — `plugin.json`, the README badge, the CHANGELOG
+  heading, and `marketplace.json`'s `plugin_version` must all agree,
+  and every shipped version needs a matching git tag.
+- **Docs site builds in strict mode** — PRs touching `docs/**`,
+  `mkdocs.yml`, or `requirements.txt` must pass `mkdocs build
+  --strict` (catches broken internal links before they reach main).
+- **Docs site kept current / Docs propagation when shipping new
+  commands** — when you add, remove, or substantially change a skill,
+  agent, or command, the matching docs pages are updated in the same
+  PR.
+- **New plugin components must ship with a TDAD scenario** — a new
+  skill/agent/command file ships with at least one scenario under
+  `tdad_tests/scenarios/`.
+- **New plugin components must ship with a reference-page entry** — a
+  new component adds an `### <name>` heading to its Diataxis reference
+  page.
+- **Every marketplace plugin appears in the docs index pages** — every
+  plugin in `marketplace.json` is linked from both `docs/index.md` and
+  `docs/plugins/index.md`.
+- **TDAD fast-suite passes (Layers 0 + 1)** — the offline plumbing and
+  structural tests run green on any PR touching plugin code.
+- **Output validation checkpoints** — every command that writes
+  structured output reads it back and checks it against the format
+  spec.
+- **Spec redaction markers must be visible** — superseded spec prose
+  is marked with a visible blockquote, never an HTML comment.
+- **Tests must pass** — declared but currently *unverified*: there is
+  no application test runner to wire it to yet.
 
 ### On schedule
 
-Periodic checks run weekly or monthly to catch slow drift.
+These periodic garbage-collection checks fight the slow drift that PR
+gates miss (19 GC rules in total, run weekly or monthly):
 
-- **Documentation freshness** — checks whether README.md, HARNESS.md,
-  and CLAUDE.md reference things that no longer exist.
-- **Secret scanner operational** — confirms gitleaks is still
-  installed and running.
-- **Snapshot staleness** — flags if the harness health snapshot is
-  older than 30 days.
-- **Command-prompt sync** — detects when commands and their
-  corresponding `.github/prompts/` files have diverged.
-- **Change cadence drift** — watches whether PR sizes or cycle times
-  are increasing, which can signal that AI-speed production is
-  outpacing human review.
-- **Plugin manifest currency** — checks whether `plugin.json` counts
-  still match actual skills, agents, and commands.
-- **Marketplace listing drift** — checks whether `marketplace.json`
-  has drifted from `plugin.json`.
-- **Release tag completeness** — confirms every CHANGELOG version has
-  a git tag.
-- **Onboarding staleness** — flags if ONBOARDING.md is older than
-  HARNESS.md, AGENTS.md, or REFLECTION_LOG.md.
-- **Template currency** — detects when the HARNESS.md template
-  version is behind the installed plugin version.
-- **Dependency currency** — checks for known vulnerabilities in
-  dependencies.
-- **Convention file sync** — checks whether Cursor, Copilot, and
-  Windsurf convention files reflect current HARNESS.md conventions.
-- **Reflection regression detection** — looks for recurring failure
-  patterns in REFLECTION_LOG.md that should become constraints.
-- **Reflection log archival** — promoted reflection entries are
-  auto-moved to `reflections/archive/<YYYY>.md` once verified.
-- **Reflection log aged-out review** — entries older than 180 days
-  without a `Promoted` line surface as evidence for the curator
-  (no auto-classification).
-- **Objection record freshness** — flags spec files modified more
-  recently than their objection record (a spec edited without
-  re-running `/diaboli`).
-- **Reflections via PR workflow** — every change to
-  `REFLECTION_LOG.md` must come via a PR with CI passing. Direct
-  commits to `main` that modify the log are forbidden.
-- **Observability archive** — moves snapshots older than 6 months to
-  the archive directory.
-- **Docs-site strict-build sweep** — runs `mkdocs build --strict`
-  weekly to catch relative links in `docs/plugins/**/*.md` resolving
-  outside the `docs/` tree (mkdocs rejects them), plus missing pages
-  and other strict-mode violations, before they hit the PR gate.
-  Added 2026-05-29 after the diagnostic-legibility PR cycle surfaced
-  the pattern.
+- **Documentation freshness** — flags README/HARNESS/CLAUDE references
+  to things that no longer exist.
+- **Secret scanner operational / Snapshot staleness / Template
+  currency / Release tag completeness** — deterministic health checks
+  on the harness itself.
+- **Plugin manifest currency / Marketplace listing drift** — keep
+  `plugin.json` and `marketplace.json` honest about what the plugin
+  actually contains.
+- **Change cadence drift** — watches PR size and spec-to-merge time so
+  AI-speed production doesn't outrun the human pace.
+- **Convention file sync** — keeps `.cursor/`, `.github/copilot-
+  instructions.md`, and `.windsurf/` in step with HARNESS.md.
+- **Reflection log archival / aged-out review / regression detection**
+  — curate `REFLECTION_LOG.md` and surface recurring failure patterns.
+- **Reflections via PR workflow** — additions to `REFLECTION_LOG.md`
+  go through a PR, never a direct commit to main.
+- **Onboarding document staleness / Redirect sunset / Observability
+  archive / Objection record freshness / Docs-site strict-build
+  sweep** — the rest of the entropy patrol.
 
 ---
 
 ## Common Pitfalls
 
-**Run deterministic tools before promoting constraints.** When adding
-a new linter or check (like ShellCheck), run it against the entire
-codebase first — including files created earlier in the same session.
-ShellCheck found 4 issues in scripts that had already passed LLM
-review. Deterministic tools catch what review misses.
+Lessons the team learned the hard way, so you don't have to.
 
-**Do not use worktrees for parallel subagents.** Worktree-isolated
-subagents lose Bash permissions because `.claude/settings.local.json`
-does not propagate to worktree paths. Use regular background agents
-on separate branches instead, but plan for branch cross-contamination
-and cherry-pick cleanup.
+- **Run the deterministic tools before you trust a review.** ShellCheck
+  once found 4 issues in scripts that had already passed both an
+  implementer and a spec-compliance review — unused variables and
+  sed-vs-parameter-expansion idioms are invisible to LLM review but
+  obvious to a linter. Run markdownlint, ShellCheck, and `bash -n`
+  locally; deterministic tools catch what reading misses.
 
-**Background subagents may lack write permissions.** For write-heavy
-tasks, use foreground agents so the user can approve tool calls, or
-have the parent agent extract content from subagent output and do the
-writes itself.
+- **The harness is self-referential — mind which HARNESS.md you're
+  editing.** The plugin ships `templates/HARNESS.md`, and the project's
+  own root `HARNESS.md` is a *separate* file generated from it. Editing
+  the template does not change the project's harness, and vice versa.
+  Drift between the two is exactly what the manifest-currency and
+  command-prompt-sync GC rules exist to catch.
 
-**Check for existing CI workflows before proposing new ones.** This
-project already has `version-check.yml`, `lint-markdown.yml`,
-`harness.yml`, `gc.yml`, and `pages.yml` in `.github/workflows/`.
-Proposing a duplicate wastes a branch cycle.
+- **Grep `.github/workflows/` before proposing a new CI check.** The
+  project already has a dozen workflows (`harness.yml`,
+  `version-check.yml`, `spec-first-check.yml`, `tdad-tests-fast.yml`,
+  `docs-build-check.yml`, `gc.yml`, and more). Proposing a duplicate
+  wastes a branch cycle.
 
-**Plugin files live in two locations.** Root-level `skills/`,
-`hooks/`, `templates/` are the plugin's own development files. Files
-under `ai-literacy-superpowers/` are the packaged plugin that gets
-distributed. When a spec references a file path, check both
-locations.
+- **MkDocs resolves links from the source file's directory, not from
+  `docs/`.** A link like `plugins/foo.md` written in
+  `docs/contributing/index.md` resolves to
+  `docs/contributing/plugins/foo.md`. Markdownlint won't catch it; the
+  strict build will. Run `mkdocs build --strict` before opening a docs
+  PR. For repo-internal paths *outside* `docs/`, use a plain code span
+  (`` `path/to/file.md` ``) rather than a markdown link.
 
-**Apply spec-first exemption labels at PR creation, not after.** When
-a PR needs a `chore`, `fix`, or `cross-repo` label to bypass a CI
-gate, pass `--label <label>` directly in `gh pr create`. Labels added
-after the initial push are invisible to already-queued CI runs and
-need an empty-commit retrigger to re-evaluate. The `chore` label is
-the right exemption for docs-only changes outside the plugin
-directory; CLAUDE.md's "Spec-First Exemptions" table lists which
-label to use for which kind of change.
+- **Incremental plugin work leaves marketplace-level surfaces stale.**
+  When a plugin ships across several slices, each PR tends to update
+  that plugin's own docs but never the marketplace-level surfaces
+  (homepage table, plugins index, install block) that belong to no
+  single slice. The diagnostic-legibility plugin shipped across five
+  PRs without ever landing on the homepage. The final slice of a plugin
+  chain should update those cross-cutting surfaces — and there's now a
+  deterministic check that enforces it.
 
-**Audit after shipping a new command — not just the immediate docs.**
-When a new command consolidates or replaces existing functionality,
-the new how-to page is not enough. Grep `docs/plugins/<plugin>/` for
-every reference to the older commands and reframe them as primitives
-or alternatives in the same PR. The docs-propagation constraint
-encodes this, but the discipline is yours: shipping `/harness-sync`
-without updating the older `convention-sync.md` and
-`harness-onboarding.md` pages was an incomplete PR.
-
-**Match each file's existing emphasis style for markdown.** The
-project's `.markdownlint.json` runs MD049 in `consistent` mode — it
-enforces consistency *within each file*, not project-wide. Some
-existing pages use asterisks for emphasis, others use underscores.
-Match what the file already uses; do not assume a global convention.
-
-**Prose-embedded counts and version strings drift silently.** Badges
-in README.md are kept correct by the version-bump workflow, but
-prose-embedded counts (the marketplace plugin table row, "Skills
-(N)" headings, anything that looks like `N skills, M agents, K
-commands`) are not. When you ship a command, skill, or agent, update
-those prose surfaces in the same PR.
-
-**`git mv` plus content edits plus narrowly-staged commit silently
-drops the edits.** When a single logical change combines a `git mv`
-with content edits to the moved files, a narrow `git add path1 path2
-&& git commit` will commit the rename and leave the in-file edits
-unstaged in the working tree. This bit twice in one session
-(PR #286 → #287, PR #289 → #290), each time landing a broken `main`
-that needed a recovery PR. Verify before committing: `git diff
---cached --stat` should list every file you intended to modify. If it
-shows only renames where you expected modifications, the edits are
-not staged.
-
-**Specs about extracting logic for testing carry a hidden second
-question.** When a design spec proposes extracting code into a helper
-for test coverage, it almost always also implies a follow-on
-question — *should the extracted helper ship as production code?* The
-two questions have different stakes (test coverage vs plugin
-distribution and language runtimes). PR #293 → #298 amended the
-command-TDAD-testing spec because the original answered the first
-question explicitly and the second only implicitly. The lesson:
-when a spec recommendation crosses a major architectural boundary
-(package contents, language runtimes, distribution shape), name the
-crossing in its own row of the trade-off table. For this project
-specifically: TDAD helpers stay test-stage in
-`tdad_tests/spike_helpers/`; they do **not** ship inside
-`ai-literacy-superpowers/scripts/`, because that would add a Python
-runtime dependency to every consumer.
-
-**Docs-site markdown links cannot escape `docs/`.** mkdocs strict
-mode rejects relative links from a page inside `docs/` to a repo
-file outside `docs/` and aborts the build. The diagnostic-legibility
-PR (PR #341, 2026-05-29) shipped how-to and explanation pages with
-`[link](../../../../diagnostic-legibility/templates/...)` markdown
-links that caught a CI fail on first push. The convention: for
-repo-internal paths outside `docs/`, use a plain code span
-(`` `diagnostic-legibility/templates/legibility-element.md` ``)
-rather than a markdown link. The model-cards plugin already follows
-this. The weekly `docs-site strict-build sweep` GC rule catches this
-before push if you run it locally.
-
-**Human-cognition gates require propose-with-rationale-and-wait, not
-silent adjudication.** The advocatus-diaboli and choice-cartographer
-gates exist to force human engagement with substantive decisions.
-When the agent writes dispositions on the user's behalf — even when
-the user is in auto-mode and says "continue" — the gate becomes
-documentation-only and the decisions still get made, but without the
-friction the gate was designed to introduce. The proven-working
-pattern (today's PR #342 reflection captures this): surface the
-record with a structured summary, propose dispositions-with-rationale
-via `AskUserQuestion` offering "I propose, you confirm" / "You
-adjudicate, I wait" / "Accept all as-is" / "Take over manually", and
-only after explicit user choice write the dispositions to disk. The
-auto-mode classifier intervened on PR #341 when downstream action
-(issue filing) was attempted on dispositions the agent had
-self-written — a useful safety net, but the right pattern is to
-propose-and-wait at the gate itself rather than rely on the
-classifier to catch the downstream consequence.
+- **Long sessions quietly degrade judgment.** Output keeps flowing, but
+  pattern-matching narrows and surprise-detection drops — and it's
+  invisible from inside the session. Take time-based breaks (a
+  90-minute self-check, an end-of-day stop), not task-based ones. If
+  the next decision is about *whether* to do something rather than
+  *how*, and you've been going for 90+ minutes, defer it to a fresh
+  session.
 
 ---
 
 ## Architecture Decisions
 
-**Hook scripts never block.** This plugin is used across diverse
-projects, so blocking hooks could break workflows the plugin authors
-cannot predict. Advisory messages let users decide how to act. The
-alternative of configurable blocking was rejected — the complexity
-was not justified for advisory value.
+The team has already settled these — here's the reasoning, so you can
+build on them rather than relitigate them.
 
-**Health snapshots are committed directly to main.** They do not
-affect behaviour, and gating them on PR review would add friction to
-the observability cadence. This is an intentional exception to the
-branch-and-PR workflow.
+- **Content-emitting agents follow agent-emit + dispatcher-persist +
+  human-disposes.** A research-and-author agent's tool boundary is
+  read-only (no Edit, no Bash); it returns content as a string; the
+  dispatching command writes the file *after* a structured human
+  review (accept / edit / re-run / abort). The load-bearing invariant
+  is the *ordering*: the human disposition must precede the write. A
+  spec can honour the tool split and still break the invariant by
+  writing first and summarising after — so check the ordering, not
+  just the tool boundary. In production across `advocatus-diaboli`,
+  `choice-cartographer`, `model-card-researcher`, and `/diagnose`.
 
-**Every structured-output command has a validation checkpoint.** The
-pattern is: generate output, read it back, check against the format
-spec, fix in place. This was added because agents consistently drift
-from format specs under cognitive load — reference templates set
-intent but do not guarantee compliance. The checkpoint is the
-verification layer, analogous to type checking in compiled code.
+- **Human-cognition gates require propose-with-rationale-and-wait, not
+  silent adjudication — even in auto-mode.** The diaboli and
+  cartographer gates exist to force human engagement with substantive
+  decisions. When an agent writes the dispositions itself, the gate
+  becomes documentation-only. The working pattern: surface the record,
+  propose dispositions-with-rationale via `AskUserQuestion`, and write
+  only after an explicit human choice.
 
-**Content-emitting agents follow agent-emit + dispatcher-persist +
-human-disposes.** The agent's tool boundary is research-and-author
-only (no Edit, no Bash); it returns content as a string; the
-dispatching command writes the file after a structured human review
-(accept / edit / re-run / abort). This pattern is in production
-across `advocatus-diaboli`, `choice-cartographer`, and
-`model-card-researcher`. Future research-and-author agents should
-default to this shape unless an explicit reason argues otherwise.
+- **Hook scripts never block, only warn.** This plugin runs across
+  diverse projects; a blocking hook could break workflows the authors
+  can't predict. Advisory messages let users decide. Configurable
+  blocking was considered and rejected as unjustified complexity.
 
-**The advocatus-diaboli is hard-wired into the spec-first pipeline,
-not optional.** It runs as an agent-enforced constraint at PR time
-and as a gate inside the orchestrator pipeline. Manual-only
-invocation was rejected — discipline that depends on remembering
-collapses under pressure. Schema-only checks were also rejected —
-"resolved" is a judgment call about rationale quality, not a value
-in a field.
+- **Health snapshots are generated artifacts committed straight to
+  main.** They don't affect behaviour, and gating them on PR review
+  would add friction to the observability cadence.
 
-**Diaboli runs at two dispatch points (spec-time and code-time)
-using a single agent.** One agent, two dispatches — not two agents.
-Spec-time runs after spec-writer, before plan approval; code-time
-runs once after the final code-reviewer PASS, before
-integration-agent. A separate code-diaboli agent was rejected as
-duplicating the charter; running diaboli inside the code-reviewer
-loop per cycle was rejected as burning tokens on draft code.
+- **Every structured-output command includes a validation checkpoint.**
+  Generate, read back, check against the format spec, fix in place.
+  Agents drift from format specs under cognitive load; the checkpoint
+  is the verification layer, analogous to type checking. Relying on
+  agent instructions alone was tried across 8 commands and proved
+  unreliable.
 
-**Cross-cutting methodology lives in
-`skills/<skill-name>/references/<contract>.md`.** When the same
-methodology is consumed by multiple agents, commands, and skills,
-factor it into a reference file. Edits land in one place and
-propagate. Inlining at each consumer site causes silent drift as one
-copy is edited and the others are not — a failure mode caught
-explicitly in code-mode diaboli on the choice-cartographer PR.
+- **`advocatus-diaboli` is hard-wired into the spec-first pipeline, and
+  runs at two dispatch points** — spec-time (after spec-writer, before
+  plan approval) and code-time (after the final code-reviewer PASS).
+  It's one agent with mode-based weighting, not two agents. Manual
+  invocation and advisory-only gates were rejected because they create
+  ceremony, not discipline.
 
-**Test-Driven Agentic Discipline (TDAD) uses a four-layer
-architecture that mirrors the framework's promotion ladder.** Layer
-0 is deterministic plumbing (bash scripts and helper libraries —
-free, every PR). Layer 1 is structural (frontmatter, manifest
-schema, cross-references — free, every PR). Layer 2 is trigger
-(does a skill's description match the queries it should fire on —
-~$0.03 per run, mostly deterministic). Layer 3 is behavioural (full
-SDK invocation against fixtures with a rubric judge — $0.05–$0.20
-per run, probabilistic). Layers 0–1 run on every PR; Layers 2–3 are
-nightly or label-gated to keep the API budget bounded. This layout
-was chosen because pure deterministic tests cannot verify whether a
-skill description triggers correctly, but full SDK invocation is too
-expensive to run on every PR. The four layers map directly to the
-harness promotion ladder: Layer 0 is the deterministic tier;
-Layers 1–3 together cover the agent-verified tier.
+- **Cross-cutting methodology lives in `skills/<name>/references/`
+  files**, consumed by reference rather than inlined at each consumer.
+  Edits land in one place and propagate; inlining silently drifts.
 
-**TDAD helpers stay test-stage; they do not ship in the plugin.**
-Helper code lives under `tdad_tests/spike_helpers/` and is invoked by
-pytest, not by the plugin's commands at runtime. Shipping the
-helpers in `ai-literacy-superpowers/scripts/` was rejected because it
-would add a hard Python 3.11+ dependency to every consumer machine —
-the plugin today ships shell scripts only and has no language runtime
-requirements beyond bash. The trust-boundary rule is: code that helps
-verify the plugin lives in `tdad_tests/`; code that the plugin
-executes at runtime lives inside `ai-literacy-superpowers/`.
-
-**The auto-fix-vs-manual rule for sync commands.** When a command
-runs an audit and offers to remediate findings, classify each
-remediation as `[auto]` only when (1) it derives from a single
-canonical source, (2) the same input always produces the same output,
-and (3) it requires no user judgement. Multi-source derivations,
-judgement calls, and operations with user-visible side effects belong
-in `[manual]`. ONBOARDING.md is `[manual]` because it derives from
-three sources (HARNESS.md, AGENTS.md, REFLECTION_LOG.md);
-convention-sync surfaces are `[auto]` because they derive from
-HARNESS.md alone.
-
-**Reflection-driven amendments may use `chore`-labelled PRs.** When
-a reflection has been captured, the work is scoped in a tracked
-issue, the implementation is additive or conservatively bounded,
-and the version bump is honest about the change, a `chore` PR is
-acceptable even for behavioural changes. Reserve full feature-flow
-ceremony (spec → diaboli → adjudicate → implement → diaboli code-
-mode → adjudicate) for net-new capability. Use chore for refining
-existing capability driven by captured signal. The distinction is
-calibrated rather than codified — judgement, not a rule.
-
-**The decision-discipline triad: diaboli + cartographer + carpaccio.**
-Three agents now sit on the pipeline at different stages, each with
-a distinct discipline:
-
-- **carpaccio** (orchestrator step 0, before spec-writer) — *cadence
-  governor*. Slices a raw task description into thin, end-to-end-
-  complete pieces so the human engages with one decision at a time
-  rather than the whole proposal at once. Five lenses with
-  `decision-boundary` primary. Slice count bounded 1–9, bias
-  toward 3–5.
-- **advocatus-diaboli** (spec-mode after spec-writer; code-mode after
-  the final code-reviewer PASS) — *adversarial reviewer*. Steel-mans
-  objections across six categories. Halts the pipeline at a hard
-  gate while any disposition is `pending`.
-- **choice-cartographer** (after spec-mode diaboli adjudication,
-  before plan approval) — *decision archaeology*. Surfaces the
-  silent decisions a spec implies and emits them as Henney-style
-  pattern stories for human disposition. Soft gate at plan
-  approval; merge-time HARNESS constraint at PR time. (Renamed from
-  "Henney" at agent boundary; format and Henney pattern-stories
-  lineage preserved.)
-
-All three follow the read-only emitter + dispatcher-persist + human-
-disposes pattern. The triad covers cadence (carpaccio), risk
-(diaboli), and decision visibility (cartographer) — the three
-substantive disciplines a spec-first pipeline benefits from.
+- **A "natural home" hand-off in one slice does not bind the next.**
+  When a slice defers a concern by pointing at a later slice, that's a
+  suggestion, not a commitment the later slice inherits. Repeatedly
+  handing the same concern forward accrues *deferred-concern-accretion
+  debt*. When a slice declines an inherited hand-off, either absorb the
+  concern or re-file it as a standalone issue — never leave it implicit
+  in a closed slice's "out of scope" section.
 
 ---
 
 ## How We Test
 
-The project has no application code, but it does have a test suite —
-`tdad_tests/` — that applies Test-Driven Agentic Discipline (TDAD,
-after Antony Marcano 2026) to the plugin's own components. The suite
-lives outside the packaged `ai-literacy-superpowers/` directory so it
-does not ship with plugin installs.
+This project has no application code and no application test suite.
+Quality is assured entirely by deterministic content validation and a
+layered behavioural test suite:
 
-**Four layers, mapped to cost and cadence:**
+- **Content validation (always on, in CI via `harness.yml`)** —
+  markdownlint for markdown, ShellCheck plus `bash -n` for shell, and
+  gitleaks for secrets. All deterministic, all fast.
 
-| Layer | What it tests | Cost | Cadence |
-| --- | --- | --- | --- |
-| **0. Deterministic plumbing** | Bash scripts and parser libraries the agents depend on | $0 | every PR |
-| **1. Structural** | Frontmatter well-formed, required sections present, cross-references resolve | $0 | every PR |
-| **2. Trigger** | Skill descriptions match the queries they should fire on (catches description drift) | ~$0.03 / run | nightly + label-gated |
-| **3. Behavioural** | Run an agent or skill in a fixture, assert outputs against a rubric (TDAB proper) | $0.05–$0.20 / run | nightly + label-gated |
+- **TDAD test suite (`tdad_tests/`, pytest + Claude Agent SDK)** —
+  organised in layers. **Layer 0** is deterministic bash plumbing;
+  **Layer 1** is structural (frontmatter well-formedness, component
+  existence, scenario-target resolution). Both run offline with no API
+  key, finish in under ten seconds, and gate every PR via
+  `tdad-tests-fast.yml`. **Layers 2 (trigger)** and **3
+  (behavioural)** need an `ANTHROPIC_API_KEY` and per-run cost, so they
+  are not part of the PR gate.
 
-**Running locally:**
-
-```bash
-# from the tdad_tests/ directory
-pip install -e .
-
-# Layer 1 only (offline, free):
-pytest tests/test_layer1_structural.py -v
-
-# All layers (needs ANTHROPIC_API_KEY):
-export ANTHROPIC_API_KEY=...
-pytest -v
-```
-
-Layers 0–1 run offline and pass against the real plugin. Layers 2–3
-require an Anthropic API key and skip with a clear message when the
-key is absent.
-
-**Plus the deterministic gates that have always been there:**
-
-1. **markdownlint** — enforces consistent markdown formatting across
-   every `.md` file
-2. **ShellCheck** — catches shell script bugs and style issues
-3. **bash -n** — verifies shell script syntax
-4. **gitleaks** — detects accidentally committed secrets
-
-All four run on every PR via the harness CI workflow. Run them
-locally before pushing to avoid CI failures. See
-[`tdad_tests/README.md`](tdad_tests/README.md) for the full TDAD
-status table and scenario format.
+To run the fast suite locally: from `tdad_tests/`, set up the Python
+virtualenv and run `pytest` against the Layer 0 and Layer 1
+directories. To run the content checks, run markdownlint, ShellCheck,
+and gitleaks against the tree — the same commands the harness declares.
 
 ---
 
 ## How the Harness Works
 
-The project uses three enforcement loops that protect the codebase
-at different timescales:
+Three enforcement loops protect the codebase, each catching what the
+others can't:
 
-- **Advisory loop** — hooks run during editing and warn about
-  potential issues, but never block your work. You will see system
-  messages nudging you to run audits, capture reflections, or check
-  for secrets.
-- **Strict loop** — CI workflows run on every PR and block merges
-  until all checks pass. This includes markdownlint, gitleaks, shell
-  checks, version consistency, spec-first ordering, and the
-  agent-driven `Enforce PR constraints` workflow. TDAD Layers 0–1
-  run on every PR; Layers 2–3 run nightly or behind a label.
-- **Investigative loop** — garbage collection rules run weekly (or
-  monthly) to catch slow drift that neither hooks nor CI gates
-  detect. Things like documentation staleness, marketplace listing
-  drift, and unpromoted reflections.
+- **Advisory loop** — hooks that warn while you edit. They never block;
+  they surface a `systemMessage` and let you decide.
+- **Strict loop** — CI gates that block merges. This is where the
+  PR-time constraints above live.
+- **Investigative loop** — scheduled garbage-collection rules that
+  catch the slow drift neither hooks nor PR gates see (stale docs,
+  manifest drift, cadence creep).
 
-The project runs on a monthly observability cadence:
-
-- Harness health snapshots: monthly
-- Harness audits: quarterly
-- AI literacy assessments: quarterly
-- Reflection review and promotion: monthly
-- Cost captures: quarterly
+The project also runs on an observability cadence. Health snapshots are
+generated **monthly**. The `/harness-audit`, `/assess`, and
+`/cost-capture` activities run **quarterly** (every 90 days), and
+reflection review and promotion runs **monthly**. The quarterly
+activities are meant to run as a single sitting — one working block,
+anchored to the governance audit, not three scattered tasks.
 
 ---
 
 ## Your First PR Checklist
 
-1. Create a branch — never commit directly to `main`.
-2. Pick the right exemption label up front: `fix` for bug fixes,
-   `chore` for docs and maintenance outside the plugin directory,
-   `cross-repo` for syncs from another repo. Pass `--label <label>`
-   in `gh pr create` — adding labels after the push leaves CI gates
-   in their failed state until you push another commit.
-3. For feature work, commit the spec first (in
-   `docs/superpowers/specs/`) before any implementation.
-4. After the spec is written, run `/diaboli` and resolve every
-   disposition before plan approval; then run `/choice-cartograph`
-   and resolve every story.
-5. Run `npx markdownlint-cli2 "**/*.md"` and fix any warnings —
-   match each file's existing emphasis style (MD049 enforces
-   per-file consistency, not a global default).
-6. Run `shellcheck` on any `.sh` files you changed or created.
-7. Confirm every `.sh` file has `set -euo pipefail` in the first
-   15 lines.
-8. Ensure all `.agent.md`, `SKILL.md`, and command `.md` files have
-   `name` and `description` in their YAML frontmatter.
-9. Run `gitleaks detect --source . --no-banner` to check for secrets.
-10. If you added a skill, agent, or command, drop a TDAD scenario
-    alongside it under `tdad_tests/scenarios/<type>/<name>/` and run
-    `pytest tests/test_layer1_structural.py -v` to confirm the new
-    component picks up structural coverage.
-11. If you changed files inside `ai-literacy-superpowers/`, bump the
-    version in `plugin.json`, the README badge, and the CHANGELOG
-    heading (all three must match).
-12. Update `marketplace.json` `plugin_version` to match `plugin.json`.
-13. Update `CHANGELOG.md` with a dated section describing your
-    changes.
-14. If the PR adds, removes, or substantially changes a skill,
-    agent, or command, review every relevant page under
-    `docs/plugins/<plugin>/` and update references in the same PR.
-    Update prose-embedded counts in README.md (marketplace table
-    row, section headings) too — badges update automatically but
-    prose does not.
-15. If your change combines a `git mv` with content edits, run
-    `git diff --cached --stat` before committing to confirm every
-    edited file appears in the cached set, not just the renames.
-16. After the implementation is complete, run `/diaboli` again in
-    code mode and resolve every disposition before opening the PR.
-17. Push and create the PR — wait for all CI checks to pass before
-    requesting review.
+Work through this before you push:
+
+1. **Branch first.** Never commit to `main` — `git checkout -b
+   <short-descriptive-name>`. Use a `fix/` or `chore/` prefix if the
+   change is a bug fix or maintenance (it claims the spec-first
+   exemption).
+2. **Spec first, if it's a feature.** For a feature or behaviour
+   change, make the first commit a spec-only commit under
+   `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`.
+3. **Run the local checks.** markdownlint on your `.md` files,
+   ShellCheck plus `bash -n` on any `.sh` files, and gitleaks across
+   the tree. If you touched `docs/**`, also run `mkdocs build
+   --strict`.
+4. **Update the CHANGELOG.** Add an entry under the current version
+   heading (`## X.Y.Z — YYYY-MM-DD`). If your change touches files
+   inside `ai-literacy-superpowers/`, bump the version in
+   `plugin.json`, the README badge, and the CHANGELOG together (and
+   update `marketplace.json`'s `plugin_version`).
+5. **Update the docs.** If you added or changed a skill, agent, or
+   command, update its how-to / reference / explanation pages and add a
+   TDAD scenario and a reference-page entry in the same PR.
+6. **Keep commit messages clean.** Describe what changed and why. No
+   postamble, trailer, or attribution lines.
+7. **Label at creation time.** If the PR needs a `chore`, `fix`, or
+   `cross-repo` label to bypass a gate, pass `--label <label>` in the
+   `gh pr create` command itself — labels added later are invisible to
+   already-queued CI.
+8. **Wait for green, then merge.** Let CI pass before merging; merge
+   only when every check is green.
 
 ---
 
 ## Where to Learn More
 
-- [HARNESS.md](HARNESS.md) — the full constraint and convention
+- [HARNESS.md](HARNESS.md) — the full constraint, GC, and convention
   reference
 - [AGENTS.md](AGENTS.md) — accumulated team knowledge, gotchas, and
   architecture decisions
-- [REFLECTION_LOG.md](REFLECTION_LOG.md) — session-by-session
-  learnings from agent pipeline runs
-- [CLAUDE.md](CLAUDE.md) — project conventions for Claude Code
-- [tdad_tests/README.md](tdad_tests/README.md) — the TDAD test suite,
-  layer-by-layer status table, and scenario format
-- [Command-TDAD-testing design spec](docs/superpowers/specs/2026-05-09-command-tdad-testing-design.md)
-  — per-category strategy for testing commands, including the Option I
-  amendment that keeps helpers test-stage
+- [REFLECTION_LOG.md](REFLECTION_LOG.md) — session-by-session learnings
+- [CLAUDE.md](CLAUDE.md) — the working conventions (branching, PRs,
+  versioning, docs)
+- [README.md](README.md) — the full plugin documentation
 - [Docs site](https://habitat-thinking.github.io/ai-literacy-superpowers/)
-  — full documentation for the plugin and its sister plugins
-- [diagnostic-legibility plugin](diagnostic-legibility/README.md) —
-  sister plugin that ships the `diagnostic-legibility` agent (two-
-  model construction + retained-challenge self-challenge cycle) for
-  scoped codebase legibility analysis
-- [model-cards plugin](model-cards/README.md) — sister plugin that
-  ships the `model-card-researcher` agent for Mitchell-extended
-  model cards via a tiered source strategy
+  — the rendered guides, references, and concept pages
