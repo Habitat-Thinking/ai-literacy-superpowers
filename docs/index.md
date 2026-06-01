@@ -24,6 +24,7 @@ engineering**, **agent orchestration**, **decision archaeology**,
 | ------ | ------------ | ----------- |
 | **[ai-literacy-superpowers](plugins/ai-literacy-superpowers/index.md)** | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. 30 skills, 13 agents, 24 commands. | [Tutorial](plugins/ai-literacy-superpowers/tutorials/getting-started.md) |
 | **[model-cards](plugins/model-cards/index.md)** | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy with refusal-on-unconfirmed-existence honesty rule. | [Tutorial](plugins/model-cards/how-to/seed-your-library.md) |
+| **[diagnostic-legibility](plugins/diagnostic-legibility/index.md)** | Agents accountable for maintaining human understanding. Builds, self-challenges, and cross-checks two models of a codebase scope — architectural moving parts and domain concepts — and surfaces the mutually-corrected models on demand via the `/diagnose` command. | [How-to](plugins/diagnostic-legibility/how-to/run-the-diagnose-command.md) |
 
 The marketplace is on track to ship more sister plugins as the
 framework grows. New plugins land under
@@ -61,16 +62,18 @@ copilot plugin marketplace add Habitat-Thinking/ai-literacy-superpowers
 
 ## Install a plugin
 
-After adding the marketplace, install one or both plugins:
+After adding the marketplace, install whichever plugins you need:
 
 ```bash
 # Claude Code
 claude plugin install ai-literacy-superpowers     # the flagship
-claude plugin install model-cards                  # the sister
+claude plugin install model-cards                  # the model-eval sister
+claude plugin install diagnostic-legibility        # the legibility sister
 
 # Copilot CLI
 copilot plugin install ai-literacy-superpowers@ai-literacy-superpowers
 copilot plugin install model-cards@ai-literacy-superpowers
+copilot plugin install diagnostic-legibility@ai-literacy-superpowers
 ```
 
 Each plugin's commands, agents, and skills become available immediately
@@ -129,6 +132,29 @@ It gives you:
 
 [Browse the model-cards docs →](plugins/model-cards/index.md)
 
+### diagnostic-legibility — agents that maintain human understanding
+
+Hosts agents accountable for keeping a complex system legible to the
+humans who own it. The inaugural agent takes a codebase scope and builds
+two models of it — *architectural moving parts* and *domain concepts* —
+self-challenges each, then cross-checks the two against each other to
+produce mutually-corrected models.
+
+It gives you:
+
+- **`/diagnose <scope>`** — drives the full build → self-challenge →
+  cross-check pipeline and renders the corrected models as a readable
+  report, written after a human accept/abort gate
+- A **read-only two-model agent** — builds the architectural and domain
+  models, runs a five-question self-challenge per element, then a
+  five-question per-direction cross-check, emitting a `LegibilityModel`
+  with a `cross_check_status` wrapper
+- The **two-model + cross-check + on-demand-surfacing** discipline,
+  framed broadly enough to generalise beyond codebases to governance
+  artefacts, decision records, and other complex systems
+
+[Browse the diagnostic-legibility docs →](plugins/diagnostic-legibility/index.md)
+
 ---
 
 ## Documentation structure
@@ -141,6 +167,7 @@ using the [Diataxis framework](https://diataxis.fr/).
 | ------ | ------------- |
 | ai-literacy-superpowers | [Landing](plugins/ai-literacy-superpowers/index.md) · [Tutorials](plugins/ai-literacy-superpowers/index.md#tutorials--learning-oriented) · [How-to](plugins/ai-literacy-superpowers/index.md#how-to-guides--task-oriented) · [Reference](plugins/ai-literacy-superpowers/index.md#reference--exact-details) · [Explanation](plugins/ai-literacy-superpowers/index.md#explanation--concepts) |
 | model-cards | [Landing](plugins/model-cards/index.md) · [Tutorial](plugins/model-cards/how-to/seed-your-library.md) · [How-to](plugins/model-cards/how-to/research-a-model-card.md) · [Reference](plugins/model-cards/reference/commands.md) · [Explanation](plugins/model-cards/explanation/mitchell-extended-cards.md) |
+| diagnostic-legibility | [Landing](plugins/diagnostic-legibility/index.md) · [How-to](plugins/diagnostic-legibility/how-to/run-the-diagnose-command.md) · [Reference](plugins/diagnostic-legibility/reference/diagnose-command.md) · [Explanation](plugins/diagnostic-legibility/explanation/cross-check-protocol.md) |
 
 See the [Plugins index](plugins/index.md) for the canonical
 list.
