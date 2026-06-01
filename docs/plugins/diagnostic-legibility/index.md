@@ -23,23 +23,24 @@ instance, but the discipline (two-model + cross-check + on-demand
 surfacing) generalises to other domains. Future agents may apply it
 to governance artefacts, decision records, or other complex systems.
 
-## Status: v0.4.0 — working agent with cross-check
+## Status: v0.5.0 — on-demand `/diagnose` command
 
-The plugin ships the `diagnostic-legibility` agent with both phases.
-It accepts a codebase scope, drafts an architectural model and a
-domain model against the `LegibilityElement` schema, runs a
-retained-challenge single-pass cycle (Phase B — five questions per
-element), then cross-checks the two collections against each other
-(Phase C — five cross-check questions per direction). Each element
-carries both `Q<N>` (self-challenge) and `CC<N>` (cross-check)
-entries; the wrapper carries a `cross_check_status` field recording
-the model-level outcome.
+The plugin ships the `diagnostic-legibility` agent with both phases and
+the human-facing `/diagnose` command. The agent accepts a codebase
+scope, drafts an architectural model and a domain model against the
+`LegibilityElement` schema, runs a retained-challenge single-pass cycle
+(Phase B — five questions per element), then cross-checks the two
+collections against each other (Phase C — five cross-check questions per
+direction). Each element carries both `Q<N>` (self-challenge) and
+`CC<N>` (cross-check) entries; the wrapper carries a `cross_check_status`
+field recording the model-level outcome. `/diagnose <scope>` drives the
+full pipeline and renders the corrected models as a readable report.
 
-The `/diagnose` command remains ahead:
+The full carpaccio decomposition is now shipped:
 
 - ✅ [#331](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/331) — S2: Two-model agent (shipped v0.3.0)
 - ✅ [#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332) — S3: Cross-check mechanism (shipped v0.4.0)
-- [#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333) — S4: Surfacing interface (`/diagnose`)
+- ✅ [#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333) — S4: Surfacing interface — the `/diagnose` command (shipped v0.5.0)
 
 The carpaccio slicing that produced this decomposition is recorded at
 [`docs/superpowers/slices/diagnostic-legibility-plugin.md`](../../superpowers/slices/diagnostic-legibility-plugin.md)
@@ -48,11 +49,14 @@ and traces back to parent issue
 
 ## Quadrant pages
 
-- **How-to**: [Invoke the diagnostic-legibility agent](how-to/invoke-the-agent.md)
+- **How-to**:
+  - [Run the `/diagnose` command](how-to/run-the-diagnose-command.md) — the human-facing surface (v0.5.0)
+  - [Invoke the diagnostic-legibility agent](how-to/invoke-the-agent.md) — the bare-Task-tool dispatch
+- **Reference**:
+  - [The `/diagnose` command](reference/diagnose-command.md) — signature, dispatch contract, report structure (v0.5.0)
 - **Concepts**:
   - [The challenge-refine protocol](explanation/challenge-refine-protocol.md) — Phase B self-challenge
   - [The cross-check protocol](explanation/cross-check-protocol.md) — Phase C mutual correction (v0.4.0)
 
-Tutorials and reference pages remain to be written; per the project
-convention, each Diataxis quadrant folder is scaffolded when its first
-page lands.
+Tutorials remain to be written; per the project convention, each
+Diataxis quadrant folder is scaffolded when its first page lands.

@@ -1,5 +1,80 @@
 # Changelog
 
+## 0.5.0 — 2026-06-01
+
+### On-demand `/diagnose` command (S4)
+
+Ships the human-facing `/diagnose` command — the surfacing interface
+that exercises the full S2 + S3 pipeline end-to-end and renders the
+mutually-corrected models as a readable report. This is the **last
+slice** of the diagnostic-legibility plugin's carpaccio decomposition;
+parent issue #327 closes with it.
+
+- **Command** (`commands/diagnose.md`): `/diagnose <scope> [--out <dir>]`
+  — a single verb. Forwards `<scope>` to the agent verbatim, dispatches
+  in `mode: full`, renders the returned `LegibilityModel` as markdown,
+  and writes the report after a human accept/abort gate.
+- **Report geometry**: a compact two-column cross-check **summary table**
+  (Architectural | Domain — the at-a-glance side-by-side) plus two
+  **stacked** `### Architectural model` / `### Domain model` bodies, each
+  element grouping its `Q<N>` (self-challenge) then `CC<N>` (cross-check)
+  notes in canonical order. The wrapper `cross_check_status`
+  (`completed | skipped_asymmetric | not_run`) is surfaced in the header
+  and summary. Correction counts are "elements revised" — elements
+  carrying ≥1 `CC<N>` entry per direction, not raw entry counts.
+- **Confirm-before-write gate**: the command prints a summary naming the
+  resolved target path (flagging an overwrite), then writes only on
+  human **accept**; an **abort** writes nothing and creates no
+  directory. The accept gate — not the validation checkpoint — is the
+  last line of defence before write.
+- **Output**: reports default to `diagnostic-legibility/output/`
+  (gitignored — derived, regenerable artefacts, never committed or
+  rsynced into the plugin cache), filename
+  `<scope-slug>-legibility-<YYYY-MM-DD>.md`; overridable with `--out`.
+- **Refusal contract**: a `diagnostic-legibility refusal:` line is
+  surfaced verbatim and aborts with no file written.
+- **Validation checkpoint**: reads the rendered report back and checks
+  header completeness, no `<DISPATCHER:` leak, both collections
+  rendered, Q/CC ordering, and correction counts consistent with the
+  parsed YAML; deviations fixed in place, the agent is not re-dispatched.
+- **Docs**: new how-to (`run-the-diagnose-command.md`) and reference
+  (`diagnose-command.md` + reference quadrant `index.md`);
+  `invoke-the-agent.md` forward-link to #333 resolved to the new how-to.
+- **Agent clarification** (rides this bump): the both-empty branch of
+  the agent now states it emits `cross_check_status: skipped_asymmetric`
+  explicitly (S4 spec-mode diaboli O2 — the empty-scope contract was
+  previously undefined for this wrapper field).
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-01-dl-s4-diagnose-command-design.md`;
+spec-mode diaboli at
+`docs/superpowers/objections/dl-s4-diagnose-command-design.md`
+(11 objections — 10 accepted, 1 deferred); choice-cartographer at
+`docs/superpowers/stories/dl-s4-diagnose-command-design.md`
+(8 stories: 2 promoted, 5 accepted, 1 revisit).
+
+**Promoted to `AGENTS.md` from the cartographer's dispositions:**
+
+- Story #1 — the gate-ordering invariant (the human disposition must
+  *precede* the write; ordering is the invariant, not just the
+  agent/command tool split). Sharpens the existing *agent-emit +
+  dispatcher-persist + human-disposes* architecture entry.
+- Story #8 — the declined-hand-off anti-pattern (a "natural home"
+  hand-off in slice N does not bind slice N+1; re-file orphaned concerns
+  as standalone issues). The orphaned invocation-persistence corpus for
+  the Phase-C escalation trigger is re-filed as
+  [#350](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/350).
+
+**Marketplace**: the `diagnostic-legibility` listing entry version bumps
+0.4.0 → 0.5.0 and its `description` is rewritten (the now-shipped
+`/diagnose` command); the top-level listing `version` stays 0.4.0 (a
+per-plugin entry description is the plugin's own contract, not the
+listing contract — S1–S3 precedent).
+
+S4 of the parent slicing record at
+`docs/superpowers/slices/diagnostic-legibility-plugin.md`. Closes issue
+#333 and parent issue #327.
+
 ## 0.4.0 — 2026-06-01
 
 ### Cross-check mechanism for mutual model correction (S3)

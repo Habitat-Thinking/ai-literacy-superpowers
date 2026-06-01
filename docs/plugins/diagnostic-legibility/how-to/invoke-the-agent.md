@@ -5,12 +5,13 @@ This guide covers the **v0.3.0** invocation surface for the
 of a codebase scope — *architectural moving parts* and *domain
 concepts* — and emits them as a `LegibilityModel` YAML block.
 
-> **Note on the invocation surface.** At v0.3.0 there is no
-> `/diagnose` slash-command. The agent is dispatched directly via the
-> Task tool. A wrapping `/diagnose` command is the deliverable of
-> parent S4, tracked at
-> [issue #333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333).
-> When that ships, this how-to will be updated.
+> **Note on the invocation surface.** This guide covers the
+> **bare-Task-tool** dispatch — the lower-level surface, still valid
+> and still the way to reach `mode: cross-check-only`. Since v0.5.0
+> there is also a wrapping `/diagnose` slash-command (parent S4) that
+> drives `mode: full` and renders the result as a readable report; for
+> most use that is the surface you want. See
+> [run the /diagnose command](run-the-diagnose-command.md).
 
 ## Inputs
 

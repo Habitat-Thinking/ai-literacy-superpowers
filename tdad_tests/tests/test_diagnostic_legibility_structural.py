@@ -1,22 +1,23 @@
-"""Layer 1 structural tests for the diagnostic-legibility plugin at v0.3.0.
+"""Layer 1 structural tests for the diagnostic-legibility plugin at
+v0.3.0 / v0.4.0 / v0.5.0.
 
-Sub-S2b ships the working `diagnostic-legibility` agent, the version
-bump from 0.2.0 to 0.3.0, the CHANGELOG entry, and two docs-site pages
-(how-to and explanation). These are deterministic, file-shape assertions
-— the agent's behavioural contract (challenge_notes shape, Q<N> prefix,
-sentinels) is covered by the spec at
-`docs/superpowers/specs/2026-05-28-dl-s2b-challenge-protocol-design.md`
+Sub-S2b shipped the working `diagnostic-legibility` agent (v0.3.0); S3
+shipped the cross-check (v0.4.0); S4 ships the human-facing `/diagnose`
+command (v0.5.0). These are deterministic, file-shape assertions — the
+agent's and command's behavioural contracts are covered by their specs
 as acceptance documentation rather than executable tests.
 
 The TDAD scenario discipline does not extend to the diagnostic-legibility
 plugin (the TDAD-scenario-check workflow is scoped to the
 `ai-literacy-superpowers/` plugin only). Story #7 / issue #338 documents
 the intentional gap. This file is the deterministic structural layer that
-guards the v0.3.0 deliverables; it mirrors the precedent set by
+guards each slice's deliverables; it mirrors the precedent set by
 `test_model_cards_structural.py` for the sibling plugin.
 
-Spec reference:
+Spec references:
     docs/superpowers/specs/2026-05-28-dl-s2b-challenge-protocol-design.md
+    docs/superpowers/specs/2026-05-29-dl-s3-cross-check-mechanism-design.md
+    docs/superpowers/specs/2026-06-01-dl-s4-diagnose-command-design.md
 """
 
 from __future__ import annotations
@@ -60,18 +61,17 @@ def repo_root() -> Path:
 
 @pytest.mark.structural
 class TestDiagnosticLegibilityVersioning:
-    """The plugin version bump from 0.2.0 to 0.3.0 must land in lockstep
-    across plugin.json, marketplace.json's per-plugin entry, and the
-    CHANGELOG heading.
+    """The S4 plugin version bump from 0.4.0 to 0.5.0 must land in
+    lockstep across plugin.json, marketplace.json's per-plugin entry,
+    and the CHANGELOG heading.
 
     The marketplace listing's top-level `version` (0.4.0) and its
-    `plugin_version` pointer (0.39.1 at spec time) are explicitly
-    unchanged by this slice — the spec §9 names this and the
-    integration-agent is responsible for taking `plugin_version` from
-    main verbatim at rebase time.
+    `plugin_version` pointer are explicitly unchanged by this slice —
+    the spec §9 names this and the integration-agent is responsible for
+    taking `plugin_version` from main verbatim at rebase time.
     """
 
-    def test_plugin_json_at_0_4_0(
+    def test_plugin_json_at_0_5_0(
         self, diagnostic_legibility_path: Path
     ) -> None:
         manifest_path = (
@@ -80,13 +80,13 @@ class TestDiagnosticLegibilityVersioning:
             / "plugin.json"
         )
         manifest = json.loads(manifest_path.read_text())
-        assert manifest["version"] == "0.4.0", (
+        assert manifest["version"] == "0.5.0", (
             "diagnostic-legibility/.claude-plugin/plugin.json must "
-            "carry version '0.4.0' (was '0.3.0' at sub-S2b). "
+            "carry version '0.5.0' (was '0.4.0' at S3). "
             f"Actual: {manifest['version']!r}"
         )
 
-    def test_marketplace_entry_at_0_4_0(self, repo_root: Path) -> None:
+    def test_marketplace_entry_at_0_5_0(self, repo_root: Path) -> None:
         marketplace_path = (
             repo_root / ".claude-plugin" / "marketplace.json"
         )
@@ -102,9 +102,9 @@ class TestDiagnosticLegibilityVersioning:
         assert entry is not None, (
             "No diagnostic-legibility entry in marketplace.json plugins[]"
         )
-        assert entry["version"] == "0.4.0", (
+        assert entry["version"] == "0.5.0", (
             "marketplace.json diagnostic-legibility entry must be at "
-            f"'0.4.0' (was '0.3.0' at sub-S2b). Actual: {entry['version']!r}"
+            f"'0.5.0' (was '0.4.0' at S3). Actual: {entry['version']!r}"
         )
 
     def test_marketplace_top_level_version_unchanged(
@@ -150,16 +150,17 @@ class TestDiagnosticLegibilityVersioning:
             "does not own (per spec §9)."
         )
 
-    def test_changelog_has_0_4_0_heading(
+    def test_changelog_has_0_5_0_heading(
         self, diagnostic_legibility_path: Path
     ) -> None:
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
-        assert "## 0.4.0 — 2026-06-01" in changelog, (
-            "CHANGELOG.md must contain a `## 0.4.0 — 2026-06-01` heading. "
-            "Note: the dash is the em-dash (U+2014), matching the format "
-            "enforced by the version-consistency CI check."
+        assert "## 0.5.0 — 2026-06-01" in changelog, (
+            "CHANGELOG.md must contain a `## 0.5.0 — 2026-06-01` heading "
+            "naming the S4 `/diagnose` command. Note: the dash is the "
+            "em-dash (U+2014), matching the format enforced by the "
+            "version-consistency CI check."
         )
 
     def test_changelog_references_followup_issues(
@@ -530,13 +531,14 @@ class TestDiagnosticLegibilityDocs:
             f"group. Missing: {page.relative_to(repo_root)!s}"
         )
 
-    def test_how_to_links_forward_to_issue_333(
+    def test_invoke_agent_how_to_links_to_diagnose_how_to(
         self, repo_root: Path
     ) -> None:
-        """The how-to page documents the bare-Task-tool invocation
-        pattern as the v0.3.0 surface and links forward to issue #333
-        (parent S4 — the `/diagnose` command) so a reader who hits the
-        ergonomics gap can find the work that closes it."""
+        """Per S4 spec §7.2 / §7.3 item 12: #333 is now closed (the
+        `/diagnose` command shipped), so the invoke-the-agent how-to's
+        former forward-link note to #333 is replaced with a link to the
+        new run-the-diagnose-command how-to. The bare-Task-tool dispatch
+        content stays (it is still the lower-level surface)."""
         page = (
             repo_root
             / "docs"
@@ -546,9 +548,11 @@ class TestDiagnosticLegibilityDocs:
             / "invoke-the-agent.md"
         )
         body = page.read_text()
-        assert "#333" in body, (
-            "How-to page must reference issue #333 — the forward link "
-            "to parent S4 (the `/diagnose` command surface)."
+        assert "run-the-diagnose-command" in body, (
+            "invoke-the-agent.md must link to the new "
+            "`run-the-diagnose-command` how-to now that the `/diagnose` "
+            "command surface it anticipated (#333) exists. The former "
+            "forward-link note to #333 is resolved into this link."
         )
 
 
@@ -857,3 +861,408 @@ class TestDiagnosticLegibilityCrossCheck:
                 f"Schema template must document the "
                 f"`cross_check_status: {value}` legal value."
             )
+
+
+# ---------------------------------------------------------------------
+# /diagnose command (S4, v0.5.0)
+# ---------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestDiagnosticLegibilityDiagnoseCommand:
+    """S4 ships the human-facing `/diagnose` command at v0.5.0. These
+    are offline, deterministic, file-shape assertions translating the
+    spec's §6 acceptance scenarios (1–8, 5b, 8b) and §7.3 test items.
+
+    The command's behavioural contract (that a live invocation produces
+    the §5 report structure) is covered by spec §6 Scenario 9 as
+    acceptance documentation, not as an executable test — this layer
+    guards the command file's static text, frontmatter, the version
+    triplet, the .gitignore entry, and the docs entries only.
+
+    Spec reference:
+        docs/superpowers/specs/2026-06-01-dl-s4-diagnose-command-design.md
+    """
+
+    def _command_body(self, diagnostic_legibility_path: Path) -> str:
+        command_file = (
+            diagnostic_legibility_path / "commands" / "diagnose.md"
+        )
+        return command_file.read_text()
+
+    # -- Scenario 1 / §7.3 item 1 + 2 ---------------------------------
+
+    def test_command_file_present_and_gitkeep_removed(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 1 / §7.3 item 1: the command file exists and the
+        commands/.gitkeep placeholder (standing since the v0.1.0
+        scaffold) has been removed once the real command lands —
+        mirroring the agents/.gitkeep removal at sub-S2b."""
+        command_file = (
+            diagnostic_legibility_path / "commands" / "diagnose.md"
+        )
+        assert command_file.is_file(), (
+            "Expected command file at "
+            f"{command_file.relative_to(diagnostic_legibility_path.parent)}"
+        )
+        gitkeep = diagnostic_legibility_path / "commands" / ".gitkeep"
+        assert not gitkeep.exists(), (
+            "diagnostic-legibility/commands/.gitkeep must be removed once "
+            "diagnose.md lands (mirrors the agents/.gitkeep removal at "
+            "sub-S2b). The placeholder is no longer needed."
+        )
+
+    def test_command_frontmatter_name_and_description(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 1 / §7.3 item 2: the command frontmatter parses as
+        strict YAML; `name == "diagnose"`; `description` is non-empty."""
+        component = plugin_runner.find_component(
+            diagnostic_legibility_path,
+            name="diagnose",
+            component_type="command",
+        )
+        assert component.parse_error is None, (
+            "Command frontmatter must parse as strict YAML. "
+            f"Parse error: {component.parse_error!r}"
+        )
+        assert component.frontmatter.get("name") == "diagnose", (
+            "Command frontmatter `name` must be 'diagnose'. "
+            f"Actual: {component.frontmatter.get('name')!r}"
+        )
+        description = component.frontmatter.get("description") or ""
+        assert description.strip(), (
+            "Command frontmatter must have a non-empty `description`."
+        )
+
+    # -- Scenario 2 / §7.3 item 3 + 6 ---------------------------------
+
+    def test_command_documents_signature(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 2 / §7.3 item 3: the body documents the signature
+        `/diagnose <scope> [--out <dir>]` — a single verb with a
+        required `<scope>` positional and an optional `--out`."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "/diagnose <scope> [--out <dir>]" in body, (
+            "Command body must document the signature "
+            "`/diagnose <scope> [--out <dir>]` verbatim (spec §3.2)."
+        )
+
+    def test_command_documents_default_output_path_and_filename(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 2 / §7.3 item 6: the body states the default output
+        directory `diagnostic-legibility/output/` and the filename
+        convention `<scope-slug>-legibility-...md`."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "diagnostic-legibility/output/" in body, (
+            "Command body must state the default output directory "
+            "`diagnostic-legibility/output/` (spec §4.3)."
+        )
+        assert "<scope-slug>-legibility-" in body, (
+            "Command body must state the filename convention prefix "
+            "`<scope-slug>-legibility-` (spec §4.3)."
+        )
+        assert ".md" in body, (
+            "Command body must state the report extension `.md` "
+            "(spec §4.3 — the report is markdown, not YAML)."
+        )
+
+    # -- Scenario 3 / §7.3 item 4 + 5 ---------------------------------
+
+    def test_command_documents_mode_full_dispatch(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 3 / §7.3 item 4: the body documents dispatching the
+        diagnostic-legibility agent in `mode: full` (spec §3.3 / §4.4)."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "mode: full" in body, (
+            "Command body must name `mode: full` as the dispatch mode "
+            "(spec §3.3 — /diagnose always runs the full pipeline)."
+        )
+        assert "diagnostic-legibility" in body, (
+            "Command body must name the `diagnostic-legibility` agent it "
+            "dispatches (spec §4.4)."
+        )
+
+    def test_command_documents_refusal_handling(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 3 / §7.3 item 5: the body documents the refusal
+        contract — surface the `diagnostic-legibility refusal:` line
+        verbatim and abort with no file written (spec §4.5)."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "diagnostic-legibility refusal:" in body, (
+            "Command body must contain the literal refusal-line prefix "
+            "`diagnostic-legibility refusal:` it pattern-matches on "
+            "(spec §4.5)."
+        )
+        assert "verbatim" in body, (
+            "Command body must document surfacing the refusal line "
+            "*verbatim* (spec §4.5 step 1)."
+        )
+        assert "LegibilityModel" in body, (
+            "Command body must reference the `LegibilityModel` YAML as "
+            "the agent's return shape (spec §4.4 / Scenario 3)."
+        )
+
+    # -- Scenario 4 / §7.3 item 9 -------------------------------------
+
+    def test_command_documents_report_geometry(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 4 / §7.3 item 9: the body documents the report
+        geometry — a two-column cross-check summary table (the
+        side-by-side) plus stacked `### Architectural model` /
+        `### Domain model` bodies, Q/CC grouping, the three
+        cross_check_status values, and the A→D / D→A correction counts
+        defined as elements carrying ≥1 CC<N> entry (spec §5.2–§5.3)."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "side-by-side" in body, (
+            "Command body must document the two-column cross-check "
+            "summary table as the `side-by-side` (spec §5.3 item 1)."
+        )
+        assert "### Architectural model" in body, (
+            "Command body must document the stacked `### Architectural "
+            "model` subsection (spec §5.3 item 2)."
+        )
+        assert "### Domain model" in body, (
+            "Command body must document the stacked `### Domain model` "
+            "subsection (spec §5.3 item 2)."
+        )
+        assert "A→D" in body and "D→A" in body, (
+            "Command body must document the A→D and D→A correction "
+            "directions (spec §5.2)."
+        )
+        for value in ("completed", "skipped_asymmetric", "not_run"):
+            assert value in body, (
+                "Command body must surface the `cross_check_status` "
+                f"value {value!r} (spec §5.1 / §5.2)."
+            )
+        assert "CC<N>" in body, (
+            "Command body must define the correction count by the "
+            "`CC<N>` entry (elements carrying ≥1 CC<N> entry — spec "
+            "§5.2's elements-revised definition)."
+        )
+        assert "elements revised" in body, (
+            "Command body must use the human-facing `elements revised` "
+            "label for the correction-count semantic (spec §5.2)."
+        )
+        # Code-mode diaboli O1: token-presence alone would pass on a body
+        # that documented the geometry in the wrong ORDER. These offline
+        # relative-ordering checks pin what a Layer 0/1 test genuinely
+        # can — the canonical layout sequence — without claiming to
+        # verify a live render (behavioural verification is Layer 3).
+        assert body.index("### Architectural model") < body.index(
+            "### Domain model"
+        ), (
+            "Architectural model section must be documented BEFORE the "
+            "Domain model section (spec §5.3 — canonical stacked order)."
+        )
+        a_to_d_def = body.index("A→D corrections")
+        assert (
+            "architectural" in body[a_to_d_def : a_to_d_def + 120]
+        ), (
+            "The A→D corrections definition must bind A→D to "
+            "*architectural* elements (spec §5.2) — guards against the "
+            "transposed A→D/D→A definition O5 flags."
+        )
+
+    # -- Scenario 5 / §7.3 item 8 -------------------------------------
+
+    def test_command_documents_validation_checkpoint(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 5 / §7.3 item 8: the body documents an output
+        validation checkpoint with the narrowed §5.5 scope — no literal
+        `<DISPATCHER:` leak, both collections rendered, Q/CC ordering
+        present, fix in place (no re-dispatch), and that the human
+        accept gate (not the checkpoint) is the last line of defence
+        (spec §4.7 / §5.5)."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "validation checkpoint" in body, (
+            "Command body must document an output `validation checkpoint` "
+            "(spec §4.7 / CLAUDE.md Output Validation Checkpoints)."
+        )
+        assert "<DISPATCHER:" in body, (
+            "Command body must name the literal `<DISPATCHER:` substring "
+            "as the no-unsubstituted-placeholder checkpoint check "
+            "(spec §5.5 check 2)."
+        )
+        assert "re-dispatch" in body, (
+            "Command body must state the checkpoint fixes deviations in "
+            "place rather than re-dispatching the agent (spec §5.5)."
+        )
+        assert "last line of defence" in body, (
+            "Command body must state the human accept gate (not the "
+            "validation checkpoint) is the last line of defence before "
+            "write (spec §4.8 / §5.5)."
+        )
+
+    # -- Scenario 5b / §7.3 item 8b -----------------------------------
+
+    def test_command_documents_confirm_before_write_gate(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 5b / §7.3 item 8b: the body documents the
+        confirm-before-write gate that runs AFTER the validation
+        checkpoint and BEFORE the write — a summary naming the resolved
+        path, an overwrite flag, an accept/abort prompt, write only on
+        accept, abort writes nothing and creates no directory
+        (spec §4.8)."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "accept" in body and "abort" in body, (
+            "Command body must document the accept/abort confirm-before-"
+            "write prompt (spec §4.8)."
+        )
+        assert "overwrite" in body, (
+            "Command body must document flagging when the resolved path "
+            "already exists and would be overwritten (spec §4.8 step 2)."
+        )
+        assert "resolved" in body, (
+            "Command body must document the summary naming the resolved "
+            "target path before any write (spec §4.8 step 1 / §5.6)."
+        )
+
+    # -- Scenario 6 / §7.3 item 7 -------------------------------------
+
+    def test_command_documents_dispatcher_placeholder_substitution(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Scenario 6 / §7.3 item 7: the body documents substituting the
+        `<DISPATCHER: ...>` timestamp and model-identifier placeholders
+        before persisting, and that the same resolved date supplies the
+        filename's `<YYYY-MM-DD>` stamp (spec §3.5 / §4.3)."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "generated_at" in body, (
+            "Command body must document substituting the `generated_at` "
+            "<DISPATCHER: ...> placeholder (spec §3.5)."
+        )
+        assert "generated_by" in body, (
+            "Command body must document substituting the `generated_by` "
+            "<DISPATCHER: ...> placeholder (spec §3.5)."
+        )
+        assert "<YYYY-MM-DD>" in body, (
+            "Command body must document that the same resolved date "
+            "supplies the filename's `<YYYY-MM-DD>` stamp (spec §4.3)."
+        )
+
+    # -- Scenario 7 / §7.3 item 10 + 11 -------------------------------
+
+    def test_marketplace_top_level_version_still_0_4_0(
+        self, repo_root: Path
+    ) -> None:
+        """Scenario 7 / §7.3 item 10 (O9): the marketplace top-level
+        `version` is NOT bumped by S4 — it stays at 0.4.0. (The existing
+        TestDiagnosticLegibilityVersioning.test_marketplace_top_level_
+        version_unchanged already pins this; this is the S4-scenario-
+        named restatement.)"""
+        marketplace = json.loads(
+            (repo_root / ".claude-plugin" / "marketplace.json").read_text()
+        )
+        assert marketplace["version"] == "0.4.0", (
+            "marketplace.json top-level `version` must remain '0.4.0' "
+            "(per spec §9 / O9: a per-plugin entry's description rewrite "
+            "is the plugin's own contract, not the listing contract). "
+            f"Actual: {marketplace['version']!r}"
+        )
+
+    def test_marketplace_entry_description_drops_stale_sentence(
+        self, repo_root: Path
+    ) -> None:
+        """§7.3 item 10 (O9, negative-presence): the diagnostic-
+        legibility entry `description` was rewritten — the now-false
+        trailing sentence about the command landing later is gone."""
+        marketplace = json.loads(
+            (repo_root / ".claude-plugin" / "marketplace.json").read_text()
+        )
+        entry = next(
+            p
+            for p in marketplace["plugins"]
+            if p["name"] == "diagnostic-legibility"
+        )
+        description = entry.get("description", "")
+        stale = "Human-facing `/diagnose` command lands in a later slice."
+        assert stale not in description, (
+            "marketplace.json diagnostic-legibility entry `description` "
+            f"must no longer contain the stale sentence {stale!r} — the "
+            "command now exists (spec §9 / O9). Actual description: "
+            f"{description!r}"
+        )
+
+    # -- Scenario 8 / §7.3 item 11 + 12 -------------------------------
+
+    def test_diagnose_how_to_page_present(
+        self, repo_root: Path
+    ) -> None:
+        """Scenario 8 / §7.3 item 11: the how-to guide for /diagnose
+        exists (CLAUDE.md "new component → how-to guide" convention)."""
+        page = (
+            repo_root
+            / "docs"
+            / "plugins"
+            / "diagnostic-legibility"
+            / "how-to"
+            / "run-the-diagnose-command.md"
+        )
+        assert page.is_file(), (
+            f"Expected how-to page at {page.relative_to(repo_root)!s} "
+            "(spec §7.1)."
+        )
+
+    def test_diagnose_reference_page_present(
+        self, repo_root: Path
+    ) -> None:
+        """Scenario 8 / §7.3 item 11: the reference entry for /diagnose
+        exists, satisfying the CI "new component → reference entry"
+        expectation (spec §7.1)."""
+        page = (
+            repo_root
+            / "docs"
+            / "plugins"
+            / "diagnostic-legibility"
+            / "reference"
+            / "diagnose-command.md"
+        )
+        assert page.is_file(), (
+            f"Expected reference page at {page.relative_to(repo_root)!s} "
+            "(spec §7.1)."
+        )
+
+    def test_reference_quadrant_index_present(
+        self, repo_root: Path
+    ) -> None:
+        """§7.1: the reference quadrant landing page exists — the first
+        reference-quadrant page for this plugin, scaffolded now that the
+        quadrant has a page (CLAUDE.md docs convention)."""
+        page = (
+            repo_root
+            / "docs"
+            / "plugins"
+            / "diagnostic-legibility"
+            / "reference"
+            / "index.md"
+        )
+        assert page.is_file(), (
+            "Each Diataxis quadrant folder needs its own index.md so "
+            "mkdocs-awesome-pages renders the section as a navigable "
+            f"group. Missing: {page.relative_to(repo_root)!s} (spec §7.1)."
+        )
+
+    # -- .gitignore (O3) / §7.2 ---------------------------------------
+
+    def test_gitignore_ignores_output_directory(
+        self, repo_root: Path
+    ) -> None:
+        """§7.2 (O3 accepted): the repo-root .gitignore must ignore
+        `diagnostic-legibility/output/` so generated reports are never
+        committed nor rsynced into the plugin cache by
+        sync-to-global-cache.sh."""
+        gitignore = (repo_root / ".gitignore").read_text()
+        assert "diagnostic-legibility/output/" in gitignore, (
+            "Repo-root .gitignore must contain an entry for "
+            "`diagnostic-legibility/output/` (spec §7.2 / O3) so "
+            "generated reports stay out of the repo and the plugin cache."
+        )
