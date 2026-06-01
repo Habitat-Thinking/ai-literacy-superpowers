@@ -58,6 +58,17 @@ framework's latest ALCI.
    feeds the operational axes mean.
 3. **Local spec referencing upstream** (this document) for the
    spec-first gate.
+4. **Self-contained — no runtime dependency on the upstream repo.** The
+   plugin ships standalone via the marketplace; an installing team will
+   not have `ai-literacy-for-software-engineers` checked out. Every
+   piece of supporting information `/assess` needs at runtime — the four
+   axes' definitions, the full L1–L5 marker statements, the evidence
+   map, the gap formula, and the interpretation regimes — is **embedded
+   in the plugin's own files** (the SKILL and its `references/`). No
+   artifact reads `framework/framework.md` or any upstream path at run
+   time. Upstream references in this spec and in the artifacts are
+   **provenance/attribution only** (where the content was sourced and
+   what to re-sync if the framework changes), never a runtime read.
 
 ## 3. The four operational axes
 
@@ -151,10 +162,12 @@ After the evidence-first placement, the command offers:
 On opt-in, the assessor administers the 40 statements (4 axes × 5 levels
 × 2 statements) on the framework's Strongly-Disagree→Strongly-Agree
 scale, taking the higher-scoring level per axis. The survey statements
-are carried in a new reference file (`references/operational-axes.md`)
-sourced verbatim from framework Part D so they stay faithful and
-auditable. Survey scores replace the evidence-first placement for that
-run; the assessment document records which mode was used.
+are **embedded in full** in a new reference file
+(`references/operational-axes.md`) — copied verbatim from framework
+Part D so they are faithful, auditable, and **available without the
+upstream repo** (decision §2.4). Survey scores replace the evidence-first
+placement for that run; the assessment document records which mode was
+used.
 
 ## 6. Changes per artifact
 
@@ -162,7 +175,7 @@ run; the assessment document records which mode was used.
 | --- | --- |
 | `ai-literacy-superpowers/skills/ai-literacy-assessment/SKILL.md` | Add an "Operational Axes (ALCI Part D)" scoring section: the four axes, the evidence-first placement heuristic, the opt-in survey, and the Habitat Build Gap computation + interpretation regimes. |
 | `.../references/assessment-template.md` | Add two sections to the document template: `## Operational Axes (ALCI Part D)` (a 4-row table: axis · placement L1–L5 · evidence) and `## Habitat Build Gap` (the level/axes-mean/gap/interpretation block). Cross-reference the existing Governance Dimension from the Governance axis row. |
-| `.../references/operational-axes.md` (**new**) | The four axes' full L1–L5 marker statements (the 40 survey statements) sourced verbatim from framework Part D, plus the evidence-signal map (§3.1). Single source for both administration modes. |
+| `.../references/operational-axes.md` (**new**) | The four axes' full L1–L5 marker statements (the 40 survey statements) **embedded verbatim** (copied in full — the plugin does not read the upstream repo at runtime, per §2.4), plus the evidence-signal map (§3.1) and the Habitat Build Gap formula + interpretation regimes. Single self-contained source for both administration modes. |
 | `.../references/sophistication-markers.md`, `tool-config-evidence.md` | Add the operational-axis evidence signals (§3.1) so the existing evidence references cover them. |
 | `ai-literacy-superpowers/agents/assessor.agent.md` | Phase 1b: gather per-axis evidence. Document generation: emit the Operational Axes + Habitat Build Gap sections and compute the gap. Reconcile the existing **Governance Dimension** section with the new **Governance axis** (cross-reference; the axis is the operational summary, the Dimension the deep-dive; the axis score feeds the axes mean). Add the opt-in survey path. |
 | `ai-literacy-superpowers/commands/assess.md` | Step 4 (Document): add the Operational Axes + Habitat Build Gap sections. Step 5 (validation checkpoint): verify the new sections exist, the axes mean is computed, and the gap + interpretation are present and internally consistent (gap = level − mean, interpretation matches the regime). Add the §5.2 opt-in survey prompt to the flow. |
@@ -244,7 +257,18 @@ are tested offline.)
 
 ## 11. Upstream linkage
 
-This change tracks the framework. The PR body links the upstream
-commits (`f13d388`, `542f325`). If the framework's Part D markers or the
-Habitat Build Gap regimes change upstream, `references/operational-axes.md`
-and the SKILL's regime table are the sync points.
+This change tracks the framework, but is **self-contained at runtime**
+(§2.4): the upstream references are provenance and re-sync pointers, not
+runtime dependencies. The PR body links the upstream commits
+(`f13d388`, `542f325`). If the framework's Part D markers or the Habitat
+Build Gap regimes change upstream, `references/operational-axes.md` and
+the SKILL's regime table are the sync points — updated by copying the
+new content in, never by reading the upstream repo from `/assess`.
+
+### Acceptance scenario for self-containment
+
+11. **No upstream runtime dependency** — no assess artifact (command,
+    SKILL, agent, or any `references/` file) contains a path reference
+    to `ai-literacy-for-software-engineers`, `framework/framework.md`,
+    or any other upstream-repo read; the operational-axes reference
+    embeds the full marker text. (Structural test, offline.)
