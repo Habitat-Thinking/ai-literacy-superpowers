@@ -351,6 +351,27 @@
 - **Tool**: `.github/workflows/docs-reference-parity-check.yml`
 - **Scope**: pr
 
+### Every marketplace plugin appears in the docs index pages
+
+- **Rule**: Every plugin listed in `.claude-plugin/marketplace.json`
+  `plugins[]` must appear in **both** marketplace-level docs index
+  pages: the homepage table (`docs/index.md`) and the canonical
+  available-plugins table (`docs/plugins/index.md`). "Appears" means the
+  plugin's landing-page link `<name>/index.md` is present in each file.
+  This is the marketplace-scoped analogue of the per-plugin
+  reference-page constraint above: that one catches a new component
+  missing from a plugin's own reference page; this one catches a whole
+  plugin missing from the marketplace-level docs surfaces. It is a
+  whole-repo invariant (checked on HEAD, not a diff), because a plugin
+  can drift out of the index pages across many PRs without any single PR
+  touching it. Effective from 2026-06-01 — the diagnostic-legibility
+  plugin shipped across four slices / five PRs without ever being added
+  to the homepage, surfacing the gap that motivates this constraint
+  (`/reflect` signal=failure).
+- **Enforcement**: deterministic
+- **Tool**: `.github/workflows/marketplace-docs-coverage-check.yml`
+- **Scope**: pr
+
 ### Reflections via PR workflow
 
 - **Rule**: Every addition to `REFLECTION_LOG.md` must be committed on a

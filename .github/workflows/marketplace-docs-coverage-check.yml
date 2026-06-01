@@ -1,0 +1,85 @@
+# Marketplace docs coverage check for pull requests.
+#
+# Verifies that every plugin listed in .claude-plugin/marketplace.json
+# plugins[] appears in BOTH marketplace-level docs index pages:
+#
+#   docs/index.md          — the docs homepage "Plugins in this
+#                            marketplace" table
+#   docs/plugins/index.md  — the canonical "Available plugins" table
+#
+# "Appears" means the plugin's landing-page link `<name>/index.md` is
+# present in each file. Both tables link to the plugin landing page, so
+# `plugins/<name>/index.md` (homepage) and `<name>/index.md` (plugins
+# index) both contain that substring.
+#
+# This is the MARKETPLACE-SCOPED analogue of the per-plugin
+# docs-reference-parity-check: that check catches a new component
+# missing from a plugin's own reference page; this check catches a whole
+# plugin missing from the marketplace-level docs surfaces. It is a
+# whole-repo invariant (checked on HEAD, not a diff), because a plugin
+# can drift out of the index pages across many PRs without any single
+# PR touching it — which is exactly how diagnostic-legibility shipped
+# across four slices without a homepage entry.
+
+name: Marketplace docs coverage check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Verify every marketplace plugin appears in the docs index pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Verify marketplace plugins are listed in docs index pages
+        run: |
+          set -euo pipefail
+
+          MARKETPLACE=".claude-plugin/marketplace.json"
+          HOMEPAGE="docs/index.md"
+          PLUGINS_INDEX="docs/plugins/index.md"
+
+          for f in "$MARKETPLACE" "$HOMEPAGE" "$PLUGINS_INDEX"; do
+            if [ ! -f "$f" ]; then
+              echo "::error::Expected file not found: $f"
+              exit 1
+            fi
+          done
+
+          MISSING=0
+          while IFS= read -r name; do
+            [ -z "$name" ] && continue
+            link="${name}/index.md"
+            echo "Checking marketplace plugin: $name (landing link: $link)"
+
+            for page in "$HOMEPAGE" "$PLUGINS_INDEX"; do
+              if grep -qF "$link" "$page"; then
+                echo "  ✓ Found in $page"
+              else
+                echo "::error file=$page::Plugin '$name' is in marketplace.json but is not listed in $page (expected a link to '$link'). Every marketplace plugin must appear in both docs/index.md and docs/plugins/index.md."
+                MISSING=$((MISSING + 1))
+              fi
+            done
+          done < <(jq -r '.plugins[].name' "$MARKETPLACE")
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo ""
+            echo "::error::$MISSING marketplace-plugin/docs-page coverage gap(s)."
+            echo ""
+            echo "When a plugin is listed in .claude-plugin/marketplace.json,"
+            echo "it must also appear in the docs homepage table"
+            echo "(docs/index.md) and the canonical plugins index"
+            echo "(docs/plugins/index.md), each linking to the plugin's"
+            echo "landing page (plugins/<name>/index.md)."
+            exit 1
+          fi
+
+          echo ""
+          echo "Marketplace docs coverage check passed."
