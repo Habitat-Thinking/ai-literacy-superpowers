@@ -25,7 +25,7 @@ slices:
     disposition_rationale: null
     file_as_issue: false
     issue_url: null
-    merged_into: null
+    merged_into: https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/334
 
   - id: S2
     title: Two-model agent — architectural and domain models with per-model self-challenge
@@ -48,7 +48,7 @@ slices:
     disposition_rationale: null
     file_as_issue: true
     issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/331
-    merged_into: null
+    merged_into: [https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/336, https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/341]
 
   - id: S3
     title: Cross-check mechanism — mutual model correction
@@ -69,7 +69,7 @@ slices:
     disposition_rationale: null
     file_as_issue: true
     issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332
-    merged_into: null
+    merged_into: https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/349
 
   - id: S4
     title: Surfacing interface — on-demand human legibility command
@@ -91,7 +91,7 @@ slices:
     disposition_rationale: null
     file_as_issue: true
     issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333
-    merged_into: null
+    merged_into: https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/351
 ---
 
 ## S1 — Plugin scaffold — Diagnostic Legibility plugin structure — decision-boundary
@@ -179,6 +179,22 @@ Separating the surfacing interface into its own slice ensures the output contrac
 S1 → S2 → S3 → S4. This is a strict dependency chain: the plugin scaffold must exist before the agent can be placed, the two-model agent must produce models before the cross-check can run, and the cross-check must produce corrected models before the surfacing command has anything to show.
 
 There are no independent slices in this record; all four slices are ordered by structural necessity. The recommendation is to resolve each disposition before speccing the next slice — specifically, the S1 scaffold decision (standalone plugin vs. nested) will affect the file paths and plugin.json configuration for S2, S3, and S4.
+
+## Completion status
+
+**All slices merged — the chain is complete (parent #327 closed).**
+
+| Slice | Shipped | PR | Plugin version |
+| --- | --- | --- | --- |
+| S1 — Plugin scaffold | ✅ | [#334](https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/334) | v0.1.0 |
+| S2 — Two-model agent | ✅ | [#336](https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/336) (S2a schema, v0.2.0) + [#341](https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/341) (S2b challenge protocol, v0.3.0) | v0.2.0 → v0.3.0 |
+| S3 — Cross-check mechanism | ✅ | [#349](https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/349) | v0.4.0 |
+| S4 — Surfacing interface (`/diagnose`) | ✅ | [#351](https://github.com/Habitat-Thinking/ai-literacy-superpowers/pull/351) | v0.5.0 |
+
+S2 was delivered across two PRs during implementation: the
+`LegibilityElement` schema (S2a) and the working two-model
+challenge agent (S2b). Both are recorded in the S2 entry's
+`merged_into` field.
 
 ---
 
