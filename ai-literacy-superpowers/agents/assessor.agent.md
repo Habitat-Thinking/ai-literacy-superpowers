@@ -151,6 +151,30 @@ alternative-path methodology will extend to the other artefacts
 listed above in a follow-up iteration; until then, prefer reporting
 "not found at the conventional path" rather than claiming absence.
 
+#### Phase 1c: Operational-axes evidence (ALCI Part D)
+
+Gather observable evidence for the **four operational axes** —
+Composition, Testing, Observability, Governance — using the evidence
+map in:
+
+```text
+ai-literacy-superpowers/skills/ai-literacy-assessment/references/operational-axes.md
+```
+
+That reference is the single, self-contained source for the axes, their
+L1–L5 markers, the evidence map, the Habitat Build Gap formula, and the
+interpretation regimes. **Do not read any external repository** — all
+the content needed is embedded there.
+
+Reuse the signals already collected in Phase 1b and map them to axes:
+custom agents / critics / orchestration → **Composition**; test suites /
+coverage / mutation / regression / agent-authored scenarios →
+**Testing**; logging / metrics / dashboards / snapshots / calibration /
+OTel → **Observability**; HARNESS.md constraints + enforcement ratio /
+policy-as-code CI / audit cadence → **Governance** (this reuses the
+Governance Dimension evidence). Record evidence per axis with file
+paths, exactly as for the cognitive level.
+
 ### Phase 2: Present findings and ask clarifying questions
 
 Present what you found to the user in a structured summary. Then ask
@@ -163,6 +187,20 @@ Present what you found to the user in a structured summary. Then ask
 - Whether specifications are written before or after code
 
 Ask ONE question at a time. Wait for the answer before asking the next.
+
+For the operational axes, the default is **evidence-first** placement
+(Phase 1c). Where an axis's evidence is ambiguous, fold one or two
+axis-specific questions into this phase (within the 3–5 budget). Then
+**offer the opt-in survey**:
+
+> "Place the operational axes from observable evidence (default), or
+> administer the full 40-statement ALCI Part D survey (≈10 min) for a
+> rigorous per-axis score?"
+
+On opt-in, administer the 40 marker statements from
+`references/operational-axes.md` on the Strongly-Disagree (1) →
+Strongly-Agree (5) scale, two statements per level, taking the
+higher-scoring level per axis. Record which mode was used.
 
 ### Phase 3: Assess the level
 
@@ -197,6 +235,25 @@ assessed projects should still produce roughly the same level on
 re-assessment unless the cited sophistication evidence genuinely
 changes the picture.
 
+#### Phase 3b: Place the operational axes and compute the Habitat Build Gap
+
+Independently of the cognitive level, place each of the four
+operational axes L1–L5 from the Phase 1c evidence (or the survey
+scores, if the survey was taken), citing evidence per axis. Then
+compute, per `references/operational-axes.md`:
+
+```text
+operational_axes_mean = mean(Composition, Testing, Observability, Governance)
+Habitat Build Gap     = level_placement − operational_axes_mean
+```
+
+Classify the gap into one of the three regimes (Coherent /
+Ambition outpaces enablement / Inherited habitat). The **Governance
+axis** placement must be **consistent** with the Governance Dimension
+deep-dive (Phase 4 / the Governance Dimension section) — they are two
+views of the same governance level, not independent scores. The axes
+are additive: they do **not** change the cognitive level placement.
+
 ### Phase 4: Generate the assessment document
 
 Create `assessments/` directory if it doesn't exist. Write the
@@ -207,6 +264,13 @@ File path: `assessments/YYYY-MM-DD-assessment.md`
 Fill in every section with specific evidence and rationale. Do not
 use placeholders or generic statements — every claim should
 reference a specific file, configuration, or response.
+
+The template now includes the **Operational Axes (ALCI Part D)** table
+and the **Habitat Build Gap** block — emit both, filling the axis
+placements and evidence from Phase 1c/3b, the axes mean, the signed
+gap, and the interpretation regime. State the placement mode
+(evidence-first or survey). Ensure the Governance axis row matches the
+Governance Dimension level (Phase 3b consistency rule).
 
 ### Phase 5: Update the README badge
 
@@ -232,6 +296,16 @@ git commit -m "AI Literacy Assessment: Level N — {{LEVEL_NAME}} (YYYY-MM-DD)"
 
 When producing the assessment report, include a dedicated Governance
 section that groups governance-related findings:
+
+> **Relationship to the Governance operational axis (ALCI Part D).** The
+> Governance Dimension is the governance **deep-dive**; the Governance
+> **axis** (in the Operational Axes section) is its one-line operational
+> placement that feeds the Habitat Build Gap. They are two views of the
+> same governance level and must report a **consistent** level — the
+> axis summarises, the Dimension expands. In the assessment document,
+> the Governance axis row cross-references this section ("see Governance
+> Dimension"), and this section notes its operational placement is
+> summarised as the Governance axis.
 
 ### In the Assessment Document
 

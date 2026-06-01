@@ -120,13 +120,18 @@ Produce a timestamped Markdown document at
 4. **Level assessment**: primary level with rationale
 5. **Discipline maturity**: context engineering, architectural
    constraints, guardrail design — each rated
-6. **Strengths**: what the team does well at their current level
-7. **Gaps**: what's missing for the next level
-8. **Recommendations**: 3-5 specific actions to progress
-9. **Immediate adjustments applied**: what was fixed during this assessment
-10. **Workflow operation changes**: accepted changes to how artifacts are used
-11. **Reflection**: what the assessment itself revealed
-12. **Next assessment date**: suggested quarterly re-assessment
+6. **Operational axes (ALCI Part D)**: Composition, Testing,
+   Observability, Governance — each placed L1–L5 (see "Operational
+   Axes" below)
+7. **Habitat Build Gap**: the cognitive level minus the operational
+   axes mean, with its interpretation (see below)
+8. **Strengths**: what the team does well at their current level
+9. **Gaps**: what's missing for the next level
+10. **Recommendations**: 3-5 specific actions to progress
+11. **Immediate adjustments applied**: what was fixed during this assessment
+12. **Workflow operation changes**: accepted changes to how artifacts are used
+13. **Reflection**: what the assessment itself revealed
+14. **Next assessment date**: suggested quarterly re-assessment
 
 ### Phase 4: Immediate Habitat Adjustments
 
@@ -267,3 +272,63 @@ The adjustments are introduced conservatively at this release —
 prefer surfacing markers without changing previously-assigned levels
 unless the evidence is unambiguous. As the framework accumulates
 assessments using the markers, the adjustments will tune.
+
+## Operational Axes (ALCI Part D)
+
+The framework's ALCI was extended with **Part D — four operational
+axes** that measure what the team's *habitat actually delivers*,
+complementing the cognitive level placement from the scoring heuristic
+above. The four axes, their L1–L5 marker statements, the evidence map,
+the Habitat Build Gap formula, and the interpretation regimes are
+defined in full in `references/operational-axes.md` — the single,
+self-contained source (no external repo is read at runtime).
+
+The axes:
+
+- **Composition** — agent topology sophistication
+- **Testing** — verification rigour
+- **Observability** — agent-activity visibility and feedback loop
+- **Governance** — formality/enforceability of AI-use governance
+
+### Administration (hybrid)
+
+- **Evidence-first (default).** During Phase 1b, gather observable repo
+  evidence per axis (the evidence map in `references/operational-axes.md`)
+  and place each axis L1–L5, citing evidence per axis exactly as the
+  cognitive level is evidenced. Ask one or two clarifying questions for
+  an axis only where evidence is ambiguous, within the 3–5 question
+  budget.
+- **Survey (opt-in).** Offer the full 40-statement ALCI Part D survey
+  (4 axes × 5 levels × 2 statements) for teams wanting the rigorous
+  instrument. Administer on the Strongly-Disagree (1) →
+  Strongly-Agree (5) scale, taking the higher-scoring level per axis.
+  Record which mode was used in the assessment document.
+
+### Governance axis vs Governance Dimension
+
+The **Governance axis** is the one-line operational placement. The
+assessment document also carries the standalone **Governance Dimension**
+deep-dive (with the `/governance-constrain` improvement ladder). The two
+are cross-referenced and must report a **consistent** governance level —
+the axis is the summary, the Dimension is the deep-dive.
+
+### Habitat Build Gap
+
+Combine the cognitive view with the operational view:
+
+```text
+Habitat Build Gap = level_placement − operational_axes_mean
+```
+
+`operational_axes_mean` is the mean of the four axis scores. Interpret:
+
+| Gap | Name | Meaning |
+| --- | --- | --- |
+| `abs(gap) < 0.5` | **Coherent** | Team and habitat at the same level. |
+| `gap ≥ +0.5` | **Ambition outpaces enablement** | Build the habitat the team's thinking implies. |
+| `gap ≤ −0.5` | **Inherited habitat** | Literacy uplift before further harness extension. |
+
+The headline signal is **coherence**, not the size of the level: a
+coherent L2/L2 team is healthier than an incoherent L4/L1 team. See
+`references/operational-axes.md` for the full treatment and output
+format.

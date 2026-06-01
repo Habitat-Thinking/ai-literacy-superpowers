@@ -112,3 +112,12 @@ is Level 3 for context engineering.
 
 Inline duplication of these paths or markers across the consumers is
 forbidden. Edits live in this file.
+
+## Operational axes (ALCI Part D)
+
+For the four operational-axes evidence signals (Composition, Testing,
+Observability, Governance), see `references/operational-axes.md` — the
+single, self-contained source for the axes, their L1–L5 markers, the
+evidence map, and the Habitat Build Gap. Governance-axis evidence
+overlaps with the governance constraint/enforcement signals here; cite
+each governance signal once, under the Governance axis.

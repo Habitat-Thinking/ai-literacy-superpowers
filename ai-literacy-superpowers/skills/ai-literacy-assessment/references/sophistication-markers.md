@@ -202,3 +202,14 @@ markers, the adjustments may be tuned or refined.
 
 A reflection capturing observed level shifts after the first few
 assessments using this reference is the right next step for tuning.
+
+## Operational axes (ALCI Part D)
+
+The four operational axes — Composition, Testing, Observability,
+Governance — and their evidence map live in
+`references/operational-axes.md` (the single, self-contained source).
+The sophistication markers above feed the axis placements: agent /
+orchestration sophistication evidences **Composition**; hook and
+script sophistication evidences **Observability** and **Governance**;
+test-infrastructure sophistication evidences **Testing**. Cite the same
+markers under the axis they evidence in the Operational Axes table.

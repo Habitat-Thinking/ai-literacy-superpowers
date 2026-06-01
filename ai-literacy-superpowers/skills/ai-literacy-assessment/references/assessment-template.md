@@ -66,6 +66,37 @@ Reference specific evidence.}}
 {{Identify which discipline is the ceiling — the one holding
 the team at this level rather than the next.}}
 
+## Operational Axes (ALCI Part D)
+
+{{Placement mode: evidence-first | survey — state which was used.}}
+
+| Axis | Placement | Evidence |
+| --- | --- | --- |
+| Composition | L{{1-5}} | {{Agent topology evidence — custom agents, critics, orchestration}} |
+| Testing | L{{1-5}} | {{Verification evidence — suites, coverage, mutation, regression}} |
+| Observability | L{{1-5}} | {{Visibility evidence — logging, metrics, dashboards, calibration}} |
+| Governance | L{{1-5}} | {{Enforcement evidence — see Governance Dimension below for the deep-dive}} |
+
+Operational axes mean: L{{mean to one decimal}}
+
+## Habitat Build Gap
+
+```text
+Level placement (from cognitive assessment): L{{N}}
+Operational axes mean (Part D):              L{{mean}}
+  Composition:    L{{1-5}}
+  Testing:        L{{1-5}}
+  Observability:  L{{1-5}}
+  Governance:     L{{1-5}}
+Habitat Build Gap:                           {{signed gap, e.g. +1.0}}
+Interpretation:                              {{Coherent | Ambition outpaces enablement | Inherited habitat}}
+```
+
+{{One-paragraph reading of the gap: what the coherence (or incoherence)
+between the cognitive level and the operational axes means for where to
+invest — habitat build (positive gap) or literacy uplift (negative gap).
+The signal is coherence, not the size of the level.}}
+
 ## Strengths
 
 {{3-5 bullet points — what the team does well at their current

@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.40.0 — 2026-06-01
+
+### `/assess` — ALCI Part D operational axes + Habitat Build Gap
+
+Brings `/assess` into line with the framework's latest ALCI, which was
+extended upstream with **Part D — four operational axes** and the
+**Habitat Build Gap** diagnostic (driving change:
+`ai-literacy-for-software-engineers` commits `f13d388`/#327 and
+`542f325`/#330). Parts A–C (the cognitive level placement) are
+unchanged; Part D is additive.
+
+- **Four operational axes** — Composition, Testing, Observability,
+  Governance — each placed L1–L5, measuring what the team's *habitat
+  actually delivers* alongside the cognitive level.
+- **Habitat Build Gap** — `cognitive level − operational axes mean`,
+  with three interpretation regimes (Coherent / Ambition outpaces
+  enablement / Inherited habitat). The signal is coherence, not the
+  size of the level.
+- **Hybrid administration** — evidence-first placement by default
+  (from the repo scan), with an opt-in 40-statement ALCI Part D survey
+  for teams wanting the rigorous per-axis score.
+- **Self-contained** — all axis definitions, the full L1–L5 marker
+  statements, the evidence map, the gap formula, and the regimes are
+  embedded in the plugin (new reference
+  `skills/ai-literacy-assessment/references/operational-axes.md`).
+  `/assess` reads no external repository at runtime; upstream refs are
+  provenance/re-sync pointers only.
+- **Governance** — the existing standalone Governance Dimension
+  deep-dive is retained; the new Governance operational axis is its
+  one-line operational summary. The two are cross-referenced and must
+  report a consistent level (enforced by the document validation
+  checkpoint).
+- Updated: the `ai-literacy-assessment` SKILL, the `assessor` agent,
+  the assessment template, the `/assess` command (document step +
+  validation checkpoint), the two evidence references, and the
+  `run-an-assessment` how-to. Structural tests added.
+
+Spec: `docs/superpowers/specs/2026-06-01-assess-operational-axes-design.md`.
+
 ## 0.39.1 — 2026-05-28
 
 ### Fix — /superpowers-status disposition counting
