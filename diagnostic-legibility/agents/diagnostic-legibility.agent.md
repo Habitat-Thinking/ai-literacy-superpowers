@@ -197,6 +197,10 @@ contradictions in Phase C).
      genuinely yielded nothing — emit the `(empty scope)` sentinel
      element into `architectural[]` per §Honesty rules and **skip Phase
      B** (the sentinel carries its own pre-populated challenge note).
+     The sentinel leaves `architectural[]` nominally populated and
+     `domain[]` empty, so this is the one-populated/one-empty shape:
+     set `cross_check_status: skipped_asymmetric` on the wrapper (the
+     honest asymmetric label for the empty-scope case).
    - **If only one collection is empty and the other is non-empty** —
      this is a **valid asymmetric output**. Emit the non-empty
      collection and leave the other as an empty YAML list (`[]`).
