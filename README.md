@@ -5,7 +5,7 @@
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.4.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
 [![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.39.1-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
-[![diagnostic-legibility](https://img.shields.io/badge/diagnostic--legibility-v0.3.0-4682B4?style=flat-square)](diagnostic-legibility/)
+[![diagnostic-legibility](https://img.shields.io/badge/diagnostic--legibility-v0.4.0-4682B4?style=flat-square)](diagnostic-legibility/)
 [![Skills](https://img.shields.io/badge/Skills-33-2E8B57?style=flat-square)](#skills-33)
 [![Agents](https://img.shields.io/badge/Agents-14-2E8B57?style=flat-square)](#agents-14)
 [![Commands](https://img.shields.io/badge/Commands-26-2E8B57?style=flat-square)](#commands-26)
@@ -30,7 +30,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 | ------ | ------- | ------------ | ---- |
 | **`ai-literacy-superpowers`** | v0.39.1 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **33 skills, 14 agents, 26 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
-| **`diagnostic-legibility`** | v0.3.0 | Hosts agents accountable for maintaining human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle. Cross-check (#332) and `/diagnose` command (#333) still to come. | [docs](docs/plugins/diagnostic-legibility/index.md) |
+| **`diagnostic-legibility`** | v0.4.0 | Hosts agents accountable for maintaining human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command (#333) still to come. | [docs](docs/plugins/diagnostic-legibility/index.md) |
 
 The bulk of this README documents the **`ai-literacy-superpowers`** plugin specifically — its skills, agents, commands, hooks, templates, enforcement loops, and pipelines. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md). Future sister plugins will land in this marketplace under `<plugin-name>/` with their own docs at `docs/plugins/<plugin-name>/`.
 

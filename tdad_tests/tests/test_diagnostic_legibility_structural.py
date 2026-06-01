@@ -71,7 +71,7 @@ class TestDiagnosticLegibilityVersioning:
     main verbatim at rebase time.
     """
 
-    def test_plugin_json_at_0_3_0(
+    def test_plugin_json_at_0_4_0(
         self, diagnostic_legibility_path: Path
     ) -> None:
         manifest_path = (
@@ -80,13 +80,13 @@ class TestDiagnosticLegibilityVersioning:
             / "plugin.json"
         )
         manifest = json.loads(manifest_path.read_text())
-        assert manifest["version"] == "0.3.0", (
+        assert manifest["version"] == "0.4.0", (
             "diagnostic-legibility/.claude-plugin/plugin.json must "
-            "carry version '0.3.0' (was '0.2.0' at sub-S2a). "
+            "carry version '0.4.0' (was '0.3.0' at sub-S2b). "
             f"Actual: {manifest['version']!r}"
         )
 
-    def test_marketplace_entry_at_0_3_0(self, repo_root: Path) -> None:
+    def test_marketplace_entry_at_0_4_0(self, repo_root: Path) -> None:
         marketplace_path = (
             repo_root / ".claude-plugin" / "marketplace.json"
         )
@@ -102,9 +102,9 @@ class TestDiagnosticLegibilityVersioning:
         assert entry is not None, (
             "No diagnostic-legibility entry in marketplace.json plugins[]"
         )
-        assert entry["version"] == "0.3.0", (
+        assert entry["version"] == "0.4.0", (
             "marketplace.json diagnostic-legibility entry must be at "
-            f"'0.3.0'. Actual: {entry['version']!r}"
+            f"'0.4.0' (was '0.3.0' at sub-S2b). Actual: {entry['version']!r}"
         )
 
     def test_marketplace_top_level_version_unchanged(
@@ -150,14 +150,14 @@ class TestDiagnosticLegibilityVersioning:
             "does not own (per spec §9)."
         )
 
-    def test_changelog_has_0_3_0_heading(
+    def test_changelog_has_0_4_0_heading(
         self, diagnostic_legibility_path: Path
     ) -> None:
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
-        assert "## 0.3.0 — 2026-05-28" in changelog, (
-            "CHANGELOG.md must contain a `## 0.3.0 — 2026-05-28` heading. "
+        assert "## 0.4.0 — 2026-06-01" in changelog, (
+            "CHANGELOG.md must contain a `## 0.4.0 — 2026-06-01` heading. "
             "Note: the dash is the em-dash (U+2014), matching the format "
             "enforced by the version-consistency CI check."
         )
@@ -165,20 +165,33 @@ class TestDiagnosticLegibilityVersioning:
     def test_changelog_references_followup_issues(
         self, diagnostic_legibility_path: Path
     ) -> None:
-        """Stories #338 (revisit follow-up — TDAD scope) and #339
-        (promotion follow-up — observability) must be named in the
-        CHANGELOG so the audit trail surfaces them when someone reads
-        the release notes."""
+        """The v0.4.0 entry must name #347 (granularity-routing schema
+        discipline promotion — paired Stories #1+#4) and #348
+        (dispatcher-first error contracts promotion — Story #6). The
+        prior v0.3.0 entry continues to name #338 and #339; those
+        references must persist too."""
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
+        # New v0.4.0 follow-ups
+        assert "#347" in changelog, (
+            "v0.4.0 CHANGELOG entry must reference #347 (granularity-"
+            "routing schema discipline promotion follow-up — paired "
+            "Stories #1 and #4)."
+        )
+        assert "#348" in changelog, (
+            "v0.4.0 CHANGELOG entry must reference #348 (dispatcher-first "
+            "error contracts promotion follow-up — Story #6)."
+        )
+        # Prior v0.3.0 follow-ups should still be in the file (audit
+        # trail preservation)
         assert "#338" in changelog, (
-            "CHANGELOG entry must reference #338 (revisit follow-up "
-            "from the choice-cartographer record)."
+            "Prior v0.3.0 CHANGELOG entry's reference to #338 must "
+            "persist (audit trail)."
         )
         assert "#339" in changelog, (
-            "CHANGELOG entry must reference #339 (promotion follow-up "
-            "from the choice-cartographer record)."
+            "Prior v0.3.0 CHANGELOG entry's reference to #339 must "
+            "persist (audit trail)."
         )
 
 
@@ -273,9 +286,13 @@ class TestDiagnosticLegibilityAgent:
         can route invocations to it.
 
         Per code-mode O5: also asserts the description surfaces the
-        two machine-parseable contract terms (Q<N> prefix and the
-        (empty scope) sentinel) so downstream consumers reading only
-        the description know what to grep for.
+        machine-parseable contract terms (Q<N> prefix, (empty scope)
+        sentinel) so downstream consumers reading only the description
+        know what to grep for.
+
+        Per S3 spec §4.2: extended to require CC<N> prefix and
+        cross_check_status field names so the v0.4.0 cross-check
+        contract is also visible at the discovery surface.
         """
         component = plugin_runner.find_component(
             diagnostic_legibility_path,
@@ -298,6 +315,18 @@ class TestDiagnosticLegibilityAgent:
             "Agent description must name the `(empty scope)` sentinel so "
             "consumers know the literal pattern-match handle for the "
             "degenerate case. "
+            f"Actual description: {description!r}"
+        )
+        assert "CC<N>" in description, (
+            "Agent description must name the `CC<N>` prefix convention "
+            "for cross-check entries so consumers reading only the "
+            "description know the v0.4.0 cross-check contract. "
+            f"Actual description: {description!r}"
+        )
+        assert "cross_check_status" in description, (
+            "Agent description must name the `cross_check_status` "
+            "wrapper field so consumers reading only the description "
+            "know to read the model-level cross-check status. "
             f"Actual description: {description!r}"
         )
 
@@ -521,3 +550,310 @@ class TestDiagnosticLegibilityDocs:
             "How-to page must reference issue #333 — the forward link "
             "to parent S4 (the `/diagnose` command surface)."
         )
+
+
+# ---------------------------------------------------------------------
+# Cross-check contract (S3, v0.4.0)
+# ---------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestDiagnosticLegibilityCrossCheck:
+    """The v0.4.0 cross-check (Phase C) adds load-bearing string
+    contracts beyond v0.3.0: the canonical `CC<N> (lowercase-name):`
+    prefix for cross-check entries, the `Cross-check applied; ...`
+    sentinel for clean per-element runs, the dropped CC-skipped
+    sentinel (its information moves to the model-level
+    `cross_check_status` field per cartographer Stories #1 + #4), and
+    the two named direction-specific failure modes per cartographer
+    Story #5. The agent's structured refusal contract per Story #6 is
+    also asserted as a literal-text guard.
+
+    Behavioural-runtime contract (the agent actually emitting these on
+    each invocation) is covered by spec acceptance documentation; this
+    layer guards the agent file's static text only.
+    """
+
+    def test_agent_body_contains_cross_check_applied_sentinel(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per spec §3.5: the literal `Cross-check applied; no questions
+        surfaced changes` is the per-element clean-run sentinel for
+        Phase C. The CC-skipped sibling sentinel (which differed only
+        in one verb) was dropped at adjudication time — its information
+        now lives at model level."""
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        body = agent_file.read_text()
+        sentinel = "Cross-check applied; no questions surfaced changes"
+        assert sentinel in body, (
+            f"Agent body must contain the literal sentinel {sentinel!r} "
+            "verbatim. Per cartographer Story #4, this sentinel records "
+            "per-element evidence that Phase C reached the element "
+            "cleanly; downstream consumers pattern-match on it."
+        )
+
+    def test_agent_body_does_not_contain_cc_skipped_sentinel(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per cartographer Stories #1 + #4 (paired promoted): the
+        original draft's per-element CC-skipped sentinel was dropped.
+        Its information now lives in the model-level
+        `cross_check_status` field. Re-introducing the per-element
+        sentinel would re-introduce the prefix-match conflation (O4)
+        and the granularity violation (O9)."""
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        body = agent_file.read_text()
+        banned = "Cross-check skipped; only one collection present"
+        assert banned not in body, (
+            f"Agent body must NOT contain the literal {banned!r}. The "
+            "per-element CC-skipped sentinel was dropped at adjudication "
+            "time. The model-level `cross_check_status: "
+            "skipped_asymmetric` field carries this fact at the right "
+            "granularity. See cartographer Stories #1 and #4."
+        )
+
+    def test_agent_body_uses_canonical_cc_prefix_form(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per spec §3.4 and §3.5 (post-diaboli): the canonical CC
+        prefix mirrors the Q form — `CC<N> (lowercase-name):` with
+        lowercase question name, parentheses, and colon. The five
+        canonical CC prefixes must all appear in the agent body."""
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        body = agent_file.read_text()
+        canonical_prefixes = (
+            "CC1 (boundary contradiction):",
+            "CC2 (evidence overlap):",
+            "CC3 (cross-confounders):",
+            "CC4 (cross-confidence calibration):",
+            "CC5 (mutual description integrity):",
+        )
+        for prefix in canonical_prefixes:
+            assert prefix in body, (
+                f"Agent body must reference the canonical CC prefix "
+                f"form {prefix!r} (lowercase question name, parens, "
+                "colon) so the agent's prompt teaches one consistent "
+                "form. The S2b Q-prefix discipline is the precedent."
+            )
+
+    def test_agent_body_names_direction_failure_modes(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per cartographer Story #5 + spec §3.4: the two
+        direction-specific failure modes must be named in the agent
+        body so the dimension-flavoured weighting has named targets
+        rather than inheriting S2b's per-element failure modes."""
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        body = agent_file.read_text()
+        # A→D direction targets architectural assumptions implicit in
+        # domain descriptions
+        assert "architectural-implicit assumption" in body, (
+            "Agent body must name the A→D direction's failure mode "
+            "(`architectural-implicit assumption in domain description`)"
+            " — per cartographer Story #5, the analogy doing real work "
+            "requires direction-specific failure modes to be named "
+            "rather than inherited from S2b."
+        )
+        # D→A direction targets domain-concept smear
+        assert "domain-concept smear" in body, (
+            "Agent body must name the D→A direction's failure mode "
+            "(`domain-concept smear in architectural element`) — per "
+            "cartographer Story #5."
+        )
+
+    def test_agent_body_contains_refusal_line_shape(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per cartographer Story #6 (promoted, #348) and spec §3.6 +
+        §3.7: the structured refusal line shape must appear in the
+        agent body. Programmatic dispatchers pattern-match on this
+        shape to route to error handling."""
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        body = agent_file.read_text()
+        refusal_prefix = "diagnostic-legibility refusal:"
+        assert refusal_prefix in body, (
+            f"Agent body must contain the literal refusal-line prefix "
+            f"{refusal_prefix!r} per spec §3.6 / §3.7. This is the "
+            "pattern-match handle for programmatic dispatchers; absence "
+            "lets the structured-refusal contract drift to "
+            "free-form error messages."
+        )
+
+    def test_agent_body_names_mode_markers(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per spec §2.4 / §3.7: two mode markers (full and
+        cross-check-only) must be named in the agent body. The
+        construct-only mode was dropped at adjudication (cartographer
+        Story #2 / diaboli O2) and must not appear."""
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        body = agent_file.read_text()
+        assert "mode: full" in body, (
+            "Agent body must name `mode: full` as the default mode "
+            "(Phase A + B + C) per spec §2.4."
+        )
+        assert "mode: cross-check-only" in body, (
+            "Agent body must name `mode: cross-check-only` as the "
+            "Phase-C-against-supplied-YAML mode per spec §2.4."
+        )
+        # Drop-construct-only assertion — per cartographer Story #2,
+        # the third mode was explicitly dropped at adjudication. If
+        # it reappears, it must come back with a named consumer
+        # justifying the surface area.
+        assert "mode: construct-only" not in body, (
+            "Agent body must NOT name `mode: construct-only` — the "
+            "third mode was dropped at adjudication (cartographer "
+            "Story #2 / diaboli O2). It can return when a named "
+            "consumer materialises; until then it is YAGNI."
+        )
+
+    def test_agent_body_names_cross_check_status_values(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per spec §2.2 / §3.6: the three legal cross_check_status
+        values must be named so the agent's contract documents the
+        full state space."""
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        body = agent_file.read_text()
+        for value in ("completed", "skipped_asymmetric", "not_run"):
+            assert value in body, (
+                f"Agent body must name the `cross_check_status` value "
+                f"{value!r} so the dispatcher-facing contract is "
+                "complete."
+            )
+
+    def test_canonical_ordering_invariant_on_fixture(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per cartographer Story #7 and spec §7.2 test #10: O5's
+        adjudicated commitment is TWO enforcement layers for the
+        Q-before-CC ordering invariant — agent emit-time
+        self-verification (visible in the agent body's Phase C
+        algorithm step 6) AND a fixture-based structural test
+        (this).
+
+        The structural-layer test exercises a deliberately-interleaved
+        challenge_notes list against the canonical-ordering invariant.
+        It does NOT execute the agent's reasoning protocol (Layer 1
+        is offline, no API key); it asserts the invariant directly,
+        confirming the contract is enforceable from outside the
+        agent. A future Layer 3 behavioural test would exercise the
+        agent's actual re-ordering."""
+        # Fixture: a challenge_notes list with Q and CC entries
+        # interleaved out of canonical order.
+        interleaved = [
+            "Q1 (boundary): drafted the service boundary explicitly.",
+            "CC2 (evidence overlap): cross-check surfaced shared evidence with Credential.",
+            "Q3 (confounders): named SessionStore as a distinct nearby concept.",
+            "CC1 (boundary contradiction): A-D direction surfaced a contradiction.",
+            "Challenge applied; no questions surfaced changes",
+        ]
+
+        # Canonical-ordering rule: all Q<N> entries (and the Q-applied
+        # sentinel) come before all CC<N> entries (and the CC-applied
+        # sentinel) in the list.
+        def _is_q_class(entry: str) -> bool:
+            return entry.startswith("Q") or entry == (
+                "Challenge applied; no questions surfaced changes"
+            )
+
+        def _is_cc_class(entry: str) -> bool:
+            return entry.startswith("CC") or entry == (
+                "Cross-check applied; no questions surfaced changes"
+            )
+
+        def _canonical_order(entries: list[str]) -> list[str]:
+            q = [e for e in entries if _is_q_class(e)]
+            cc = [e for e in entries if _is_cc_class(e)]
+            other = [e for e in entries if not (_is_q_class(e) or _is_cc_class(e))]
+            return q + cc + other
+
+        canonical = _canonical_order(interleaved)
+
+        # Invariant 1: the canonical ordering preserves all entries
+        # (no drops, no duplicates).
+        assert sorted(canonical) == sorted(interleaved), (
+            "Canonical re-ordering must preserve the entry set "
+            "(no drops, no duplicates)."
+        )
+
+        # Invariant 2: the canonical ordering has all Q-class entries
+        # before all CC-class entries.
+        last_q_idx = max(
+            (i for i, e in enumerate(canonical) if _is_q_class(e)),
+            default=-1,
+        )
+        first_cc_idx = min(
+            (i for i, e in enumerate(canonical) if _is_cc_class(e)),
+            default=len(canonical),
+        )
+        assert last_q_idx < first_cc_idx, (
+            f"Canonical ordering violated: last Q-class index "
+            f"({last_q_idx}) must be less than first CC-class index "
+            f"({first_cc_idx}). Canonical: {canonical!r}."
+        )
+
+        # Invariant 3: the original interleaved input was NOT
+        # canonical (the test exercises a real interleaving).
+        assert canonical != interleaved, (
+            "Test fixture must be deliberately interleaved (not "
+            "already canonical) so the test exercises the re-ordering "
+            "rule rather than asserting trivially."
+        )
+
+    def test_schema_template_documents_cross_check_status_field(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Per cartographer Stories #1 + #4 (paired promoted) and spec
+        §7.2: the schema template at templates/legibility-element.md
+        is updated to document the additive `cross_check_status`
+        wrapper field. This is the schema's first post-S2a touch and
+        is governed by the granularity-routing discipline."""
+        template = (
+            diagnostic_legibility_path
+            / "templates"
+            / "legibility-element.md"
+        )
+        body = template.read_text()
+        assert "cross_check_status" in body, (
+            "Schema template must document the `cross_check_status` "
+            "wrapper field added at v0.4.0. The field is additive to "
+            "the LegibilityModel wrapper (back-compat with v0.3.0). "
+            "Per cartographer Stories #1 and #4, the granularity-"
+            "routing rule says model-level facts earn wrapper fields; "
+            "this is the worked example."
+        )
+        # All three legal values must be documented in the template
+        for value in ("completed", "skipped_asymmetric", "not_run"):
+            assert value in body, (
+                f"Schema template must document the "
+                f"`cross_check_status: {value}` legal value."
+            )

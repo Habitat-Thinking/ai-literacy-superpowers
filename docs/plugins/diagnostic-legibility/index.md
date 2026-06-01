@@ -23,19 +23,22 @@ instance, but the discipline (two-model + cross-check + on-demand
 surfacing) generalises to other domains. Future agents may apply it
 to governance artefacts, decision records, or other complex systems.
 
-## Status: v0.3.0 — working agent
+## Status: v0.4.0 — working agent with cross-check
 
-The plugin ships the `diagnostic-legibility` agent. It accepts a
-codebase scope, drafts an architectural model and a domain model
-against the `LegibilityElement` schema, and runs a retained-challenge
-single-pass cycle that fills `challenge_notes[]` on every element via
-five named questions (boundary, evidence, confounders, confidence,
-description integrity).
+The plugin ships the `diagnostic-legibility` agent with both phases.
+It accepts a codebase scope, drafts an architectural model and a
+domain model against the `LegibilityElement` schema, runs a
+retained-challenge single-pass cycle (Phase B — five questions per
+element), then cross-checks the two collections against each other
+(Phase C — five cross-check questions per direction). Each element
+carries both `Q<N>` (self-challenge) and `CC<N>` (cross-check)
+entries; the wrapper carries a `cross_check_status` field recording
+the model-level outcome.
 
-Cross-check and the `/diagnose` command remain ahead:
+The `/diagnose` command remains ahead:
 
 - ✅ [#331](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/331) — S2: Two-model agent (shipped v0.3.0)
-- [#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332) — S3: Cross-check mechanism
+- ✅ [#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332) — S3: Cross-check mechanism (shipped v0.4.0)
 - [#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333) — S4: Surfacing interface (`/diagnose`)
 
 The carpaccio slicing that produced this decomposition is recorded at
@@ -46,7 +49,9 @@ and traces back to parent issue
 ## Quadrant pages
 
 - **How-to**: [Invoke the diagnostic-legibility agent](how-to/invoke-the-agent.md)
-- **Concepts**: [The challenge-refine protocol](explanation/challenge-refine-protocol.md)
+- **Concepts**:
+  - [The challenge-refine protocol](explanation/challenge-refine-protocol.md) — Phase B self-challenge
+  - [The cross-check protocol](explanation/cross-check-protocol.md) — Phase C mutual correction (v0.4.0)
 
 Tutorials and reference pages remain to be written; per the project
 convention, each Diataxis quadrant folder is scaffolded when its first

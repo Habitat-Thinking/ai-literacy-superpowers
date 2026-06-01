@@ -21,7 +21,7 @@ simpler.
 | `description` | string | yes | Free-text explanation. Carries dimension-specific framing: for architectural, what the element does and how it is bounded; for domain, what the term means and how it is used. Multi-paragraph is fine. |
 | `evidence` | list of objects | yes | Citations grounding the element. Each entry has `path` (string) and optional `excerpt` (string). At least one entry per element when confidence is `medium` or `high`. |
 | `confidence` | enum | yes | One of `low`, `medium`, `high`. Indicates the agent's confidence in the element. `low` means "candidate, included for completeness"; `high` means "well-evidenced and challenged". |
-| `challenge_notes` | list of strings | yes | What the challenge-refine step surfaced and how it was resolved. May be empty when the challenge protocol has not yet run. |
+| `challenge_notes` | list of strings | yes | What the challenge-refine step surfaced and how it was resolved. Entries follow string-prefix conventions: `Q<N> (question-name):` for Phase B self-challenge notes; `CC<N> (question-name):` for Phase C cross-check notes (added at v0.4.0); plus two reserved literal sentinels (`Challenge applied; no questions surfaced changes`, `Cross-check applied; no questions surfaced changes`). May be empty only when the challenge protocol has not yet run. |
 
 Equivalent type signature (for documentation only — not a committed type):
 
@@ -60,6 +60,7 @@ The top-level structure the agent emits. Wraps two collections of
 | `generated_by` | string | yes | Agent name + model identifier (e.g. `"diagnostic-legibility-agent / claude-sonnet-4-6"`). |
 | `architectural` | list of `LegibilityElement` | yes | The architectural-dimension elements. May be empty if scope yielded no architecture-level findings. |
 | `domain` | list of `LegibilityElement` | yes | The domain-dimension elements. May be empty if scope yielded no domain concepts. |
+| `cross_check_status` | enum | no | **Added at v0.4.0.** Records the model-level outcome of the cross-check phase (Phase C of the diagnostic-legibility agent). One of `completed` (Phase C ran on both collections), `skipped_asymmetric` (Phase C did not run because only one collection was populated), or `not_run` (Phase C did not run; reserved for backwards-compatibility with v0.3.0 outputs that pre-date the field). Optional — absence means `not_run`. |
 
 ### LegibilityModel validation rules
 
@@ -69,6 +70,15 @@ The top-level structure the agent emits. Wraps two collections of
   lists.
 - The two lists may have different lengths; symmetric size is not
   required.
+- `cross_check_status` is **optional**. v0.3.0 outputs without the
+  field are valid against v0.4.0 consumers — the missing field
+  semantically means `not_run`. A v0.4.0 agent that ran Phase C emits
+  either `completed` or `skipped_asymmetric` explicitly. Consumers
+  should never infer cross-check status from the presence or absence
+  of CC entries in any element's `challenge_notes[]`; the wrapper
+  field is the canonical source per spec
+  `docs/superpowers/specs/2026-05-29-dl-s3-cross-check-mechanism-design.md`
+  §3.5.
 
 ## Examples
 

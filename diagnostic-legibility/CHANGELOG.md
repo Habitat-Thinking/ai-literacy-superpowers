@@ -1,5 +1,82 @@
 # Changelog
 
+## 0.4.0 — 2026-06-01
+
+### Cross-check mechanism for mutual model correction (S3)
+
+Adds Phase C (cross-check) to the `diagnostic-legibility` agent's
+construction protocol. After Phase B (self-challenge) completes,
+Phase C uses each refined collection (architectural, domain) to
+challenge the other through five cross-check questions with
+direction-flavoured weighting (CC1 heavy A→D; CC5 heavy D→A). The
+agent emits a `LegibilityModel` whose elements carry both `Q<N>`
+(self-challenge) and `CC<N>` (cross-check) entries; the model-level
+`cross_check_status` field on the wrapper records the outcome.
+
+- **Agent file**: extended with Phase C, the five cross-check
+  questions, the structured refusal contract, and the two mode
+  markers (full and cross-check-only).
+- **Schema template**: `templates/legibility-element.md` adds an
+  additive optional `cross_check_status` field on the
+  `LegibilityModel` wrapper with three legal values (`completed`,
+  `skipped_asymmetric`, `not_run`). v0.3.0 outputs remain valid;
+  field-absence semantically means `not_run`.
+- **Named direction-specific failure modes**:
+  - A→D direction (CC1 weighted) targets *architectural-implicit
+    assumption in domain description*.
+  - D→A direction (CC5 weighted) targets *domain-concept smear in
+    architectural element*.
+  Both are working hypotheses revisable from disposition data.
+- **Two mode markers**: `mode: full` (default — Phase A+B+C, the
+  superset of v0.3.0) and `mode: cross-check-only` (Phase C only,
+  against a fenced YAML payload). The earlier `mode: construct-only`
+  was dropped at adjudication — no named consumer.
+- **Subject-only audit trail**: `CC<N>` entries are written on the
+  subject element only; side-effects on sibling elements are named
+  in the subject's prose body rather than appended as duplicate CC
+  entries on the side-effect element. One author per CC entry.
+- **Structured refusal contract**: unrecognised mode value, missing
+  preconditions, unfenced/multiple YAML blocks, or unsubstituted
+  `<DISPATCHER: ...>` placeholders in `cross-check-only` mode
+  trigger a structured refusal line. No silent fallback.
+- **Two-layer ordering enforcement**: the agent self-verifies at
+  emit time that `CC<N>` entries follow `Q<N>` entries in every
+  element's `challenge_notes[]`, re-ordering in place if needed; a
+  fixture-based structural test in `tdad_tests/` complements the
+  emit-time check at CI time.
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-05-29-dl-s3-cross-check-mechanism-design.md`;
+spec-mode diaboli at
+`docs/superpowers/objections/dl-s3-cross-check-mechanism-design.md`
+(10 objections, all accepted); choice-cartographer at
+`docs/superpowers/stories/dl-s3-cross-check-mechanism-design.md`
+(7 stories: 3 promoted, 4 accepted); code-mode diaboli at
+`docs/superpowers/objections/dl-s3-cross-check-mechanism-design-code.md`
+(4 objections — 0 critical/high; O1, O2, O4 accepted as
+implementer-surface clarifications and absorbed here, O3 deferred to
+S4 as the natural first test of the version-bump test pattern).
+
+**Follow-up issues** opened from the cartographer's promoted
+dispositions:
+
+- [#347](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/347) —
+  Promote: granularity-routing as schema-evolution discipline
+  (paired Stories #1 + #4 — per-element facts route through prefix
+  discipline on existing fields; model-level facts earn additive
+  wrapper fields; single-writer invariant for audit-trail entries).
+- [#348](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/348) —
+  Promote: dispatcher-first error contracts for agent output
+  (Story #6, third occurrence — agents producing structured output
+  for programmatic consumers must specify a structured refusal shape
+  and must not silently fall back on unrecognised input). Sister to
+  the open #339 plugin_version promotion.
+
+S3 of the parent slicing record at
+`docs/superpowers/slices/diagnostic-legibility-plugin.md`. Closes
+issue #332; parent issue #327 remains open until S4 (#333 — the
+`/diagnose` command) also ships.
+
 ## 0.3.0 — 2026-05-28
 
 ### Two-model agent — challenge protocol and working agent (sub-S2b)
