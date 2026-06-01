@@ -7,19 +7,21 @@ and [model-cards](../model-cards/) in the same marketplace.
 
 ## Status
 
-**v0.3.0 — working agent.** The plugin ships the
-`diagnostic-legibility` agent (parent S2 / sub-S2b). The agent accepts
-a codebase scope, drafts an architectural model and a domain model
-against the `LegibilityElement` schema, and runs a retained-challenge
-single-pass cycle that fills `challenge_notes[]` on every element
-through five named questions (boundary, evidence, confounders,
-confidence, description integrity).
+**v0.4.0 — working agent with cross-check.** The plugin ships the
+`diagnostic-legibility` agent (parent S2 / S3). The agent accepts a
+codebase scope, drafts an architectural model and a domain model
+against the `LegibilityElement` schema, runs a retained-challenge
+single-pass cycle (Phase B — five questions per element), then
+cross-checks the two collections against each other (Phase C — five
+cross-check questions per direction with direction-flavoured
+weighting). Each element carries both `Q<N>` and `CC<N>` entries in
+its `challenge_notes[]`; the wrapper carries a `cross_check_status`
+field recording the model-level outcome.
 
-Cross-checking the two models against each other and the human-facing
-`/diagnose` surfacing command remain ahead:
+The human-facing `/diagnose` surfacing command remains ahead:
 
 - ✅ [#331](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/331) — S2: Two-model agent with per-model self-challenge (shipped v0.3.0)
-- [#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332) — S3: Cross-check mechanism (mutual model correction)
+- ✅ [#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332) — S3: Cross-check mechanism (shipped v0.4.0)
 - [#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333) — S4: Surfacing interface (on-demand human legibility command)
 
 ## Available agents
@@ -58,15 +60,15 @@ claude plugin install diagnostic-legibility@ai-literacy-superpowers
 copilot plugin install diagnostic-legibility@ai-literacy-superpowers
 ```
 
-At v0.3.0 the `diagnostic-legibility` agent is dispatchable via
+At v0.4.0 the `diagnostic-legibility` agent is dispatchable via
 Claude Code's bare Task tool — see the
 [how-to](../docs/plugins/diagnostic-legibility/how-to/invoke-the-agent.md)
-for the invocation pattern. A wrapping `/diagnose` slash-command and
-the cross-check between the two models are deferred to parent S4
-([#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333))
-and parent S3
-([#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332))
-respectively.
+for the invocation pattern. Two mode markers are recognised:
+`mode: full` (default — Phase A construct + Phase B self-challenge +
+Phase C cross-check) and `mode: cross-check-only` (Phase C against a
+fenced YAML payload, for round-trip use). A wrapping `/diagnose`
+slash-command remains deferred to parent S4
+([#333](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/333)).
 
 ## Sister plugins in the same marketplace
 

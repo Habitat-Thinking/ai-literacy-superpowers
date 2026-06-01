@@ -31,7 +31,10 @@ invoke the Task tool with:
 
 - `subagent_type`: `diagnostic-legibility`
 - `description`: a short imperative — e.g. `"Model the auth module"`
-- `prompt`: a free-text body whose first line names the scope.
+- `prompt`: a free-text body whose first line is an optional mode
+  marker; if absent, mode is `full`.
+
+### Mode `full` (default — Phase A + B + C)
 
 The minimum prompt shape:
 
@@ -39,9 +42,83 @@ The minimum prompt shape:
 scope: ./src/auth/
 ```
 
+Or with the explicit marker:
+
+```text
+mode: full
+scope: ./src/auth/
+```
+
+The agent constructs both collections (Phase A), runs the
+five-question self-challenge on every element (Phase B), then
+cross-checks the two collections against each other (Phase C).
+Each element's `challenge_notes[]` carries both `Q<N>` and
+(when Phase C ran cleanly with both collections populated) `CC<N>`
+entries in canonical order. The wrapper carries
+`cross_check_status: completed` or `skipped_asymmetric` depending
+on whether both collections were populated.
+
 Add a second paragraph for any additional context (e.g. *"focus on
 the public API surface only; treat the integration tests as evidence
 but not as in-scope elements"*).
+
+### Mode `cross-check-only` (Phase C only, against supplied YAML)
+
+When you already have a v0.3.0-or-later `LegibilityModel` and want
+to layer cross-check onto it:
+
+````text
+mode: cross-check-only
+```yaml
+scope: "./src/auth/"
+generated_at: "2026-05-28T14:00:00Z"
+generated_by: "diagnostic-legibility / claude-sonnet-4-6"
+architectural:
+  - name: AuthenticationService
+    description: |
+      ...
+    evidence:
+      - path: src/auth/service.py
+    confidence: high
+    challenge_notes:
+      - "Q1 (boundary): ..."
+domain:
+  - name: Credential
+    description: |
+      ...
+    evidence:
+      - path: src/auth/models.py
+    confidence: high
+    challenge_notes:
+      - "Challenge applied; no questions surfaced changes"
+```
+````
+
+The YAML payload must be inside a fenced code block; unfenced or
+prose-surrounded YAML triggers a refusal. Every element must have a
+populated `challenge_notes[]` (Phase B must have run). The agent
+runs Phase C against the payload and emits the cross-checked YAML
+in its response.
+
+Before resubmitting your own previous output for cross-check, **be
+sure to substitute the `<DISPATCHER: ...>` placeholders** in
+`generated_at` and `generated_by` with real values. The
+cross-check-only mode refuses on unsubstituted placeholders.
+
+### Refusal contract
+
+When the agent refuses, it emits a single line and no YAML block:
+
+```text
+diagnostic-legibility refusal: <single-sentence reason>.
+```
+
+Programmatic dispatchers pattern-match on "no YAML block + presence
+of `diagnostic-legibility refusal:`" to route to error handling.
+Refusals fire on: unrecognised mode value, missing required fields
+in cross-check-only payload, unfenced or multiple YAML blocks,
+unrevised input (any element with empty `challenge_notes[]` in
+cross-check-only), or unsubstituted dispatcher placeholders.
 
 ## What you get back
 
@@ -139,7 +216,12 @@ modes that would otherwise be indistinguishable.
 ## Further reading
 
 - [Challenge-refine protocol](../explanation/challenge-refine-protocol.md)
-  — what the five questions catch and why the agent uses a
+  — what the five Phase B questions catch and why the agent uses a
   retained-challenge single-pass cycle.
+- [Cross-check protocol](../explanation/cross-check-protocol.md) —
+  what Phase C does, the five cross-check questions, the
+  direction-flavoured weighting, the subject-only audit trail, the
+  `cross_check_status` wrapper field, and the mode-marker contract.
 - `diagnostic-legibility/templates/legibility-element.md` (in the
-  repository) — the contract every emitted element follows.
+  repository) — the contract every emitted element follows,
+  including the v0.4.0 additive `cross_check_status` wrapper field.

@@ -187,6 +187,10 @@ agent layer, where it can evolve without touching the v0.2.0 schema.
 
 - [How to invoke the agent](../how-to/invoke-the-agent.md) —
   task-oriented dispatch guide.
+- [Cross-check protocol](cross-check-protocol.md) — Phase C, the
+  v0.4.0 cross-collection extension that runs after this Phase B
+  cycle. Reads naturally as a sibling page once you have understood
+  Phase B.
 - `diagnostic-legibility/templates/legibility-element.md` (in the
   repository) — the contract every emitted element follows.
 - [Sub-S2b design spec](../../../superpowers/specs/2026-05-28-dl-s2b-challenge-protocol-design.md)
