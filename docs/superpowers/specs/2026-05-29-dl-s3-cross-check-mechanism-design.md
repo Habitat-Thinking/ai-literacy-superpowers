@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-05-29 |
-| Status | Draft |
+| Status | Draft (revised post-diaboli, 2026-06-01) |
 | Author | claude-opus-4-7[1m] (interactive session with russmiles) |
 | Slice | S3 of the parent slicing record at `docs/superpowers/slices/diagnostic-legibility-plugin.md` (lines 53–93, 137–153) |
 | Parent issue | [#332](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/332) (Diagnostic Legibility — S3: Cross-check mechanism for mutual model correction) |
@@ -11,6 +11,35 @@
 | Marketplace listing | Unchanged at v0.4.0; `plugin_version` (pointer to `ai-literacy-superpowers`) taken from main at integration time per §9 |
 | PR ceremony | feature — full `/diaboli` (spec + code) and `/choice-cartograph` |
 | Related work | S1 shipped (PR #334, scaffold v0.1.0); sub-S2a shipped (PR #336, schema v0.2.0); sub-S2b shipped (PR #341, working agent v0.3.0). S3 ships the cross-check that turns two individually-refined collections into a mutually-corrected `LegibilityModel`. S4 (issue #333) — the human-facing `/diagnose` command — remains out of scope here. |
+| Diaboli adjudication | `docs/superpowers/objections/dl-s3-cross-check-mechanism-design.md` (10 objections, all accepted; see §0). |
+
+---
+
+## 0. Diaboli absorption
+
+This spec was reviewed under spec-mode `/diaboli` on 2026-06-01. Ten
+objections were raised (5 high, 4 medium, 1 low) and all ten accepted.
+The dispositions are absorbed into the sections named below. The
+objection record at `docs/superpowers/objections/dl-s3-cross-check-mechanism-design.md`
+remains the authoritative audit trail.
+
+| ID | Category | Section(s) updated |
+| --- | --- | --- |
+| O1 | premise | §3.4 — direction-specific failure modes named (architectural-implicit assumption in domain description; domain-concept smear in architectural element). |
+| O2 | scope | §2.4, §3.7, §4.4, §6, §7.2 — `mode: construct-only` dropped. Two modes ship: `full` (default) and `cross-check-only`. |
+| O3 | implementation | §3.5, §4.3, §5.2 — subject-only audit trail. Side-effect revisions named in the subject element's prose body, not appended on the side-effect element. |
+| O4 | implementation | §3.5, §3.6 — per-element `Cross-check skipped` sentinel removed. Asymmetric-input status lives at model level per O9. CC-applied sentinel stays (genuine per-element evidence). |
+| O5 | implementation | §4.3, §7.2 — agent self-verifies ordering at emit time; structural test loads an interleaved fixture and asserts canonical ordering. |
+| O6 | implementation | §3.7 — unrecognised `mode:` values refused with a structured refusal line. No silent fallback. |
+| O7 | specification quality | §3.6 — precondition-violation table with three response classes (asymmetric → model-level status; missing field / unrevised / placeholder → refusal; unrecognised mode → refusal). |
+| O8 | specification quality | §2.1, §2.4 — fenced YAML payload required for `cross-check-only`; unsubstituted `<DISPATCHER: ...>` placeholders are a precondition violation. |
+| O9 | alternatives | §2.2, §3.6, §7.2 — `cross_check_status: completed \| skipped_asymmetric \| not_run` added to the `LegibilityModel` wrapper. Additive to v0.2.0. Template at `diagnostic-legibility/templates/legibility-element.md` updated. |
+| O10 | specification quality | §4.3 — within-direction iteration in subject-collection YAML order; preserved in CC entries. Paired with O5's structural test. |
+
+The plugin version bump (0.3.0 → 0.4.0) is unaffected: O9's schema
+change is **additive** (no break to v0.3.0 outputs) and O2's
+mode-contract simplification **removes** surface area rather than
+adding it.
 
 ---
 
@@ -77,10 +106,18 @@ A `LegibilityModel` instance produced by the v0.3.0
 `diagnostic-legibility/templates/legibility-element.md`. Required
 shape:
 
-- `scope`, `generated_at`, `generated_by` populated (the latter two
-  may carry the `<DISPATCHER: ...>` placeholders if the dispatcher
-  has not yet substituted them — cross-check passes the placeholders
-  through unchanged).
+- `scope`, `generated_at`, `generated_by` populated.
+- In `mode: full`, the `<DISPATCHER: ISO 8601 timestamp>` and
+  `<DISPATCHER: active model identifier>` placeholders may pass
+  through unchanged (Phase A emits them; the dispatcher substitutes
+  on persist).
+- In `mode: cross-check-only`, **any unsubstituted
+  `<DISPATCHER: ...>` placeholder in `generated_at` or `generated_by`
+  is a precondition violation** (O8). Round-trip discipline requires
+  the dispatcher to substitute placeholders before resubmitting; this
+  is precisely the v0.3.0 contract for those placeholders as
+  dispatcher-fill markers, not durable values. The failure shape is
+  documented in §3.6.
 - `architectural[]` and `domain[]` each present; at least one
   non-empty.
 - Every element in either collection carries a non-empty
@@ -88,21 +125,47 @@ shape:
   entries (the canonical lowercase form per sub-S2b §3.5) or the
   single sentinel `Challenge applied; no questions surfaced changes`.
 
-Cross-check refuses to run on an input that violates these
-preconditions; the failure mode is documented in §3.6.
+Precondition violations are handled per the unified table in §3.6:
+the **asymmetric** case (one collection populated, the other empty)
+records a model-level `cross_check_status: skipped_asymmetric` and
+still emits a full YAML block; every other violation refuses with a
+structured refusal line and emits **no YAML block**.
 
 ### 2.2 Output
 
 A single markdown response containing a `LegibilityModel` instance
-serialised as YAML, conforming to the **same** v0.2.0 schema. No
-schema change. The differences from the input are confined to
-`challenge_notes[]` on individual elements: where the cross-check
-surfaced a correction, a new entry is appended with a `CC<N>` prefix
-(§3.2); where the cross-check ran cleanly on an element, the
-cross-check sentinel `Cross-check applied; no questions surfaced
-changes` is appended; where the cross-check did not run on an element
-(the asymmetric-input case in §3.6), `challenge_notes[]` is left
-unchanged.
+serialised as YAML, conforming to the v0.2.0 schema with one
+**additive** extension: the wrapper carries a new
+`cross_check_status` field with one of three legal values
+(O9):
+
+| Value | Meaning |
+| --- | --- |
+| `completed` | Phase C ran in full against both collections; per-element CC<N> entries and/or the CC-applied sentinel record what it found. |
+| `skipped_asymmetric` | Phase C was a no-op because exactly one collection was non-empty. The rest of the model is valid v0.3.0 output. |
+| `not_run` | Phase C did not run. Reserved for v0.3.0-compatible outputs and the `mode: full` invocation where Phase C is bypassed by a future explicit opt-out. At v0.4.0 the agent itself only emits `completed` or `skipped_asymmetric`; consumers should treat the field's absence as `not_run` for backwards-compatibility with v0.3.0 outputs. |
+
+The field is **optional** under the schema (so v0.3.0 outputs without
+it remain valid against v0.4.0 consumers); v0.4.0 agent outputs
+always include it. The schema template at
+`diagnostic-legibility/templates/legibility-element.md` is updated to
+document the new field (see §7.2).
+
+The differences from the input are otherwise confined to
+`challenge_notes[]` on individual elements:
+
+- Where the cross-check surfaced a correction, a new entry is
+  appended on the **subject** element with a `CC<N>` prefix (§3.2).
+  Subject-only audit trail: when a critique on subject X surfaces a
+  side-effect revision on sibling Y, the side-effect is **named in
+  X's prose body**; Y's `challenge_notes[]` is not amended (O3).
+- Where the cross-check ran cleanly on an element, the cross-check
+  sentinel `Cross-check applied; no questions surfaced changes` is
+  appended.
+- Where the cross-check did not run (asymmetric input — see §3.6),
+  per-element `challenge_notes[]` is **left unchanged**; the no-op is
+  recorded at the model level via `cross_check_status:
+  skipped_asymmetric`.
 
 The dispatcher persists the output the same way it did at v0.3.0 —
 the agent does not write files. This continues the *agent-emit +
@@ -122,26 +185,58 @@ S4 / #333). The cross-check is dispatched the same way the v0.3.0
 self-challenge is: bare `Task` tool with `subagent_type:
 diagnostic-legibility` and an explicit mode marker in the prompt.
 
-The decision in this slice (§3.5 names the invocation contract):
+Two modes ship at v0.4.0 (O2):
 
-- **Mode marker** — the prompt's first line is one of:
-  - `mode: full` — run both Phase A (construction) and Phase B
-    (self-challenge) from v0.3.0, **then** Phase C (cross-check)
-    against the freshly-built collections. This is the new default
-    when invoked without an explicit `--input` block.
-  - `mode: cross-check-only` — read the supplied `LegibilityModel`
-    YAML from the prompt body, run only Phase C against it, and emit
-    the cross-checked YAML. Used when the v0.3.0 output has already
-    been persisted and the dispatcher wants to add cross-check
-    evidence without re-running construction.
+- **`mode: full`** — run Phase A (construction) and Phase B
+  (self-challenge) from v0.3.0, then Phase C (cross-check) against the
+  freshly-built collections. This is the new default when invoked
+  without an explicit mode marker. `mode: full` is a strict superset
+  of v0.3.0 behaviour: a dispatcher that does not know about
+  cross-check still gets a working two-collection output, with
+  cross-check evidence as a free upgrade.
+- **`mode: cross-check-only`** — read a supplied `LegibilityModel`
+  YAML, run only Phase C against it, and emit the cross-checked YAML.
+  Used when the v0.3.0 output has already been persisted and the
+  dispatcher wants to add cross-check evidence without re-running
+  construction.
 
 Absent any `mode:` line, the prompt is interpreted as `mode: full`.
-This preserves backwards compatibility with v0.3.0 invocations: a
-dispatcher that does not know about cross-check still gets a working
-two-collection output, plus the cross-check notes as a free upgrade.
-A dispatcher that wants the v0.3.0 behaviour exactly (no cross-check)
-adds `mode: construct-only`, the third recognised value, which skips
-Phase C.
+
+**Payload shape for `cross-check-only`** (O8). The supplied
+`LegibilityModel` YAML **must** appear as a single fenced code block
+immediately after the `mode: cross-check-only` line:
+
+````text
+mode: cross-check-only
+
+```yaml
+scope: "./src/auth/"
+generated_at: "2026-05-29T10:14:00Z"
+generated_by: "diagnostic-legibility / claude-opus-4-7[1m]"
+architectural:
+  - ...
+domain:
+  - ...
+```
+````
+
+The following payload shapes are **rejected** (precondition violation
+per §3.6, class (b)):
+
+- Prose-surrounded YAML (any non-whitespace text between the `mode:`
+  line and the fenced block, or between the closing fence and the end
+  of the prompt body).
+- Inline / unfenced YAML.
+- Multiple YAML code blocks (the first one wins is **not** the rule;
+  the agent refuses).
+
+A v0.3.0 dispatcher that wants the v0.3.0 output exactly (no
+cross-check notes) is **not** supported at v0.4.0. The choice in
+adjudication (O2) was to drop `mode: construct-only` rather than ship
+a third surface with no named consumer; if a v0.3.0-exact consumer
+materialises later, the construct-only mode can be added in the same
+PR as that consumer. The `mode: full` superset semantics mean
+existing dispatchers see cross-check as an upgrade, not a break.
 
 A `/diagnose` slash-command that wraps these modes and chooses for the
 human lands in parent S4. The how-to page in this slice (§7.1)
@@ -247,54 +342,57 @@ evidence allows (§4.3). The mechanism is the same; only the framing
 content differs (cross-collection mutual challenge rather than
 per-element self-challenge).
 
-### 3.3 Schema impact — `CC<N>` prefix, no schema change
+### 3.3 Schema impact — `CC<N>` prefix plus one additive wrapper field
 
 The v0.2.0 schema is **unopinionated about the string content of
 `challenge_notes[]`**. Sub-S2b exploited this by establishing the
 `Q<N> (question-name):` prefix convention for self-challenge notes
-without changing the schema. S3 exploits the same affordance: the
-cross-check appends entries to the existing `challenge_notes[]` field
-with a `CC<N>` prefix instead of adding a new `cross_check_notes[]`
-field.
+without changing the schema. S3 continues to exploit that affordance
+for per-element evidence — the cross-check appends entries to the
+existing `challenge_notes[]` field with a `CC<N>` prefix — and
+introduces one **additive** wrapper field, `cross_check_status`, on
+the `LegibilityModel` (not on `LegibilityElement`) to carry the
+**model-level** fact "Phase C did / did not / could not run" (O9).
 
-**Why no schema change.** Three reasons:
+**Why the prefix-on-existing approach for per-element notes.** Three
+reasons:
 
 1. **The schema is the contract for two downstream consumers** — the
    cross-check (this slice) and the surfacing command (S4, #333). If
-   S3 changes the schema, S4 has to be re-planned against the new
-   shape. Keeping `challenge_notes[]` as the single accumulator field
-   means S4 can pattern-match by prefix (`Q<N>` for self-challenge,
-   `CC<N>` for cross-check, sentinels for clean runs) without caring
-   whether the schema grew.
+   S3 reshaped `LegibilityElement`, S4 would have to be re-planned
+   against the new shape. Keeping `challenge_notes[]` as the single
+   accumulator field means S4 can pattern-match by prefix (`Q<N>` for
+   self-challenge, `CC<N>` for cross-check, sentinels for clean runs)
+   without caring whether the schema grew.
 
 2. **The schema already encodes the contract through sentinels.**
    The v0.3.0 self-challenge protocol distinguishes "challenge ran
    cleanly" (sentinel) from "challenge never ran" (empty list). The
-   same disambiguation device works for cross-check: a fresh sentinel
-   distinguishes "cross-check ran cleanly" from "cross-check never
-   ran" (§3.5). No new field is needed to carry that distinction.
+   same disambiguation device works for cross-check at the
+   per-element layer: the CC-applied sentinel records the
+   ran-cleanly-on-this-element case (§3.5).
 
-3. **A new field would split the audit trail.** Today, a human or
-   downstream consumer reading one element sees the complete history
-   of how the element was challenged in one list. A separate
-   `cross_check_notes[]` field would force consumers to interleave
-   two lists to reconstruct the same history. The single-list shape
-   is the simpler audit surface.
+3. **A new per-element field would split the audit trail.** Today,
+   a human or downstream consumer reading one element sees the
+   complete history of how the element was challenged in one list. A
+   separate `cross_check_notes[]` field would force consumers to
+   interleave two lists to reconstruct the same history. The
+   single-list shape is the simpler audit surface.
 
-**Defending the choice against the alternative.** A dedicated
-`cross_check_notes[]` field would make the schema *explicitly* aware
-of the cross-check phase, which has documentation value: a reader
-encountering the schema for the first time would learn from the
-field names that two challenge phases exist. The trade-off is real
-but bounded. The schema reference page (the doc-site reference
-quadrant, which does not yet exist for this plugin) will name the
-`Q<N>` and `CC<N>` prefix conventions explicitly in v0.4.0's docs, so
-the documentation value is recoverable without a schema change. The
-*cost* of a schema change at v0.4.0 is replanning S4 and any future
-runtime validator against a new shape, which is concrete and
-asymmetric. Shipping the prefix convention is cheaper and reversible
-(a future slice can split the field if a measured signal justifies
-it).
+**Why the additive wrapper field for the model-level fact** (O9).
+The fact "Phase C ran / was skipped / did not run" applies to the
+*whole model*, not per-element. Recording it as a per-element
+sentinel would repeat model-level information at element granularity
+(N records per model for one fact). The wrapper-field alternative
+carries the same disambiguation at one record per model without
+touching `LegibilityElement`. The §3.3 defence above still holds for
+per-element history; `cross_check_status` is orthogonal to it.
+
+The field is **optional** for backwards-compatibility: v0.3.0 outputs
+that lack it remain valid; v0.4.0 outputs always include it. The
+schema template at `diagnostic-legibility/templates/legibility-element.md`
+is updated to document the field on the `LegibilityModel` wrapper
+(see §7.2).
 
 ### 3.4 Direction-flavoured cross-check questions
 
@@ -302,7 +400,9 @@ The cross-check is **asymmetric**: architectural critiques of domain
 elements probe for different failure modes than domain critiques of
 architectural elements. The agent operates on this asymmetry through
 **direction-flavoured weighting**, mirroring sub-S2b §3.5's
-dimension-flavoured weighting in Phase B.
+dimension-flavoured weighting in Phase B — but, per the adjudicated
+diaboli objection O1, the direction-specific failure modes are named
+explicitly here, not inherited by structural analogy from S2b.
 
 **The five cross-check questions (CC1–CC5):**
 
@@ -344,21 +444,41 @@ dimension-flavoured weighting in Phase B.
    sense the domain element does not support — one of them needs to
    revise.
 
-**The two directions** the cross-check runs in:
+**The two directions** the cross-check runs in, and the
+direction-specific failure modes the weighting catches (O1):
 
-- **Architectural-critiques-domain** (Direction A→D). Each
-  architectural element is held up against the domain collection; the
-  five CC questions are asked with the architectural element as the
-  *subject* and the domain collection as the *frame*. CC1 weights
-  heavily here (architectural smearing often shows up as colliding
-  with domain ubiquitous-language terms).
+- **Architectural-critiques-domain (Direction A→D).** Each
+  architectural element is held up against the domain collection;
+  the five CC questions are asked with the architectural element as
+  the *subject* and the domain collection as the *frame*. **CC1
+  weights heavily here**, because the direction-specific failure
+  mode it catches is **architectural-implicit assumption in domain
+  description** — a domain element whose description implicitly
+  assumes architectural behaviours (lifecycle hooks, persistence
+  ordering, transactional boundaries) that the architectural
+  collection does not commit to. The architectural collection is
+  the frame against which the domain description's implicit
+  assumptions can be falsified. This is a genuinely cross-collection
+  failure mode: single-collection Phase B self-challenge does not
+  catch it, because the domain element looks internally coherent
+  until compared against what the architectural collection actually
+  says.
 
-- **Domain-critiques-architectural** (Direction D→A). Each domain
+- **Domain-critiques-architectural (Direction D→A).** Each domain
   element is held up against the architectural collection; the five
-  CC questions are asked with the domain element as the *subject* and
-  the architectural collection as the *frame*. CC5 weights heavily
-  here (domain description drift often shows up as describing a
-  concept in a way the architectural elements contradict).
+  CC questions are asked with the domain element as the *subject*
+  and the architectural collection as the *frame*. **CC5 weights
+  heavily here**, because the direction-specific failure mode it
+  catches is **domain-concept smear in architectural element** — an
+  architectural element whose description silently conflates
+  infrastructure with domain meaning that the domain collection
+  explicitly defines (e.g. an architectural `SessionStore`
+  description that uses "session" in a sense the domain `Session`
+  element rules out). The domain collection is the frame against
+  which the architectural description's conceptual conflation is
+  visible. Again, single-collection Phase B self-challenge does not
+  catch it, because the architectural element looks internally
+  coherent until the domain ubiquitous-language is held up to it.
 
 The five questions are dimension-agnostic in form but the **weighting
 shifts by direction**, mirroring sub-S2b §3.5's per-element weighting
@@ -366,95 +486,138 @@ in Phase B. This is the operationalisation of the "architectural vs
 domain are not symmetric" intuition in option (d) above — without
 requiring a separate orchestrator pass.
 
-### 3.5 Sentinel for cross-check-ran-cleanly
+### 3.5 Sentinel for cross-check-ran-cleanly, and audit-trail discipline
 
 Mirroring sub-S2b §3.5's `Challenge applied; no questions surfaced
-changes` sentinel, S3 introduces:
+changes` sentinel, S3 introduces **one** per-element sentinel:
 
 ```text
 Cross-check applied; no questions surfaced changes
 ```
 
-The cross-check sentinel is appended **per element** when all five CC
-questions ran against that element (in either direction or both) and
-none surfaced a change. The wording mirrors the v0.3.0 sentinel
-exactly to make the parallel obvious; the difference is the verb
-("Cross-check applied" vs "Challenge applied").
+The cross-check sentinel is appended **per subject element** when all
+five CC questions ran against that element (in either direction or
+both) and none surfaced a change. The wording mirrors the v0.3.0
+sentinel exactly to make the parallel obvious; the difference is the
+verb ("Cross-check applied" vs "Challenge applied").
 
-The disambiguation rule that the v0.3.0 schema is load-bearing on:
+**Subject-only audit trail (O3).** `CC<N>` entries are recorded on
+the **subject** element only — the element being critiqued in the
+current direction. When the cross-check against subject X surfaces a
+side-effect revision on sibling Y in the opposite collection, the
+**subject element's** `CC<N>` prose body names the side-effect
+explicitly (e.g. "CC5 (mutual description integrity): revised
+description; this critique also surfaced a tweak to `Y` in the other
+collection — see `Y`'s Phase A revision"). The side-effect element
+**does not** receive a `CC<N>` entry. This preserves the §3.3 defence
+("reading one element's `challenge_notes[]` sees its complete
+history") with one author per CC entry rather than two write paths
+per element.
+
+**The CC-skipped sentinel is removed** (O4 + O9). The
+asymmetric-input case (one collection empty, the other populated) is
+recorded at the model level via
+`cross_check_status: skipped_asymmetric` (§3.6); no per-element
+sentinel is appended in that case. The only per-element CC sentinel
+that survives is **CC-applied**, which is genuine per-element
+evidence ("this element was reached cleanly by cross-check"). The
+sibling-sentinel ambiguity that O4 named (two strings differing only
+in one verb, both prefix-matching to "cross-check ran") is dissolved
+by removing one of them.
+
+The disambiguation rule that the v0.4.0 schema is load-bearing on:
 
 - **Empty `challenge_notes[]`** — the self-challenge protocol did not
-  run. Still meaningful at v0.4.0 (e.g. an incomplete output from a
-  failed agent invocation).
+  run on this element. Still meaningful at v0.4.0 (e.g. an incomplete
+  output from a failed agent invocation).
 - **One or more `Q<N>` entries, possibly followed by the
-  Q-sentinel** — the self-challenge ran. Cross-check has not yet run.
-- **One or more `CC<N>` entries, or the CC-sentinel, present** — the
-  cross-check ran. (`Q<N>` or Q-sentinel must also be present; the
-  cross-check refuses to run on unrevised input per §2.1.)
+  Q-sentinel** — the self-challenge ran. Cross-check status is read
+  from the model-level field, **not** inferred from the absence of
+  CC entries.
+- **One or more `CC<N>` entries, or the CC-applied sentinel,
+  present** — the cross-check ran on this element and at least
+  reached it. (`Q<N>` or Q-sentinel is required to also be present;
+  the cross-check refuses to run on unrevised input per §2.1 and
+  §3.6.)
+- **Model-level `cross_check_status: skipped_asymmetric`** — Phase C
+  was a no-op. The populated collection's elements may carry no CC
+  entries at all; that is expected, not a failure mode.
 
-The downstream consumer (S4's `/diagnose` command) groups notes by
-prefix to render them in a structured report: Q-notes describe what
-the element was challenged on within its own collection; CC-notes
-describe what the cross-check revised when the other collection
-challenged it. The structural assertion that **CC-notes always follow
-Q-notes** in any element's `challenge_notes[]` is part of the contract
-this spec ships.
+The downstream consumer (S4's `/diagnose` command) groups per-element
+notes by prefix to render them in a structured report — Q-notes
+describe what the element was challenged on within its own
+collection; CC-notes describe what the cross-check revised when the
+other collection challenged it (with subject-only audit trail) — and
+reads the model-level `cross_check_status` to distinguish "cross-check
+completed" from "cross-check skipped (asymmetric input)" without
+prefix-matching on similar strings.
 
-### 3.6 Asymmetric output handling — the no-op case
+**The structural assertion that CC-notes always follow Q-notes** in
+any element's `challenge_notes[]` is part of the contract this spec
+ships. Enforcement at two layers (O5) — agent self-verification at
+emit time (§4.3) and a fixture-based structural test that loads an
+interleaved input and asserts canonical ordering (§7.2) — converts
+the asserted Then to a verifier.
 
-When the v0.3.0 self-challenge produces an asymmetric output (one
-collection populated, the other empty, per sub-S2b §4.3 Phase A step
-5), Phase C is a **no-op**. Cross-check requires both collections to
-be non-empty: there is nothing to critique architectural elements
-against if the domain collection is empty, and vice versa.
+### 3.6 Precondition violations — unified table
 
-The cross-check does not silently skip in this case. It explicitly
-records the no-op by appending the following sentinel to every
-element in the populated collection:
+Per the adjudicated diaboli objection O7, the cross-check's
+precondition violations fall into three response classes. §2.1 names
+the preconditions; this table names each class's failure shape.
+
+| Class | Trigger | Response | YAML emitted? |
+| --- | --- | --- | --- |
+| (a) Asymmetric input | `architectural[]` is non-empty and `domain[]` is empty (or vice versa) per sub-S2b §4.3 Phase A step 5. | Phase C is a **no-op**. The model-level field `cross_check_status: skipped_asymmetric` is set. No `CC<N>` entries or CC-applied sentinels are appended to any element. Phase A's output (or, in `cross-check-only` mode, the supplied YAML) is otherwise passed through unchanged. | **Yes — full YAML.** This is the only precondition-violation class that still emits a `LegibilityModel`. |
+| (b) Missing field, unrevised input, or unsubstituted placeholder | Any required top-level field (`scope`, `generated_at`, `generated_by`, `architectural[]`, `domain[]`) absent; **or** in `mode: cross-check-only`, any element with empty `challenge_notes[]`; **or** in `mode: cross-check-only`, any unsubstituted `<DISPATCHER: ISO 8601 timestamp>` or `<DISPATCHER: active model identifier>` placeholder in `generated_at` or `generated_by` (O8); **or** in `mode: cross-check-only`, a payload that is not a single fenced YAML code block immediately after the `mode:` line (O8). | The agent emits a **structured refusal line** naming the violated precondition and the specific value(s) at fault. No phase runs. | **No.** Programmatic dispatchers see the absence of YAML and route to error handling. |
+| (c) Unrecognised mode value | The first line is `mode: <something>` where `<something>` is not one of `full`, `cross-check-only`. | Per O6, the agent emits a **structured refusal line** naming the unrecognised value and the legal values (`full`, `cross-check-only`). No phase runs. No silent fallback to `mode: full`. | **No.** |
+
+**Shape of the refusal line.** A single line of the form:
 
 ```text
-Cross-check skipped; only one collection present
+diagnostic-legibility refusal: <one-sentence reason, naming the violated precondition and the offending value(s)>.
 ```
 
-This is a third recognised string in the `challenge_notes[]` field —
-distinct from `CC<N>` entries and distinct from the `Cross-check
-applied; no questions surfaced changes` sentinel. The disambiguation
-serves the downstream consumer:
+The refusal line is structured so a programmatic dispatcher
+pattern-matching on the absence of a YAML code block plus the
+presence of `diagnostic-legibility refusal:` can route the response
+to error handling without parsing prose. Aligns with
+choice-cartographer's adjudicated O7 (operational shape C) preferring
+structured signals over prose narration.
 
-- **`CC<N>` entries or CC-applied sentinel present** — cross-check
-  ran fully; the element has been mutually corrected.
-- **CC-skipped sentinel present** — cross-check could not run; the
-  element is only individually refined.
-- **Nothing CC-prefixed at all** — the dispatcher invoked the agent
-  with `mode: construct-only` and explicitly opted out of
-  cross-check. Distinct from "the input was asymmetric".
-
-The `(empty scope)` degenerate case (sub-S2b §3.6) is one
-specialisation of the asymmetric-output case: the placeholder element
-under `architectural[]` has no counterpart in `domain[]`, so Phase C
-appends the CC-skipped sentinel to it. The result is well-formed YAML
-that still pattern-matches on `name == "(empty scope)"` for
-downstream consumers, and now also carries explicit evidence that the
-cross-check was not run.
+**The `(empty scope)` degenerate case** (sub-S2b §3.6) is one
+specialisation of the asymmetric-input case (a): the placeholder
+element under `architectural[]` has no counterpart in `domain[]`,
+so Phase C is a no-op and `cross_check_status: skipped_asymmetric`
+is set. The output remains well-formed YAML that pattern-matches on
+`name == "(empty scope)"` for downstream consumers, with the
+model-level field carrying the explicit evidence that the
+cross-check did not run.
 
 ### 3.7 The `mode:` marker and dispatcher contract
 
-Per §2.4, the agent now recognises three modes via the `mode:` prompt
-marker:
+Per §2.4, the agent recognises **two** modes via the `mode:` prompt
+marker (O2):
 
 - `mode: full` — Phase A + Phase B + Phase C. Default when absent.
-- `mode: construct-only` — Phase A + Phase B only (the v0.3.0
-  behaviour). Used when the dispatcher wants the original two-model
-  output without cross-check evidence.
+  Strict superset of v0.3.0 behaviour.
 - `mode: cross-check-only` — Phase C only, against a `LegibilityModel`
-  YAML supplied in the prompt body. Used when a prior v0.3.0 output
-  has been persisted and the dispatcher wants to layer cross-check
+  YAML supplied as a fenced YAML code block immediately after the
+  `mode:` line (per §2.4 and O8). Used when a prior v0.3.0 output has
+  been persisted and the dispatcher wants to layer cross-check
   evidence on top without re-running construction.
 
 The mode marker is the **first line** of the prompt; the `scope:`
-line (or, for `cross-check-only`, the YAML payload) follows. The
-parser is forgiving: an unrecognised mode value falls back to `full`
-with a warning sentence in the response prose (not in the YAML).
+line (or, for `cross-check-only`, the fenced YAML payload) follows.
+
+**Unrecognised mode values are refused** (O6). An unrecognised
+`mode:` value is a precondition violation, class (c) in §3.6. The
+agent emits the structured refusal line and runs no phase. There is
+**no silent fallback** to `mode: full`. Programmatic dispatchers
+benefit from explicit rejection: a dispatcher that mistypes
+`mode: cross-check_only` (underscore for hyphen) sees the refusal and
+can fix the prompt, rather than discovering — too late — that Phase
+A re-ran construction over what was meant to be a cross-check-only
+invocation.
 
 **Why this instead of a `--mode` flag or a separate agent.** A flag
 would need a slash-command wrapper to be ergonomic; at v0.4.0 there
@@ -463,7 +626,11 @@ prompt surface for a capability that is fundamentally extending the
 same agent. The prompt-marker approach is the lightest mechanism that
 preserves v0.3.0 backwards compatibility (no `mode:` line ≈ `mode:
 full`, which is a strict superset of v0.3.0 behaviour) and gives a
-dispatcher a way to opt down to construct-only when needed.
+dispatcher a way to layer cross-check on persisted output via
+`cross-check-only`. The `construct-only` mode is **dropped** at
+v0.4.0 (O2): no consumer is named for it, and adding it later in the
+same PR as a v0.3.0-exact consumer (if one materialises) is cheaper
+than shipping dead surface area now.
 
 ## 4. The agent file
 
@@ -483,14 +650,14 @@ and `(empty scope)`. Draft frontmatter:
 ```yaml
 ---
 name: diagnostic-legibility
-description: Use to build two refined models of a codebase scope — architectural moving parts and domain concepts — using the schema at diagnostic-legibility/templates/legibility-element.md. Constructs each element, applies a five-question self-challenge cycle (Q<N> prefix on notes) and a five-question cross-check cycle (CC<N> prefix on notes). Degenerate scopes use the literal `(empty scope)` sentinel. Returns a LegibilityModel as YAML; the dispatching command or human writes the file. Modes: `full` (default), `construct-only`, `cross-check-only`.
+description: Use to build two refined models of a codebase scope — architectural moving parts and domain concepts — using the schema at diagnostic-legibility/templates/legibility-element.md. Constructs each element, applies a five-question self-challenge cycle (Q<N> prefix on notes) and a five-question cross-check cycle (CC<N> prefix on notes). Records model-level cross_check_status (completed | skipped_asymmetric | not_run). Degenerate scopes use the literal `(empty scope)` sentinel. Returns a LegibilityModel as YAML; the dispatching command or human writes the file. Modes: `full` (default), `cross-check-only`.
 tools: Read, Glob, Grep
 model: inherit
 ---
 ```
 
 The tool boundary is unchanged. The `model: inherit` line is
-unchanged.
+unchanged. Two modes (not three) appear in the description per O2.
 
 ### 4.3 New section — Phase C
 
@@ -514,48 +681,81 @@ The framing is the same mechanism as Phase B's: an explicit re-frame
 that names the cross-check as separate work, so the model in the
 same context does not rubber-stamp its own prior output.
 
-For each direction (A→D, then D→A — order is fixed for determinism
-of the audit trail), iterate the elements of the *subject*
-collection. For each subject element, apply the **five CC questions**
-(§3.4) with **direction-flavoured weighting** as an explicit
-per-element step:
+**Algorithm.**
 
-- **Direction A→D** (architectural element as subject): weight
-  **CC1 (boundary contradiction)** heavily — probe for collisions
-  between architectural names and domain ubiquitous-language terms.
-- **Direction D→A** (domain element as subject): weight **CC5
-  (mutual description integrity)** heavily — probe for the subject
-  description using a term in a sense the other collection
-  contradicts.
-- The remaining three (CC2 evidence overlap, CC3 cross-confounders,
-  CC4 cross-confidence calibration) are asked of every element with
-  equal weight.
+1. **Precondition check.** Apply the §3.6 precondition-violation
+   table. If class (a) (asymmetric input) triggers, set the
+   model-level `cross_check_status: skipped_asymmetric` and skip to
+   step 4 (emit). If class (b) or (c) triggers, emit the structured
+   refusal line and stop — no YAML.
 
-Where a question surfaces a change, **revise the subject element** and
-append a `challenge_notes[]` entry prefixed `CC<N> (question-name):`
-exactly per §3.5. Where all five surface no changes for an element,
-append the cross-check sentinel `Cross-check applied; no questions
-surfaced changes` verbatim.
+2. **Direction order.** Run **A→D first, then D→A**. The direction
+   order is fixed for determinism of the audit trail.
 
-For elements in the *non-subject* collection that the cross-check
-revised as a side-effect of a critique (e.g. a CC5 revision to a
-domain element that surfaces a corresponding revision in an
-architectural element), append the corresponding `CC<N>` entry to
-that element too, naming the bidirectional change in the prose body.
+3. **Per-direction iteration order** (O10). Within each direction,
+   iterate the elements of the *subject* collection in **the order
+   they appear in the subject collection's YAML array**. The
+   cross-check output preserves this order in the resulting `CC<N>`
+   entries — across elements, the per-element CC entries appear in
+   subject-collection YAML order in the emitted output.
 
-After both directions complete, emit the complete `LegibilityModel`
-YAML.
+4. **Per-subject-element challenge.** For each subject element,
+   apply the **five CC questions** (§3.4) with
+   **direction-flavoured weighting** as an explicit per-element step:
+
+   - **Direction A→D** (architectural element as subject): weight
+     **CC1 (boundary contradiction)** heavily — probe for
+     architectural-implicit assumption in domain descriptions per
+     §3.4.
+   - **Direction D→A** (domain element as subject): weight **CC5
+     (mutual description integrity)** heavily — probe for
+     domain-concept smear in architectural element descriptions
+     per §3.4.
+   - The remaining three (CC2 evidence overlap, CC3 cross-confounders,
+     CC4 cross-confidence calibration) are asked of every element
+     with equal weight.
+
+5. **Subject-only audit trail** (O3). Where a question surfaces a
+   change on the **subject** element, revise the subject and append a
+   `challenge_notes[]` entry on the **subject** prefixed
+   `CC<N> (question-name):` exactly per §3.5. If the critique
+   surfaces a **side-effect revision** on a sibling Y in the
+   opposite collection, revise Y's `description` (or other field) in
+   place, but **do not** append a `CC<N>` entry on Y. Name the
+   side-effect in the subject's `CC<N>` prose body, naming Y by
+   `name`. Where all five questions surface no changes for an
+   element, append the cross-check sentinel
+   `Cross-check applied; no questions surfaced changes` verbatim
+   on the subject.
+
+6. **Emit-time self-verification** (O5). Before serialising the
+   `LegibilityModel`, the agent verifies that every element's
+   `challenge_notes[]` has all `Q<N>` entries (and the Q-sentinel if
+   present) ordered **before** all `CC<N>` entries (and the
+   CC-applied sentinel if present). On detected violation, the agent
+   **re-orders in place** rather than emitting unordered output. The
+   ordering rule is part of the contract this spec ships; the
+   emit-time check turns the asserted Then into a verifier.
+
+7. **Model-level status field.** Set `cross_check_status: completed`
+   on the wrapper if both directions ran. (Class (a) sets
+   `skipped_asymmetric` at step 1.)
+
+8. **Emit.** Emit the complete `LegibilityModel` YAML with the
+   model-level `cross_check_status` field included.
 
 ### 4.4 New / modified sections
 
 - `## The five cross-check questions` — new section, mirrors the
   existing `## The five-question challenge` section structurally.
   Names CC1–CC5 with one paragraph per question explaining the
-  failure mode it targets. The direction-flavoured weighting is
-  repeated here as a one-paragraph reminder; the operational guidance
-  lives in Phase C above.
+  failure mode it targets. The direction-flavoured weighting and
+  the direction-specific failure modes (architectural-implicit
+  assumption; domain-concept smear) are restated here as a
+  one-paragraph reminder; the operational guidance lives in Phase C
+  above.
 
-- `## Honesty rules` — extend with two bullets:
+- `## Honesty rules` — extend with three bullets:
   - **`CC<N>` prefix convention.** Same shape as `Q<N>`: capital
     `CC`, a digit 1–5, single space, `(question-name)` lowercase in
     parens, colon, space, prose body. Canonical forms: `CC1 (boundary
@@ -564,61 +764,84 @@ YAML.
     `CC5 (mutual description integrity):`.
   - **Cross-check refuses unrevised input.** If `mode:
     cross-check-only` is set and the supplied YAML carries any
-    element with empty `challenge_notes[]`, the agent emits a refusal
-    line and skips Phase C. The dispatcher must re-run construction
-    first.
+    element with empty `challenge_notes[]`, the agent emits the
+    structured refusal line per §3.6 class (b) and emits **no YAML**.
+    The dispatcher must re-run construction first.
+  - **Subject-only audit trail** (O3). `CC<N>` entries are written
+    to the **subject** element only. Side-effect revisions on
+    sibling elements are described in the subject's CC prose body,
+    naming the side-effect target by `name`. The sibling element's
+    `challenge_notes[]` is not amended.
 
-- `## Anti-patterns` — extend with three new entries:
+- `## Anti-patterns` — extend with four new entries:
   - **Padded `CC<N>` notes** — appending no-op cross-check notes to
     look diligent. The CC-applied sentinel covers the clean case;
     `CC<N>` entries are only for revisions that actually happened.
-  - **Cross-check on asymmetric input without the skip sentinel** —
-    leaving an element's `challenge_notes[]` unchanged when
-    cross-check could not run. Use the `Cross-check skipped; only one
-    collection present` sentinel instead.
+  - **Per-element CC-skipped sentinel** (O4) — appending any
+    "Cross-check skipped" text to an element's `challenge_notes[]`.
+    The asymmetric-input case is recorded at the model level via
+    `cross_check_status: skipped_asymmetric`. There is **no
+    per-element CC-skipped sentinel** at v0.4.0.
   - **Mixing `Q<N>` and `CC<N>` order** — `CC<N>` entries must
     always appear *after* `Q<N>` entries in any element's
     `challenge_notes[]`. The temporal ordering (self-challenge first,
-    cross-check second) is part of the audit-trail contract.
+    cross-check second) is part of the audit-trail contract. The
+    agent self-verifies this ordering at emit time (§4.3 step 6) and
+    re-orders in place if needed.
+  - **Bidirectional CC writes on sibling elements** (O3) — appending
+    a `CC<N>` entry on a side-effect target. Side-effects are named
+    in the subject's prose body only.
+
+  Note: the v0.3.0 spec's draft anti-pattern about "Cross-check on
+  asymmetric input without the skip sentinel" is **removed**, because
+  the per-element skip sentinel no longer exists.
 
 ### 4.5 Length
 
-Target: 280–360 lines (up from ~245 at v0.3.0). The agent file grows
-by roughly 60–110 lines for Phase C, the five CC questions, and the
-mode-marker handling. Length stays within the same order of
-magnitude as the sibling read-only emitters; a few extra lines on
-protocol clarity remain good value for the token cost.
+Target: 290–380 lines (up from ~245 at v0.3.0). The agent file grows
+by roughly 70–130 lines for Phase C, the five CC questions, the
+mode-marker handling, the §3.6 precondition-violation logic, and the
+emit-time ordering self-verification step. Length stays within the
+same order of magnitude as the sibling read-only emitters; a few
+extra lines on protocol clarity remain good value for the token cost.
 
 ## 5. Worked example (for the agent file and docs)
 
 ### 5.1 Input
 
 A v0.3.0 `LegibilityModel` produced by the agent for scope
-`./src/auth/`, with both collections non-empty and every element
-carrying `Q<N>` notes or the Q-sentinel. The dispatcher invokes the
-agent in `cross-check-only` mode with the YAML payload.
+`./src/auth/`, with both collections non-empty, every element
+carrying `Q<N>` notes or the Q-sentinel, and the `generated_at` /
+`generated_by` placeholders **substituted** (per §2.1 + O8). The
+dispatcher invokes the agent in `cross-check-only` mode, supplying
+the persisted YAML as a fenced code block immediately after the
+`mode: cross-check-only` line.
 
 ### 5.2 Expected output shape (truncated)
 
 ```yaml
 scope: "./src/auth/"
-generated_at: "<DISPATCHER: ISO 8601 timestamp>"
-generated_by: "diagnostic-legibility / <DISPATCHER: active model identifier>"
+generated_at: "2026-05-29T10:14:00Z"
+generated_by: "diagnostic-legibility / claude-opus-4-7[1m]"
+cross_check_status: completed
 architectural:
   - name: AuthenticationService
     description: |
-      The HTTP-level entry point for credential validation...
+      The HTTP-level entry point for credential validation. Reads
+      credential pairs (username + password) from the credentials
+      store...
     evidence:
       - path: src/auth/service.py
         excerpt: "class AuthenticationService:"
     confidence: high
     challenge_notes:
       - "Q1 (boundary): initially smeared AuthenticationService and SessionStore into one element; revised to keep them separate."
-      - "CC5 (mutual description integrity): domain `Credential` describes credentials as 'username + password presented at login'; revised architectural description from 'the credentials store' to 'reads credential pairs from the credentials store' to align."
+      - "CC5 (mutual description integrity): domain `Credential` describes credentials as 'username + password presented at login'; revised architectural description from 'the credentials store' to 'reads credential pairs (username + password) from the credentials store' to align. This critique also surfaced a Phase A description tweak on `Credential` in the domain collection — see `Credential`'s description above."
 domain:
   - name: Credential
     description: |
-      A username + password pair presented at login...
+      A username + password pair presented at login. Validated by
+      AuthenticationService against the credentials store...
     evidence:
       - path: src/auth/models.py
         excerpt: "@dataclass\nclass Credential:"
@@ -628,10 +851,25 @@ domain:
       - "Cross-check applied; no questions surfaced changes"
 ```
 
-The example shows: a `CC5` revision on the architectural element
-where the domain element's description forced a description tweak; a
-CC-applied sentinel on the domain element where cross-check ran
-cleanly; the canonical lowercase-name parenthesised prefix.
+The example shows (revised per O3, O4, O9):
+
+- The model-level `cross_check_status: completed` field on the wrapper.
+- A `CC5` entry on the **subject** architectural element
+  (`AuthenticationService`), authored against the D→A direction with
+  `Credential` as subject. **Per O3, the side-effect revision on
+  `AuthenticationService` (the subject of A→D in that exchange — or,
+  here, the receiving side of the D→A critique) is named in the
+  subject's prose body.** In this example, `Credential`'s description
+  was revised (Phase A tweak surfaced by D→A critique on
+  `AuthenticationService`'s description); the subject's CC entry
+  names the sibling tweak. No `CC<N>` entry is added on the
+  side-effect target.
+- A CC-applied sentinel on the `Credential` element where the
+  D→A-subject pass ran cleanly against `Credential` (i.e. the domain
+  description withstood the cross-check on its own merits). The
+  sentinel appears **after** the Q-sentinel — the agent self-verified
+  the ordering at emit time (§4.3 step 6).
+- The canonical lowercase-name parenthesised prefix is preserved.
 
 ## 6. User stories and acceptance scenarios
 
@@ -643,18 +881,25 @@ codebase scope
 on the saved output
 **So that** I receive a `LegibilityModel` whose `challenge_notes[]`
 carry cross-check evidence in addition to the self-challenge
-evidence.
+evidence, and whose wrapper carries the model-level
+`cross_check_status: completed`.
 
 ```gherkin
 Given a v0.3.0 LegibilityModel YAML for a non-trivial scope
 And both collections are non-empty
 And every element carries one or more "Q<N> (...):" entries or the
     "Challenge applied; no questions surfaced changes" sentinel
+And the generated_at and generated_by placeholders have been
+    substituted to concrete values
 When I dispatch the diagnostic-legibility agent with mode:
-    cross-check-only and the YAML in the prompt body
+    cross-check-only on the first line of the prompt
+And the YAML is supplied as a fenced ```yaml block immediately
+    after the mode line
 Then I receive a single markdown response
 And the response contains a LegibilityModel YAML block conforming to
-    the v0.2.0 schema
+    the v0.2.0 schema with the v0.4.0 additive cross_check_status
+    field
+And the wrapper carries cross_check_status: completed
 And at least one element in either collection carries a new
     challenge_notes entry prefixed "CC<N> (question-name):"
 And every CC<N> entry follows the canonical form: capital CC, digit
@@ -662,76 +907,143 @@ And every CC<N> entry follows the canonical form: capital CC, digit
     space, prose body
 And every CC<N> entry appears after the Q<N> entries (or Q-sentinel)
     in the same element's challenge_notes list
+And no CC<N> entry appears on a side-effect target element whose
+    revision was surfaced by a critique on a different subject
 ```
 
 ### 6.2 Story — cross-check ran cleanly, sentinel surfaces on every element
 
 **As** a downstream consumer of the corrected model
-**I want** to distinguish "cross-check ran cleanly" from "cross-check
-never ran" on every element
+**I want** to distinguish "cross-check ran cleanly on this element"
+from "cross-check never ran on this element"
 **So that** I can pattern-match on the audit trail without ambiguity.
 
 ```gherkin
 Given a LegibilityModel whose cross-check completed against a scope
-    where no CC question surfaced a change
+    where no CC question surfaced a change on any element
+When I read the wrapper
+Then cross_check_status equals "completed"
 When I read any element in either collection
 Then the element's challenge_notes list contains the exact literal
     string "Cross-check applied; no questions surfaced changes"
 And that sentinel appears after any Q<N> entries or the Q-sentinel
 And the sentinel is not paraphrased or split
+And no string of the form "Cross-check skipped; ..." appears on any
+    element (the per-element CC-skipped sentinel is removed at
+    v0.4.0)
 ```
 
-### 6.3 Story — asymmetric input, cross-check is a no-op
+### 6.3 Story — asymmetric input, cross-check is a no-op at the model level
 
 **As** the dispatcher
-**I want** the agent to surface an explicit "cross-check skipped"
-sentinel when only one collection is non-empty
+**I want** the agent to surface a **model-level**
+`cross_check_status: skipped_asymmetric` when only one collection is
+non-empty
 **So that** I can distinguish "cross-check could not run" from
-"cross-check ran cleanly" and from "cross-check never ran".
+"cross-check ran cleanly" via the wrapper field rather than
+per-element string-matching.
 
 ```gherkin
 Given a v0.3.0 LegibilityModel where one collection (architectural
     or domain) is non-empty and the other is an empty list
 When the diagnostic-legibility agent processes it in mode: full or
     mode: cross-check-only
-Then every element in the populated collection carries the literal
-    sentinel "Cross-check skipped; only one collection present"
-And no CC<N> entries appear in any element
+Then the agent emits a complete LegibilityModel YAML block
+And the wrapper carries cross_check_status: skipped_asymmetric
+And no CC<N> entry appears on any element
+And no "Cross-check applied" sentinel appears on any element
+And no "Cross-check skipped" string appears on any element (removed
+    at v0.4.0 — the asymmetric case is recorded only at model
+    level)
 And the empty collection remains an empty list
 And the rest of the LegibilityModel YAML is unchanged from the input
     (in mode: cross-check-only) or freshly produced (in mode: full)
 ```
 
-### 6.4 Story — schema continues to validate against v0.2.0
+### 6.4 Story — unrecognised mode value is refused
+
+**As** the dispatcher
+**I want** an unrecognised `mode:` value to produce a structured
+refusal rather than a silent fallback to `mode: full`
+**So that** mistyped mode values do not silently re-run construction
+over what I meant to be a cross-check-only invocation.
+
+```gherkin
+Given a prompt whose first line is "mode: cross-check_only" (with an
+    underscore in place of the hyphen) or any other unrecognised
+    value
+When the diagnostic-legibility agent processes the prompt
+Then the agent emits no YAML code block
+And the response includes a single line of the form
+    "diagnostic-legibility refusal: <reason naming the unrecognised
+    value and the legal values 'full' and 'cross-check-only'>."
+And no phase (A, B, or C) runs
+```
+
+### 6.5 Story — precondition violations refuse structurally
+
+**As** a programmatic dispatcher consuming the agent output
+**I want** every precondition violation other than the asymmetric
+case to produce a structured refusal with no YAML emitted
+**So that** I can route to error handling by checking for absence of
+a YAML code block plus presence of the refusal line.
+
+```gherkin
+Given a prompt in mode: cross-check-only whose payload is missing a
+    required top-level field (scope, generated_at, generated_by,
+    architectural, or domain)
+Or whose payload contains an element with empty challenge_notes[]
+Or whose payload contains an unsubstituted <DISPATCHER: ...>
+    placeholder in generated_at or generated_by
+Or whose payload is not a single fenced YAML code block immediately
+    after the mode line (prose-surrounded, unfenced, or multiple
+    blocks)
+When the diagnostic-legibility agent processes the prompt
+Then the agent emits no YAML code block
+And the response includes a single line of the form
+    "diagnostic-legibility refusal: <reason naming the violated
+    precondition and the offending value(s)>."
+And no phase runs
+```
+
+### 6.6 Story — schema continues to validate against v0.2.0 with one additive extension
 
 **As** a future consumer that parses against the v0.2.0 schema
 **I want** the cross-check output to continue conforming to the
-v0.2.0 schema rules
+v0.2.0 element schema, with the model-level `cross_check_status`
+field treated as an additive v0.4.0 extension
 **So that** S3 does not break the contract sub-S2a settled.
 
 ```gherkin
-Given a LegibilityModel emitted by the v0.4.0 agent in any of its
-    three modes
+Given a LegibilityModel emitted by the v0.4.0 agent in either of its
+    two modes
 When I validate the YAML against the schema rules in
     diagnostic-legibility/templates/legibility-element.md
-Then every required field (name, description, evidence, confidence,
-    challenge_notes) is present on every element
+Then every required field on LegibilityElement (name, description,
+    evidence, confidence, challenge_notes) is present on every
+    element
 And confidence is one of "low", "medium", "high"
 And every element with confidence "medium" or "high" has at least
     one entry in evidence
 And challenge_notes is a list of strings (never null, never absent)
 And the top-level LegibilityModel has scope, generated_at,
     generated_by, architectural, domain
+And the top-level LegibilityModel additionally has cross_check_status
+    with a value in {"completed", "skipped_asymmetric", "not_run"}
 And the empty-scope sentinel name "(empty scope)" still pattern-matches
-    exactly when the scope yields nothing
+    exactly when the scope yields nothing (in which case
+    cross_check_status equals "skipped_asymmetric")
+And a v0.3.0 LegibilityModel lacking the cross_check_status field
+    still validates (the field is optional for back-compat)
 ```
 
-### 6.5 Story — the agent description names the new contract terms
+### 6.7 Story — the agent description names the new contract terms
 
 **As** a Claude Code skill matcher reading only the agent's
 description field
-**I want** to know the agent ships cross-check and the `CC<N>`
-prefix convention
+**I want** to know the agent ships cross-check, the `CC<N>` prefix
+convention, the `cross_check_status` model-level field, and the two
+mode markers
 **So that** I can route a "cross-check this model" intent to the
 right agent.
 
@@ -741,14 +1053,17 @@ When I read diagnostic-legibility/agents/diagnostic-legibility.agent.md
     frontmatter
 Then the description names "cross-check" verbatim
 And the description names the "CC<N>" prefix convention
+And the description names "cross_check_status"
 And the description names "LegibilityModel"
 And the description names the "(empty scope)" sentinel (carried
     forward from v0.3.0)
-And the description names the three mode markers: full,
-    construct-only, cross-check-only
+And the description names the two mode markers: full and
+    cross-check-only
+And the description does not name "construct-only" (dropped at
+    v0.4.0 per the diaboli adjudication)
 ```
 
-### 6.6 Story — the plugin version reflects the new capability
+### 6.8 Story — the plugin version reflects the new capability
 
 **As** the marketplace consumer
 **I want** the diagnostic-legibility plugin version to bump when
@@ -768,7 +1083,7 @@ And the `plugin_version` field tracks the canonical
 And diagnostic-legibility/CHANGELOG.md has a new entry for 0.4.0
 ```
 
-### 6.7 Story — docs explain the cross-check protocol
+### 6.9 Story — docs explain the cross-check protocol
 
 **As** a future reader of the docs site
 **I want** to find a concept page explaining how cross-check works
@@ -781,11 +1096,18 @@ Given the merged main on this PR
 When I navigate to docs/plugins/diagnostic-legibility/explanation/
 Then there is a page named cross-check-protocol.md
 And the page explains the five cross-check questions (CC1–CC5)
-And the page explains the two directions (A→D and D→A)
-And the page explains the CC<N> prefix convention and the CC-applied
-    and CC-skipped sentinels
+And the page explains the two directions (A→D and D→A) and the
+    direction-specific failure modes (architectural-implicit
+    assumption in domain description; domain-concept smear in
+    architectural element)
+And the page explains the CC<N> prefix convention, the CC-applied
+    sentinel, and the model-level cross_check_status field with its
+    three values
+And the page explains the subject-only audit trail
 And the existing how-to page invoke-the-agent.md is updated to name
-    the three mode markers and link forward to issue #333 for the
+    the two mode markers (full, cross-check-only), the fenced YAML
+    payload requirement for cross-check-only, and the structured
+    refusal contract; it links forward to issue #333 for the
     /diagnose command
 ```
 
@@ -795,22 +1117,23 @@ And the existing how-to page invoke-the-agent.md is updated to name
 
 | Path | Purpose |
 | --- | --- |
-| `docs/plugins/diagnostic-legibility/explanation/cross-check-protocol.md` | Concept page on cross-check: the five CC questions, the two directions, the CC<N> prefix, the two sentinels (CC-applied and CC-skipped), and how the cross-check relates to the self-challenge. Linked from the how-to and from the existing challenge-refine-protocol.md page. |
+| `docs/plugins/diagnostic-legibility/explanation/cross-check-protocol.md` | Concept page on cross-check: the five CC questions, the two directions and their direction-specific failure modes (architectural-implicit assumption in domain description; domain-concept smear in architectural element), the CC<N> prefix, the CC-applied sentinel, the model-level cross_check_status wrapper field with its three values, the subject-only audit trail, and the structured refusal contract. Linked from the how-to and from the existing challenge-refine-protocol.md page. |
 
 ### 7.2 Modified files
 
 | Path | Change |
 | --- | --- |
-| `diagnostic-legibility/agents/diagnostic-legibility.agent.md` | Add Phase C to the construction protocol (§4.3). Add the "five cross-check questions" section (§4.4). Extend the description to name cross-check, CC<N>, and the mode markers (§4.2). Extend honesty rules and anti-patterns (§4.4). Charter section updated to remove the "you do not cross-check" carve-out and replace it with a positive statement of what cross-check does. |
+| `diagnostic-legibility/agents/diagnostic-legibility.agent.md` | Add Phase C to the construction protocol (§4.3), including the emit-time ordering self-verification step (O5) and the §3.6 precondition-violation logic. Add the "five cross-check questions" section (§4.4) naming the direction-specific failure modes per O1. Extend the description to name cross-check, CC<N>, cross_check_status, and the **two** mode markers (§4.2, per O2). Extend honesty rules (CC prefix, refuse-unrevised, subject-only audit trail) and anti-patterns (padded CC, no per-element skip sentinel, ordering, no bidirectional CC writes) per §4.4. Charter section updated to remove the "you do not cross-check" carve-out and replace it with a positive statement of what cross-check does. |
+| `diagnostic-legibility/templates/legibility-element.md` | **Schema template update.** Add the optional `cross_check_status` field to the `LegibilityModel` wrapper documentation (O9). Field type: string enum, values `completed \| skipped_asymmetric \| not_run`. Required: optional at the schema layer (so v0.3.0 outputs remain valid); v0.4.0 agent outputs always include it. Add a one-paragraph note explaining the field's purpose (model-level cross-check disposition) and that it is orthogonal to per-element `challenge_notes[]`. The per-element schema (`LegibilityElement`) is **unchanged**. |
 | `diagnostic-legibility/.claude-plugin/plugin.json` | Bump `version` `0.3.0` → `0.4.0`. |
-| `diagnostic-legibility/CHANGELOG.md` | New `## 0.4.0 — 2026-05-29` (or merge-date) heading naming the cross-check addition, the three modes, and the disposition of the S3 spec. |
+| `diagnostic-legibility/CHANGELOG.md` | New `## 0.4.0 — 2026-05-29` (or merge-date) heading naming the cross-check addition, the two modes (per O2), the additive cross_check_status field (per O9), the subject-only audit trail (per O3), the unified refusal shape (per O6/O7), and the disposition of the S3 spec (referencing the objection record). |
 | `.claude-plugin/marketplace.json` | Bump the `diagnostic-legibility` entry in `plugins[]` from `version: "0.3.0"` to `"0.4.0"`. The entry's `description` field is updated to name the cross-check capability. Top-level `version` unchanged at `0.4.0`. `plugin_version` taken from main at integration time per §9. |
 | `README.md` (repo root) | Update the `diagnostic-legibility` badge from `v0.3.0` to `v0.4.0` and the marketplace table row's Version column. |
 | `diagnostic-legibility/README.md` | Update the Status section to v0.4.0 and name the cross-check. Add a link to the new concept page. Mark issue #332 (this PR) as shipped; #333 remains open. |
 | `docs/plugins/diagnostic-legibility/index.md` | Update the Status section to v0.4.0. Surface the new concept page as a live link. |
-| `docs/plugins/diagnostic-legibility/how-to/invoke-the-agent.md` | Add a section on the three mode markers and one worked example of `mode: cross-check-only`. Add a paragraph on the CC-applied and CC-skipped sentinels. The existing forward link to issue #333 stays — #333 is still open. |
+| `docs/plugins/diagnostic-legibility/how-to/invoke-the-agent.md` | Add a section on the **two** mode markers (full, cross-check-only) and one worked example of `mode: cross-check-only` showing the fenced YAML payload contract (O8). Add a paragraph on the CC-applied sentinel and the model-level cross_check_status field. Add a paragraph on the structured refusal contract. The existing forward link to issue #333 stays — #333 is still open. |
 | `docs/plugins/diagnostic-legibility/explanation/challenge-refine-protocol.md` | Add a forward link to the new cross-check-protocol.md concept page in the "Further reading" or equivalent section. The body explaining the v0.3.0 self-challenge stays. |
-| `tdad_tests/tests/test_diagnostic_legibility_structural.py` | Extend with cross-check-specific structural assertions. New tests: agent body contains the CC-applied sentinel; agent body contains the CC-skipped sentinel; agent body references the five canonical CC prefixes (`CC1 (boundary contradiction):`, `CC2 (evidence overlap):`, `CC3 (cross-confounders):`, `CC4 (cross-confidence calibration):`, `CC5 (mutual description integrity):`); agent description names "cross-check", "CC<N>", and the three mode markers; plugin.json version is 0.4.0; marketplace entry version is 0.4.0; CHANGELOG carries a 0.4.0 heading; the cross-check-protocol explanation page exists and references CC1–CC5. The existing v0.3.0 assertions are updated where the literals shifted (version strings, description content) and kept where they remain valid (Q<N> prefix forms, Q-sentinel literal). |
+| `tdad_tests/tests/test_diagnostic_legibility_structural.py` | Extend with cross-check-specific structural assertions. New tests: (1) agent body contains the CC-applied sentinel literal; (2) agent body references the five canonical CC prefixes (`CC1 (boundary contradiction):`, `CC2 (evidence overlap):`, `CC3 (cross-confounders):`, `CC4 (cross-confidence calibration):`, `CC5 (mutual description integrity):`); (3) agent description names "cross-check", "CC<N>", "cross_check_status", and the two mode markers ("full" and "cross-check-only"); (4) agent description does **not** name "construct-only"; (5) plugin.json version is 0.4.0; (6) marketplace entry version is 0.4.0; (7) CHANGELOG carries a 0.4.0 heading; (8) the cross-check-protocol explanation page exists and references CC1–CC5 and the direction-specific failure modes; (9) the schema template at `diagnostic-legibility/templates/legibility-element.md` documents the `cross_check_status` field with the three legal values; (10) **fixture-based ordering test (O5)** — load a sample agent-output YAML with Q and CC entries deliberately interleaved (e.g. `[Q1, CC2, Q2, CC1]`) and assert that, when the agent's emit-time self-verification is applied (or, equivalently, after the agent's documented re-ordering rule is invoked on the fixture), the resulting list orders all Q entries before all CC entries; (11) **subject-only audit trail** — assert that the agent file's honesty rules name the subject-only discipline and the anti-patterns name the "no bidirectional CC writes" rule; (12) **no per-element skip sentinel** — assert the agent body does **not** contain the v0.3.0-draft string `Cross-check skipped; only one collection present` (removed at v0.4.0 per O4). Existing v0.3.0 assertions are updated where the literals shifted (version strings, description content) and kept where they remain valid (Q<N> prefix forms, Q-sentinel literal). |
 
 ### 7.3 Removed files
 
@@ -835,9 +1158,17 @@ The slice narrowing keeps the following out of scope:
 - **An orchestrator-level multi-pass.** §3.2 weighs this as option
   (d) and defers it; the directional asymmetry it tries to solve is
   addressed in-agent by direction-flavoured weighting in Phase C.
-- **A schema change adding `cross_check_notes[]`.** §3.3 weighs and
-  defers this; the ship reuses `challenge_notes[]` with the `CC<N>`
-  prefix convention.
+- **A `mode: construct-only` invocation (the v0.3.0 behaviour
+  exactly).** Dropped at v0.4.0 per O2. If a v0.3.0-exact-output
+  consumer materialises later, `construct-only` can be added in the
+  same PR as that consumer. The `mode: full` superset semantics mean
+  no current dispatcher loses access to cross-check.
+- **A per-element `cross_check_notes[]` field on `LegibilityElement`.**
+  §3.3 weighs and defers this; the ship reuses `challenge_notes[]`
+  with the `CC<N>` prefix convention. The additive
+  `cross_check_status` field on the `LegibilityModel` wrapper (O9)
+  is **not** a per-element field and does not count as adding
+  per-element structure.
 - **A runtime validator for `LegibilityElement` or `LegibilityModel`.**
   Sub-S2a deferred, sub-S2b deferred, S3 continues to defer.
 - **TDAD scenarios under `tdad_tests/scenarios/agents/diagnostic-legibility/`.**
@@ -864,10 +1195,19 @@ The slice narrowing keeps the following out of scope:
 - **Backwards compatibility:** v0.3.0 dispatchers that invoke the
   agent without a `mode:` marker get `mode: full` by default, which
   is a strict superset of v0.3.0 behaviour: they receive a
-  cross-checked `LegibilityModel`. The schema is unchanged, so
-  consumers parsing against the v0.2.0 schema continue to work. A
-  dispatcher that wants the v0.3.0 output exactly (no cross-check
-  notes) sets `mode: construct-only`.
+  cross-checked `LegibilityModel`. The per-element schema
+  (`LegibilityElement`) is unchanged; the `LegibilityModel` wrapper
+  carries one additive optional field (`cross_check_status`), so
+  consumers parsing against the v0.2.0 schema continue to work
+  (they ignore the field) and v0.3.0 outputs lacking the field
+  remain valid against v0.4.0 consumers (the field is optional).
+
+  The `mode: construct-only` surface from the original draft is
+  **not shipped** (O2). A dispatcher that wants the v0.3.0 output
+  exactly has no v0.4.0 invocation that produces it; the
+  cross-check evidence is an additive upgrade. If a v0.3.0-exact
+  consumer materialises later, `construct-only` lands in the same
+  PR as that consumer.
 
 - **Cache behaviour:** `sync-marketplace-cache.sh` fires when
   `.claude-plugin/marketplace.json` differs from `origin/main` —
@@ -914,16 +1254,20 @@ The slice narrowing keeps the following out of scope:
 | Question | Decision |
 | --- | --- |
 | Cross-check architecture (a/b/c/d) | (a) Phase C inside the existing agent (§3.2). One agent file, three phases, one dispatch. (b)/(c)/(d) weighed and deferred with named escalation paths. |
-| Schema impact: new field vs. prefix-on-existing | Prefix-on-existing — `CC<N>` entries in `challenge_notes[]` (§3.3). No schema change. v0.2.0 contract preserved. |
-| Direction-flavoured questions vs. symmetric | Direction-flavoured weighting (§3.4). A→D weights CC1 heavily; D→A weights CC5 heavily; the other three are equal-weight. Mirrors sub-S2b §3.5's dimension-flavoured weighting. |
+| Schema impact: new field vs. prefix-on-existing | Hybrid (post-O9): `CC<N>` prefix on per-element `challenge_notes[]` (no per-element schema change) **plus** one additive optional field `cross_check_status` on the `LegibilityModel` wrapper for model-level status. The per-element schema (`LegibilityElement`) is unchanged. v0.2.0 contract preserved. |
+| Direction-flavoured questions vs. symmetric | Direction-flavoured weighting (§3.4). A→D weights CC1 heavily and catches "architectural-implicit assumption in domain description"; D→A weights CC5 heavily and catches "domain-concept smear in architectural element". The other three CC questions are equal-weight. Mirrors sub-S2b §3.5's dimension-flavoured weighting, with direction-specific failure modes named explicitly per O1. |
 | Phase boundary discipline | Explicit prompt-segment boundary between Phase B and Phase C, mirroring the Phase A/B boundary from sub-S2b. The framing line is load-bearing prompt content. |
-| Invocation surface at v0.4.0 | Bare Task-tool dispatch with `mode:` prompt marker. Three modes: `full` (default, supersets v0.3.0), `construct-only` (the v0.3.0 behaviour exactly), `cross-check-only` (Phase C against supplied YAML). `/diagnose` deferred to S4 / #333. |
-| Cross-check-clean sentinel | `Cross-check applied; no questions surfaced changes` — verbatim string, parallel to the v0.3.0 self-challenge sentinel. |
-| Asymmetric-input no-op handling | `Cross-check skipped; only one collection present` — explicit third sentinel, appended to every element in the populated collection (§3.6). Disambiguates "could not run" from "ran cleanly" and from "never ran". |
-| Order of `Q<N>` and `CC<N>` entries | `CC<N>` always after `Q<N>` in any element's `challenge_notes[]`. Temporal ordering reflects construction → self-challenge → cross-check pipeline. |
-| Cross-check on unrevised input | Refused. `mode: cross-check-only` with any element carrying empty `challenge_notes[]` returns a refusal line and skips Phase C. |
+| Invocation surface at v0.4.0 | Bare Task-tool dispatch with `mode:` prompt marker. **Two** modes (per O2): `full` (default, supersets v0.3.0), `cross-check-only` (Phase C against supplied fenced-YAML payload). `construct-only` dropped — no consumer named. `/diagnose` deferred to S4 / #333. |
+| Cross-check-only payload shape | Fenced YAML code block (\`\`\`yaml ... \`\`\`) immediately after the `mode:` line (per O8). Prose-surrounded, unfenced, and multiple-block payloads are refused. Unsubstituted `<DISPATCHER: ...>` placeholders are refused. |
+| Cross-check-clean sentinel | `Cross-check applied; no questions surfaced changes` — verbatim string, parallel to the v0.3.0 self-challenge sentinel. **Single** per-element CC sentinel at v0.4.0 (the CC-skipped sentinel from the original draft is removed per O4). |
+| Asymmetric-input no-op handling | Recorded at **model level** via `cross_check_status: skipped_asymmetric` (per O9). No per-element sentinel. Disambiguates "could not run" from "ran cleanly" and from "never ran" via the wrapper field. |
+| Order of `Q<N>` and `CC<N>` entries | `CC<N>` always after `Q<N>` in any element's `challenge_notes[]`. Temporal ordering reflects construction → self-challenge → cross-check pipeline. Enforced at two layers (per O5): agent emit-time self-verification (§4.3 step 6) and a fixture-based structural test (§7.2). |
+| Iteration order within direction | Subject-collection YAML array order (per O10). Preserved across CC entries in the emitted output. Pairs with O5's structural test. |
+| Cross-check on unrevised input | Refused with the unified structured refusal shape (per O6/O7). `mode: cross-check-only` with any element carrying empty `challenge_notes[]` produces a refusal line and no YAML. |
+| Unrecognised mode value | Refused with the unified structured refusal shape (per O6). No silent fallback to `mode: full`. |
+| Subject-only audit trail | `CC<N>` entries are written only on the subject element (per O3). Side-effect revisions are named in the subject's CC prose body. The sibling element's `challenge_notes[]` is not amended. |
 | Number and form of cross-check questions | Five (CC1 boundary contradiction, CC2 evidence overlap, CC3 cross-confounders, CC4 cross-confidence calibration, CC5 mutual description integrity). Working hypothesis revisable from disposition data, parallel to sub-S2b §3.5. |
-| Plugin version bump | diagnostic-legibility 0.3.0 → 0.4.0 (minor: new behaviour). Marketplace listing top-level `version` unchanged at 0.4.0. `plugin_version` pointer taken from main at integration time per §9. |
+| Plugin version bump | diagnostic-legibility 0.3.0 → 0.4.0 (minor: new behaviour). Marketplace listing top-level `version` unchanged at 0.4.0. `plugin_version` pointer taken from main at integration time per §9. The schema addition (O9) is additive; the mode-contract simplification (O2) removes surface area — neither affects the version-bump magnitude. |
 
 ## 11. References
 
@@ -933,7 +1277,10 @@ The slice narrowing keeps the following out of scope:
   `docs/superpowers/specs/2026-05-26-dl-s2a-legibility-element-schema-design.md`.
 - Sub-S2b (working agent) spec:
   `docs/superpowers/specs/2026-05-28-dl-s2b-challenge-protocol-design.md`.
-- Schema artefact:
+- Spec-mode diaboli record for this spec:
+  `docs/superpowers/objections/dl-s3-cross-check-mechanism-design.md`
+  (10 objections, all accepted; absorbed in §0).
+- Schema artefact (updated by this slice for the model-level field):
   `diagnostic-legibility/templates/legibility-element.md`.
 - Current agent file (v0.3.0):
   `diagnostic-legibility/agents/diagnostic-legibility.agent.md`.
