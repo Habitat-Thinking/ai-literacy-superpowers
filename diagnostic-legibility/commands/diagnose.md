@@ -94,10 +94,18 @@ The agent returns **one of**:
 ### 5. Handle a refusal
 
 If the response contains a line matching `diagnostic-legibility
-refusal:` and **no** YAML code block:
+refusal:`:
 
 1. Surface the refusal line **verbatim** to the conversation.
 2. **Abort** — render nothing, write nothing, perform no `mkdir`.
+
+**Fail safe.** A refusal line present at all routes here and aborts —
+**even if a YAML block also appears** in the response. The agent
+contract forbids that composite (a refusal line is the entire
+response), so this only ever fires on genuinely malformed agent output,
+where refusing to render is the safe choice. Do not fall through to the
+render path on a refusal line just because a stray YAML block is also
+present.
 
 (In `mode: full` the agent's documented precondition violations are not
 reachable through `/diagnose`, since the command always sends a valid
@@ -193,10 +201,24 @@ post-hoc read of an already-written file.
 
 A `## Cross-check summary` section immediately after the header:
 
-- A one-line statement of `cross_check_status` in human terms
-  (`completed` → "Cross-check ran on both collections.";
-  `skipped_asymmetric` → "Cross-check was skipped: only one collection
-  was populated."; `not_run` → "Cross-check did not run.").
+- A one-line statement of `cross_check_status` in human terms:
+  - `completed` → "Cross-check ran on both collections."
+  - `skipped_asymmetric`, **and the populated collection has real
+    elements** → "Cross-check was skipped: only one collection was
+    populated."
+  - `skipped_asymmetric`, **and the only element present is the `(empty
+    scope)` sentinel** → "Scope yielded no elements; cross-check did not
+    run." Branch the gloss on the sentinel: the agent emits the same
+    wrapper value (`skipped_asymmetric`) for a genuinely empty scope as
+    for a true one-sided scope, so the command distinguishes the two for
+    the human. Do **not** tell a human "one collection was populated"
+    when the scope yielded nothing.
+  - `not_run` → "Cross-check did not run." **Note:** `not_run` is **not
+    produced by `/diagnose`** — a `/diagnose` run always dispatches
+    `mode: full` against a freshly-emitted model, which always carries
+    the field. This gloss exists for forward-compatibility when
+    rendering an externally-supplied or v0.3.0-era model where the field
+    is absent.
 - **Correction counts by direction.** A direction's count is the
   **number of elements in that collection carrying at least one `CC<N>`
   entry** ("elements revised") — *not* the raw number of `CC<N>`
@@ -207,6 +229,14 @@ A `## Cross-check summary` section immediately after the header:
   - The CC-applied sentinel (`Cross-check applied; no questions surfaced
     changes`) is not a `CC<N>` entry and does not make an element count
     as revised.
+  - **This is a lower bound on elements touched.** The count captures
+    elements revised *as the subject* of a cross-check (the `CC<N>`
+    entry lives on the subject only, per the agent's subject-only audit
+    trail). A sibling element revised as a *side effect* — named in a
+    subject's `CC<N>` prose but carrying no `CC<N>` entry of its own — is
+    a genuine correction that is **not** counted. Read the figure as
+    "elements revised as cross-check subjects", not "every element the
+    cross-check touched".
 
 ```markdown
 ## Cross-check summary
@@ -231,8 +261,14 @@ The geometry is **pinned**:
    | | Architectural | Domain |
    | --- | --- | --- |
    | Elements | <N> | <M> |
-   | Elements revised (cross-check) | <A→D count> | <D→A count> |
+   | Elements revised (cross-check) | <A→D count> (A→D) | <D→A count> (D→A) |
    ```
+
+   The per-cell `(A→D)` / `(D→A)` labels bind each count to its
+   definition above: the **Architectural** column's revised cell is the
+   A→D count (architectural elements carrying ≥1 `CC<N>` entry), the
+   **Domain** column's is the D→A count. The label prevents transposing
+   the two counts when copying this table template.
 
 2. **The model bodies as two stacked subsections** under a `## Models`
    section: `### Architectural model` first, then `### Domain model`.

@@ -1050,6 +1050,25 @@ class TestDiagnosticLegibilityDiagnoseCommand:
             "Command body must use the human-facing `elements revised` "
             "label for the correction-count semantic (spec §5.2)."
         )
+        # Code-mode diaboli O1: token-presence alone would pass on a body
+        # that documented the geometry in the wrong ORDER. These offline
+        # relative-ordering checks pin what a Layer 0/1 test genuinely
+        # can — the canonical layout sequence — without claiming to
+        # verify a live render (behavioural verification is Layer 3).
+        assert body.index("### Architectural model") < body.index(
+            "### Domain model"
+        ), (
+            "Architectural model section must be documented BEFORE the "
+            "Domain model section (spec §5.3 — canonical stacked order)."
+        )
+        a_to_d_def = body.index("A→D corrections")
+        assert (
+            "architectural" in body[a_to_d_def : a_to_d_def + 120]
+        ), (
+            "The A→D corrections definition must bind A→D to "
+            "*architectural* elements (spec §5.2) — guards against the "
+            "transposed A→D/D→A definition O5 flags."
+        )
 
     # -- Scenario 5 / §7.3 item 8 -------------------------------------
 

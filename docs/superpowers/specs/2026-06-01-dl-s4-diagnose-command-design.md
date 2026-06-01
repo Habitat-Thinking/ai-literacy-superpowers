@@ -670,6 +670,17 @@ And the existing how-to/invoke-the-agent.md is updated: its forward-link
     since the command surface it anticipated now exists
 ```
 
+> **On what the structural layer can and cannot guarantee** (code-mode
+> diaboli O1). The structural tests assert that the command file
+> *documents* the right tokens, and — where an offline test genuinely
+> can — their relative *order* (e.g. the Architectural model section
+> precedes the Domain model section; the A→D definition binds to
+> "architectural"). They do **not** verify that a live render produces a
+> correct artefact — token presence plus documented ordering is the
+> ceiling of a Layer 0/1 check. Genuine verification of the rendered
+> report's behaviour belongs to the Scenario 9 acceptance contract below
+> and to a future Layer 3 behavioural test.
+
 #### Scenario 9 — behavioural acceptance (documentation only, not executed)
 
 These describe what a live `/diagnose` invocation produces. They are
