@@ -43,9 +43,10 @@ The agent creates `assessments/YYYY-MM-DD-assessment.md` with:
 3. Summary of your answers
 4. Level assessment with rationale
 5. Discipline maturity ratings (context engineering, constraints, guardrail design)
-6. Strengths at your current level
-7. Gaps preventing the next level
-8. 3-5 specific recommendations
+6. Operational axes (ALCI Part D) and the Habitat Build Gap (see below)
+7. Strengths at your current level
+8. Gaps preventing the next level
+9. 3-5 specific recommendations
 
 The assessed level is the highest level where you have substantial evidence across all
 three disciplines. The weakest discipline is the ceiling.
@@ -58,6 +59,35 @@ three disciplines. The weakest discipline is the ceiling.
 | L3 | CLAUDE.md + 3 or more enforced harness constraints + custom agents or skills |
 | L4 | Specifications before code + agent pipeline with safety gates |
 | L5 | Platform-level governance + cross-team standards + observability |
+
+### Operational axes and the Habitat Build Gap
+
+The cognitive level above measures *what your team can think and do*. The
+**operational axes** (ALCI Part D) measure *what your habitat actually
+delivers*, across four axes — **Composition** (agent topology), **Testing**
+(verification rigour), **Observability** (agent-activity visibility), and
+**Governance** (enforceability of AI-use rules) — each placed L1–L5.
+
+By default the agent places the axes **evidence-first** from the repo
+scan; you can opt into the full 40-statement ALCI Part D survey for a
+rigorous per-axis score.
+
+The **Habitat Build Gap** combines the two views:
+
+```text
+Habitat Build Gap = cognitive level − operational axes mean
+```
+
+- **Coherent** (`abs(gap) < 0.5`) — team and habitat at the same level.
+- **Ambition outpaces enablement** (`gap ≥ +0.5`) — build the habitat your
+  team's thinking already implies.
+- **Inherited habitat** (`gap ≤ −0.5`) — literacy uplift before further
+  harness extension.
+
+The signal is **coherence**, not the size of the level: a coherent L2/L2
+team is healthier than an incoherent L4/L1 team. The Governance axis is
+the one-line operational summary of the deeper **Governance Dimension**
+section in the same document.
 
 ---
 

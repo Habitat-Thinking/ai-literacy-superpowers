@@ -63,6 +63,13 @@ are actually used.
 
 Ask ONE question at a time. Wait for each answer.
 
+The four **operational axes** (ALCI Part D) are placed **evidence-first**
+by default from the scan; fold one or two axis-specific questions in
+here only where an axis's evidence is ambiguous. Then offer the **opt-in
+40-statement ALCI Part D survey** for teams wanting the rigorous
+per-axis score (see the `ai-literacy-assessment` skill and
+`references/operational-axes.md`).
+
 ### 3. Assess
 
 Apply the scoring heuristic: the assessed level is the highest level
@@ -73,7 +80,12 @@ The weakest discipline is the ceiling.
 ### 4. Document
 
 Create `assessments/YYYY-MM-DD-assessment.md` using the template from
-the skill's references. Fill every section with specific evidence.
+the skill's references. Fill every section with specific evidence —
+including the **Operational Axes (ALCI Part D)** table (Composition,
+Testing, Observability, Governance, each placed L1–L5 with evidence)
+and the **Habitat Build Gap** block (level − axes mean = signed gap +
+interpretation regime). State which placement mode was used
+(evidence-first or survey).
 
 ### 5. Validate Assessment Document
 
@@ -84,17 +96,30 @@ against `ai-literacy-assessment/references/assessment-template.md`.
 **Structural checks:**
 
 1. Required sections present: Observable Evidence, Level Assessment,
-   Discipline Maturity, Strengths, Gaps, Recommendations
+   Discipline Maturity, Operational Axes (ALCI Part D), Habitat Build
+   Gap, Strengths, Gaps, Recommendations
 2. Level Assessment contains a level number (1-5) and a level name
    (e.g. "Level 3 — Adaptive Collaboration")
 3. Discipline Maturity contains a markdown table with rows for each
    scored discipline
 4. Gaps section contains at least one item (every project has gaps)
+5. Operational Axes table names all four axes (Composition, Testing,
+   Observability, Governance), each with a placement and evidence
+6. Habitat Build Gap block is internally consistent: the gap equals
+   level placement minus the operational axes mean (to one decimal),
+   and the interpretation matches the regime for that gap (`abs < 0.5`
+   → Coherent; `≥ +0.5` → Ambition outpaces enablement; `≤ −0.5` →
+   Inherited habitat)
+7. The Governance axis placement matches the Governance Dimension
+   level (the two governance views must not diverge)
 
 If any check fails, fix the document in place:
 
 - Add missing sections using the structure from the assessment
   template reference
+- Recompute the gap and correct the interpretation if they are
+  inconsistent; reconcile the Governance axis with the Governance
+  Dimension if they diverge
 - Ensure the level number is a single digit 1-5 that downstream
   portfolio aggregation can parse
 
