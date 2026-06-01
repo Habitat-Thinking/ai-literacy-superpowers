@@ -115,8 +115,21 @@
   human-gate — structured review summary, named dispositions, command
   refuses to persist when the agent emits a refusal string (e.g.
   model-card-researcher's REFUSED: line for unconfirmed model existence).
+  **Ordering invariant (promoted from S4 cartographer Story #1): the human
+  disposition must PRECEDE the write — the dispose-then-write ordering is the
+  invariant, not merely the agent/command tool split.** The S4 `/diagnose`
+  spec's pre-diaboli draft satisfied the tool split (read-only agent, command
+  writes) yet wrote the file *then* printed a summary, reducing the human gate
+  to a post-hoc read; only the diaboli (O1) caught it. A spec can honour the
+  pattern's name and still break its invariant, so check the ordering, not just
+  the tool boundary. `/diagnose` is the fourth production instance. Watch item:
+  `/diagnose` ships only accept/abort, a narrower disposition vocabulary than
+  the named architecture's accept/edit/re-run/abort and the model-card
+  precedent; if that narrowing recurs on the next command spec, the divergence
+  may warrant its own sub-rule.
   Source: `docs/superpowers/stories/model-cards-plugin-design.md` stories
-  #7 and #8 (promoted disposition).
+  #7 and #8 (original promotion); `docs/superpowers/stories/dl-s4-diagnose-command-design.md`
+  story #1 (ordering-invariant sharpening).
 
 - Decision: hook scripts never block, only warn. Reason: this is a
   plugin used across diverse projects — blocking hooks could break
@@ -225,6 +238,27 @@
   obviously distinct contracts, split it; the value is one contract
   per file. (Source: REFLECTION_LOG 2026-04-28 entry on Units A and
   B for the assessor.)
+
+- Decision: a "natural home" hand-off in slice N does not bind slice N+1.
+  When a slice defers a concern by pointing at a later slice as its "natural
+  home", that pointer is a *suggestion*, not a commitment the later slice
+  inherits — the later slice is free to decline it, and when it does, the
+  concern is orphaned unless deliberately re-filed. Repeatedly handing the
+  same concern forward ("the next slice will own this") accrues **deferred-
+  concern-accretion debt**: by the time the chain's parent issue closes, the
+  concern has no tracking home and falls through the gap. Rule: when a slice
+  declines an inherited hand-off, either (a) absorb it, or (b) re-file it as a
+  standalone issue with its own lifecycle — never leave it implicit in a
+  closed slice's "out of scope" section. Worked instance: the
+  diagnostic-legibility invocation-persistence corpus for the Phase-C
+  escalation trigger was deferred at S2b, pointed at S4 by S3 §8 as its
+  "natural home", and declined by S4 — three consecutive deferrals with the
+  parent (#327) closing. Re-filed as standalone issue #350 at S4 adjudication.
+  Alternative considered and rejected: trusting the §8 "out of scope" note to
+  carry the concern forward — rejected because closing the parent removes the
+  natural tracking issue and the note becomes archaeology no one re-reads.
+  Source: `docs/superpowers/stories/dl-s4-diagnose-command-design.md` story #8
+  (promoted disposition); tracking issue #350.
 
 ## TEST_STRATEGY
 
