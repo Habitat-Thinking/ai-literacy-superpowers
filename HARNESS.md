@@ -792,7 +792,7 @@ the per-reader policy table.
 
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
-Last audit: 2026-05-29
-Constraints enforced: 24/25
+Last audit: 2026-06-01
+Constraints enforced: 25/26
 Garbage collection active: 19/19
-Drift detected: no (convention files + snapshot + ONBOARDING synced via /harness-sync + /harness-onboarding 2026-05-29; docs-site strict-build GC rule added)
+Drift detected: yes (ONBOARDING.md stale vs the new marketplace-docs-coverage constraint — run /harness-onboarding; convention files + Status block synced via /harness-sync 2026-06-01)

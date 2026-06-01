@@ -131,6 +131,10 @@ When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>
 
 When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>/SKILL.md`, `ai-literacy-superpowers/agents/<name>.agent.md`, or `ai-literacy-superpowers/commands/<name>.md`, the same PR must add an `### <name>` heading to the matching Diataxis reference page (`docs/plugins/ai-literacy-superpowers/reference/skills.md`, `.../agents.md`, or `.../commands.md`). For commands the heading is `### /<name>` (with the leading slash). Modifications to existing components are NOT gated. Effective from 2026-05-26. Enforcement: deterministic (`.github/workflows/docs-reference-parity-check.yml`). Scope: pr.
 
+### Every marketplace plugin appears in the docs index pages
+
+Every plugin listed in `.claude-plugin/marketplace.json` `plugins[]` must appear in both marketplace-level docs index pages: the homepage table (`docs/index.md`) and the canonical available-plugins table (`docs/plugins/index.md`). "Appears" means the plugin's landing-page link `<name>/index.md` is present in each file. Marketplace-scoped analogue of the per-plugin reference-page constraint; a whole-repo invariant checked on HEAD. Effective from 2026-06-01. Enforcement: deterministic (`.github/workflows/marketplace-docs-coverage-check.yml`). Scope: pr.
+
 ### Reflections via PR workflow
 
 Every addition to `REFLECTION_LOG.md` must be committed on a branch and merged to `main` via a PR with CI passing. Direct commits to `main` that modify `REFLECTION_LOG.md` are prohibited. Applies to all `/reflect` invocations. Effective from 2026-04-20. Enforcement: deterministic. Scope: weekly.
