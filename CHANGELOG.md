@@ -39,6 +39,13 @@ unchanged; Part D is additive.
 
 Spec: `docs/superpowers/specs/2026-06-01-assess-operational-axes-design.md`.
 
+### Maintenance
+
+- `/harness-upgrade`: advanced the root `HARNESS.md` template-version
+  marker from 0.39.1 to 0.40.0 after confirming the dogfood harness
+  already contains all current template content (no new constraints,
+  GC rules, or sections to adopt).
+
 ## 0.39.1 — 2026-05-28
 
 ### Fix — /superpowers-status disposition counting
