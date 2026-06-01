@@ -2,6 +2,8 @@
 
 Task-oriented guides for using the `diagnostic-legibility` plugin.
 
-- [Invoke the diagnostic-legibility agent](invoke-the-agent.md) — how to
-  dispatch the agent against a codebase scope and read its `LegibilityModel`
-  output at v0.3.0.
+- [Run the `/diagnose` command](run-the-diagnose-command.md) — the
+  human-facing surface: diagnose a scope and get a readable report
+  (v0.5.0).
+- [Invoke the diagnostic-legibility agent](invoke-the-agent.md) — the
+  lower-level bare-Task-tool dispatch, including `mode: cross-check-only`.

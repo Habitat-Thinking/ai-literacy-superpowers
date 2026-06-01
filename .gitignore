@@ -15,4 +15,9 @@ site/
 **/.pytest_cache/
 **/*.egg-info/
 
+# Diagnostic Legibility reports — derived, regenerable artefacts written
+# by the /diagnose command. Never committed nor rsynced into the plugin
+# cache (S4 spec §7.2 / O3).
+diagnostic-legibility/output/
+
 .DS_Store
