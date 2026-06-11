@@ -73,12 +73,56 @@ language. The human reads the ranges and disclosures and decides.
 
 ## Methodology and a format contract, not a command
 
-At its first slice this skill is **methodology and a format contract**.
-It describes how an estimate is derived and what an estimate record must
-contain — it does not dispatch an agent, write a file, or decide
-go/no-go. Emitting and validating a record is the job of downstream
-consumers (a read-only `cost-estimator` agent, a `/cost-estimate`
-command, and an orchestrator fold-in) that inherit this contract.
+The skill itself is **methodology and a format contract**. It describes
+how an estimate is derived and what an estimate record must contain — it
+does not dispatch an agent, write a file, or decide go/no-go. Emitting
+and validating a record is the job of downstream consumers (the
+read-only `cost-estimator` agent, a future `/cost-estimate` command, and
+an orchestrator fold-in) that inherit this contract.
+
+## The read-only emitter — the `cost-estimator` agent
+
+The skill defines what an estimate *is*; the **`cost-estimator` agent**
+is the thing that *produces* one. Given a target it reads the grounding
+sources, applies the skill's methodology, and **returns the
+estimate-record content as a string** — it is a derived-judgment
+**emitter**, not a decider.
+
+The load-bearing decision is the agent's **trust boundary**: it holds
+`Read`, `Glob`, and `Grep` only — no `Write`, no `Edit`, no `Bash`. This
+is the mechanism, not a limitation. Because the agent **cannot persist**
+the record, the human disposition the disclosure contract depends on
+cannot be bypassed by an agent that quietly writes its own output. The
+agent emits; a dispatcher persists the string **after a human disposes**
+— the **dispose-then-write ordering invariant** of the AGENTS.md
+**agent-emit + dispatcher-persist + human-disposes** decision. The
+`cost-estimator` is the next instance of that pattern, alongside
+`advocatus-diaboli`, `choice-cartographer`, and `model-card-researcher`.
+
+Three behaviours make the emitter honest rather than confidently wrong:
+
+- **Inference-basis disclosure.** When the agent *infers* the
+  `target_kind` (rather than the dispatcher stating it), it discloses the
+  signal it classified on — `classified as <kind> by <signal>` — so a
+  confident mis-read that would silently raise the confidence ceiling is
+  catchable by the human reading the record. An ambiguous target resolves
+  to the *lower-grounding* candidate and is disclosed, never silently
+  up-classified.
+- **Mechanical cost-omission.** When a snapshot would let the agent price
+  cost, it first re-verifies the binding *mechanically* — every exercised
+  tier mapped (after the normalisation that makes `Standard/Capable` ↔
+  `Standard / Capable`), every named model key present. It omits
+  `cost_usd` with disclosure whenever **any** exercised tier is unmapped
+  or a key is missing, with **no** judgment about whether the tier
+  "matters". This keeps the agent emit-not-decide while making it honest
+  when the static binding drifts from reality.
+- **Refuse rather than fabricate.** On an unreadable or unclassifiable
+  target, or a `MODEL_ROUTING.md` that is absent or whose required tables
+  are missing/unparseable, the agent returns a machine-greppable
+  `REFUSED:` string — no token grounding means no honest estimate. The
+  deliberate counterpart: an **empty `observability/costs/` is a
+  cost-omitted record, not a refusal**, because the token grounding is
+  intact.
 
 ## See also
 
@@ -87,4 +131,7 @@ command, and an orchestrator fold-in) that inherit this contract.
 - `ai-literacy-superpowers/skills/cost-estimation/SKILL.md` — the skill.
 - `ai-literacy-superpowers/skills/cost-estimation/references/estimate-record-format.md`
   — the stable estimate-record format contract.
-- Spec: `docs/superpowers/specs/2026-06-10-cost-estimation-skill-design.md`.
+- [Agents reference — `cost-estimator`](../reference/agents.md#cost-estimator)
+  — the read-only emitter's tool boundary and contract.
+- Skill spec: `docs/superpowers/specs/2026-06-10-cost-estimation-skill-design.md`.
+- Agent spec: `docs/superpowers/specs/2026-06-11-cost-estimator-agent-design.md`.

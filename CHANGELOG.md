@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.42.0 — 2026-06-11
+
+### New agent — `cost-estimator` (read-only prospective-cost emitter)
+
+Ships S2 of the cost-estimator capability: the read-only agent that *produces*
+an estimate record. S1 (0.41.0) shipped the methodology and the format
+contract; this slice ships the emitter that consumes them. No command or
+orchestrator wiring ships here (S3/S4, out of scope).
+
+- **`agents/cost-estimator.agent.md`** — a `Read, Glob, Grep`-only emitter
+  (`model: inherit`). Given a target (raw task text, slicing record, slice, or
+  spec), it reads `MODEL_ROUTING.md` and the latest `observability/costs/`
+  snapshot, applies the `cost-estimation` skill, and **returns the
+  estimate-record content as a string** for a dispatcher to persist after a
+  human disposes — the next instance of the AGENTS.md agent-emit +
+  dispatcher-persist + human-disposes pattern and its dispose-then-write
+  ordering invariant. It never writes, validates, or decides go/no-go.
+- **Target classification** drives the S1 confidence ceiling; any inferred
+  `target_kind` discloses its inference basis (`classified as <kind> by
+  <signal>`) so a confident mis-read is human-catchable, and ambiguous targets
+  resolve to the lower-grounding candidate with disclosure.
+- **Mechanical cost-omission**: omits `cost_usd` (with disclosure) whenever any
+  exercised stage tier is unmapped by the binding table — after the S1 join-key
+  normalisation — or a named model key is missing, with no salience judgment.
+- **Refusal discipline**: a machine-greppable `REFUSED:` string on an
+  unreadable/unclassifiable target or an absent/tableless `MODEL_ROUTING.md`;
+  an empty `observability/costs/` is a cost-omitted record, **not** a refusal.
+- **Provenance**: `generated_by` carries the dispatcher's resolved model id when
+  supplied, else the honest routing-tier label `tier:Standard` — never a guessed
+  model string.
+- `MODEL_ROUTING.md` gains an Agent Routing row for `cost-estimator` at the
+  **Standard** tier (read-and-author, like `tdd-agent`).
+- Docs: a reference entry in
+  `docs/plugins/ai-literacy-superpowers/reference/agents.md` and an emitter
+  section added to the `prospective-cost-estimation.md` explanation page.
+
 ## 0.41.1 — 2026-06-11
 
 ### Fix — reconcile advocatus-diaboli objection taxonomy
