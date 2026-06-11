@@ -7,43 +7,72 @@ stories:
   - id: 1
     lens: [patterns, alternatives]
     title: Own-the-contract slice over in-place mutation
-    disposition: pending
-    disposition_rationale: null
+    disposition: promoted
+    disposition_rationale: >
+      Promoted to AGENTS.md ARCH_DECISIONS as the own-the-contract-slice rule: a
+      change to a shared/merged contract gets its own owning slice with its own
+      adversarial pass; a consumer never mutates the contract it consumes. This
+      is the FIRST WORKED INSTANCE of the precedent S2 Story #5 named (accepted
+      there) — watch for a third before treating it as a hard invariant (Rule of
+      Three).
   - id: 2
     lens: [forces, consequences]
     title: Record-internal spread over absolute-rate binding
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Record-internal spread now, absolute-rate check deferred to S3
+      (which owns the snapshot). The honest §4.4.1 CAN/CANNOT floor is the durable
+      artefact telling the S3 author which check is theirs to build.
   - id: 3
     lens: [patterns, forces]
     title: One-directional coupling over biconditional iff
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. One-directional coupling over a biconditional iff is the only
+      resolution that keeps S1-era cost-present records (class B) valid while
+      still rejecting the incoherent inverse.
   - id: 4
     lens: [forces, consequences]
     title: Directory sentinel over a clean token
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Keep-the-directory-sentinel over a clean token — backward-compat
+      over semantic cleanliness, with the entrenchment named (not "resolved") and
+      the unenforced consumer special-case recorded as an honest residual (O5/O6).
   - id: 5
     lens: [patterns, defaults]
     title: Reserved tier-prefix grammar without a check
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. The tier: reserved-prefix grammar gives consumers a mechanical
+      discriminator without a rejecting check — widen-and-mark over
+      reshape-and-validate, keeping the merged S2 agent conformant.
   - id: 6
     lens: [forces, consequences]
     title: Whole-record cost set to per-stage sum
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Whole-record cost set to the per-stage sum by construction so the
+      canonical example would pass the deferred S3 absolute-rate validator (the
+      round-2 O1 fix); the Example-2 prose flags this as by-construction, not a
+      must-sum rule (code-mode O1).
   - id: 7
     lens: [alternatives, coherence]
     title: Emitter enhancement deferred, not bundled
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Emitter enhancement deferred-and-filed (#380), not bundled —
+      re-applying the same consumer/owner discipline (#1) to this slice's own
+      residue rather than re-conflating them.
   - id: 8
     lens: [patterns, consequences]
     title: Widen-and-mark over reshape-and-validate
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Widen-and-mark over reshape-and-validate is the unifying strategy
+      the closed-world checklist makes safe (provably non-breaking additive
+      evolution); each unenforced new convention is recorded as an honest
+      residual rather than implying enforcement it lacks.
 ---
 
 ## Story #1 — Own-the-contract slice over in-place mutation
