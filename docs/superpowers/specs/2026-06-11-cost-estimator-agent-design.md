@@ -10,6 +10,8 @@
 | Tracking issue | #369 |
 | Upstream (merged on main) | S1 (#—, merged): `cost-estimation` skill + estimate-record format reference |
 | Downstream slices | S3 (#370), S4 (#371), S5 (#372), S6 (#373) — all out of scope here |
+| Sibling slice (split out at revision) | **#377 — format-revision slice (per-stage `cost_usd` sub-field)** — out of scope here; gets its own diaboli pass |
+| Revision | This is a **revision** pass: advocatus-diaboli (spec mode) raised O1–O10; all accepted. The central change is that S2 reverts to consuming the S1 format reference **exactly as-merged, with no mutation** — the per-stage `cost_usd` sub-field is split out to #377. See §6 for the per-objection dispositions. |
 | Plugin version target | `ai-literacy-superpowers` v0.41.0 → v0.42.0 (new agent — minor bump) |
 | Marketplace listing | Top-level `version` unchanged at v0.4.0; `plugin_version` 0.41.0 → 0.42.0 |
 | PR ceremony | feature — full `/diaboli` (spec + code) and `/choice-cartograph` |
@@ -46,6 +48,8 @@ locks:
 2. **The input/target contract** — exactly what targets the agent accepts and
    how it classifies a target into `target_kind` (`task-text` |
    `slicing-record` | `slice` | `spec`), which drives the S1 confidence ceiling.
+   An **inferred** (non-explicit) classification must disclose its inference
+   basis so a confident mis-read is human-catchable (§4.2, O6).
 3. **The emit-not-write + refusal-string discipline** — the agent returns the
    record as a string; when it cannot ground an estimate it returns a **refusal
    string** (mirroring `model-card-researcher`'s `REFUSED:` line) rather than
@@ -68,13 +72,20 @@ an inspected fact).
   read-only-emitter pattern.
 - The agent's **charter**: load the S1 `cost-estimation` skill as reasoning
   context, read its grounding sources, and emit a record conforming to the S1
-  `estimate-record-format.md` (referenced by path, **not** redefined).
+  `estimate-record-format.md` **exactly as-merged** (referenced by path, **not**
+  redefined and **not** extended — see §2.3).
 - The agent's **input/target contract**: the accepted target types and the
-  `target_kind` classification rule (§4).
+  `target_kind` classification rule, including the **inference-basis disclosure**
+  for any inferred classification (§4).
 - The agent's **emit-not-write discipline** and **refusal-string convention**
-  for ungroundable or unreadable targets (§5).
-- The **deferred-from-S1 residual decisions** (O6, O3, O4) resolved (§6),
-  including a **backward-compatible** format-reference addition for O6.
+  for ungroundable or unreadable targets, including the **mechanical
+  cost-omission rule** and the **`MODEL_ROUTING.md`-tables-missing refusal
+  trigger** (§5).
+- The **deferred-from-S1 behaviour-only residual decisions** (O3, O4) resolved
+  (§6) as agent obligations. The third S1 residual — the per-stage `cost_usd`
+  format change formerly folded in here — is **split out to #377** (a dedicated
+  format-revision slice) and is **out of scope**. S2 makes **no** change to the
+  S1 format reference.
 - A TDAD scenario set covering the agent (structural + behavioural layers)
   under `tdad_tests/scenarios/agents/cost-estimator/` (§8).
 - A new `MODEL_ROUTING.md` Agent Routing row for the `cost-estimator` (§7).
@@ -104,6 +115,18 @@ Only S2 ships here. The following are explicitly **not** in this PR:
 - **S6 — calibration loop** (#373). No per-PR actuals capture, no
   integration-agent change. The agent reads a `kind: calibration` grounding
   source **if one exists**, per the S1 seam, but does not produce or require it.
+- **#377 — format-revision slice (per-stage `cost_usd` sub-field)** (split out at
+  this revision). The optional `tokens_by_stage[].cost_usd` sub-field — which
+  would make the split-tier widening machine-checkable on an emitted record — is
+  a **mutation of the merged S1 format reference**, and a slice that *owns* the
+  contract is the right home for it (consumer/owner separation; O1/O2/O8). #377
+  gets its own diaboli pass, where the backward-compatibility claim is
+  **demonstrated against a strict S1-era validator, not asserted**. S2 makes no
+  change to `estimate-record-format.md` and emits against it exactly as-merged.
+  S2 prices the split-tier widening into the whole-record `cost_usd` band and
+  discloses it in prose (the S1 reference already documents the widening in
+  methodology prose); the *machine-checkable per-stage band* is #377's
+  deliverable, not S2's.
 
 This spec must not let any consumer leak into S2. If a reviewer finds the agent
 charter naming *which command writes its output*, *which gate surfaces its
@@ -113,16 +136,20 @@ mechanics.
 
 ### 2.3 What S2 consumes from S1 (do not redefine)
 
-S2 is a **consumer** of the S1 contract. It does **not** redefine the estimate
-record. Specifically:
+S2 is a **pure consumer** of the S1 contract. It does **not** redefine, extend,
+or otherwise mutate the estimate record — **full stop, no exception**.
+Specifically:
 
 - The **field set, range rules, time split, per-axis confidence, binding table,
   three grounding states, validation checklist, and worked examples** live in
   `ai-literacy-superpowers/skills/cost-estimation/references/estimate-record-format.md`.
-  The agent **references that file by path** and emits a conforming record. The
-  one exception is the O6 residual (§6.1), which **adds** a field to that
-  reference in a backward-compatible way — a deliberate, in-scope S2 change to
-  the S1 reference, not a redefinition.
+  The agent **references that file by path** and emits a record conforming to it
+  **exactly as-merged**. S2 adds no field, removes no field, and changes no
+  validation rule. (The per-stage `cost_usd` sub-field that an earlier draft
+  folded in here is split out to the #377 format-revision slice — see §2.2 and
+  §6.) If a reviewer finds this spec adding or widening anything in
+  `estimate-record-format.md`, that is a defect to cut: S2 is read-and-emit
+  against the contract as it stands.
 - The **methodology** (token derivation, cost derivation, the no-list-price-
   fallback rule, the disclosure contract) lives in
   `ai-literacy-superpowers/skills/cost-estimation/SKILL.md`. The agent loads it
@@ -217,6 +244,29 @@ unreadable or unclassifiable, returns the **refusal string** (§5.2). The
 spec mandates that an ambiguous classification is always disclosed, never
 silently resolved to the higher ceiling.
 
+**Inference-basis disclosure (O6 — catching the confident mis-read).** The
+ambiguity safeguard above only fires when the agent *recognises* the target as
+ambiguous. A confident single-shape match that is *wrong* (e.g. a slicing record
+whose frontmatter superficially matches the spec heuristic) would otherwise
+up-classify the ceiling silently. To make a confident mis-read human-catchable,
+the spec adds a blanket rule:
+
+- **On any INFERRED (non-explicit) `target_kind` classification** — i.e.
+  whenever the kind came from content inference (rule 2) or the `task-text`
+  default (rule 3), *not* from an explicit dispatch-stated kind (rule 1) — the
+  agent **discloses the inference basis** in the `Confidence rationale` body,
+  naming the signal it classified on. Form: *"classified as `<kind>` by
+  `<signal>`"* (e.g. *"classified as `spec` by: a `## N.` numbered-section
+  header table and a Gherkin acceptance-scenario block"*). This holds even when
+  the agent is confident and detects no ambiguity — the disclosure is what makes
+  a confident wrong classification (which up-classifies the ceiling) visible to
+  the human reading the record, rather than presenting the ceiling as fact.
+- **An explicit (dispatch-stated) `target_kind` needs no such disclosure** — the
+  dispatcher asserted the kind, so there is no agent inference to expose. The
+  inference-basis line is required only when the kind is the agent's own derived
+  judgment, consistent with the disclosure-of-derived-judgment contract (a
+  *supplied* kind cannot be the agent's mis-read; a *derived* one can).
+
 ### 4.3 Why the contract is in S2, not S1
 
 S1 *defined* the `target_kind` enum and its confidence ceiling. S1 did **not**
@@ -248,10 +298,22 @@ line. A refusal is returned when, and only when:
 
 1. **The target is unreadable** — a path that does not resolve, or inline text
    that is empty or so vague no stage set can be assumed at all.
-2. **The grounding is absent** — `MODEL_ROUTING.md` cannot be read (the token
-   and tier grounding is the day-one deliverable; without it there is no honest
-   estimate, only a guess).
-3. **The target is unclassifiable** — it matches no `target_kind` shape and
+2. **The token grounding is absent — `MODEL_ROUTING.md` cannot be read** (the
+   file does not resolve). The token and tier grounding is the day-one
+   deliverable; without it there is no honest estimate, only a guess.
+3. **The token grounding is present-but-unparseable (O5)** —
+   `MODEL_ROUTING.md` **reads as a file** but its **Token Budget Guidance**
+   and/or **Agent Routing** tables (the two tables the S1 methodology consumes,
+   SKILL.md) are **missing or unparseable**. This is a *third* state distinct
+   from both trigger 2 (file unreadable) and the empty-`observability/costs/`
+   case (§5.3): the file exists and reads, but yields **no token grounding**, so
+   any token range would be fabricated. **No token grounding = no honest
+   estimate**, so the agent **REFUSES** rather than emitting a record with
+   invented token figures. (Contrast §5.3: a missing *cost snapshot* still
+   leaves the token grounding intact, so that case is cost-omitted, **not**
+   refused. The dividing line is the token grounding: present-and-parseable →
+   emit; absent or unparseable → refuse.)
+4. **The target is unclassifiable** — it matches no `target_kind` shape and
    inference under §4.2 cannot conservatively resolve it.
 
 The refusal string has a stable, machine-greppable prefix so a dispatcher can
@@ -274,83 +336,184 @@ grounding states, an empty `observability/costs/` (today's default) yields a
 **valid, complete cost-omitted record** — `cost_usd`/`cost_basis` omitted, the
 omission disclosed in `Excluded`, and token + time figures standing. The agent
 **emits the cost-omitted record**, it does **not** refuse. Refusal is reserved
-for an **unreadable/unclassifiable target or absent token grounding**
-(`MODEL_ROUTING.md`), never for an honestly-omittable cost figure. Conflating
-the two would make the agent refuse on every estimate in today's repo, which is
-the opposite of the S1 "no-cost case is honest, not a failure" decision.
+for an **unreadable/unclassifiable target or absent/unparseable token grounding**
+(`MODEL_ROUTING.md`, §5.2 triggers 2–3), never for an honestly-omittable cost
+figure. Conflating the two would make the agent refuse on every estimate in
+today's repo, which is the opposite of the S1 "no-cost case is honest, not a
+failure" decision.
+
+#### The cost-omitted `grounding_sources` cost-snapshot entry (O7)
+
+The S1 format reference requires each record to carry, at minimum, a
+`model-routing` grounding entry **and** a `cost-snapshot` grounding entry, each
+with a `path` string. On today's default (empty `observability/costs/`) there is
+**no snapshot file** to cite — so the spec must fix what the mandatory
+`cost-snapshot` entry's `path` holds, rather than leaving it to the implementer.
+
+**Convention (the day-one-default record):** when no snapshot file exists, the
+agent emits the `cost-snapshot` grounding entry with its `path` set to the
+**directory** `observability/costs/` (with a trailing slash, marking it as a
+directory rather than a file) and notes in the `Excluded` prose that the
+directory was read and held no snapshot. This is **one defined shape**: the
+mandatory entry is *present* (satisfying the S1 "at minimum a cost-snapshot
+entry" rule) and points at the directory the agent actually inspected, and the
+absence of a concrete snapshot is disclosed in prose. The entry is **never
+dropped** and **never given a fabricated file path**. This matches the S1 worked
+Example 1, which already sets the empty-case cost-snapshot path to the directory
+`observability/costs/`.
+
+**Conflict flag (do not resolve here):** the S1 reference's field table calls
+each `grounding_sources` entry a `path` and Example 1 uses a directory path for
+the empty case, so the directory-path convention is *consistent with* the S1
+reference as-merged. If a stricter reading of "path" as "file path only" is
+later enforced by a validator, that is a **tension in the S1 reference itself**,
+not something S2 may fix (S2 does not touch the reference — §2.3). Flag it for
+**#377** (which owns the format) if it surfaces; S2 follows the as-merged
+reference and its Example 1 precedent.
+
+### 5.4 `generated_by` provenance — the honest-placeholder convention (O3)
+
+The S1 format reference makes `generated_by` a **required** field carrying an
+"agent name + model identifier" (its example is `cost-estimator /
+claude-opus-4-8`). But the agent runs `model: inherit` (§7) and is **never told
+its resolved concrete model** at emit time. Mandating a concrete model id the
+agent cannot honestly know would force it to guess or hard-code one — fabricating
+provenance, the exact failure the refusal discipline exists to prevent. The spec
+resolves the provenance seam **honestly** with a two-branch convention:
+
+- **(a) Resolved model id supplied → record it.** IF the dispatcher passes the
+  **resolved model id** into the dispatch context (an explicit field the
+  dispatching command/orchestrator may include), the agent records
+  `generated_by: cost-estimator / <resolved-model-id>`. This is the preferred
+  branch; whether the dispatcher supplies it is the dispatcher's (S3/S4) choice,
+  out of scope here — S2 only states that *if* it is supplied, the agent uses it
+  verbatim.
+- **(b) Resolved model id not supplied → record the routing TIER label, never a
+  guess.** When the concrete model is unknown to the agent (the default, since
+  `model: inherit` does not surface the resolved id), the agent records the
+  **routing tier** it was specced at instead of a model string:
+  `generated_by: cost-estimator / tier:Standard`. The `tier:` prefix marks the
+  value as a routing-tier label, not a concrete model — an honest "this is the
+  tier I run at; the concrete model was not surfaced to me" rather than a
+  fabricated id. The tier label is grounded in the `MODEL_ROUTING.md` Agent
+  Routing row for `cost-estimator` (§7), which the agent reads anyway.
+
+The agent **never** emits a guessed or hard-coded concrete model string (it must
+not inherit the worked-example's `claude-opus-4-8` as if it were its own
+provenance). The choice between (a) and (b) is mechanical: supplied id present →
+(a); absent → (b). Both branches produce an honest `generated_by`; neither
+fabricates. (This is the disclosure-of-derived-judgment contract applied to the
+provenance field itself: provenance the agent cannot verify is disclosed as a
+tier label, not asserted as a concrete model.)
 
 ## 6. The deferred-from-S1 residual decisions
 
-S1's reviews left three items explicitly tagged for S2. This spec makes a
-deliberate call on each.
+S1's reviews left three items tagged for S2. At this **revision** the residuals
+split: the two **behaviour-only** residuals (binding-drift re-verification and
+blended-rate skew) stay folded into S2 as agent obligations; the **format
+mutation** residual (the per-stage `cost_usd` sub-field) is **split out to a
+dedicated format-revision slice (#377)** so the contract change gets its own
+adversarial pass rather than riding the emitter slice's review. This resolves
+O1 (no backward-reach into the merged contract), O2 (the backward-compat claim
+is *demonstrated* in #377, not asserted here), and O8 (the consumer/owner
+boundary is kept clean).
 
-### 6.1 O6 (S1 code-mode) — verifiable split-tier widening — **FOLD IN**
+### 6.1 Per-stage `cost_usd` sub-field — **SPLIT OUT to #377 (was O6 fold-in)**
 
 **Residual:** S1's split-tier widening (the implementer's `Standard/Capable`
 priced low at `claude-sonnet-4`, high at `claude-opus-4`) is demonstrated only
 in prose and a worked example — it is not machine-checkable on an emitted
 record, because `tokens_by_stage[]` carries no per-stage cost.
 
-**Decision: FOLD IN.** S2 adds a **backward-compatible** optional sub-field to
-`tokens_by_stage[]` in the S1 format reference:
+**Decision (revised): SPLIT OUT, do not fold in.** The earlier draft added an
+optional `tokens_by_stage[].cost_usd` sub-field to the S1 format reference from
+inside this emitter slice. The diaboli (O1/O2/O8, all accepted) showed this:
 
-- `tokens_by_stage[].cost_usd` — an **optional** `{ low, high }` range giving
-  the per-stage cost contribution, present **iff** the record's top-level
-  `cost_usd` is present (i.e. only when a snapshot grounds cost). When the record
-  is cost-omitted, the sub-field is absent on every stage, exactly as the
-  top-level `cost_usd` is.
+- **crosses the slice boundary** S2 polices strictly elsewhere — S2 is a
+  *consumer* of a merged, "stable contract" reference, and an emitter granting
+  itself a unilateral mutation of the upstream contract is the asymmetry O1
+  names;
+- ships a **backward-compatibility claim that is asserted, not demonstrated**
+  against a strict S1-era validator (O2) — an `iff`-coupled conditional field is
+  *not* trivially additive against a closed-world validator;
+- **bundles a contract mutation with pure emitter behaviour** (O8), so the
+  format change would ride the agent slice's review instead of getting a focused
+  pass on the contract change itself.
 
-This makes the widening **verifiable**: for the implementer (or any slashed-tier)
-stage, a validator can assert `cost_usd.low` was priced at the cheaper
-representative model and `cost_usd.high` at the dearer one, so the per-stage band
-is genuinely wider than a single-rate band would be. The whole-record `cost_usd`
-need not equal the arithmetic sum of the per-stage sub-fields (same correlation
-caveat as `tokens`); when they differ the prose body says why.
+The sub-field therefore moves to its own slice, **filed as issue #377
+("format-revision slice — per-stage `cost_usd` sub-field")**, whose decision
+focus *is* the format. #377 runs its own diaboli pass and **demonstrates**
+backward-compatibility (against the actual validation-checklist semantics — e.g.
+the existing closed-world `cost_usd`/`cost_basis` pairing check), rather than
+asserting it.
 
-**Backward-compatibility is mandatory** (the S1 format is a stable contract with
-the S3 command's checkpoint reading it): the sub-field is **optional and
-additive**. Every S1-conforming record (which has no `tokens_by_stage[].cost_usd`)
-remains valid. The S1 cost-omitted worked example is untouched. The S1
-cost-present worked example is **extended** to show the per-stage `cost_usd` so
-the widening is visible on a concrete record. The validation checklist gains a
-check (per-stage `cost_usd` present iff top-level `cost_usd` present; slashed-tier
-stages show a low<high cost band).
+**What S2 does instead (no contract change):** S2 emits against the S1 format
+**exactly as-merged**. The split-tier widening is still honoured — the agent
+prices the slashed-tier (`Standard/Capable`) stage's cost contribution across the
+two representative rates (`claude-sonnet-4` low, `claude-opus-4` high) and lets
+that widen the **whole-record `cost_usd` band**, and it **discloses the widening
+in the prose body** (the S1 reference already documents the widening in
+methodology prose, so this is consumption, not extension). What S2 does **not**
+emit is a *machine-checkable per-stage* `cost_usd` band — that is #377's
+deliverable. S2 makes **no** edit to `estimate-record-format.md`, touches **no**
+worked example, and adds **no** validation-checklist line.
 
-**Why fold in rather than re-defer:** O6 was tagged for S2 precisely because the
-emitter is the first thing that *produces* a widened figure; making it verifiable
-at the moment it first becomes producible is cheaper than retrofitting a third
-time, and the addition is small and backward-compatible. Re-deferring it to a
-later slice would orphan it (the deferred-concern-accretion risk AGENTS.md warns
-about), since no later slice is named as its home.
-
-### 6.2 O3 (S1 spec-mode) — binding-table drift re-verification — **FOLD IN (as an agent obligation)**
+### 6.2 O3 + O4 — binding-table drift → **mechanical cost-omission** (FOLD IN, as a mechanical agent obligation)
 
 **Residual:** should the agent re-verify the tier→model binding (the S1 binding
 table) against `MODEL_ROUTING.md`'s tiers and the snapshot's model keys when it
-computes cost, rather than trusting the static binding table blindly?
+computes cost, rather than trusting the static binding table blindly? And when a
+tier is unmapped, on what rule does it omit cost?
 
-**Decision: FOLD IN, as an agent obligation, but bounded.** When the agent
-computes a cost figure (state 3 — a usable snapshot exists), it MUST:
+**Decision: FOLD IN, as a MECHANICAL agent obligation.** The earlier draft told
+the agent to omit `cost_usd` "if that tier is **load-bearing** for the target's
+stage set" — a discretionary judgment the agent would make about whether a tier
+"matters." O4 (accepted) showed that this is exactly where an emit-not-decide
+agent quietly becomes a decider: "load-bearing" is undefined, and choosing which
+record shape to emit on the agent's own read of it is a derived decision the tool
+boundary cannot constrain. **The discretionary "load-bearing" test is removed.**
+The rule is now mechanical — **no agent judgment about whether a tier matters**:
 
-1. Confirm the tiers it reads from `MODEL_ROUTING.md` Agent Routing are the tiers
-   the S1 binding table names (`Standard`, `Most capable`, the `Standard/Capable`
-   split). If `MODEL_ROUTING.md` has gained a tier the binding table does not map
-   (e.g. a new standalone `Capable` model), the agent does **not** invent a
-   binding — it **discloses the unmapped tier in `Confidence rationale`** and, if
-   that tier is load-bearing for the target's stage set, **omits `cost_usd` with
-   disclosure** (state-2-style) rather than guessing.
-2. Confirm the representative model keys the binding table names
-   (`claude-opus-4`, `claude-sonnet-4`) exist in the snapshot's Model Breakdown.
-   If a required key is absent, that is the S1 **state 2** ("snapshot present but
-   Model Breakdown absent or too coarse") → `cost_usd` **omitted with
-   disclosure**, naming the missing key as the cause.
+When the agent computes a cost figure (state 3 — a usable snapshot exists), it
+MUST:
+
+1. **Tier-mapping check.** Confirm every tier exercised by the target's stage set
+   (the `model_tier` of each `tokens_by_stage[]` entry the target actually
+   exercises — including each side of a `Standard/Capable` split) is **mapped by
+   the S1 binding table**. The mapped/unmapped test **applies the S1 join-key
+   normalisation** defined in `estimate-record-format.md` (stage/tier
+   normalisation, lines 153-158) **before** deciding a tier is unmapped: strip the
+   `{{LANGUAGE}}-` prefix from the stage name, and compare tier labels
+   **whitespace-insensitively** (so `Standard/Capable` ↔ `Standard / Capable`). A
+   literal-string match is **not** sufficient — without the normalisation a
+   correctly-mapped split tier (the implementer stage, the dominant cost driver in
+   both S1 worked examples) would be falsely reported unmapped on a spacing
+   mismatch and cost over-omitted. The mechanical omission rule:
+
+   > **The agent omits `cost_usd` (emits a cost-omitted record with disclosure)
+   > whenever ANY exercised stage's tier is unmapped by the binding table — or
+   > otherwise ungrounded.** No judgment about whether the unmapped tier is
+   > "load-bearing."
+
+   On omission, the agent **discloses the unmapped tier(s) in `Confidence
+   rationale`** and names them in `Excluded` as the omission cause. The agent
+   does **not** invent a binding for an unmapped tier.
+
+2. **Model-key check.** Confirm the representative model keys the binding table
+   names (`claude-opus-4`, `claude-sonnet-4`) exist in the snapshot's Model
+   Breakdown. A missing key is the same mechanical trigger as an unmapped tier:
+   the binding is **ungrounded**, so the agent **omits `cost_usd` with
+   disclosure** (the S1 **state 2**), naming the missing key as the cause. It
+   does **not** invent a substitute rate.
 
 This is bounded: the agent **does not edit** the binding table (it has no write
 tool, and the binding table is the named S6-revisable artefact, not agent
-judgement). It only **detects drift and degrades gracefully to cost-omission**,
-disclosing the cause. This keeps the binding "named, not agent discretion" (the
-S1 O5 decision) while making the agent honest when the named binding no longer
-matches reality.
+judgement). It only **detects an ungrounded binding by a mechanical test and
+degrades to cost-omission**, disclosing the cause. The agent stays
+**emit-not-decide**: the only branch is "is every exercised tier mapped and every
+named key present?" — a yes/no check, not a judgment about salience. This keeps
+the binding "named, not agent discretion" (the S1 O5 decision) while making the
+agent honest when the named binding no longer matches reality.
 
 **Why fold in:** the binding table is static; `MODEL_ROUTING.md` and snapshots
 evolve. An agent that silently prices against a stale binding would emit a
@@ -378,6 +541,27 @@ rate skew honestly in the disclosure body:
   task heavier on input leans `likely-overrun`. The agent states the direction it
   judges, with the blended-rate skew named as a contributing reason.
 
+**Precedence rule when drivers conflict (O10).** `failure_direction` is a single
+enum (`likely-overrun | likely-underrun | symmetric`), but multiple drivers can
+point in opposite directions — e.g. the blended-rate skew may lean
+`likely-underrun` (output-heavy task) while the upper-tier-default budgets lean
+`likely-overrun` (most slices land below the per-stage budget ceilings, the
+driver the S1 cost-present worked example uses). The spec fixes the
+reconciliation:
+
+- The prose body **names every driver** that bears on the direction (the
+  blended-rate skew *and* the budget-default driver *and* any other), each with
+  the direction it pushes.
+- The single enum is set to the **larger-magnitude effect** — the driver the
+  agent judges dominates the figure. If the agent judges the drivers
+  roughly equal and opposite (no clear dominant), the enum is `symmetric`, with
+  the prose naming both opposing drivers as the reason for the symmetric call.
+
+This keeps the machine-readable `failure_direction` consistent with the prose:
+the enum is never a coin-flip between conflicting signals — it is the dominant
+driver, with the full driver set disclosed in prose so the human can see what was
+reconciled.
+
 The agent does **not** "fix" the skew by reintroducing a per-direction rate — S1
 sanctioned the blend explicitly, and the S1 reference tells a downstream author
 not to undo it. S2's obligation is to **surface** the known simplification on the
@@ -396,9 +580,9 @@ S2 owns it.
 
 | Residual | S1 origin | S2 decision | Mechanism |
 | --- | --- | --- | --- |
-| O6 — widening not machine-checkable | code-mode | **Fold in** | Add backward-compatible optional `tokens_by_stage[].cost_usd` to the S1 reference; verifiable on cost-present records |
-| O3 — binding-table drift | spec-mode | **Fold in** | Agent re-verifies tiers + model keys at cost time; degrades to cost-omission-with-disclosure on drift; never edits the binding |
-| O4/O2 — blended-rate skew | spec/code-mode | **Fold in** | Agent surfaces the blended-rate skew in the disclosure + failure_direction of cost-bearing records; never reintroduces per-direction rates |
+| Per-stage `cost_usd` — widening not machine-checkable | code-mode | **Split out → #377** | A format mutation; moved to a dedicated format-revision slice with its own diaboli pass that *demonstrates* backward-compat. S2 makes no change to the format reference; it prices the widening into the whole-record `cost_usd` band and discloses it in prose |
+| O3 + O4 — binding-table drift | spec-mode | **Fold in (mechanical)** | Agent re-verifies exercised tiers + named model keys at cost time; **omits `cost_usd` whenever ANY exercised stage's tier is unmapped or otherwise ungrounded** (mechanical — no "load-bearing" judgment); discloses the cause; never edits the binding |
+| O4/O2 — blended-rate skew | spec/code-mode | **Fold in (disclosure)** | Agent surfaces the blended-rate skew in the disclosure + `failure_direction` of cost-bearing records; conflicting drivers reconciled by the larger-magnitude precedence rule (O10); never reintroduces per-direction rates |
 
 ## 7. MODEL_ROUTING.md row
 
@@ -417,6 +601,14 @@ reasoning". (A note: the agent file stays `model: inherit` per the
 MODEL_ROUTING.md convention; the routing table records the tier, the agent file
 does not pin a model.)
 
+**Provenance consequence (O3):** because the agent runs `model: inherit` and is
+not told its resolved concrete model, the `generated_by` field cannot honestly
+carry a concrete model id unless the dispatcher supplies one. Per §5.4, the agent
+records the resolved model id **if the dispatcher passes it**, and otherwise
+records the routing-tier label `tier:Standard` (grounded in this very
+MODEL_ROUTING.md row) — never a guessed or hard-coded model string. The tier
+label here in §7 is the honest fallback `generated_by` value.
+
 ## 8. Component design (per component-design-with-tdad)
 
 - **Type**: agent — the deliverable is a dispatchable read-only emitter with a
@@ -433,15 +625,59 @@ does not pin a model.)
   against a real target returns either a conforming estimate-record string or a
   `REFUSED:` string. Layer 2 (trigger) does not apply — agents have no
   description-vs-query match to verify.
+- **Behavioural grading strategy (O9) — how a non-deterministic dispatch is
+  graded honestly.** The agent is `model: inherit` with no wired consumer, so the
+  behavioural scenarios cannot assert exact free-text. They are scoped to
+  **deterministically-checkable structural properties of the emitted string**, so
+  each scenario can fail honestly:
+  - **Conformance oracle.** Parse the returned string's YAML frontmatter and
+    assert the **structural** properties of the S1 estimate-record field set:
+    required fields present, enum values in range, every present range has
+    `low ≤ high`. For `human_gate_time` specifically the oracle asserts only that
+    the field is **present** and is **not** a `{low, high}` range — it does **not**
+    assert that the caveat's prose *content* is faithful (that human-gate latency
+    dominates, etc.), which is a semantic property no structural parse can falsify
+    and is therefore out of deterministic-grading scope (see the "Out of scope"
+    bullet below). This is a structural parse, not a semantic judgment —
+    deterministic.
+  - **Presence/absence oracle.** Assert the **presence** of specific fields/prose
+    markers a behaviour requires (e.g. `cost_usd` and `cost_basis` *absent* on a
+    cost-omitted record; the `Excluded` section *present* and naming the
+    omission; the inference-basis line *present* on an inferred classification;
+    no `recommendation`/`verdict`/`proceed` key *anywhere*). Presence/absence of
+    a named key or a greppable marker is deterministic.
+  - **`REFUSED:` prefix oracle.** On ungroundable fixtures (unreadable target,
+    `MODEL_ROUTING.md` absent, `MODEL_ROUTING.md` tables missing/unparseable),
+    assert the returned string **begins with the `REFUSED:` prefix** and contains
+    the named reason/target/grounding fields — and that it is **not** a
+    conforming record. The stable prefix is the deterministic hook.
+  - **Fixture-driven grounding.** Each behavioural scenario pins its grounding
+    inputs (a fixture `MODEL_ROUTING.md`, an empty or populated
+    `observability/costs/`, a target file of a known shape) so the *input* is
+    deterministic even though the *model* is not; the assertions grade only
+    properties that hold across any conforming model output.
+  - **Out of scope for grading.** The scenarios do **not** assert the exact token
+    *numbers*, the exact prose wording, or the **prose content of
+    `human_gate_time`'s qualitative caveat** (all model-dependent semantic
+    properties, not deterministically gradeable). For `human_gate_time` the
+    oracles assert only its **presence** and that it is **not a `{low, high}`
+    range** — never that its caveat says what the S1 field requires. They assert
+    *that* a range is present and well-formed, *that* the required disclosure
+    markers appear, and *that* the refusal/emit routing is correct — never the
+    specific values. A scenario that cannot be graded by one of the oracles above
+    is descoped, not rubber-stamped.
 - **Scenario shape**: the structural `Then` asserts the tool boundary and the
   charter/refusal sections; the behavioural `Then` asserts that a dispatch
   returns a record conforming to the S1 format (or a `REFUSED:` string on an
-  ungroundable target), with no verdict/recommendation field or prose.
-- **Modification or new?** new — `agents/cost-estimator.agent.md`. **Plus a
-  backward-compatible modification** of the S1 format reference for O6 (§6.1) —
-  its existing scenario(s) are updated to cover the additive sub-field.
-- **Scenario vs finding**: scenario only — every assertion is falsifiable (tool
-  boundary, returned-string shape, refusal on ungroundable input, no-verdict).
+  ungroundable target), with no verdict/recommendation field or prose — graded by
+  the oracles above.
+- **Modification or new?** new — `agents/cost-estimator.agent.md`. **No
+  modification of the S1 format reference** — the per-stage `cost_usd` change is
+  split out to #377 (§6.1); S2 leaves `estimate-record-format.md` and its
+  scenarios untouched.
+- **Scenario vs finding**: scenario only — every assertion is falsifiable by one
+  of the deterministic oracles above (tool boundary, conformance parse,
+  presence/absence of named fields, `REFUSED:` prefix).
 
 ## 9. User stories and acceptance scenarios
 
@@ -477,14 +713,21 @@ post-processing.
 ```gherkin
 Given the cost-estimator agent dispatched against a real spec target
 And MODEL_ROUTING.md is readable and observability/costs/ is empty (today's default)
+And the dispatch states target_kind explicitly as "spec"
 When the agent runs to completion
 Then it returns a markdown string with YAML frontmatter and a four-part prose body
-And the frontmatter conforms to the S1 estimate-record field set
+And the frontmatter conforms to the S1 estimate-record field set (parsed, not read loosely)
 And target_kind is "spec" and the tokens/time confidence axes are within the
     spec ceiling (at most high)
 And cost_usd and cost_basis are omitted (no snapshot), the omission disclosed in
     the Excluded section
+And the grounding_sources list carries a cost-snapshot entry whose path is the
+    directory "observability/costs/" (no snapshot file existed), per §5.3
 And the confidence object carries tokens and time axes but no cost axis
+And generated_by is "cost-estimator / tier:Standard" (the dispatch supplied no
+    resolved model id, so the routing-tier label is recorded, never a guessed
+    model string), per §5.4
+And because target_kind was supplied explicitly, no inference-basis line is required
 And the returned string contains no recommendation, verdict, proceed, or go/no-go
     field or prose
 ```
@@ -502,14 +745,22 @@ Given the cost-estimator agent
 When it is dispatched against raw task text with no path and no stated kind
 Then it classifies target_kind as task-text
 And the tokens and time confidence axes are capped at low
+And because the kind was inferred (the task-text default), the Confidence
+    rationale carries an inference-basis line naming the signal
+    (e.g. "classified as task-text by: inline prose, no path, no stated kind")
 
-When it is dispatched against a carpaccio slicing record file
+When it is dispatched against a carpaccio slicing record file with no stated kind
 Then it classifies target_kind as slicing-record
 And the tokens and time confidence axes are capped at most medium
+And because the kind was inferred, the Confidence rationale carries an
+    inference-basis line naming the slicing-record signal it matched on
 
-When it is dispatched against a spec file
+When it is dispatched against a spec file with no stated kind
 Then it classifies target_kind as spec
 And the tokens and time confidence axes may reach high
+And because the kind was inferred, the Confidence rationale carries an
+    inference-basis line naming the spec signal it matched on (so a confident
+    mis-read that up-classifies the ceiling is human-catchable)
 ```
 
 ### 9.4 Story — an ambiguous target is disclosed, never silently up-classified
@@ -542,6 +793,20 @@ Then it returns a string beginning with "REFUSED:"
 And the refusal names the reason, the target, and what grounding was/was not readable
 And the refusal states no estimate record should be written
 And the agent does not return a fabricated estimate record
+
+# O5 — readable-but-tableless MODEL_ROUTING.md is a refusal, distinct from
+# the empty-cost-snapshot (cost-omitted) case
+Given the cost-estimator agent dispatched against a valid, readable spec target
+And MODEL_ROUTING.md resolves as a file but its Token Budget Guidance and
+    Agent Routing tables are missing or unparseable
+When the agent runs
+Then it returns a string beginning with "REFUSED:" (no token grounding = no
+    honest estimate)
+And the refusal names that MODEL_ROUTING.md was readable but its required tables
+    were missing/unparseable
+And the agent does NOT emit a record with fabricated token ranges
+And this is explicitly distinguished from the empty-observability/costs/ case,
+    which is cost-omitted (§9.6), not refused
 ```
 
 ### 9.6 Story — an empty cost snapshot is emitted, not refused
@@ -557,35 +822,56 @@ And MODEL_ROUTING.md is readable but observability/costs/ is empty
 When the agent runs
 Then it returns a valid cost-omitted estimate record (NOT a REFUSED string)
 And cost_usd and cost_basis are omitted with the omission disclosed in Excluded
+And the grounding_sources list still carries the mandatory cost-snapshot entry,
+    with its path set to the directory "observability/costs/" (no snapshot file
+    existed), and the Excluded prose notes the directory held no snapshot (§5.3, O7)
+And the cost-snapshot grounding entry is never dropped and never given a
+    fabricated snapshot file path
 And tokens and agent_compute_time are produced as ranges
 And human_gate_time is produced as its qualitative caveat string
 ```
 
-### 9.7 Story — split-tier widening is verifiable on a cost-present record (O6)
+### 9.7 Story — an inferred classification discloses its basis; an explicit one does not (O6)
 
-**As** a validator (the S3 command's checkpoint)
-**I want** the split-tier widening to be machine-checkable on the emitted record
-**So that** I can assert the implementer band genuinely spans two model rates,
-not collapse to one.
+**As** a human trusting the confidence ceiling
+**I want** every inferred `target_kind` to disclose the signal it classified on,
+while an explicit dispatch-stated kind needs no such disclosure
+**So that** a confident mis-read that up-classifies the ceiling is catchable,
+without noise on kinds the dispatcher asserted.
 
 ```gherkin
-Given the cost-estimator agent dispatched against a target with a usable snapshot
-When it emits a cost-present record
-Then each tokens_by_stage entry carries an optional cost_usd {low, high} range
-And the per-stage cost_usd is present iff the top-level cost_usd is present
-And for the implementer (Standard/Capable) stage, cost_usd.low is priced at the
-    claude-sonnet-4 rate and cost_usd.high at the claude-opus-4 rate, so low < high
-And the S1 format reference's per-stage cost_usd sub-field is optional and
-    additive, so records without it remain valid (backward compatible)
+Given the cost-estimator agent dispatched against a path with no stated kind,
+    whose frontmatter the agent confidently (but possibly wrongly) reads as a spec
+When the agent classifies and emits a record
+Then target_kind is the inferred kind
+And the Confidence rationale carries an inference-basis line of the form
+    "classified as <kind> by <signal>", naming the concrete signal
+And the line is present even though the agent detected no ambiguity (so a
+    confident wrong single-match is human-catchable)
+
+Given the same agent dispatched against the same path but with target_kind
+    stated explicitly in the dispatch
+When the agent classifies and emits a record
+Then it uses the stated kind
+And no inference-basis line is required (the kind was supplied, not derived)
 ```
 
-### 9.8 Story — the agent re-verifies the binding against reality at cost time (O3)
+> **Note (was §9.7 widening-verifiable):** the scenario asserting a
+> machine-checkable per-stage `cost_usd` band has been **removed from S2** and
+> **moved to issue #377** (the format-revision slice that owns the per-stage
+> sub-field). S2 makes no change to the S1 format reference, so there is no
+> per-stage `cost_usd` field for S2 to assert. S2's split-tier widening is
+> priced into the whole-record `cost_usd` band and disclosed in prose only.
+
+### 9.8 Story — the agent omits cost mechanically when any exercised tier is unmapped (O3/O4)
 
 **As** a human relying on a cost figure
-**I want** the agent to detect binding-table drift and degrade to cost-omission
-rather than price against a stale binding
+**I want** the agent to omit cost by a mechanical rule whenever any exercised
+stage's tier is unmapped (or a named model key is missing), with no judgment
+about whether the tier "matters"
 **So that** a confident-looking cost is never emitted against a binding that no
-longer matches MODEL_ROUTING.md or the snapshot.
+longer matches MODEL_ROUTING.md or the snapshot, and the agent stays
+emit-not-decide.
 
 ```gherkin
 Given the cost-estimator agent computing a cost figure
@@ -594,13 +880,23 @@ When the snapshot Model Breakdown lacks a representative model key the binding
 Then the agent omits cost_usd with a disclosure naming the missing key as the cause
 And it does not invent a substitute rate
 
-When MODEL_ROUTING.md carries a tier the binding table does not map
-Then the agent discloses the unmapped tier in Confidence rationale
-And it does not invent a binding for it; if the tier is load-bearing it omits
-    cost_usd with disclosure
+When MODEL_ROUTING.md carries a tier the binding table does not map (tested after
+    applying the S1 join-key normalisation — prefix-strip + whitespace-insensitive
+    tier compare, so Standard/Capable ↔ Standard / Capable), AND that tier is
+    exercised by the target's stage set
+Then the agent omits cost_usd (cost-omitted record) regardless of whether the
+    tier appears "load-bearing" — the rule is mechanical: ANY exercised unmapped
+    tier triggers omission
+And a correctly-mapped split tier that differs only by tier-label spacing is NOT
+    reported unmapped (the normalisation prevents over-omitting cost on the
+    implementer split tier)
+And the agent discloses the unmapped tier in Confidence rationale and names it in
+    Excluded as the omission cause
+And it does not invent a binding for the unmapped tier
+And the agent makes NO discretionary judgment about whether the tier matters
 ```
 
-### 9.9 Story — the blended-rate skew is surfaced on cost-bearing records (O4/O2)
+### 9.9 Story — the blended-rate skew is surfaced on cost-bearing records, with a precedence rule on conflict (O4/O2/O10)
 
 **As** a human reading a cost figure
 **I want** the agent to surface the input/output blended-rate simplification on
@@ -617,6 +913,16 @@ And it states the figure skews when the task's input/output ratio diverges from
     the snapshot quarter's
 And the failure_direction reasoning accounts for the blended-rate skew
 And the agent does not reintroduce a per-direction rate
+
+# O10 — precedence when drivers conflict
+Given a cost-present record whose blended-rate skew leans one direction while the
+    upper-tier-default budgets lean the opposite direction
+When I read the disclosure body and the failure_direction enum
+Then the prose names EVERY driver bearing on the direction and the way each pushes
+And the single failure_direction enum is set to the larger-magnitude (dominant)
+    driver — or "symmetric" when the agent judges the opposing drivers roughly
+    equal, with the prose naming both as the reason
+And the enum is never inconsistent with the prose (no coin-flip between signals)
 ```
 
 ### 9.10 Story — the MODEL_ROUTING row and version reflect the new agent
@@ -666,34 +972,79 @@ mapping table in the plan.
 - **FR-6** An **ambiguous** classification resolves to the **lower-grounding**
   candidate and is **disclosed** in the `Confidence rationale`; it is never
   silently up-classified.
-- **FR-7** When the target is **unreadable**, **unclassifiable**, or the
-  **token grounding (`MODEL_ROUTING.md`) is absent**, the agent returns a
-  **refusal string** with a stable `REFUSED:` prefix naming the reason, the
-  target, and the grounding read — and **does not fabricate** a record.
+- **FR-6a** (**O6**) On any **INFERRED** (non-explicit) `target_kind`
+  classification — content-inference or the `task-text` default — the agent
+  **discloses the inference basis** in the `Confidence rationale` (form:
+  *"classified as `<kind>` by `<signal>`"*), even when it detects no ambiguity,
+  so a confident mis-read that up-classifies the ceiling is human-catchable. An
+  **explicit** dispatch-stated kind needs **no** such disclosure.
+- **FR-7** When the target is **unreadable**, **unclassifiable**, the **token
+  grounding (`MODEL_ROUTING.md`) is absent**, **or** (**O5**) `MODEL_ROUTING.md`
+  is readable but its **Token Budget Guidance / Agent Routing tables are missing
+  or unparseable**, the agent returns a **refusal string** with a stable
+  `REFUSED:` prefix naming the reason, the target, and the grounding read — and
+  **does not fabricate** a record (no token grounding = no honest estimate). This
+  is distinct from the empty-`observability/costs/` case (FR-8), which is
+  cost-omitted, not refused.
 - **FR-8** An **empty `observability/costs/`** (no cost snapshot) is **not** a
   refusal: the agent emits a valid **cost-omitted** record (per the S1 three
   grounding states), with the omission disclosed in `Excluded`.
-- **FR-9** (**O6, fold-in**) The S1 format reference gains a **backward-compatible
-  optional** `tokens_by_stage[].cost_usd` `{low, high}` sub-field, present **iff**
-  the top-level `cost_usd` is present; the agent populates it on cost-present
-  records so the split-tier widening is machine-verifiable. Records without the
-  sub-field remain valid.
-- **FR-10** (**O3, fold-in**) At cost time the agent **re-verifies** the binding
-  table's tiers against `MODEL_ROUTING.md` and its representative model keys
-  against the snapshot Model Breakdown; on drift it **degrades to
-  cost-omission-with-disclosure** (naming the cause) rather than pricing against a
-  stale binding, and it never edits the binding table.
+- **FR-8a** (**O7**) On the cost-omitted (empty-directory) record, the mandatory
+  `grounding_sources` `cost-snapshot` entry is **present** with its `path` set to
+  the **directory** `observability/costs/` (the directory the agent inspected),
+  and the `Excluded` prose notes the directory held no snapshot. The entry is
+  **never dropped** and **never given a fabricated snapshot file path**. (This
+  follows the as-merged S1 reference and its Example 1; S2 does not modify the
+  reference. If a stricter "file-path-only" reading of `path` is later enforced,
+  that tension belongs to **#377**, not S2.)
+- **FR-8b** (**O3, provenance**) `generated_by` is populated honestly: the agent
+  records `cost-estimator / <resolved-model-id>` **iff** the dispatcher supplies
+  the resolved model id; otherwise it records the routing-tier label
+  `cost-estimator / tier:Standard`. It **never** emits a guessed or hard-coded
+  concrete model string. (The agent runs `model: inherit` and is not told its
+  resolved model — §5.4, §7.)
+- **FR-9** **(SPLIT OUT to #377 — no longer an S2 FR.)** The per-stage
+  `tokens_by_stage[].cost_usd` sub-field that an earlier draft folded in here is
+  a **mutation of the merged S1 format reference** and is moved to the dedicated
+  format-revision slice **#377**, which demonstrates backward-compatibility under
+  its own diaboli pass. **S2 makes no change to `estimate-record-format.md`.** S2
+  prices the split-tier widening into the **whole-record `cost_usd`** band and
+  discloses it in prose; it emits no per-stage cost band.
+- **FR-10** (**O3/O4, fold-in — MECHANICAL**) At cost time the agent
+  **re-verifies** that every tier exercised by the target's stage set is **mapped
+  by the binding table** and that the named representative model keys exist in the
+  snapshot Model Breakdown. The mapped/unmapped test **applies the S1 join-key
+  normalisation** from `estimate-record-format.md` (strip the `{{LANGUAGE}}-`
+  prefix; compare tier labels **whitespace-insensitively**, so `Standard/Capable`
+  ↔ `Standard / Capable`) **before** deciding a tier is unmapped — a literal-string
+  match is not sufficient, or a correctly-mapped split tier would be over-omitted
+  on a spacing mismatch. The omission rule is **mechanical, with no "load-bearing"
+  judgment**: the agent **omits `cost_usd` (cost-omitted record with disclosure)
+  whenever ANY exercised stage's tier is unmapped (after normalisation) — or
+  otherwise ungrounded (a named model key missing)** — naming the cause in
+  `Confidence rationale`/`Excluded`. It never invents a binding or a rate, and
+  never edits the binding table.
 - **FR-11** (**O4/O2, fold-in**) On **cost-present** records the agent **surfaces
   the blended input/output rate skew** in the disclosure body and accounts for it
   in `failure_direction`; it never reintroduces a per-direction rate.
+- **FR-11a** (**O10**) When failure-direction drivers conflict, the agent **names
+  every driver in prose** and sets the single `failure_direction` enum to the
+  **larger-magnitude (dominant)** driver — or `symmetric` when the opposing
+  drivers are judged roughly equal — so the enum is never inconsistent with the
+  prose.
 - **FR-12** The emitted record carries **no** verdict/recommendation/proceed
   field and **no** imperative recommendation or go/no-go prose (the agent honours
   the S1 two-layer no-verdict guarantee).
 - **FR-13** `MODEL_ROUTING.md` gains an Agent Routing row for `cost-estimator` at
   the **Standard** tier.
 - **FR-14** A TDAD scenario set (structural + behavioural) covers the agent under
-  `tdad_tests/scenarios/agents/cost-estimator/`; the O6 format-reference change
-  updates the existing S1 skill scenario(s).
+  `tdad_tests/scenarios/agents/cost-estimator/`. The behavioural scenarios are
+  graded by the **deterministic oracle strategy of §8** (frontmatter conformance
+  parse, presence/absence of named fields/markers, `REFUSED:` prefix on
+  ungroundable fixtures) so each can **fail honestly** despite the agent being
+  non-deterministic (**O9**). **No S1 skill scenario is modified** — the
+  per-stage `cost_usd` format change is split out to #377, so
+  `estimate-record-format.md` and its scenarios are untouched by S2.
 - **FR-15** The plugin version bumps to **0.42.0** across plugin.json,
   marketplace.json (`version` + `plugin_version`), CHANGELOG, and README.
 - **FR-16** A docs touch ships: a reference-page entry for the new agent and a
@@ -702,16 +1053,21 @@ mapping table in the plan.
 
 ## 11. Compatibility and rollout
 
-- **Backwards compatibility**: additive. The new agent file changes no existing
-  component's behaviour. The one change to an existing artefact — the O6
-  `tokens_by_stage[].cost_usd` sub-field on the S1 format reference — is
-  **optional and additive**, so every S1-conforming record stays valid and the
-  S3 command's future checkpoint reading the reference is unaffected by absence of
-  the sub-field.
+- **Backwards compatibility**: purely additive — the new agent file changes **no
+  existing component's behaviour and touches no existing artefact**. S2 makes
+  **no** change to the S1 format reference (the per-stage `cost_usd` sub-field is
+  split out to #377). Every S1-conforming record stays valid because S2 emits
+  against the contract exactly as-merged; the S3 command's future checkpoint
+  reading the reference is unaffected because the reference is unchanged.
 - **No consumer wired yet**: no command or orchestrator dispatches the agent in
-  this slice (S3/S4). The agent is exercised by its behavioural TDAD scenario
-  (a direct dispatch), not by a shipped surface — the same way carpaccio's
-  scenarios exercise it before the orchestrator wiring is read.
+  this slice (S3/S4). The agent is exercised by its behavioural TDAD scenarios
+  (direct dispatches against pinned fixtures), not by a shipped surface — the same
+  way carpaccio's scenarios exercise it before the orchestrator wiring is read.
+  The behavioural scenarios are made gradeable against a non-deterministic
+  `model: inherit` agent by the §8 oracle strategy: fixture-pinned grounding
+  inputs plus assertions scoped to deterministic structural properties (frontmatter
+  conformance, presence/absence of named fields, `REFUSED:` prefix), never exact
+  token numbers or prose wording (**O9**).
 - **Cache behaviour**: `sync-marketplace-cache.sh` fires (`plugin_version` bump);
   `sync-to-global-cache.sh` rsyncs the new agent into the versioned cache.
 - **CI gates**: spec-first is satisfied by this spec as the first commit. Version
@@ -740,11 +1096,16 @@ Per the CLAUDE.md Docs Site Review convention, a new agent warrants a docs touch
 | Does the agent write the record? | **No.** It returns a string; a dispatcher (S3/S4, out of scope) persists it after a human disposes. (§5.1, FR-2) |
 | What targets does it accept? | Raw task text, a slicing record, a single slice, a spec — one per dispatch. (§4.1) |
 | How is `target_kind` classified? | Explicit kind in dispatch → content inference from a path → `task-text` default; ambiguity resolves to the lower-grounding kind and is disclosed. (§4.2, FR-4/FR-6) |
-| Behaviour on unreadable/ungroundable target | A `REFUSED:` string (stable prefix), never a fabricated record. (§5.2, FR-7) |
+| Behaviour on unreadable/ungroundable target | A `REFUSED:` string (stable prefix), never a fabricated record — including the O5 readable-but-tableless `MODEL_ROUTING.md` case. (§5.2, FR-7) |
 | Behaviour on empty `observability/costs/` | Emit a valid cost-omitted record — **not** a refusal. (§5.3, FR-8) |
-| O6 (widening not machine-checkable) | **Fold in** — add backward-compatible optional `tokens_by_stage[].cost_usd`; verifiable on cost-present records. (§6.1, FR-9) |
-| O3 (binding-table drift) | **Fold in** — agent re-verifies tiers + model keys at cost time, degrades to cost-omission-with-disclosure on drift, never edits the binding. (§6.2, FR-10) |
+| Cost-omitted `grounding_sources` path (O7) | The mandatory `cost-snapshot` entry's `path` is the directory `observability/costs/`; entry never dropped, never a fabricated file path. (§5.3, FR-8a) |
+| `generated_by` provenance (O3) | Resolved model id **iff** the dispatcher supplies it; otherwise the routing-tier label `tier:Standard`; never a guessed/hard-coded model string. (§5.4, FR-8b) |
+| Per-stage `cost_usd` widening (was O6) | **SPLIT OUT to #377** — a format-reference mutation; gets its own diaboli pass demonstrating backward-compat. S2 changes nothing in the reference and prices the widening into the whole-record band + prose. (§6.1, §2.2, FR-9) |
+| Binding-table drift (O3/O4) | **Fold in (mechanical)** — agent re-verifies exercised tiers + named model keys at cost time and **omits `cost_usd` whenever ANY exercised tier is unmapped/ungrounded** (no "load-bearing" judgment); never edits the binding. (§6.2, FR-10) |
+| Inference-basis disclosure (O6) | On any inferred `target_kind`, disclose "classified as `<kind>` by `<signal>`" in `Confidence rationale`; explicit kinds need none. (§4.2, FR-6a) |
 | O4/O2 (blended-rate skew) | **Fold in** — agent surfaces the skew in disclosure + failure_direction of cost-bearing records; never reintroduces per-direction rates. (§6.3, FR-11) |
+| failure_direction on conflict (O10) | Name all drivers in prose; set the enum to the larger-magnitude driver (or `symmetric` when equal). (§6.3, FR-11a) |
+| Behavioural grading of a non-deterministic dispatch (O9) | Fixture-pinned grounding + deterministic oracles (conformance parse, presence/absence of named fields, `REFUSED:` prefix); never exact numbers/wording. (§8, FR-14) |
 | Model tier | **Standard** — read-and-author against a fixed methodology, not deep judgment. (§7, FR-13) |
 | Version bump | 0.41.0 → 0.42.0 (new agent, minor). (§9.10, FR-15) |
 | TDAD layers | structural + behavioural (agent has an assertable returned-string side-effect). (§8, FR-14) |
@@ -755,9 +1116,12 @@ Per the CLAUDE.md Docs Site Review convention, a new agent warrants a docs touch
 - S1 spec: `docs/superpowers/specs/2026-06-10-cost-estimation-skill-design.md`.
 - S1 skill (load as reasoning context):
   `ai-literacy-superpowers/skills/cost-estimation/SKILL.md`.
-- S1 format reference (emit a conforming record; O6 adds a backward-compatible
-  field here): `ai-literacy-superpowers/skills/cost-estimation/references/estimate-record-format.md`.
+- S1 format reference (emit a conforming record **exactly as-merged**; S2 makes
+  no change here — the per-stage `cost_usd` field is owned by #377):
+  `ai-literacy-superpowers/skills/cost-estimation/references/estimate-record-format.md`.
 - Downstream issues: S3 #370, S4 #371, S5 #372, S6 #373.
+- Sibling format-revision issue: **#377 — per-stage `cost_usd` sub-field** (split
+  out of S2 at this revision; owns the only change to the S1 format reference).
 - Governing decisions: AGENTS.md ARCH_DECISIONS — **"agent-emit +
   dispatcher-persist + human-disposes"** (tool boundary + dispose-then-write
   ordering invariant) and **"disclosure-of-derived-judgment"** (the four-part
