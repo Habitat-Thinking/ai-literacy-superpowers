@@ -3,7 +3,7 @@ title: Agents
 ---
 # Agents
 
-The plugin ships 13 agents organised into three groups: the
+The plugin ships 15 agents organised into three groups: the
 **spec-first pipeline** that coordinates feature work end to end,
 the **harness agents** that verify and maintain infrastructure
 conventions, and the **assessor** that measures AI literacy.
@@ -17,7 +17,7 @@ makes this explicit.
 
 ## Pipeline Agents
 
-These eight agents form the spec-first development pipeline. Carpaccio
+These nine agents form the spec-first development pipeline. Carpaccio
 runs first (step 0) against the raw task description and slices it into
 thin, end-to-end-complete pieces; a human dispositions each slice and
 chooses which one this iteration will progress. After spec-writer
@@ -151,6 +151,38 @@ does not block progression. The merge-time HARNESS constraint
 
 This release is spec-mode only. Code-mode behaviour is tracked under
 [issue #209](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/209).
+
+### cost-estimator
+
+- **Tools**: Read, Glob, Grep
+- **Dispatched by**: a downstream `/cost-estimate` command / orchestrator
+  fold-in (out of scope at this slice)
+- **Trust boundary**: Read-only
+
+Prospective-cost emitter. Given a target — raw task text, a slicing record, a
+single slice, or a spec — it reads `MODEL_ROUTING.md` and the latest
+`observability/costs/` snapshot, applies the `cost-estimation` skill's
+methodology, and **returns the estimate-record content as a string** for a
+dispatcher to persist after a human disposes. It never writes the record, never
+names where it lands, never validates it, and never decides go/no-go — the next
+instance of the AGENTS.md **agent-emit + dispatcher-persist + human-disposes**
+pattern and its dispose-then-write ordering invariant.
+
+It classifies the target into the S1 `target_kind` enum, which sets the
+confidence ceiling for the `tokens`/`time` axes (`task-text`→`low`,
+`slicing-record`/`slice`→`medium`, `spec`→`high`). Any **inferred** kind
+discloses its inference basis (`classified as <kind> by <signal>`) so a confident
+mis-read is human-catchable; an explicit dispatch-stated kind needs none.
+
+Cost is **omitted with disclosure** whenever it cannot be grounded — no usable
+`observability/costs/` snapshot, or any exercised stage tier unmapped by the
+binding table (a mechanical check after the S1 join-key normalisation, no salience
+judgment), or a named representative model key missing. An empty
+`observability/costs/` is a **cost-omitted record, not a refusal**. It returns a
+machine-greppable `REFUSED:` string only on an unreadable/unclassifiable target or
+an absent/tableless `MODEL_ROUTING.md`. `generated_by` carries the dispatcher's
+resolved model id when supplied, else the honest routing-tier label
+`tier:Standard` — never a guessed model string.
 
 ### tdd-agent
 
@@ -310,6 +342,7 @@ governance analysis requires nuanced judgement about meaning.
 | spec-writer | x | x | x | x | x | | | | read-write |
 | advocatus-diaboli | x | | | x | x | | | | read-only |
 | choice-cartographer | x | | | x | x | | | | read-only |
+| cost-estimator | x | | | x | x | | | | read-only |
 | tdd-agent | x | x | x | x | x | x | | | read-write |
 | code-reviewer | x | | | x | x | x | | | read-only |
 | integration-agent | x | x | x | | | x | | | read-write |

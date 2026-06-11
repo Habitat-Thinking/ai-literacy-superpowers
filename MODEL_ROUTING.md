@@ -14,6 +14,7 @@
 | {{LANGUAGE}}-implementer | Standard / Capable | Depends on task complexity |
 | code-reviewer | Most capable | Nuance, quality judgment |
 | integration-agent | Standard | Procedural workflow |
+| cost-estimator | Standard | Read-and-author against a fixed methodology and named grounding sources — applies the cost-estimation skill and emits a conforming record. Not deep adversarial judgment or design synthesis; it follows a defined derivation (like tdd-agent). |
 
 ## Token Budget Guidance
 
