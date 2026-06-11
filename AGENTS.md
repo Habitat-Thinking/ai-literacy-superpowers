@@ -131,6 +131,35 @@
   #7 and #8 (original promotion); `docs/superpowers/stories/dl-s4-diagnose-command-design.md`
   story #1 (ordering-invariant sharpening).
 
+- Decision: **an agent that DERIVES a judgment a human previously SUPPLIED
+  carries a disclosure obligation** — the disclosure-of-derived-judgment
+  contract. When an agent emits a value that was formerly ground-truth supplied
+  by a human (a derived *prediction*, not an inspected fact), the artefact must
+  disclose, in four parts, what it **included**, what it consciously
+  **excluded**, its **confidence**, and the **failure direction** when
+  confidence is below high — and never present a silent boundary or a single
+  number as fact. Reason: a supplied input cannot be wrong; a derived one can
+  under- or over-reach, so the derivation manufactures a correctness risk the
+  supplied case never had, and the four-part disclosure is what keeps the
+  derived value honest (it does not make it *useful* — that is a separate
+  validation question). This complements, and is disposed over through, the
+  agent-emit/dispatcher-persist/human-disposes architecture above: the
+  disclosure is the thing the human disposes over. Worked instance: the
+  `cost-estimation` skill's estimate-record operationalises it as a format
+  contract — token/time/cost ranges with per-axis confidence, an
+  included/excluded/confidence/failure-direction prose body, and `cost_usd`
+  omitted-with-disclosure rather than guessed when ungrounded. The same
+  principle independently surfaced for the diagnostic-legibility pipeline-map's
+  derived task→scope resolution; two independent surfacings argue it is
+  cross-cutting, not feature-local (Rule of Three pending a third). Scope note:
+  this is a design discipline these specs PROPOSE, not yet an enforced
+  invariant beyond each skill's own validation checklist — a trust-surface
+  audit should read the disclosure obligation, not just the tool list. Future
+  "let the agent infer X that the human used to supply" features inherit this
+  obligation rather than re-deriving it.
+  Source: `docs/superpowers/stories/cost-estimation-skill-design.md` story #8
+  (promoted disposition).
+
 - Decision: hook scripts never block, only warn. Reason: this is a
   plugin used across diverse projects — blocking hooks could break
   workflows the plugin authors cannot predict. Advisory messages let

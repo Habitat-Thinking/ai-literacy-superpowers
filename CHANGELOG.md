@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.41.0 — 2026-06-11
+
+### New skill — `cost-estimation` (prospective cost/token/time estimation)
+
+Ships S1 of the cost-estimator capability: the methodology and the format
+contract every later slice (the S2 agent, the S3 command, the S4
+orchestrator fold-in) consumes. No agent, command, or orchestrator wiring
+ships here.
+
+- **`skills/cost-estimation/SKILL.md`** — the prospective sibling of
+  `cost-tracking`. Describes how MODEL_ROUTING.md grounds token and
+  agent-compute-time ranges today, how an `observability/costs/` snapshot
+  adds a dollar figure only when it supplies a usable $/token rate (three
+  grounding states, no list-price fallback), the split-tier widening for
+  the implementer stage, the two-layer no-verdict guarantee, the
+  agent-compute / human-gate time split, and the calibration seam left
+  open for S6.
+- **`skills/cost-estimation/references/estimate-record-format.md`** — the
+  stable estimate-record field set (with `cost_usd`/`cost_basis`
+  conditional and `confidence` per-axis), the tier→model→$/token binding
+  table, the four-part disclosure body, the validation checklist
+  (including the positive-content no-verdict scan), and two worked
+  examples (cost-omitted and cost-present). This is the artefact a
+  downstream command's Output Validation Checkpoint parses.
+
 ## 0.40.0 — 2026-06-01
 
 ### `/assess` — ALCI Part D operational axes + Habitat Build Gap
