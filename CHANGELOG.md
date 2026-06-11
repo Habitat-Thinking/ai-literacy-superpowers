@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.41.1 — 2026-06-11
+
+### Fix — reconcile advocatus-diaboli objection taxonomy
+
+- Completed the abandoned 2026-04-19 taxonomy migration: the SKILL.md and
+  the `/diaboli` command were migrated to the canonical six-category set
+  (`premise`/`scope`/`implementation`/`risk`/`alternatives`/`specification
+  quality` + `critical`/`high`/`medium`/`low`), but `advocatus-diaboli.agent.md`
+  and the orchestrator's spec-mode validation kept the retired
+  `design`/`threat`/`failure`/`operational`/`cost` + `major`/`minor` set.
+  Reconciled both to the canonical set (one set for both modes; only per-mode
+  weighting differs). Surfaced by REFLECTION_LOG 2026-06-11.
+- Remapped the objection records that had drifted to the retired taxonomy
+  (`cost-estimation-skill-design.md`; one stray `operational` in
+  `dl-s2b-challenge-protocol-design-code.md`) back to canonical.
+- Added a deterministic guard — `scripts/check-objection-taxonomy.py` +
+  `objection-taxonomy-check.yml` workflow + the HARNESS constraint
+  "Objection records use the canonical taxonomy" — so the retired vocabulary
+  cannot reappear. Records dated on or before the 2026-04-19 migration are
+  grandfathered.
+
 ## 0.41.0 — 2026-06-11
 
 ### New skill — `cost-estimation` (prospective cost/token/time estimation)

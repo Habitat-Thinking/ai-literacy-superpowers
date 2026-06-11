@@ -5,8 +5,8 @@ mode: spec
 diaboli_model: claude-opus-4-8[1m]
 objections:
   - id: O1
-    category: design
-    severity: major
+    category: implementation
+    severity: high
     claim: "The split-tier widening that resolves round-1 O5 collapses to a zero-width band, because the new tier-binding table (§6.2) maps BOTH `Standard` and `Capable` to the same representative model `claude-sonnet-4` — so the implementer's low and high cost bounds use an identical $/token and the 'widening' produces no spread at all."
     evidence: "Spec §6.2 binding table (lines 394-396) lists `Standard → claude-sonnet-4` and `Capable → claude-sonnet-4`, and the split row as 'spans claude-sonnet-4 (low) … claude-sonnet-4 (high)'. §6.1 (lines 371-378) defines split-tier widening as 'its low bound uses the cheaper tier (Standard) and its high bound uses the dearer tier (Capable)'. When both tiers bind to one model, low rate == high rate; the widening the spec presents as the O5 fix is a no-op for the only stage it was written for (implementer, 100-250k, the dominant cost term)."
     disposition: accepted
@@ -17,8 +17,8 @@ objections:
       Whatever is chosen, the cost-present worked example must be able to
       demonstrate it.
   - id: O2
-    category: design
-    severity: major
+    category: scope
+    severity: high
     claim: "`human_gate_time` is derived from `gate_count`, but S1 has no grounded source for the gate count of a target: the gate set lives in the orchestrator (S4, #371), which this slice explicitly does not touch, and the count depends on which stages a target exercises — a methodology judgement the spec leaves to the agent. The O9 fix replaced one ungrounded number (the gate-time range) with a formula whose own input (`gate_count`) is ungrounded at S1, and reaches into orchestrator topology the slice declares out of scope."
     evidence: "Spec §4.3 (lines 197-205) and §6.3 (lines 459-464) define `human_gate_time = gate_count × per-gate latency band`, where gate_count is 'the number of human-disposition gates the target's stage set passes through (Slice Adjudication, Plan Approval, diaboli/cartograph dispositions, code review, integration)'. §2.2 (lines 83-101) places the orchestrator gate topology in S4 (#371) and instructs that S1 must not name 'which gate it appears in'. The gate list enumerated in §4.3 is exactly the orchestrator's gate set; no rule derives gate_count from target_kind."
     disposition: accepted
@@ -29,8 +29,8 @@ objections:
       disclosed qualitative caveat until S4 fixes the gate set. A required
       multiplier with no derivation is the false-precision the spec opposes.
   - id: O3
-    category: operational
-    severity: minor
+    category: risk
+    severity: medium
     claim: "The tier→model binding table is a new hardcoded maintenance artefact that will silently drift from MODEL_ROUTING.md and from reality: it pins representative model names (`claude-opus-4`, `claude-sonnet-4`) that are not derived from any source the methodology reads, and nothing in S1 keeps it synchronised when routing or model names change."
     evidence: "Spec §6.2 binding table (lines 391-396) fixes `Most capable → claude-opus-4`, `Standard → claude-sonnet-4`, etc. These names appear in neither MODEL_ROUTING.md (which carries only abstract tiers, confirmed lines 8-16) nor in any other read source — they are authored into the reference. §6.2 line 398-400 says 'the reference fixes the representative model per tier and is the artefact S6 may revise as routing evolves', i.e. it is hand-maintained and only revisited at S6. The cost-tracking snapshot uses `claude-opus-4`/`claude-sonnet-4` keys (cost-tracking SKILL.md lines 52-54), so a future model rename breaks the join silently."
     disposition: accepted
@@ -40,8 +40,8 @@ objections:
       MODEL_ROUTING.md and the latest snapshot's model keys whenever cost is
       computed. Not blocking the spec.
   - id: O4
-    category: failure
-    severity: minor
+    category: implementation
+    severity: low
     claim: "The per-model rate formula `estimated_cost ÷ (input_tokens + output_tokens)` (§6.2) blends input and output token prices into one rate, but real provider pricing charges output tokens several times the input rate; applied to the estimate's own token ranges (which are total-token budgets, not input/output-split), the derived cost can be materially wrong in a direction the spec does not disclose as a failure-direction case."
     evidence: "Spec §6.2 (lines 402-409): 'computes a per-model $/token as estimated_cost ÷ (input_tokens + output_tokens) for that model row — a single blended rate per model'. MODEL_ROUTING.md Token Budget Guidance (lines 20-26) gives per-role total-token ranges with no input/output split, and the snapshot Model Breakdown (cost-tracking SKILL.md lines 50-54) reports input and output volumes separately. A stage whose generation mix differs from the quarter-aggregate mix is mispriced by the blended rate, and §5.1's failure_direction guidance (lines 269-275) never names blended-rate skew as a source of cost error."
     disposition: accepted
@@ -56,14 +56,19 @@ objections:
   Round 2. This record OVERWRITES the round-1 review (12 objections, all
   accepted) that drove the spec revision; the "Explicitly not objecting to"
   section below documents which round-1 objections were confirmed genuinely
-  resolved (verified against source). Validation note: the dispatched diaboli
-  returned O2 under the code-mode category 'specification quality'; remapped to
-  the spec-mode category 'design' in place (its core is a structural
-  scope-coupling flaw), per advocatus-diaboli.agent.md lines 54-61. All other
-  categories/severities were returned valid.
+  resolved (verified against source).
+
+  Taxonomy note (corrected 2026-06-11): an earlier pass mis-mapped these
+  objections to the OLD diaboli taxonomy (design/operational/failure +
+  major/minor), believing the agent file was canonical. It is not — the
+  2026-04-19 taxonomy migration made the SKILL.md set canonical
+  (premise/scope/implementation/risk/alternatives/specification quality +
+  critical/high/medium/low), which every other spec-mode objection record uses.
+  The categories/severities here were remapped to that canonical set:
+  O1 implementation/high, O2 scope/high, O3 risk/medium, O4 implementation/low.
 -->
 
-## O1 — design — major
+## O1 — implementation — high
 
 ### Claim
 
@@ -83,7 +88,7 @@ The §6.2 binding table (spec lines 391-396) reads:
 
 Round-1 O5 was accepted with the explicit instruction to "widen the cost range to span Standard..Capable rather than leaving the dominant term's rate to agent discretion." The revision added the widening mechanism but bound both tiers to the same model, which silently re-defeats the fix: the dominant stage's cost contribution has no tier-driven spread, and the only spread it carries is the token-range spread it would have had anyway. Either the binding table is wrong (Capable should bind to a dearer model than Standard), or the MODEL_ROUTING.md distinction between `Standard` and `Capable` carries no cost consequence — in which case the spec should say so and drop the widening machinery as dead weight rather than ship a mechanism the worked example cannot demonstrate. As written, a reviewer authoring the cost-present worked example (§8.2) cannot show a widened implementer band, because the table forbids one.
 
-## O2 — design — major
+## O2 — scope — high
 
 ### Claim
 
@@ -97,7 +102,7 @@ Round-1 O5 was accepted with the explicit instruction to "widen the cost range t
 
 A required numeric range whose multiplier (`gate_count`) has no derivation rule will be invented per estimate — precisely the false-precision failure mode the §3 range-not-point decision exists to prevent, and the same failure O9 was raised to close. The fix moved the invented number down one level: the per-gate band is at least avowed as an assumption, but `gate_count` is presented as if it were a known quantity when its source (the orchestrator gate topology) does not ship until S4. Two reasonable agents will count gates differently for the same target (does a docs-only change pass diaboli? does it pass integration?), producing divergent `human_gate_time` ranges from an identical input — the divergent-implementation hazard the methodology was meant to eliminate. The spec should either define the gate-count derivation from `target_kind` as a stated table (accepting that it duplicates knowledge S4 will own, and flagging the coupling), or demote `human_gate_time` to a disclosed qualitative caveat until S4 fixes the gate set.
 
-## O3 — operational — minor
+## O3 — risk — medium
 
 ### Claim
 
@@ -111,7 +116,7 @@ The §6.2 binding table (spec lines 391-396) pins `Most capable → claude-opus-
 
 The spec's central honesty claim is that cost is grounded in observed actuals, not guesses. But the tier→model binding — the join that turns a snapshot rate into a per-stage rate — is itself an ungrounded editorial assertion ("`claude-opus-4` is the representative model for Most capable"). If routing shifts a stage to a different model, or the provider renames a model in the snapshot, the join silently maps to the wrong rate or to nothing, and the methodology has no check that flags the mismatch. This is the round-1 O2 problem relocated rather than removed: round-1 O2 said the tier→model→$/token binding was undefined; the revision defined it as a static table, which is correct in form but introduces a maintenance-drift surface the spec acknowledges only as "the artefact S6 may revise." A note in the methodology that the binding must be re-verified against MODEL_ROUTING.md and the latest snapshot's model keys whenever cost is computed would close it.
 
-## O4 — failure — minor
+## O4 — implementation — low
 
 ### Claim
 

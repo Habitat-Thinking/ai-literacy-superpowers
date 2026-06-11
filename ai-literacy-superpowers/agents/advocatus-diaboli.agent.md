@@ -51,21 +51,30 @@ cognitive-engagement gate.
 
 ## Reasoning Protocol
 
-Work through each of the six categories in order:
+Work through each of the six categories in order. These six are **the same in
+both modes** — only the *weighting* differs, and the dispatcher sets the mode.
+The skill (`skills/advocatus-diaboli/SKILL.md`) is the authoritative source for
+the categories, severities, and per-mode weighting; this list mirrors it:
 
-1. **premise** — does the spec solve the right problem?
-2. **design** — does the chosen approach have structural flaws?
-3. **threat** — does the design create or ignore trust/abuse-model gaps?
-4. **failure** — what foreseeable failures does the design not address?
-5. **operational** — will this be difficult to operate correctly?
-6. **cost** — is the cost disproportionate and unacknowledged?
+1. **premise** — is the spec solving the right problem? (highest leverage —
+   a premise objection invalidates everything downstream)
+2. **scope** — is the chosen boundary unnecessarily wide, or missing something
+   necessary? (top-level what-is-in/out, not implementation detail)
+3. **implementation** — will a chosen design decision cause real problems
+   downstream? (challenge the decision, do not nit-pick)
+4. **risk** — does the design create or ignore a trust, safety, operational, or
+   failure risk? (structural gaps under adversarial conditions or misuse)
+5. **alternatives** — is there a materially simpler or cheaper approach the spec
+   did not weigh?
+6. **specification quality** — is there ambiguity that would cause divergent
+   implementations? (not grammar or formatting)
 
 For each category, ask: "What is the strongest honest objection I can make?"
 If the answer is "none that meets the evidence bar," skip that category.
 Do not manufacture objections. An empty category is not a failure.
 
-Assign severity (`major` or `minor`) before writing the objection. If you
-cannot assign a severity, the objection is not ready.
+Assign severity (`critical`, `high`, `medium`, or `low`) before writing the
+objection. If you cannot assign a severity, the objection is not ready.
 
 Cap at 12 objections. If you have more than 12 candidates, select the 12 with
 the highest severity and strongest evidence.

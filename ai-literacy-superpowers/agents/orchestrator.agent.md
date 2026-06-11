@@ -249,8 +249,10 @@ Read back the written file and verify:
 1. YAML frontmatter present with `spec`, `date`, `diaboli_model`, `objections` fields
 2. Each objection has `id`, `category`, `severity`, `claim`, `evidence`,
    `disposition: pending`, `disposition_rationale: null`
-3. Categories are one of: `premise`, `design`, `threat`, `failure`, `operational`, `cost`
-4. Severities are one of: `major`, `minor`
+3. Categories are one of: `premise`, `scope`, `implementation`, `risk`,
+   `alternatives`, `specification quality` (the same six in both modes — see
+   `skills/advocatus-diaboli/SKILL.md`; only the per-mode weighting differs)
+4. Severities are one of: `critical`, `high`, `medium`, `low`
 5. Objection count is between 1 and 12 inclusive
 6. Prose sections present for each objection
 7. "Explicitly not objecting to" section present with at least three entries
@@ -261,7 +263,7 @@ Fix any deviations in place. Do not re-dispatch the agent.
 
 PAUSE and present the objection record to the user. Show:
 
-- Total objections (major / minor split)
+- Total objections (by severity: critical / high / medium / low)
 - Category distribution
 - Each objection's claim and evidence
 
