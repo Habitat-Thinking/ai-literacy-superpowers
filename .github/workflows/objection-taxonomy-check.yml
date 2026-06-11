@@ -1,0 +1,40 @@
+# Objection-record taxonomy check for pull requests.
+#
+# The advocatus-diaboli charter (skills/advocatus-diaboli/SKILL.md) defines ONE
+# six-category set for both spec and code mode. The 2026-04-19 taxonomy
+# migration retired the old design/threat/failure/operational/cost + major/minor
+# vocabulary. This guard prevents objection records drifting back to it — the
+# failure recorded in REFLECTION_LOG (2026-06-11), where the agent file and the
+# orchestrator's spec-mode validation still carried the retired set.
+#
+# Records dated on or before the 2026-04-19 migration are grandfathered by the
+# script (the migration spec's own objection record is the canonical example).
+
+name: Objection Taxonomy Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "docs/superpowers/objections/**"
+      - "ai-literacy-superpowers/scripts/check-objection-taxonomy.py"
+      - ".github/workflows/objection-taxonomy-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check objection-record taxonomy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Verify objection records use the canonical taxonomy
+        run: python3 ai-literacy-superpowers/scripts/check-objection-taxonomy.py

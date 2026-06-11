@@ -40,7 +40,7 @@ objections:
     disposition: accepted
     disposition_rationale: "Extend the description with a closing clause that names the machine-parseable contract: 'Notes follow the Q<N> (question-name): prefix convention; degenerate scopes use the literal `(empty scope)` sentinel.' Update the matching structural test to assert both `Q<N>` and the `(empty scope)` literal appear in the description. Cheap and pulls the contract surface into the discovery layer."
   - id: O6
-    category: operational
+    category: risk
     severity: medium
     claim: "Both downstream surfaces that human users see — the marketplace listing's `description` field and the `diagnostic-legibility/README.md` Install section — are stale and contradict v0.3.0 status. The marketplace says 'First agent (in development)'; the README still tells installers to 'Wait for S2 (#331) to land before expecting functional behaviour.' Anyone discovering the plugin through either surface gets the v0.1.0 message."
     evidence: ".claude-plugin/marketplace.json line 29 (the diagnostic-legibility plugins[] entry): 'First agent (in development) builds, self-challenges, and cross-checks two models of a codebase scope.' diagnostic-legibility/README.md lines 60–62: 'The plugin will install successfully but offer no commands at v0.1.0. Wait for S2 (#331) to land before expecting functional behaviour.' Both files were modified for the version bump; both kept descriptive copy from earlier slices. The README Status section (lines 8–24) was updated; the Install section directly below it was not."
@@ -79,7 +79,9 @@ this record does not re-litigate those dispositions.
 
 Nine objections raised: 4 high (O1, O2, O3, O4), 4 medium (O5, O6, O7, O8),
 1 low (O9). Distribution across categories: 1 specification quality, 3
-implementation, 4 risk, 1 operational, 0 premise/alternatives/scope.
+implementation, 5 risk, 0 premise/alternatives/scope. (O6 was originally
+filed under the retired `operational` category; remapped to `risk` when the
+canonical-taxonomy guard landed.)
 
 The implementation is structurally sound. The agent file lands at the
 spec-targeted length (245 lines), carries the read-only tool boundary,
