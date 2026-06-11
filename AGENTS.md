@@ -166,6 +166,31 @@
   (original promotion); `docs/superpowers/stories/cost-estimator-agent-design.md`
   story #2 (Rule-of-Three confirmation, 2026-06-11).
 
+- Decision: **a change to a shared/merged contract gets its own owning slice
+  with its own adversarial pass — a consumer never mutates the contract it
+  consumes.** When a slice discovers it needs to change a merged contract a
+  reference, schema, or format that other slices depend on (e.g. a
+  `skills/<name>/references/<contract>.md`), carve the change into a dedicated
+  slice that **owns** that artefact and runs its own diaboli pass, rather than
+  mutating it in-place from a consumer slice. Reason: a contract change folded
+  into a consumer slice (a) conflates owner and consumer roles, and (b) inherits
+  only that consumer's adversarial budget, which is scoped to the consumer's
+  behaviour — **not** the contract's backward-compatibility, the property that
+  most needs scrutiny. Worked instance: the per-stage `cost_usd` format change
+  was split out of S2 (the `cost-estimator` agent, a pure consumer of the
+  estimate-record format) into its own slice #377, which owns
+  `estimate-record-format.md` and earned a dedicated two-round diaboli pass that
+  hammered the backward-compat demonstration (the `iff` trap; the rate-consistent
+  worked example) a consumer-scoped review would have missed. Cost accepted:
+  slice proliferation — a small contract fix carries full feature-PR ceremony.
+  Pairs with the agent-emit/dispatcher-persist boundary above: a consumer
+  neither *writes* the contract nor *edits* it. Watch item: this is the **first
+  worked instance** of the precedent the S2 cartographer named; confirm the rule
+  on the next contract-change slice (Rule of Three).
+  Source: `docs/superpowers/stories/cost-estimator-agent-design.md` story #5
+  (precedent named, accepted); `docs/superpowers/stories/format-revision-per-stage-cost-design.md`
+  story #1 (first worked instance, promoted 2026-06-11).
+
 - Decision: hook scripts never block, only warn. Reason: this is a
   plugin used across diverse projects — blocking hooks could break
   workflows the plugin authors cannot predict. Advisory messages let
