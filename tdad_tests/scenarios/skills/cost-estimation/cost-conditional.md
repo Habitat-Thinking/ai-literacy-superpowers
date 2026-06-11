@@ -77,6 +77,45 @@ three snapshot grounding states is handled.
   usable snapshot lands — the same `cost_usd`/`cost_basis`/
   `confidence.cost` fields simply begin to appear.
 
+---
+
+### Format-revision slice (#377) additions
+
+The format-revision slice (spec
+`docs/superpowers/specs/2026-06-11-format-revision-per-stage-cost-design.md`)
+adds two cost-conditional invariants that belong at this boundary. They
+fail against the S1-era reference and pass only once the slice's edits
+land.
+
+**Cost-omitted shape carries no per-stage `cost_usd` sub-field** (spec
+§4.3 class A/C, §4.5; FR-5):
+
+- The **cost-omitted worked example** (Example 1) carries **no**
+  `tokens_by_stage[].cost_usd` sub-field on any stage — the per-stage cost
+  band **never appears on a cost-omitted record** (top-level `cost_usd`
+  absent ⟹ no per-stage band anywhere).
+- This is the cost-conditional half of the class-A/C backward-compat
+  invariant: a cost-omitted record (today's day-one default) stays
+  **valid** under the edited checklist precisely because the sub-field is
+  absent and every new per-stage check fires vacuously.
+
+**Grounding-path directory sentinel is the documented cost-omitted
+convention** (spec §6, §6.1; FR-9):
+
+- The mandatory `cost-snapshot` grounding entry's `path` on the
+  cost-omitted record is the **directory** `observability/costs/`
+  (trailing slash), and the reference **documents** this as the **named
+  cost-omitted sentinel** — the entry is **present** (satisfying the "at
+  minimum a cost-snapshot entry" rule), **never dropped**, and **never
+  given a fabricated snapshot file path**.
+- The reference carries the **consumer special-case** note: an aggregator
+  counting snapshot-grounded records **must not** count a `cost-snapshot`
+  entry whose `path` ends in `/` as a grounding — the trailing-slash
+  directory is a sentinel for *looked-and-found-nothing*, not
+  *grounded-in-a-snapshot*.
+- A usable snapshot (state 3) uses the snapshot **file** path (e.g.
+  `observability/costs/2026-08-15-costs.md`) instead.
+
 ## Rubric
 
 Layer 1 structural: each assertion is verifiable by reading the
@@ -85,6 +124,13 @@ the cost-omitted worked example in the format reference. The scenario
 fails if the methodology describes a list-price fallback, treats the
 no-cost case as an error, collapses the three states into two, or if the
 cost-omitted worked example carries a `cost` axis or a `cost_usd` value.
+
+For the format-revision (#377) additions the scenario also fails if the
+cost-omitted worked example (Example 1) carries a
+`tokens_by_stage[].cost_usd` sub-field on any stage, or if the
+directory-path sentinel (`observability/costs/` trailing slash, with the
+consumer special-case that an aggregator must not count it as a grounding)
+is not documented as the cost-omitted convention.
 
 ## Notes
 
