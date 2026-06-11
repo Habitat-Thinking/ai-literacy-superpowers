@@ -372,6 +372,29 @@
 - **Tool**: `.github/workflows/marketplace-docs-coverage-check.yml`
 - **Scope**: pr
 
+### Objection records use the canonical taxonomy
+
+- **Rule**: Every objection record in `docs/superpowers/objections/`
+  must use the canonical advocatus-diaboli taxonomy — categories one of
+  `premise`, `scope`, `implementation`, `risk`, `alternatives`,
+  `specification quality`, and severities one of `critical`, `high`,
+  `medium`, `low` — in **both** spec and code mode (the charter in
+  `skills/advocatus-diaboli/SKILL.md` defines one set for both modes;
+  only the per-mode weighting differs). Records dated on or before the
+  2026-04-19 taxonomy migration are grandfathered (they legitimately
+  predate the canonical set). Effective from 2026-06-11: the agent file
+  and the orchestrator's spec-mode validation had silently kept the
+  retired `design/threat/failure/operational/cost` + `major/minor`
+  taxonomy long after the 2026-04-19 migration updated the skill and the
+  `/diaboli` command, so a spec-mode diaboli run produced records in the
+  retired vocabulary that the dispatcher had to remap by hand
+  (`/reflect` signal=instruction; see REFLECTION_LOG 2026-06-11). This
+  deterministic guard prevents the retired taxonomy reappearing.
+- **Enforcement**: deterministic
+- **Tool**: `.github/workflows/objection-taxonomy-check.yml`
+  (`ai-literacy-superpowers/scripts/check-objection-taxonomy.py`)
+- **Scope**: pr
+
 ### Reflections via PR workflow
 
 - **Rule**: Every addition to `REFLECTION_LOG.md` must be committed on a
