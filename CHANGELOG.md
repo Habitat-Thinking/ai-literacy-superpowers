@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.43.0 — 2026-06-11
+
+### Format revision — per-stage `cost_usd`, `generated_by` grammar, grounding-path sentinel
+
+Ships the format-revision slice (#377): a backward-compatible revision of the
+`cost-estimation` skill's estimate-record format reference, resolving three
+deferred residues from the S1/S2 reviews. Format/schema change to a plugin
+reference file — minor bump. No new skill, agent, or command.
+
+- **Per-stage `cost_usd` sub-field** — `references/estimate-record-format.md`
+  gains an optional `tokens_by_stage[].cost_usd` `{ low, high }` range,
+  **one-directionally coupled** to top-level `cost_usd` (sub-field present ⟹
+  top-level present is enforced; top-level present ⟹ bands SHOULD be populated
+  is an emitter obligation, not a rejection rule — **not** an `iff`, so S1-era
+  cost-present records without bands stay valid). Makes a split-tier band's
+  non-collapsed (strictly-spread) shape record-internally checkable.
+- **Two new validation-checklist lines** — *Per-stage cost coupling* (forbids
+  the incoherent inverse: a per-stage band with no whole-record cost) and
+  *Split-tier spread* (a present split-tier band, identified by the closed
+  `model_tier` contains-`/` rule, must have a strict `low < high`). A §4.4.1
+  CAN/CANNOT note states the honest floor: the validator can assert
+  presence/coupling, `low ≤ high`, and strict spread, but cannot assert the
+  band spans two tiers or equals the absolute snapshot rates — that
+  absolute-rate check defers to S3.
+- **Example 2 re-derived** from two fixed per-tier rates (sonnet `4.0e-6`, opus
+  `2.0e-5` $/token): spec-writer `{1.00, 2.00}`, tdd-agent `{0.20, 0.60}`,
+  implementer `{0.40, 5.00}`, summing to the whole-record `{1.60, 7.60}`.
+  Example 1 (cost-omitted) carries no per-stage band.
+- **`generated_by` grammar widened** — the field description admits a
+  `tier:<tier>` routing-tier label alongside a concrete model id, with `tier:`
+  defined as a reserved provenance prefix (a concrete model id never begins with
+  `tier:`) so consumers can distinguish the two forms with no rejecting check.
+  Makes the merged S2 agent's `tier:Standard` output documentation-conformant.
+- **Grounding-path sentinel documented** — the trailing-slash directory
+  `observability/costs/` is the defined cost-omitted sentinel; the reference
+  names that this entrenches an overloaded `path` meaning (file = grounded;
+  directory = looked-and-found-nothing) and carries the consumer special-case
+  (an aggregator must not count a trailing-slash path as a grounding), noted as
+  advisory/unenforced.
+
 ## 0.42.0 — 2026-06-11
 
 ### New agent — `cost-estimator` (read-only prospective-cost emitter)
