@@ -241,6 +241,13 @@ disclosure contract below is this spec's proposal for *what an estimate must
 disclose* so the human's disposition is informed; reviewers should evaluate it as
 a new contract, not check it against an authority that does not exist.
 
+> **Update (2026-06-11):** this contract was subsequently **promoted** to
+> AGENTS.md ARCH_DECISIONS as the *disclosure-of-derived-judgment* decision via
+> this design's choice-story #8 (promoted disposition). It is therefore no
+> longer merely proposed — it is now a named decision, with this spec as its
+> first operationalisation. The point-in-time text above records the state at
+> authoring (the decision did not yet exist); the grep claim is historical.
+
 The contract makes a prospective estimate honest rather than an anchoring number
 dressed as fact. An estimate record that does not satisfy this contract is
 invalid regardless of how good its numbers are.

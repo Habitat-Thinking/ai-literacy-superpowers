@@ -7,43 +7,75 @@ stories:
   - id: 1
     lens: [forces, patterns]
     title: The format is the contract; consumers are downstream
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Format-first S1 — locking the contract while it has zero
+      consumers — is a sound, deliberate sequencing choice; recorded so a future
+      refactor knows the data-contract-first stance was intentional.
   - id: 2
     lens: [forces, consequences]
     title: cost_usd conditional rather than required-low
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. cost_usd-conditional (present-when-grounded, omitted-with-
+      disclosure) is the right shape for an ungrounded axis; a strong reusable
+      principle, left feature-recorded rather than separately promoted because
+      its honesty rationale is carried by the now-promoted #8.
   - id: 3
     lens: [forces, patterns]
     title: human_gate_time named but not numbered
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. The required-but-qualitative human_gate_time — naming the
+      dominant uncertainty without faking a number — is the honest choice; the
+      heterogeneous-time-field cost is understood and accepted.
   - id: 4
     lens: [patterns, alternatives]
     title: Per-axis confidence object over a single enum
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Per-axis confidence over a single enum faithfully represents
+      mixed grounding; the cross-field invariant (confidence.cost iff cost_usd)
+      is a deliberate, recorded cost.
   - id: 5
     lens: [defaults, consequences]
     title: The tier-binding table as an authored artefact
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Authoring the tier→model binding table (rather than deriving it)
+      buys a deterministic join at a known drift cost — already tracked as the
+      O3 S2 residual; recorded so the trade is visible, not silent.
   - id: 6
     lens: [patterns, forces]
     title: No-verdict enforced by positive-content scanning
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. The two-layer no-verdict guarantee, honestly scoped after the
+      code-mode O3 fix (a tripwire for common phrasings, not a proof), is a sound
+      trust-boundary mechanism in the format layer.
   - id: 7
     lens: [defaults, alternatives]
     title: Reusing the cost-snapshot format as ground
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Reusing the cost-snapshot format as ground (over a bespoke
+      estimation format) keeps one source of truth and the prospective/
+      retrospective sibling symmetry; the inherited optionality and quarterly-
+      cadence coupling is understood and disclosed.
   - id: 8
     lens: [coherence]
     title: A proposed contract, not an inherited decision
-    disposition: pending
-    disposition_rationale: null
+    disposition: promoted
+    disposition_rationale: >
+      Promoted to AGENTS.md ARCH_DECISIONS as the disclosure-of-derived-judgment
+      contract (an agent that derives what a human previously supplied must
+      disclose included / excluded / confidence / failure-direction). Resolves
+      the spec↔slicing-record coherence gap at its source: the slicing record's
+      original citation is now accurate, and the spec carries a 2026-06-11
+      forward-note marking its point-in-time "proposed" framing as superseded.
+      The same principle independently surfaced on the (unmerged) dl-pipeline-map
+      branch's derived task→scope resolution, strengthening the cross-cutting
+      case; a third instance would complete the Rule of Three.
 ---
 
 ## Story #1 — The format is the contract; consumers are downstream
