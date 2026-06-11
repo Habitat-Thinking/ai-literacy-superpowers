@@ -7,53 +7,94 @@ stories:
   - id: 1
     lens: [patterns, defaults]
     title: Fifth instance mirrors the read-only-emitter architecture
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. The read-only-emitter mirror is the right default; recorded that
+      the boundary is INHERITED (5th instance), not re-justified for the numeric
+      case — so a future divergent emitter knows it must write an explicit
+      exception story rather than conform by gravity.
   - id: 2
     lens: [patterns, forces]
     title: Disclosure-of-derived-judgment's third independent surfacing
-    disposition: pending
-    disposition_rationale: null
+    disposition: promoted
+    disposition_rationale: >
+      Promoted. Marks the THIRD independent surfacing of the
+      disclosure-of-derived-judgment decision (format contract → task→scope
+      resolution → agent behaviour), firing the Rule of Three. The existing
+      AGENTS.md ARCH_DECISION is updated in this PR to confirm it as a
+      cross-cutting decision (still not an enforced invariant beyond each
+      component's validation checklist), citing this story #2.
   - id: 3
     lens: [forces, consequences]
     title: Mechanical omission chosen over trusted agent restraint
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Mechanical-over-discretionary cost-omission enforces
+      emit-not-decide by construction — the right call; the new dependency on
+      the S1 join-key normalisation is tracked and fixed (code-mode O1/O2).
   - id: 4
     lens: [forces, alternatives]
     title: Honest tier-label provenance over a fabricated model id
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Disclosing unverifiable provenance as a tier label rather than
+      fabricating a model id is correct; the spec↔contract faithfulness tension
+      is flagged to #377 (not silently widened), and the implementation echoes
+      the tier it reads rather than hard-coding it (code-mode O3, fixed).
   - id: 5
     lens: [patterns, consequences]
     title: Consumer slice refuses to mutate its contract
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. The consumer-doesn't-mutate-its-contract precedent is a reusable
+      boundary discipline; recorded so the next slice tempted to widen an
+      upstream contract has a worked instance to point at. A latent promote
+      candidate if it recurs (the un-fold to #377 is its first worked precedent).
   - id: 6
     lens: [patterns, forces]
     title: Inferred classification must disclose its basis
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. Inference-basis disclosure on a derived target_kind is
+      disclosure-of-derived-judgment applied to classification — coherent with
+      the now-confirmed cross-cutting decision (story #2), with the
+      supplied-vs-derived split as the honest trigger.
   - id: 7
     lens: [forces, consequences]
     title: Empty snapshot emits, only missing tokens refuse
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. The three-state grounding model (refuse / cost-omitted /
+      cost-present) keyed on token-grounding is the only shape that keeps the
+      empty-snapshot default-repo case honest rather than refusing on every
+      estimate.
   - id: 8
     lens: [patterns, alternatives]
     title: Deterministic oracle with an honest descope
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. The deterministic-oracle-with-honest-descope is the right posture
+      for grading a non-deterministic agent — structure and refusal routing
+      graded, semantic content explicitly named out-of-scope rather than
+      rubber-stamped (code-mode O3 area, fixed).
   - id: 9
     lens: [defaults, consequences]
     title: Standard routing tier inherited from read-and-author kinship
-    disposition: pending
-    disposition_rationale: null
+    disposition: revisit
+    disposition_rationale: >
+      Revisit (per the cartographer's flag). The Standard tier is chosen by
+      analogy to tdd-agent, not measurement; revisit once S6 (#373) calibration
+      data exists to test whether it under-serves the failure-direction
+      reconciliation. Note the coupling: the tier:Standard provenance fallback
+      (#4) moves with the tier, so a re-tier must keep them in sync.
   - id: 10
     lens: [forces, alternatives]
     title: One target per dispatch over batch estimation
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: >
+      Accepted. One-target-per-dispatch keeps the contract and conformance oracle
+      single-valued; the batch/aggregation concern is deliberately the
+      dispatcher's (S3/S4) to answer, a clean foreclosure rather than a gap.
 ---
 
 ## Story #1 — Fifth instance mirrors the read-only-emitter architecture
