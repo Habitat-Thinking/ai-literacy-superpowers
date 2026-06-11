@@ -247,10 +247,17 @@ def test_command_offers_optin_survey(assess_paths: dict) -> None:
 
 
 def test_plugin_json_at_0_40_0(assess_paths: dict) -> None:
-    """Scenario 9: plugin.json is at 0.40.0."""
+    """Scenario 9: plugin.json is at or beyond 0.40.0.
+
+    Originally pinned to 0.40.0 for the /assess Part D release; the
+    cost-estimation skill (0.41.0) advanced the floor. The assertion is
+    now ``>= 0.40.0`` so legitimate later minor bumps do not regress this
+    /assess scenario.
+    """
     manifest = json.loads(assess_paths["plugin_json"].read_text())
-    assert manifest["version"] == "0.40.0", (
-        f"plugin.json must be 0.40.0 (was 0.39.1). Actual: "
+    version = tuple(int(p) for p in manifest["version"].split("."))
+    assert version >= (0, 40, 0), (
+        f"plugin.json must be at least 0.40.0. Actual: "
         f"{manifest['version']!r}"
     )
 
@@ -267,13 +274,19 @@ def test_marketplace_entry_and_plugin_version_at_0_40_0(
         for p in marketplace["plugins"]
         if p["name"] == "ai-literacy-superpowers"
     )
-    assert entry["version"] == "0.40.0", (
-        f"ai-literacy-superpowers marketplace entry must be 0.40.0. "
-        f"Actual: {entry['version']!r}"
+    manifest = json.loads(assess_paths["plugin_json"].read_text())
+    # Pinned to 0.40.0 for the /assess Part D release; advanced to track
+    # the plugin manifest so later minor bumps (e.g. 0.41.0 for the
+    # cost-estimation skill) keep the marketplace triplet consistent
+    # without regressing this scenario.
+    assert entry["version"] == manifest["version"], (
+        "ai-literacy-superpowers marketplace entry must track plugin.json. "
+        f"entry={entry['version']!r} manifest={manifest['version']!r}"
     )
-    assert marketplace["plugin_version"] == "0.40.0", (
-        f"marketplace plugin_version must track 0.40.0. Actual: "
-        f"{marketplace['plugin_version']!r}"
+    assert marketplace["plugin_version"] == manifest["version"], (
+        "marketplace plugin_version must track plugin.json. "
+        f"plugin_version={marketplace['plugin_version']!r} "
+        f"manifest={manifest['version']!r}"
     )
     assert marketplace["version"] == "0.4.0", (
         "top-level marketplace listing `version` must be unchanged at "

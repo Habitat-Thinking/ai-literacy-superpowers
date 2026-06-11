@@ -119,7 +119,11 @@ Team Topologies Team API document generation and update. Covers creating a new T
 
 ### cost-tracking
 
-Quarterly AI cost capture and tracking. Covers guiding users through provider billing dashboards, recording spend and token usage in a structured format, comparing to previous snapshots for trend analysis, and updating MODEL_ROUTING.md with observed cost patterns.
+Quarterly AI cost capture and tracking. Covers guiding users through provider billing dashboards, recording spend and token usage in a structured format, comparing to previous snapshots for trend analysis, and updating MODEL_ROUTING.md with observed cost patterns. The retrospective sibling of `cost-estimation`: `cost-tracking` records what *was* spent; `cost-estimation` predicts what *will be* spent.
+
+### cost-estimation
+
+Prospective cost, token, and time estimation before a task runs. The prospective sibling of `cost-tracking` — it reads the same `observability/costs/` snapshots that `cost-tracking` writes and uses them as its $/token ground. Covers deriving per-stage token and agent-compute-time ranges from MODEL_ROUTING.md, the estimate-record format contract (a `{ low, high }` range per quantitative field with per-axis confidence and a mandatory four-part disclosure body), the tier→model→$/token binding for cost derivation, and the present-when-grounded rule that emits a dollar figure only when a snapshot supplies an observed rate (never a list-price guess). Methodology and a format contract only — it does not dispatch an agent, write a file, or decide go/no-go.
 
 ### auto-enforcer-action
 
