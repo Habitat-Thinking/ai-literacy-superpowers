@@ -150,15 +150,21 @@
   included/excluded/confidence/failure-direction prose body, and `cost_usd`
   omitted-with-disclosure rather than guessed when ungrounded. The same
   principle independently surfaced for the diagnostic-legibility pipeline-map's
-  derived task→scope resolution; two independent surfacings argue it is
-  cross-cutting, not feature-local (Rule of Three pending a third). Scope note:
-  this is a design discipline these specs PROPOSE, not yet an enforced
-  invariant beyond each skill's own validation checklist — a trust-surface
-  audit should read the disclosure obligation, not just the tool list. Future
-  "let the agent infer X that the human used to supply" features inherit this
+  derived task→scope resolution, and a **third time** in the `cost-estimator`
+  agent (S2), which operationalises it *behaviourally* in three new places:
+  inference-basis disclosure on a derived `target_kind`, tier-label provenance
+  on a derived `generated_by`, and blended-rate-skew disclosure on a derived
+  cost. **The Rule of Three has fired** — three independent surfacings (format
+  contract, task→scope resolution, agent behaviour) confirm this is a
+  cross-cutting decision, not feature-local. Scope note: it is now a confirmed
+  cross-cutting design discipline, but still **not an enforced invariant**
+  beyond each component's own validation checklist — a trust-surface audit
+  should read the disclosure obligation, not just the tool list. Future "let
+  the agent infer X that the human used to supply" features inherit this
   obligation rather than re-deriving it.
   Source: `docs/superpowers/stories/cost-estimation-skill-design.md` story #8
-  (promoted disposition).
+  (original promotion); `docs/superpowers/stories/cost-estimator-agent-design.md`
+  story #2 (Rule-of-Three confirmation, 2026-06-11).
 
 - Decision: hook scripts never block, only warn. Reason: this is a
   plugin used across diverse projects — blocking hooks could break
