@@ -126,10 +126,17 @@
   `/diagnose` ships only accept/abort, a narrower disposition vocabulary than
   the named architecture's accept/edit/re-run/abort and the model-card
   precedent; if that narrowing recurs on the next command spec, the divergence
-  may warrant its own sub-rule.
+  may warrant its own sub-rule. **Resolved (S3 `/cost-estimate` story #1,
+  2026-06-12): the next command spec (`/cost-estimate`) shipped the FULL
+  accept/edit/re-run/abort vocabulary, so the narrowing did NOT recur —
+  `/diagnose`'s accept/abort was a one-off, not a convention, and the
+  contemplated sub-rule is not warranted. `/cost-estimate` is the fifth
+  production instance, ships the full vocabulary, and honours the dispose-then-
+  write ordering.**
   Source: `docs/superpowers/stories/model-cards-plugin-design.md` stories
   #7 and #8 (original promotion); `docs/superpowers/stories/dl-s4-diagnose-command-design.md`
-  story #1 (ordering-invariant sharpening).
+  story #1 (ordering-invariant sharpening); `docs/superpowers/stories/cost-estimate-command-design.md`
+  story #1 (watch-item resolution).
 
 - Decision: **an agent that DERIVES a judgment a human previously SUPPLIED
   carries a disclosure obligation** — the disclosure-of-derived-judgment
@@ -308,17 +315,30 @@
   concern-accretion debt**: by the time the chain's parent issue closes, the
   concern has no tracking home and falls through the gap. Rule: when a slice
   declines an inherited hand-off, either (a) absorb it, or (b) re-file it as a
-  standalone issue with its own lifecycle — never leave it implicit in a
-  closed slice's "out of scope" section. Worked instance: the
+  standalone issue with its own lifecycle **AND bind it to a *scheduled
+  deliverable* — a concrete slice that produces the concern's triggering event,
+  not an unscheduled precondition or a bare "filed somewhere"** — never leave it
+  implicit in a closed slice's "out of scope" section. **Sharpening (S3
+  `/cost-estimate` story #7): re-filing to an unbound issue whose trigger no
+  slice causes is itself a buck-pass — the home must be a deliverable the roadmap
+  schedules, not an event it never reaches.** Worked instance: the
   diagnostic-legibility invocation-persistence corpus for the Phase-C
   escalation trigger was deferred at S2b, pointed at S4 by S3 §8 as its
   "natural home", and declined by S4 — three consecutive deferrals with the
   parent (#327) closing. Re-filed as standalone issue #350 at S4 adjudication.
+  Second worked instance (S3 `/cost-estimate`): the #377-deferred absolute-rate
+  check was re-filed at S3 and bound to S6/#373 as a blocking required
+  deliverable, with S6 extended to own first-snapshot capture so the triggering
+  event (the first cost-present record) is actually scheduled — correcting a
+  draft that keyed the trigger on an unscheduled "first cost-present record"
+  event no slice produced.
   Alternative considered and rejected: trusting the §8 "out of scope" note to
   carry the concern forward — rejected because closing the parent removes the
   natural tracking issue and the note becomes archaeology no one re-reads.
   Source: `docs/superpowers/stories/dl-s4-diagnose-command-design.md` story #8
-  (promoted disposition); tracking issue #350.
+  (original promotion); `docs/superpowers/stories/cost-estimate-command-design.md`
+  story #7 (bind-to-a-scheduled-deliverable sharpening, 2026-06-12); tracking
+  issues #350, #373.
 
 ## TEST_STRATEGY
 

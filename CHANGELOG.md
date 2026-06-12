@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.44.0 — 2026-06-12
+
+### New command — `/cost-estimate` (S3 of the cost-estimator pipeline)
+
+Ships the standalone manual dispatcher for the read-only `cost-estimator` agent —
+the **prospective** sibling of the retrospective `/cost-capture`. New command —
+minor bump.
+
+- **`/cost-estimate <target> [--kind <target-kind>] [--out <dir>]`** — point it at
+  a slice, a spec, a slicing record, or pasted task text and it estimates the
+  target's tokens, agent-compute time, and (only when a cost snapshot grounds it)
+  cost, then writes the estimate record to disk. One target per invocation
+  (matching the agent's one-target-per-dispatch contract); path vs inline text
+  resolved by filesystem lookup; `--kind` forwards an explicit `target_kind` to the
+  agent; the `--near` sketch is dropped. The command is a **pure consumer** of the
+  S2 agent and the S1 format reference — it redefines neither.
+- **Dispose-then-write ordering** — the command owns the single `Write`; the agent
+  stays read-only. The human disposition (`accept` / `edit` / `re-run` / `abort` —
+  the full vocabulary) **precedes** the write. On `REFUSED:` the refusal is
+  surfaced verbatim with no checkpoint and no file.
+- **Output Validation Checkpoint** — reads the returned record back and checks it
+  against every line of `estimate-record-format.md`'s validation checklist
+  (including the #377 per-stage cost coupling and split-tier strict-spread checks),
+  **fixing only structural-only deviations in place** (routinely just deleting a
+  stray verdict field) and **aborting — never authoring — on any derived-value
+  defect**. The review summary surfaces a change-list of exactly what was altered,
+  flags a human-asserted `--kind` as asserted-not-inferred, and honours the
+  grounding-path trailing-slash sentinel in its own summary consumption. The `edit`
+  path is validate-and-report, never silently reverting a human edit.
+- **Output home** — default `cost-estimates/<YYYY-MM-DD>-<target-slug>-estimate.md`,
+  a new top-level directory **outside** `observability/` (predictions are not
+  telemetry); `--out` overrides the directory; same-day collisions are
+  disambiguated under both, never silently overwritten. `cost-estimates/` is added
+  to `.gitignore` as a derived, regenerable artefact.
+- **Docs and discipline** — `/cost-estimate` joins the CLAUDE.md Output Validation
+  Checkpoints list; a how-to guide and a reference-page entry ship in the same PR.
+- **Code-mode adversarial hardening** — eight `advocatus-diaboli` code-mode
+  objections closed executor-latitude seams in the command prose: the
+  `<target-slug>` is sanitised to a single `[a-z0-9-]` path segment
+  (write-target-injection closed); `REFUSED:` detection is anchored to the
+  untrimmed first line; a pre-classification test routes a *stray verdict field*
+  to FIX and a *prose verdict* to ABORT (so the checkpoint never edits the agent's
+  judgment); the change-list is a diff of the retained original, not a narration;
+  the checkpoint takes an explicit `fix-in-place | validate-and-report` mode; and
+  the same-day collision is re-checked at write time (TOCTOU gap closed).
+
 ## 0.43.0 — 2026-06-11
 
 ### Format revision — per-stage `cost_usd`, `generated_by` grammar, grounding-path sentinel

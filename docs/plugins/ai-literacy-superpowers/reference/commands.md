@@ -3,7 +3,7 @@ title: Commands
 ---
 # Commands
 
-All 24 slash commands registered in `commands/`. Each command is
+All 27 slash commands registered in `commands/`. Each command is
 invoked as `/command-name` in a Claude Code session.
 
 ---
@@ -277,6 +277,52 @@ cost snapshot, guides you through provider dashboards to collect
 current spend and token usage, records the data, compares against the
 previous period, and updates `MODEL_ROUTING.md` with observed cost
 trends.
+
+### /cost-estimate
+
+- **Skills read**: cost-estimation (via the dispatched agent)
+- **Agents dispatched**: cost-estimator (read-only)
+
+Estimate a target's tokens, agent-compute time, and (only when a cost
+snapshot grounds it) cost **before** it runs — the prospective sibling
+of `/cost-capture`. Signature:
+`/cost-estimate <target> [--kind <target-kind>] [--out <dir>]`.
+
+**Accepted targets** — exactly one per invocation, matching the
+`cost-estimator` agent's one-target-per-dispatch contract: pasted task
+text, a slicing-record path, a single-slice path, or a spec path. The
+command distinguishes path vs inline text by filesystem resolution and
+forwards any `--kind` (`task-text` | `slicing-record` | `slice` |
+`spec`) as the explicit dispatch-stated kind; it does not itself
+re-classify the `target_kind` or re-implement the methodology.
+
+**Flow** — parse/resolve target → dispatch the read-only
+`cost-estimator` agent → handle a `REFUSED:` return (surfaced verbatim,
+no checkpoint, no file) → **Output Validation Checkpoint** against
+`skills/cost-estimation/references/estimate-record-format.md` →
+review summary → disposition (`accept` / `edit` / `re-run` / `abort`)
+→ on `accept`, the single `Write`. The human disposition **precedes**
+the write (the dispose-then-write ordering invariant): the command owns
+the single `Write`; the agent only emits a string.
+
+**Output path** — default
+`cost-estimates/<YYYY-MM-DD>-<target-slug>-estimate.md`, a top-level
+directory **outside** `observability/` (predictions are not telemetry),
+gitignored as a derived, regenerable artefact. `--out <dir>` overrides
+the directory; the derived filename still applies beneath it. Same-day
+collisions are disambiguated under both the default and `--out` — an
+existing estimate is never silently overwritten.
+
+**Validation checkpoint** — checks the returned record against every
+line of the format reference's validation checklist (including the #377
+per-stage cost coupling and split-tier strict-spread checks), fixing
+only **structural-only** deviations in place (routinely just deleting a
+stray verdict field) and **aborting — never authoring** — on any
+derived-value defect. The review summary surfaces a change-list of what
+the checkpoint altered, flags a human-asserted `--kind` as
+asserted-not-inferred, and reports a trailing-slash `cost-snapshot`
+grounding path as "no snapshot", not a grounding. The `edit` path is
+validate-and-report — a human edit is never silently reverted.
 
 ### /extract-conventions
 
