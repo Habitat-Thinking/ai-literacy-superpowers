@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.45.0 — 2026-06-12
+
+### Orchestrator cost fold-in at T1 and T2 (S4 of the cost-estimator pipeline)
+
+Wires the read-only `cost-estimator` agent into the orchestrator's **existing**
+human-disposition gates as **informational fields, never a new gate**. The
+highest-value insertion the carpaccio slicing record names — cost surfaces at the
+moment it most changes a choice. Behavioural change to the orchestrator agent —
+minor bump.
+
+- **T1 — Slice Adjudication gate (new Step 2a).** After carpaccio's record is
+  validated and before it is surfaced, the orchestrator dispatches the
+  `cost-estimator` **once per slice in parallel** (explicit `target_kind: slice`),
+  persists each returned record under `cost-estimates/<date>-<task-slug>-<slice-id>-estimate.md`,
+  runs the S3 Output Validation Checkpoint on each, and appends a **compact
+  one-line-per-slice** cost summary (tokens, cost-or-"not grounded", confidence,
+  failure direction) to that slice's block — so the human sees cost while choosing
+  which slice to progress.
+- **T2 — Plan Approval gate (new Step 6a).** After the choice-story soft gate and
+  before the Plan Approval prompt, the orchestrator dispatches the estimator
+  **once** against the progressed slice's spec (explicit `target_kind: spec`, the
+  pipeline's highest confidence ceiling), persists + validates it, and surfaces a
+  fuller cost block (tokens, agent-compute time, cost, **verbatim `human_gate_time`
+  caveat**, excluded pointer) alongside `cartograph_pending_count`.
+- **Informational, never a decision point.** Both fold-ins mirror the existing
+  `cartograph_pending_count` treatment: no block, no extra keypress, no agent
+  writes dispositions. The estimate carries no recommendation or verdict; the
+  human reads the ranges and disclosures and makes the **existing** slice /
+  plan-approval choice.
+- **The gate never degrades.** A `REFUSED:` string, a dispatch error, or a
+  checkpoint abort reduces the affected target's estimate to "unavailable" and the
+  existing gate proceeds exactly as today — the estimate is purely additive.
+- **Pure consumer of S1/S2/S3.** No change to the estimate-record format, the
+  `cost-estimator` agent, or the `/cost-estimate` command. The orchestrator owns
+  the write (the agent stays read-only) and reuses the S3 persistence + checkpoint
+  discipline by reference. New context-object fields (`t1_estimate_slugs`,
+  `t1_estimate_refused_count`, `t2_estimate_slug`, `t2_estimate_grounded`) make the
+  estimate state readable by observability tooling.
+- **Docs** — the prospective-cost-estimation concept page's "future orchestrator
+  fold-in" forward-reference is now present-tense; the agent-orchestration
+  explanation page notes the fold-in at both gates.
+
 ## 0.44.0 — 2026-06-12
 
 ### New command — `/cost-estimate` (S3 of the cost-estimator pipeline)

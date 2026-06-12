@@ -17,6 +17,10 @@ ensuring the project's conventions are upheld end to end.
   applies forward (to PRs that ADD a new component), not retroactively. This file
   was modified in that PR (gaining step 1c, the agent-artefact scope detection)
   and is exempt under Amendment 2 §A2.6.
+  It was modified again by S4 (#371), the cost fold-in at T1/T2 — see
+  docs/superpowers/specs/2026-06-12-orchestrator-cost-fold-in-design.md §9.
+  As a modification of an existing agent file (no new component added), it
+  remains exempt under Amendment 2 §A2.6.
   Future modifications should review this exemption — see the spec's §A2.8 known
   limitations and the cartograph stories #5 and #6 (revisit at next quarterly
   /governance-audit, target 2026-07-19).
@@ -164,6 +168,44 @@ That file is the single source of truth. Apply each check in order
 and apply the fix-recipe in place when a check fails. Do not
 re-dispatch the agent for validation failures.
 
+### Step 2a: Estimate per-slice cost (informational fold-in — T1)
+
+This is an **informational fold-in into the existing Slice Adjudication
+gate, not a new gate**. It adds no block and no keypress — it surfaces
+cost so the human can see it while choosing which slice to progress. It
+mirrors the orchestrator's existing treatment of `cartograph_pending_count`
+at Plan Approval: a structured informational field, never a decision point.
+Do NOT let any agent write dispositions here; the estimator is read-only.
+
+1. For **each** slice in the validated record, dispatch the
+   `cost-estimator` agent with that slice as the target and an **explicit**
+   `target_kind: slice` (the dispatcher-stated-kind path — the agent needs
+   no inference-basis line when you state the kind). Dispatch all slices
+   **in parallel** in a single message (the slices are independent and the
+   estimator is read-only, so wall-clock stays at one dispatch's latency).
+2. For each returned string:
+   - If it begins with `REFUSED:`, write **no** file. Capture the verbatim
+     refusal reason for that slice's summary line (Step 3).
+   - Otherwise write the returned content to
+     `cost-estimates/<YYYY-MM-DD>-<task-slug>-<slice-id>-estimate.md` and
+     run the **Output Validation Checkpoint** on it — the **same** checkpoint
+     the `/cost-estimate` command applies, against every line of
+     `ai-literacy-superpowers/skills/cost-estimation/references/estimate-record-format.md`'s
+     validation checklist (incl. the #377 per-stage cost coupling and
+     split-tier strict-spread checks). Fix **structural-only** deviations in
+     place (routinely just deleting a stray verdict field); **abort — never
+     author — on any derived-value defect**. Do NOT re-dispatch the agent.
+3. **Never degrade the gate.** A `REFUSED:` string, a dispatch error, or a
+   checkpoint abort on any slice reduces **that slice's** cost line to
+   "unavailable" (Step 3) — it is **never** a gate block and **never** an
+   extra keypress. The other slices' estimates are unaffected and the
+   existing hard gate proceeds exactly as today.
+4. Record for the context object: `t1_estimate_slugs` (the persisted
+   `<task-slug>-<slice-id>` list) and `t1_estimate_refused_count`.
+
+On a `revised` re-dispatch of carpaccio (Step 4), re-run this step against
+the new record; the prior per-slice estimates are overwritten.
+
 ### Step 3: Surface the slicing record (HARD GATE — Slice Adjudication)
 
 PAUSE and present the record to the user. Show:
@@ -172,6 +214,17 @@ PAUSE and present the record to the user. Show:
 - Slice count and lens distribution
 - `inseparable: true|false`
 - Each slice's title, scope, and `decision_focus`
+- **Each slice's per-slice cost line (from Step 2a)** — one compact line
+  appended to that slice's block:
+  > **Est. cost** — tokens `<low>`–`<high>`; cost `<$low>`–`<$high>` (or
+  > "not grounded — no snapshot"); confidence `<tier>`; *<one-clause
+  > failure direction from the record's `Failure direction` section>*.
+
+  A slice whose estimate refused or failed the checkpoint shows instead:
+  > **Est. cost** — unavailable (*<verbatim short reason>*).
+
+  This line is **informational only** — it does not change what the user
+  decides at this gate (disposition + `progressed_slice`), it informs it.
 
 Tell the user: "Edit `docs/superpowers/slices/<slug>.md`. For each
 slice set `disposition` (`accepted | merged | dropped | revised`)
@@ -317,6 +370,33 @@ function. Resolving now is cheaper for compound learning."
 
 Do NOT block on `pending` dispositions here. This is the soft gate.
 
+### Step 6a: Estimate progressed-slice cost (informational fold-in — T2)
+
+This is an **informational fold-in into the existing Plan Approval gate,
+not a new gate** — the same discipline as Step 2a (T1), at the higher
+confidence the spec affords. It adds no block and no keypress.
+
+1. Dispatch the `cost-estimator` agent **once** against the **progressed
+   slice's spec file** with an **explicit** `target_kind: spec` (the `high`
+   confidence ceiling — the tightest estimate the pipeline produces, because
+   the spec enumerates scenarios and files).
+2. If the returned string begins with `REFUSED:`, write no file and capture
+   the verbatim reason for Step 7. Otherwise write it to
+   `cost-estimates/<YYYY-MM-DD>-<spec-slug>-estimate.md` and run the **same
+   Output Validation Checkpoint** described in Step 2a (against the
+   `estimate-record-format.md` checklist; structural-only fixes in place;
+   abort — never author — on a derived-value defect; no re-dispatch).
+3. **Never degrade the gate.** A `REFUSED:` string, a dispatch error, or a
+   checkpoint abort reduces the cost block to "estimate unavailable" (Step
+   7) — never a block, never an extra keypress. The existing hard+soft
+   composite gate proceeds exactly as today.
+4. Record for the context object: `t2_estimate_slug` (the persisted
+   `<spec-slug>`, or `null` on unavailable) and `t2_estimate_grounded`
+   (`true` if the record carries `cost_usd`, else `false`).
+
+On a **request-changes** re-dispatch of spec-writer (Step 7), re-run this
+step against the revised spec; the prior record is overwritten.
+
 ### Step 7: Plan Approval Gate
 
 Once steps 1–6 are complete (diaboli dispositions hard-gated, choice-story
@@ -334,6 +414,19 @@ adjudicated records. Show:
   covers; surfaces "this plan covers only slice S2 of 4" so the
   plan review isn't confused about scope.
 - Lens distribution of the choice-story record
+- **Cost estimate (spec-grounded, this slice) — from Step 6a**, a labelled
+  block surfaced **alongside** `cartograph_pending_count` as informational
+  observability, **not** a separate decision point:
+  - tokens `<low>`–`<high>` (confidence `<tier>`)
+  - agent-compute time `<low>`–`<high>`
+  - cost `<$low>`–`<$high>` (or "not grounded — no snapshot")
+  - human-gate time: *<the verbatim `human_gate_time` caveat string — the
+    reminder that wall-clock is dominated by gate latency the estimate does
+    not count>*
+  - excluded: *<one-line pointer to the record's `Excluded` section>*
+
+  If Step 6a produced no record (refused / error / checkpoint abort), show
+  this block as "estimate unavailable (*<verbatim reason>*)".
 
 Then ask the user to choose:
 
@@ -351,6 +444,14 @@ blocks the PR until choice-story dispositions are resolved. If the user
 chooses Approve with `cartograph_pending_count > 0`, the orchestrator
 proceeds to tdd-agent without further prompting on the cartographer
 state.
+
+The **cost-estimate block** (Step 6a) is surfaced under the **same rule**:
+informational observability, **not** a separate decision point. It adds no
+keypress and never blocks. The estimate carries no disposition, no
+recommendation, and no verdict — the human reads the ranges and the
+disclosures and decides the existing approve / request-changes / take-over
+choice. Approve proceeds regardless of the estimate (including when it is
+"unavailable").
 
 Do NOT dispatch tdd-agent without user approval. This gate exists because it is
 far cheaper to fix a bad plan than to fix bad code — especially when the plan
@@ -419,6 +520,10 @@ and pass to the next. It should always contain:
   carpaccio_slug: <task-slug>
   carpaccio_total_slices: N
   carpaccio_inseparable: true | false
+  t1_estimate_slugs: [<task-slug>-<slice-id>, …] | []   # persisted T1 per-slice estimates (Step 2a)
+  t1_estimate_refused_count: N                            # slices whose estimate refused/errored/failed checkpoint
+  t2_estimate_slug: <spec-slug> | null                   # persisted T2 progressed-slice estimate (Step 6a)
+  t2_estimate_grounded: true | false                     # whether the T2 record carries cost_usd
 
 ## Skipping stages
 
