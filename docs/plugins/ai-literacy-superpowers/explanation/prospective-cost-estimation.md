@@ -77,8 +77,9 @@ The skill itself is **methodology and a format contract**. It describes
 how an estimate is derived and what an estimate record must contain — it
 does not dispatch an agent, write a file, or decide go/no-go. Emitting
 and validating a record is the job of downstream consumers (the
-read-only `cost-estimator` agent, the `/cost-estimate` command, and a
-future orchestrator fold-in) that inherit this contract.
+read-only `cost-estimator` agent, the `/cost-estimate` command, and the
+orchestrator fold-in at the Slice Adjudication and Plan Approval gates)
+that inherit this contract.
 
 ## The read-only emitter — the `cost-estimator` agent
 
@@ -146,6 +147,39 @@ new top-level `cost-estimates/` directory — deliberately **outside**
 and must never be co-located with captured actuals where a later scan
 could read it as fact.
 
+## Folded into the orchestrator's gates, never a new gate
+
+The `/cost-estimate` command is the *ad hoc* surface. The estimator's
+highest-value home is **inside the orchestrator's existing
+human-disposition gates**, where cost lands at the moment it most changes
+a choice — surfaced as **informational fields, never a new gate**:
+
+- **T1 — Slice Adjudication.** After carpaccio slices the task and the
+  record is validated, the orchestrator dispatches the `cost-estimator`
+  **once per slice in parallel** and appends a compact one-line cost
+  summary (tokens, cost-or-"not grounded", confidence, failure direction)
+  to each slice's block. The human sees per-slice cost *while choosing
+  which slice to progress* — the moment the slicing record names as the
+  most valuable.
+- **T2 — Plan Approval.** After spec-writer, the spec-mode diaboli, and
+  the choice-cartographer complete, the orchestrator dispatches the
+  estimator **once** against the progressed slice's spec — the
+  pipeline's highest confidence ceiling — and surfaces a fuller cost
+  block (tokens, agent-compute time, cost, the **verbatim
+  `human_gate_time` caveat**, an excluded pointer) alongside
+  `cartograph_pending_count`.
+
+Both fold-ins follow the orchestrator's established
+`cartograph_pending_count` rule: a structured informational field, **not**
+a decision point. They add **no block and no keypress**, no agent writes a
+disposition, and the estimate carries no recommendation or verdict — the
+human reads the ranges and makes the *existing* slice / plan-approval
+choice. Crucially, the gate **never degrades**: a `REFUSED:` emit, a
+dispatch error, or a checkpoint abort reduces the affected estimate to
+"unavailable" and the existing gate proceeds exactly as before. The
+estimate is purely additive decision-support, and the orchestrator owns
+the write so the agent stays read-only.
+
 ## See also
 
 - [Estimate Task Cost](../how-to/estimate-task-cost.md) — the
@@ -160,3 +194,4 @@ could read it as fact.
 - Skill spec: `docs/superpowers/specs/2026-06-10-cost-estimation-skill-design.md`.
 - Agent spec: `docs/superpowers/specs/2026-06-11-cost-estimator-agent-design.md`.
 - Command spec: `docs/superpowers/specs/2026-06-11-cost-estimate-command-design.md`.
+- Orchestrator fold-in spec: `docs/superpowers/specs/2026-06-12-orchestrator-cost-fold-in-design.md`.

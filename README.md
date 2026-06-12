@@ -28,7 +28,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.44.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **34 skills, 15 agents, 27 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.45.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **34 skills, 15 agents, 27 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 | **`diagnostic-legibility`** | v0.5.0 | Hosts agents accountable for maintaining human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. | [docs](docs/plugins/diagnostic-legibility/index.md) |
 
