@@ -3,7 +3,7 @@ title: Skills
 ---
 # Skills
 
-The plugin ships 31 skills. Each skill is a focused unit of domain knowledge that Claude can invoke during a session. They are grouped below by category.
+The plugin ships 34 skills. Each skill is a focused unit of domain knowledge that Claude can invoke during a session. They are grouped below by category.
 
 ---
 
@@ -36,6 +36,10 @@ Harness health snapshots and observability. Covers how to read a health snapshot
 ### harness-onboarding
 
 Generating human-readable onboarding documentation from harness state. Covers the three-source synthesis (HARNESS.md, AGENTS.md, REFLECTION_LOG.md), tone guidelines for writing for new contributors, section-by-section content mapping, and the validation checkpoint that verifies structural completeness.
+
+### harness-audit-engine
+
+The shared drift-detection layer that backs both `/harness-audit` (read-only) and `/harness-sync`. Produces a structured drift report covering convention files, ONBOARDING.md, snapshot staleness, template drift, constraint regressions, recurring reflection patterns, and HARNESS.md Status section accuracy.
 
 ---
 

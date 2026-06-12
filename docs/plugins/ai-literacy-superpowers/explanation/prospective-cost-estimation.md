@@ -77,8 +77,8 @@ The skill itself is **methodology and a format contract**. It describes
 how an estimate is derived and what an estimate record must contain — it
 does not dispatch an agent, write a file, or decide go/no-go. Emitting
 and validating a record is the job of downstream consumers (the
-read-only `cost-estimator` agent, a future `/cost-estimate` command, and
-an orchestrator fold-in) that inherit this contract.
+read-only `cost-estimator` agent, the `/cost-estimate` command, and a
+future orchestrator fold-in) that inherit this contract.
 
 ## The read-only emitter — the `cost-estimator` agent
 
@@ -124,8 +124,32 @@ Three behaviours make the emitter honest rather than confidently wrong:
   cost-omitted record, not a refusal**, because the token grounding is
   intact.
 
+## The dispatcher that persists — the `/cost-estimate` command
+
+The agent emits a string; the **`/cost-estimate` command** is the
+dispatcher that turns it into a file — and the only place a `Write`
+happens. It dispatches the agent on one target, runs the **Output
+Validation Checkpoint** against the format contract, surfaces a review
+summary, and writes the record **only after the human disposes**
+(`accept` / `edit` / `re-run` / `abort`). This is the other half of the
+dispose-then-write invariant: the human reviews a *validated* record and
+the write is unambiguously downstream of `accept`.
+
+The checkpoint is bounded at **structural-only vs derived-value**: it may
+fix a purely structural deviation in place (in practice, deleting a stray
+verdict field) and records the change as a diff, but it **aborts — never
+authors — on any derived-value defect** (a missing `cost_basis`, an
+out-of-cap confidence, a verdict phrased in prose). On a `REFUSED:` emit
+it surfaces the refusal verbatim and writes nothing. Records land in a
+new top-level `cost-estimates/` directory — deliberately **outside**
+`observability/`, because a forward-looking prediction is not telemetry
+and must never be co-located with captured actuals where a later scan
+could read it as fact.
+
 ## See also
 
+- [Estimate Task Cost](../how-to/estimate-task-cost.md) — the
+  `/cost-estimate` command walkthrough.
 - [Track AI Costs](../how-to/track-ai-costs.md) — the retrospective
   sibling capture workflow.
 - `ai-literacy-superpowers/skills/cost-estimation/SKILL.md` — the skill.
@@ -135,3 +159,4 @@ Three behaviours make the emitter honest rather than confidently wrong:
   — the read-only emitter's tool boundary and contract.
 - Skill spec: `docs/superpowers/specs/2026-06-10-cost-estimation-skill-design.md`.
 - Agent spec: `docs/superpowers/specs/2026-06-11-cost-estimator-agent-design.md`.
+- Command spec: `docs/superpowers/specs/2026-06-11-cost-estimate-command-design.md`.
