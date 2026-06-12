@@ -18,9 +18,11 @@ ensuring the project's conventions are upheld end to end.
   was modified in that PR (gaining step 1c, the agent-artefact scope detection)
   and is exempt under Amendment 2 §A2.6.
   It was modified again by S4 (#371), the cost fold-in at T1/T2 — see
-  docs/superpowers/specs/2026-06-12-orchestrator-cost-fold-in-design.md §9.
-  As a modification of an existing agent file (no new component added), it
-  remains exempt under Amendment 2 §A2.6.
+  docs/superpowers/specs/2026-06-12-orchestrator-cost-fold-in-design.md §9 —
+  and by S5 (#372), the T0 pre-carpaccio ballpark — see
+  docs/superpowers/specs/2026-06-12-orchestrator-t0-ballpark-design.md §9.
+  As modifications of an existing agent file (no new component added), they
+  remain exempt under Amendment 2 §A2.6.
   Future modifications should review this exemption — see the spec's §A2.8 known
   limitations and the cartograph stories #5 and #6 (revisit at next quarterly
   /governance-audit, target 2026-07-19).
@@ -55,6 +57,11 @@ pitfalls.
 Run the agents in this order. Steps marked PARALLEL may be dispatched in a single
 message with multiple Agent tool calls.
 
+  T0. BONUS (before step 0) — cost-estimator   A coarse whole-task ballpark from
+                                       raw task text only, surfaced before
+                                       carpaccio. Non-blocking, no gate,
+                                       inline-only (never persisted). See
+                                       "Before dispatching carpaccio" Step 3.
   0. SEQUENTIAL  — carpaccio          Slice the raw task description into
                                        thin, end-to-end-complete pieces.
      GATE: Slice Adjudication — surface the slicing record to the user.
@@ -141,6 +148,45 @@ message with multiple Agent tool calls.
 2. Create a GitHub issue for the task:
    `gh issue create --title "TITLE" --body "DESCRIPTION"`
    Record the issue number — pass it to integration-agent at the end.
+
+3. **T0 ballpark (bonus, non-blocking).** Surface a coarse whole-task cost
+   ballpark **before** dispatching carpaccio, so the human gets an early
+   go/no-go sniff-test before any slicing or spec exists. This is **not a
+   gate** — it does not block, add a keypress, or ask a go/no-go question.
+
+   1. Dispatch the `cost-estimator` agent **once** with the **raw task
+      text** — the issue body from Step 2 (or the user's plain-English
+      task) — supplied as an **inline string**, and an **explicit**
+      `target_kind: task-text` (the dispatcher-stated-kind path; `task-text`
+      is the correct `low` confidence ceiling for raw text).
+   2. Read the returned string to extract the ballpark fields. **Write no
+      file** and **run no Output Validation Checkpoint** — T0 is
+      **inline-only and ephemeral by design**, a deliberate asymmetry with
+      the persisted T1/T2 gate estimates (a persisted low-confidence
+      raw-text number would read as more authoritative than it is, which is
+      the anchoring risk T0 must avoid). Surface a **loud low-confidence**
+      block:
+      > **T0 ballpark (pre-slice, coarse — low confidence)**
+      > - tokens `<low>`–`<high>` (confidence **low** — raw task text only)
+      > - cost `<$low>`–`<$high>` (or "not grounded — no snapshot")
+      > - *<the record's `Confidence rationale` one-liner and `Failure
+      >   direction` clause, verbatim>*
+      > - This is a **go/no-go sniff-test, not an estimate to plan
+      >   against.** The per-slice numbers at Slice Adjudication (T1) and
+      >   the spec-grounded number at Plan Approval (T2) are the figures to
+      >   actually weigh.
+   3. **Never degrade the run.** On a `REFUSED:` string or a dispatch
+      error, surface "T0 ballpark unavailable (*verbatim reason*)" and
+      proceed. No T0 outcome is ever a block, a keypress, or a reason not
+      to run carpaccio.
+   4. **Do NOT add T0 to the context object.** It is surfaced to the human
+      once and discarded — it is **not** threaded to carpaccio or any
+      downstream agent. Threading a low-confidence raw-text number
+      downstream would re-introduce the anchor the inline-only decision
+      exists to avoid. (Contrast the persisted `t1_estimate_*`/`t2_estimate_*`
+      fields, which are decision-support with audit value.)
+
+   Then proceed to carpaccio (step 0) regardless of the ballpark.
 
 ## After carpaccio completes — Slice Adjudication Gate
 

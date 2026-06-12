@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.46.0 — 2026-06-12
+
+### Orchestrator T0 pre-carpaccio ballpark (S5 of the cost-estimator pipeline)
+
+Adds the earliest, weakest insertion point: a coarse whole-task cost **ballpark**
+from raw task text only, surfaced **before carpaccio** as a non-blocking go/no-go
+sniff-test. Completes the T0/T1/T2 insertion picture (T1/T2 shipped in 0.45.0).
+Behavioural change to the orchestrator agent — minor bump.
+
+- **T0 (new Step 3 of "Before dispatching carpaccio").** After branch and issue
+  creation and immediately before carpaccio, the orchestrator dispatches the
+  `cost-estimator` **once** against the issue body as an inline `task-text` target
+  (the `low` confidence ceiling) and surfaces a **loud low-confidence** ballpark
+  framed as a "sniff-test, not an estimate to plan against".
+- **Inline-only and ephemeral — a deliberate asymmetry with T1/T2.** T0 writes
+  **no file** and runs **no checkpoint**, and is **not** threaded into the context
+  object. The gate-folded T1/T2 estimates persist (decision-support with audit
+  value); the earliest, least-accurate sniff-test stays ephemeral so a
+  low-confidence raw-text number never reads as an authoritative artefact — the
+  structural answer to the anchoring risk the slice flags.
+- **Non-blocking, no gate, no verdict.** T0 adds no pause, no keypress, and no
+  go/no-go prompt; the orchestrator proceeds to carpaccio regardless. A `REFUSED:`
+  string or a dispatch error surfaces "T0 ballpark unavailable" and the run
+  continues exactly as today.
+- **Pure consumer of S1/S2.** No change to the estimate-record format, the
+  `cost-estimator` agent, or the `/cost-estimate` command.
+- **Docs** — the prospective-cost-estimation concept page now describes the full
+  T0/T1/T2 picture with the inline-only-vs-persisted asymmetry; the
+  agent-orchestration page notes the pre-pipeline ballpark.
+
 ## 0.45.0 — 2026-06-12
 
 ### Orchestrator cost fold-in at T1 and T2 (S4 of the cost-estimator pipeline)

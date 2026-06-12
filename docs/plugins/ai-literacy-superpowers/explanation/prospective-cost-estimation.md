@@ -180,6 +180,32 @@ dispatch error, or a checkpoint abort reduces the affected estimate to
 estimate is purely additive decision-support, and the orchestrator owns
 the write so the agent stays read-only.
 
+## The earliest, weakest insertion — the T0 ballpark
+
+Before any of that — before carpaccio even slices the task — sits **T0**,
+a coarse whole-task **ballpark from raw task text only**. After the
+orchestrator creates the branch and the issue, and immediately before
+carpaccio, it dispatches the `cost-estimator` once against the issue body
+as a `task-text` target (the **`low`** confidence ceiling) and surfaces a
+loud low-confidence sniff-test: "this looks small" versus "this looks
+enormous", before you have invested in slicing, specs, or code.
+
+T0 is deliberately the **opposite** of T1/T2 on the one axis that matters
+— durability. Where the gate-folded estimates **persist** to
+`cost-estimates/` (decision-support with audit value), T0 is
+**inline-only and ephemeral**: surfaced once, written **nowhere**, and not
+even threaded into the context object passed downstream. The reasoning is
+anchoring. T0 is the least-grounded number the pipeline can produce, fired
+before any decomposition exists; a *persisted* low-confidence raw-text
+figure would read as more authoritative than it is. Keeping it ephemeral
+means there is no file for a later scan, an observability tool, or a future
+reader to mistake for fact — the honesty rests entirely on the loud
+low-confidence disclosure at the moment it is surfaced, framed explicitly
+as "a go/no-go sniff-test, not an estimate to plan against". Like T1/T2 it
+is non-blocking and carries no gate, no keypress, and no verdict; the
+orchestrator proceeds to carpaccio regardless, and an unavailable T0
+changes nothing about the run.
+
 ## See also
 
 - [Estimate Task Cost](../how-to/estimate-task-cost.md) — the
@@ -195,3 +221,4 @@ the write so the agent stays read-only.
 - Agent spec: `docs/superpowers/specs/2026-06-11-cost-estimator-agent-design.md`.
 - Command spec: `docs/superpowers/specs/2026-06-11-cost-estimate-command-design.md`.
 - Orchestrator fold-in spec: `docs/superpowers/specs/2026-06-12-orchestrator-cost-fold-in-design.md`.
+- T0 ballpark spec: `docs/superpowers/specs/2026-06-12-orchestrator-t0-ballpark-design.md`.
