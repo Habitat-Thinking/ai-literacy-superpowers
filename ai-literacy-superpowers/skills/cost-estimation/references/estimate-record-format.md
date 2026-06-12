@@ -300,14 +300,18 @@ risk onto every downstream counter; nothing catches a consumer that counts a
 trailing-slash directory entry as a real grounding. This is an accepted residual
 of the deliberate keep-the-directory-sentinel trade.
 
-## The calibration seam
+## The calibration seam (closed by S6)
 
 `grounding_sources[]` permits a `kind: calibration` entry alongside
-`model-routing` and `cost-snapshot`. Calibration data, when it exists,
-**refines** existing $/token and per-stage token ranges (narrowing ranges,
-potentially raising confidence) rather than introducing a new field. No
-per-PR actuals capture, format, or integration-agent change ships in this
-slice.
+`model-routing` and `cost-snapshot`. The S6 calibration loop now populates it:
+per-PR actuals records — captured by the integration-agent, format owned by
+[`cost-tracking/references/per-pr-actuals-format.md`](../../cost-tracking/references/per-pr-actuals-format.md)
+and stored under `observability/costs/per-pr/` — **refine the per-stage token
+ranges** (narrowing them, potentially raising the `tokens` confidence) against
+this repo's own history. Per the token-ranges-only decision, calibration leaves
+`cost_usd`/`cost_basis` untouched. True to this seam, that shipped with **no
+field-set change** — only the `kind: calibration` entry (already permitted here)
+and a `Confidence rationale` disclosure.
 
 ## Validation checklist
 
