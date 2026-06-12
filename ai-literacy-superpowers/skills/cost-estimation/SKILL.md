@@ -164,8 +164,8 @@ knowable" is more informative than a low-confidence list-price range that
 says "we don't really know" in numeric clothing. **No format change is
 required when the first snapshot lands** — the same
 `cost_usd`/`cost_basis`/`confidence.cost` fields simply begin to appear.
-This is the seam the [calibration section](#the-calibration-seam-s6) also
-contemplates.
+This is the seam the [calibration loop](#the-calibration-loop-s6) now
+closes.
 
 ## The Disclosure / Confidence Contract
 
@@ -281,24 +281,50 @@ variance. The failure-direction prose must reference this: an estimate
 whose wall-clock omits human-gate latency is `likely-underrun` on
 wall-clock unless the human-gate caveat is read alongside it.
 
-## The Calibration Seam (S6)
+## The Calibration Loop (S6)
 
-Calibration (a per-PR actuals loop) is accepted in-scope for the
-capability but **ships later**. This skill's only obligation is to keep
-the seam open so a future actuals data source can be ingested **without a
-format change**:
+The calibration loop is **implemented** (slice S6). The integration-agent
+captures a **per-PR actuals record** at merge time — defined in
+[`cost-tracking/references/per-pr-actuals-format.md`](../cost-tracking/references/per-pr-actuals-format.md)
+and written to `observability/costs/per-pr/` — and this methodology reads the
+accumulated records to refine estimates against **this repo's own history**.
+True to the seam S1 promised, calibration ships with **no format change**: it is
+the already-permitted `kind: calibration` `grounding_sources[]` entry plus a
+disclosure, nothing more.
 
-- `grounding_sources[]` permits a `kind: calibration` entry. Today only
-  `model-routing` and `cost-snapshot` entries appear; tomorrow a
-  `calibration` entry can be added without altering the field set.
-- The methodology is written so that calibration data, when it exists,
-  **refines** the $/token and the per-stage token ranges — narrowing
-  ranges and potentially raising confidence — rather than introducing a
-  new field.
+**What calibration refines — token ranges only.** Calibration narrows the
+**per-stage token ranges** toward the observed history and, when enough records
+exist for a stage, **raises the `tokens` confidence** one tier (never above the
+`target_kind` ceiling). It does **not** touch `cost_usd` or `cost_basis`: the
+$/token ground stays the snapshot (`cost_basis: snapshot-actuals`), and a per-PR
+record's dollar figure — when present at all — is not promoted to a rate. This is
+the deliberate token-ranges-only reach.
 
-This skill does **not** implement calibration: no per-PR actuals format,
-no integration-agent change, no ingestion logic. It names calibration as
-a *future* grounding source and stops there.
+**How the records are read:**
+
+- Glob `observability/costs/per-pr/` for actuals records. For each stage, gather
+  the **supplied** per-stage token actuals (`tokens_by_stage[].tokens` that are
+  numbers, not the literal `unavailable`) across the accumulated records and use
+  their central tendency to narrow that stage's range.
+- A record whose figures are `unavailable` still contributes its **structural**
+  signal: its `stages_run` tells you which stages this repo actually exercises, so
+  a stage the repo never runs can be dropped (disclosed in `Excluded`).
+  `unavailable` is **not** zero — it never pulls a token magnitude down.
+- Add a `kind: calibration` `grounding_sources[]` entry naming the `per-pr/`
+  directory, and disclose the basis in `Confidence rationale` — how many records
+  informed the narrowing and over what date range (e.g. "token ranges narrowed
+  against 9 per-PR actuals, 2026-06 to 2026-08; cost unchanged — calibration
+  refines tokens only").
+
+**Zero history is the valid day-one state.** When `observability/costs/per-pr/` is
+absent or empty, the methodology behaves exactly as it did before S6: generic
+`MODEL_ROUTING.md` budgets, no `calibration` entry, no calibration disclosure. The
+loop degrades cleanly to the pre-S6 behaviour.
+
+**Calibration never overrides the disclosure contract.** A calibrated estimate is
+still a range with disclosed confidence and a stated failure direction.
+Calibration can narrow a range and raise its confidence; it can never collapse a
+range to a point or suppress the `Excluded`/`Confidence rationale` disclosures.
 
 ## Sibling Relationship to cost-tracking
 
@@ -321,9 +347,12 @@ capability should discover the other from either skill's description.
   record is a downstream command's job; this skill defines what such a
   record must contain.
 - **Does not wire into the orchestrator.** No gate is added, moved, or
-  re-weighted; the orchestrator fold-in is downstream.
-- **Does not implement calibration.** The calibration seam is named, not
-  built.
+  re-weighted by this skill; the orchestrator fold-in lives in the
+  orchestrator agent (T0/T1/T2).
+- **Does not capture calibration actuals.** This skill defines the
+  calibration *methodology* (how per-PR actuals refine token ranges), but
+  the per-PR actuals are written by the integration-agent and the format is
+  owned by `cost-tracking` — this skill only reads them.
 - **Does not decide go/no-go.** It emits ranges and disclosures for a
   human to dispose; it carries no verdict, recommendation, or
   recommendation prose.

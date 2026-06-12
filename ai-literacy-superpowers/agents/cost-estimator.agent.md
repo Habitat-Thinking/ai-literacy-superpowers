@@ -151,6 +151,32 @@ widen the **whole-record `cost_usd` band**. Disclose the widening in the prose
 body. You emit **no** machine-checkable per-stage cost band (that is a separate
 slice's deliverable); the widening lives in the whole-record band and the prose.
 
+### Calibration against per-PR history (S6 — token ranges only)
+
+Glob `observability/costs/per-pr/` for per-PR actuals records (format:
+`skills/cost-tracking/references/per-pr-actuals-format.md`). When records exist,
+**calibrate the per-stage token ranges against this repo's own history**:
+
+- For each stage, gather the **supplied** per-stage token actuals
+  (`tokens_by_stage[].tokens` that are numbers — ignore the literal
+  `unavailable`) across the records and narrow that stage's range toward their
+  central tendency. With enough records for a stage you **may raise** the `tokens`
+  confidence one tier, **never above** the `target_kind` ceiling.
+- A record whose figures are `unavailable` still contributes its **structural**
+  signal: its `stages_run` shows which stages this repo actually exercises, so you
+  may drop a never-run stage (disclosed in `Excluded`). `unavailable` is **not**
+  zero — it never lowers a token magnitude.
+- **Token ranges only.** Calibration never touches `cost_usd` or `cost_basis`;
+  the $/token ground stays the snapshot. Do **not** promote a per-PR dollar figure
+  to a rate.
+- When you calibrate, add a `kind: calibration` `grounding_sources[]` entry naming
+  the `observability/costs/per-pr/` directory, and disclose the basis in
+  `Confidence rationale` — how many records informed the narrowing and over what
+  date range, with the explicit note "cost unchanged — calibration refines tokens
+  only". **No estimate-record field is added** — this is the S1 seam, honoured.
+- An absent/empty `per-pr/` directory is the day-one state: no `calibration`
+  entry, no disclosure, generic `MODEL_ROUTING.md` budgets as before.
+
 ### Mechanical cost-omission (no salience judgment)
 
 When you compute a cost figure (state 3 — a usable snapshot exists), re-verify
@@ -329,8 +355,11 @@ omits human-gate latency leans `likely-underrun` on wall-clock unless the
 ## Grounding-source read policy
 
 Read `MODEL_ROUTING.md` (the two tables) and the latest `observability/costs/`
-snapshot if one exists. A `kind: calibration` grounding source is read **if one
-exists** (the S1 seam) but is never produced or required by you.
+snapshot if one exists. Also **Glob `observability/costs/per-pr/`** for per-PR
+actuals records (the S6 calibration loop, see Methodology → Calibration). When
+records exist you **produce** a `kind: calibration` `grounding_sources[]` entry;
+when the directory is absent or empty you produce none and behave exactly as a
+pre-S6 estimate.
 
 ## Output
 

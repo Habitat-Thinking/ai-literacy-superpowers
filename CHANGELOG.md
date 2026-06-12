@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.47.0 — 2026-06-12
+
+### Calibration loop — per-PR actuals capture (S6 of the cost-estimator pipeline)
+
+Closes the calibration seam S1 deliberately left open: the estimator now learns
+from **this repo's own history** instead of only the generic `MODEL_ROUTING.md`
+budgets. The final slice of the cost-estimator pipeline. New integration-agent
+responsibility + new actuals format + calibration ingestion — minor bump.
+
+- **Per-PR actuals format (new).** A single-task, structural sibling of the
+  quarterly provider snapshot, owned by the `cost-tracking` skill
+  (`references/per-pr-actuals-format.md`) and stored under
+  `observability/costs/per-pr/`. Captures which stages ran, review cycles, files
+  and languages touched, plus token/cost figures **when a human supplies them**.
+- **Integration-agent capture (new Step 1a).** At integration time — after the
+  CHANGELOG, before the commit, so the record **ships in the PR** and never
+  commits to `main` — the integration-agent auto-captures the structural facts and
+  records human-supplied `/cost` figures, marking them `unavailable` otherwise.
+  **Non-blocking and never fabricates a figure**: a subagent can't read per-PR
+  tokens programmatically, and the repo's no-fabrication rule forbids inventing
+  them, so `unavailable` is explicit and is never `0`.
+- **Calibration ingestion — token ranges only.** The `cost-estimation` methodology
+  and the `cost-estimator` agent now read accumulated per-PR records as a
+  `kind: calibration` grounding source to **narrow the per-stage token ranges**
+  (and may raise the `tokens` confidence) against repo history, disclosed in
+  `Confidence rationale`. The `$/token` ground stays the snapshot
+  (`cost_basis: snapshot-actuals`) — calibration refines tokens only.
+- **No estimate-record format change.** True to the S1 seam, calibration ships as
+  the already-permitted `kind: calibration` `grounding_sources[]` entry plus a
+  disclosure — no field added, removed, or retyped. Zero history degrades cleanly
+  to the pre-S6 generic-budget behaviour.
+- **Docs** — the prospective-cost-estimation concept page gains a calibration-loop
+  section; the cost-tracking skill documents its two actuals records (quarterly
+  snapshot + per-PR).
+
 ## 0.46.0 — 2026-06-12
 
 ### Orchestrator T0 pre-carpaccio ballpark (S5 of the cost-estimator pipeline)

@@ -25,16 +25,51 @@ files were edited. Include the PR number in parentheses at the end of each bulle
 
 Date format: DD Month YYYY (e.g. 26 March 2026)
 
+### 1a. Capture per-PR actuals (calibration)
+
+Write a **per-PR actuals record** so the `cost-estimator` can calibrate future
+estimates against this repo's own history (slice S6). This runs **before** the
+commit so the record ships **in the PR** — never committed to `main`. It is
+**non-blocking**: it never gates the merge and it **never fabricates a figure**.
+
+Format reference (the single source of truth for the field set and the
+`unavailable` honesty rule):
+
+```text
+ai-literacy-superpowers/skills/cost-tracking/references/per-pr-actuals-format.md
+```
+
+1. **Auto-capture structural facts** from the context object and git:
+   `date`, `branch`, `issue`, `task_summary`, `progressed_slice`, `stages_run`
+   (inferred from the context object — `spec_changes` ⇒ spec-writer ran,
+   `failing_tests` ⇒ tdd-agent, `review_result` ⇒ code-reviewer, etc.),
+   `review_cycles` (from `review_result`), `files_changed` and `languages`
+   (from `git diff --name-only main...HEAD`). Leave `pr` as `null` if the PR
+   does not exist yet; the record's provenance is the PR it ships in.
+2. **Invite figures, non-blocking.** Say once: "If you want token/cost actuals
+   captured for calibration, paste the session figures from `/cost`; otherwise
+   I'll record them as unavailable." If the human supplies figures, record them
+   into `tokens_by_stage`/`tokens_total`/`cost_usd` and set
+   `figures_source: human-supplied`. If nothing is supplied, set **every**
+   token/cost field to the literal `unavailable` and `figures_source: unavailable`.
+   **Never invent a number, never use `0` as a stand-in.** Do not wait or block on
+   a reply — absence means `unavailable` and you proceed.
+3. **Write** the record to
+   `observability/costs/per-pr/<YYYY-MM-DD>-<branch-slug>-actuals.md`
+   (`mkdir -p observability/costs/per-pr` first), conforming to the format
+   reference.
+
 ### 2. Commit
 
 Stage all changed files. Write a concise commit message describing what changed and
 why. The message ends when the description ends — no Co-Authored-By, no Generated
 with, no attribution lines of any kind.
 
-Stage specific files by name (never `git add -A`), then commit:
+Stage specific files by name (never `git add -A`) — **including the per-PR actuals
+record written in step 1a** — then commit:
 
 ```bash
-git add path/to/changed/file ...
+git add path/to/changed/file ... observability/costs/per-pr/<YYYY-MM-DD>-<branch-slug>-actuals.md
 git commit -m "MESSAGE"
 ```
 

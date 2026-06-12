@@ -206,6 +206,33 @@ is non-blocking and carries no gate, no keypress, and no verdict; the
 orchestrator proceeds to carpaccio regardless, and an unavailable T0
 changes nothing about the run.
 
+## Closing the loop — calibration against this repo's history
+
+Everything above grounds in the **generic** `MODEL_ROUTING.md` token
+budgets — the same numbers for every repo. The **calibration loop** lets
+the estimator learn what work in *this* repo actually costs. At
+integration time the **integration-agent** writes a **per-PR actuals
+record** to `observability/costs/per-pr/`: which stages ran, how many
+review cycles, the files and languages touched — auto-captured — plus the
+task's token/cost figures **when a human supplies them** (e.g. from
+Claude Code's `/cost`). The estimator then reads the accumulated records
+as a `kind: calibration` grounding source and **narrows its per-stage
+token ranges** toward the observed history.
+
+Two honesty commitments shape the design. First, **no fabrication**: a
+subagent cannot read "tokens spent on this PR" programmatically, so when a
+human supplies no figures they are recorded as `unavailable` — never
+invented, never `0`. An `unavailable` record still calibrates *which
+stages this repo exercises*; it contributes nothing to the token
+magnitudes. Second, **token ranges only**: calibration narrows token
+ranges and may raise their confidence, but the dollar rate stays bound to
+the cost snapshot (`cost_basis: snapshot-actuals`). True to the seam the
+skill kept open from the start, the whole loop ships with **no change to
+the estimate-record format** — just the already-permitted
+`kind: calibration` entry and a `Confidence rationale` disclosure. With
+zero history (the day-one state), the estimator behaves exactly as it did
+before the loop existed.
+
 ## See also
 
 - [Estimate Task Cost](../how-to/estimate-task-cost.md) — the
@@ -222,3 +249,5 @@ changes nothing about the run.
 - Command spec: `docs/superpowers/specs/2026-06-11-cost-estimate-command-design.md`.
 - Orchestrator fold-in spec: `docs/superpowers/specs/2026-06-12-orchestrator-cost-fold-in-design.md`.
 - T0 ballpark spec: `docs/superpowers/specs/2026-06-12-orchestrator-t0-ballpark-design.md`.
+- Calibration loop spec: `docs/superpowers/specs/2026-06-12-calibration-loop-per-pr-actuals-design.md`.
+- Per-PR actuals format: `ai-literacy-superpowers/skills/cost-tracking/references/per-pr-actuals-format.md`.

@@ -28,6 +28,20 @@ With cost data:
 - Cost trends reveal whether AI adoption is efficient
 - Budget conversations have receipts
 
+## Two actuals records: the quarterly snapshot and the per-PR record
+
+This skill owns **two** actuals formats under `observability/costs/`:
+
+- **The quarterly snapshot** (below) — a **provider-level aggregate** of spend and
+  tokens across all work for a billing period, captured by `/cost-capture`.
+- **The per-PR actuals record** — a **single-task** structural footprint (which
+  stages ran, review cycles, files) plus human-supplied token/cost figures when
+  available, written by the integration-agent at merge time and read by the
+  `cost-estimator` as a `kind: calibration` source. It lives under
+  `observability/costs/per-pr/` and is defined in
+  [`references/per-pr-actuals-format.md`](references/per-pr-actuals-format.md).
+  The two never share a file or directory.
+
 ## The Cost Snapshot
 
 Cost data is captured in `observability/costs/YYYY-MM-DD-costs.md`.
