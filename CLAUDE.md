@@ -144,7 +144,7 @@ consumers must include a validation checkpoint step. The pattern:
 4. Fix deviations in place (do not re-dispatch the agent)
 
 Commands with checkpoints: `/harness-health`, `/assess`, `/reflect`,
-`/cost-capture`, `/harness-constrain`, `/harness-init`,
+`/cost-capture`, `/cost-estimate`, `/harness-constrain`, `/harness-init`,
 `/superpowers-init`, `/governance-audit`, `/harness-onboarding`.
 
 When adding a new command that writes structured markdown, add a
