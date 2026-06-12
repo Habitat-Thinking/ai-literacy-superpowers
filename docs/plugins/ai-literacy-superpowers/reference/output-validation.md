@@ -28,6 +28,7 @@ This verification layer runs synchronously within the command, ensuring consiste
 | /assess | `assessments/YYYY-MM-DD-assessment.md` | `ai-literacy-assessment/references/assessment-template.md` | Required sections, parseable level number (1-5), discipline maturity table |
 | /reflect | `REFLECTION_LOG.md` (last entry) | Entry template in `commands/reflect.md` | 8 mandatory fields, 4 session metadata subfields, Signal enum validation |
 | /cost-capture | `observability/costs/YYYY-MM-DD-costs.md` | `cost-tracking/SKILL.md` | Period, total spend, model routing reference present |
+| /cost-estimate | `cost-estimates/YYYY-MM-DD-<slug>-estimate.md` | `cost-estimation/references/estimate-record-format.md` | Ranges well-formed, per-stage cost coupling, four disclosure sections, per-axis confidence within cap, time split, no-verdict (field + prose) |
 | /harness-constrain | `HARNESS.md` (new constraint block) | `templates/HARNESS.md` | Rule/Enforcement/Tool/Scope fields, enum values, governance fields if applicable |
 | /harness-init | `HARNESS.md` | `templates/HARNESS.md` | 4 top-level sections, subsections, Status fields, template version marker |
 | /superpowers-init | `CLAUDE.md`, `AGENTS.md`, `MODEL_ROUTING.md`, `REFLECTION_LOG.md` | Corresponding `templates/` files | Required sections per file |
