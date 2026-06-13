@@ -235,6 +235,9 @@ before the loop existed.
 
 ## See also
 
+- [The Cost Estimation Loop](the-cost-estimation-loop.md) — how the whole
+  capability works end-to-end and threads through the orchestrator workflow,
+  including the calibration feedback cycle.
 - [Estimate Task Cost](../how-to/estimate-task-cost.md) — the
   `/cost-estimate` command walkthrough.
 - [Track AI Costs](../how-to/track-ai-costs.md) — the retrospective
