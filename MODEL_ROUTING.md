@@ -26,6 +26,19 @@
 | code-reviewer | 50-100k tokens | >100k: too many files, batch |
 | integration-agent | 30-80k tokens | >80k: CI issues, investigate |
 
+## Observed Cost (2026-06-13)
+
+First cost capture — see `observability/costs/2026-06-13-costs.md` (a
+single-machine session sample, not a full billing aggregate). Observed pattern:
+cost is **cache-read + output dominated**, not fresh input. Opus 4.8 effective
+**blended ~$0.83/1M** across all token categories (vs the $5/$25 list card),
+because the bulk of tokens were cache reads at ~0.1×. Drivers: subagent-heavy
+sessions (~70% of usage) and >150k-context sessions (~67%). No tier re-route is
+warranted — the data shows an operational cost pattern, not a misrouted tier.
+The prospective `cost-estimator` reads the snapshot as its `$/token` ground; keep
+its `cost` confidence low/medium until a provider-dashboard snapshot replaces this
+sample.
+
 ## Sovereignty Considerations
 
 ### Data Classification
