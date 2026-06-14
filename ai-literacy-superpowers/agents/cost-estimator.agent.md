@@ -143,7 +143,7 @@ Apply the S1 `cost-estimation` SKILL. Derive the per-stage and whole-record
 record conforming to `estimate-record-format.md` exactly as-merged.
 
 **Split-tier widening (priced into the whole-record band, disclosed in prose).**
-The implementer stage maps to the split tier `Standard / Capable` and carries the
+The implementer stage maps to the split tier `Standard/Capable` and carries the
 largest token budget, so its rate dominates any cost figure. Price its cost
 contribution across both ends of the split — the cheaper end
 (`claude-sonnet-4`, low) and the dearer end (`claude-opus-4`, high) — and let it

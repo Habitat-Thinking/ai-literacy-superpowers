@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.48.1 — 2026-06-14
+
+### cost-estimator: normalise the split-tier model_tier literal
+
+- **Consistent `Standard/Capable` literal (#381).** The cost-estimator agent
+  charter referred to the split tier as `Standard / Capable` (spaced) in its
+  Split-tier widening note while the format reference binding table records the
+  literal as `Standard/Capable` (unspaced). Normalised the charter to the
+  unspaced form so an exact-string consumer of `model_tier` sees one emitted
+  shape. The whitespace-insensitive comparison note (which deliberately shows
+  both forms are equivalent) is unchanged. Doc-only; patch bump.
+
 ## 0.48.0 — 2026-06-14
 
 ### Reservoir warden — watching the verifier the harness cannot verify
