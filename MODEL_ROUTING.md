@@ -15,6 +15,7 @@
 | code-reviewer | Most capable | Nuance, quality judgment |
 | integration-agent | Standard | Procedural workflow |
 | cost-estimator | Standard | Read-and-author against a fixed methodology and named grounding sources — applies the cost-estimation skill and emits a conforming record. Not deep adversarial judgment or design synthesis; it follows a defined derivation (like tdd-agent). |
+| reservoir-warden | Inexpensive | Counts observable proxies (`git`/`date`) against fixed thresholds and emits a templated advisory from the cognitive-reservoir skill. No deep reasoning, no design synthesis, no adversarial judgment — it counts and advises. The honesty discipline lives in the skill, not in model judgment. |
 
 ## Token Budget Guidance
 

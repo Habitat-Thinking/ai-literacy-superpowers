@@ -3,7 +3,7 @@ title: Agents
 ---
 # Agents
 
-The plugin ships 15 agents organised into three groups: the
+The plugin ships 16 agents organised into three groups: the
 **spec-first pipeline** that coordinates feature work end to end,
 the **harness agents** that verify and maintain infrastructure
 conventions, and the **assessor** that measures AI literacy.
@@ -333,6 +333,32 @@ governance analysis requires nuanced judgement about meaning.
 
 ---
 
+## Cognitive Reservoir
+
+### reservoir-warden
+
+- **Tools**: Read, Glob, Grep, Bash
+- **Model**: inherit (routed to an inexpensive tier — see `MODEL_ROUTING.md`)
+- **Dispatched by**: `/reservoir`
+- **Trust boundary**: Read-only (on the human)
+
+Watches the one actor the harness cannot verify: the human verifier who
+approves a session's output. Reads the `cognitive-reservoir` skill, then
+gathers observable proxies via `git`/`date` — continuous session span,
+decision volume, context switches, wall-clock hour — and reports each
+with an `observed` / `inferred` / `asked` flag. If a disjunctive
+threshold is crossed it offers the single decide-your-stop-first
+recommendation and stops; otherwise it says so plainly.
+
+Has **no Write and no Edit** by design: the read-only-on-the-human
+discipline means it never persists a record of the human's state,
+breaks, or chronotype. It produces no combined fatigue score, and it
+never asserts ego depletion or the hungry-judges figure — every trigger
+is a precaution under uncertainty. See the
+[Watching the Verifier](../explanation/watching-the-verifier.md) page.
+
+---
+
 ## Tool Summary
 
 | Agent | Read | Write | Edit | Glob | Grep | Bash | Agent | WebFetch | Trust |
@@ -352,6 +378,7 @@ governance analysis requires nuanced judgement about meaning.
 | harness-gc | x | x | x | x | x | x | | | read-write |
 | assessor | x | x | x | x | x | x | | | read-write |
 | governance-auditor | x | x | x | x | x | x | | | read-write (limited) |
+| reservoir-warden | x | | | x | x | x | | | read-only |
 
 ---
 

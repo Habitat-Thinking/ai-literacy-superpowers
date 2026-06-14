@@ -211,6 +211,26 @@ def list_commands(plugin_path: Path) -> Iterator[Component]:
         )
 
 
+def list_hooks(plugin_path: Path) -> Iterator[Component]:
+    """Yield every Stop/PreToolUse/SessionStart hook script in the plugin.
+
+    Hooks are bash scripts under ``hooks/scripts/`` with no frontmatter,
+    so the component name is the file stem (e.g. ``reservoir-check``).
+    They are deliberately *not* part of the ``all_components`` inventory
+    used by the frontmatter checks — a ``.sh`` file has none — but they
+    are addressable targets for behavioural scenarios.
+    """
+    hooks_dir = plugin_path / "hooks" / "scripts"
+    for file in sorted(hooks_dir.glob("*.sh")):
+        yield Component(
+            name=file.stem,
+            component_type="hook",
+            path=file,
+            frontmatter={},
+            parse_error=None,
+        )
+
+
 def find_component(
     plugin_path: Path,
     name: str,
@@ -226,6 +246,7 @@ def find_component(
         "agent": list_agents,
         "skill": list_skills,
         "command": list_commands,
+        "hook": list_hooks,
     }
     if component_type not in listings:
         raise ValueError(
