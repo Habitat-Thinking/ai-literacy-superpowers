@@ -126,6 +126,7 @@ Practical guides for specific tasks.
 
 - [Track AI Costs](how-to/track-ai-costs.md)
 - [Enforce Human Pace](how-to/enforce-human-pace.md)
+- [Watch Your Cognitive Reservoir](how-to/watch-your-cognitive-reservoir.md)
 - [Write Literate Code](how-to/write-literate-code.md)
 
 ### Reference — exact details
@@ -162,6 +163,7 @@ from first principles to the complete system:
 - [The Decision-Discipline Triad](explanation/decision-discipline-triad.md) — how carpaccio, advocatus-diaboli, and choice-cartographer relate
 - [Decision Archaeology](explanation/decision-archaeology.md) — the choice-cartographer's role; intent debt and cognitive debt
 - [Adversarial Review](explanation/adversarial-review.md) — the advocatus-diaboli's role and the human-cognition gate
+- [Watching the Verifier](explanation/watching-the-verifier.md) — the reservoir-warden's advisory watch on the human the harness cannot verify
 - [Progressive Hardening](explanation/progressive-hardening.md) — the promotion ladder from unverified to agent to deterministic
 - [Determinacy Calibration](explanation/determinacy-calibration.md) — the bidirectional review practice that uses the ladder over time
 - [The Three Enforcement Loops](explanation/three-enforcement-loops.md) — inner, middle, and outer loops operating at different timescales
