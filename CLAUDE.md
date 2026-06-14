@@ -63,18 +63,37 @@ change warrants a bump:
 4. If the change is trivial (typo, whitespace, formatting-only fixes
    like adding code fence languages), no bump needed — add the
    `no-bump` label to the PR to skip the CI check
-5. When bumping, update all three locations:
-   - `ai-literacy-superpowers/.claude-plugin/plugin.json` (`"version"` field)
-   - `README.md` (Plugin version badge)
-   - `CHANGELOG.md` (version header on the current date section)
+5. When bumping, update **every version location the `Version Check` CI
+   enforces** — `.github/workflows/version-check.yml` is the source of
+   truth. For the `ai-literacy-superpowers` plugin that is **five**
+   CI-checked locations (not three):
+   - `ai-literacy-superpowers/.claude-plugin/plugin.json` (`"version"` — canonical)
+   - `README.md` — the shields.io **badge** (`ai--literacy--superpowers-vX.Y.Z`)
+   - `CHANGELOG.md` — the top `## X.Y.Z — YYYY-MM-DD` heading
+   - `.claude-plugin/marketplace.json` — the top-level `plugin_version`
+   - `.claude-plugin/marketplace.json` — the plugin's `plugins[].version`
+     entry (each plugin entry's version must equal its own `plugin.json`
+     version; the check enumerates every plugin)
+
+   Also update, for human-facing consistency (**not** CI-enforced): the
+   `README.md` plugin-table row cell (`| v0.X.Y |`). Before committing,
+   `grep -rn 'vX\.Y\.Z' README.md .claude-plugin/marketplace.json
+   ai-literacy-superpowers/.claude-plugin/plugin.json` for the **old**
+   version to surface every spot at once — cheaper than discovering a
+   missed location via red CI.
 
 ## Marketplace Versioning
 
 The marketplace listing (`.claude-plugin/marketplace.json`) is versioned
-independently from the plugin. It has two version fields:
+independently from the plugin. It carries three version fields:
 
 - `version` — the listing version (the contract with the platform)
 - `plugin_version` — pointer to the currently approved plugin release
+- `plugins[].version` — a per-plugin entry version. **Every plugin
+  entry's `version` must equal that plugin's own `plugin.json`
+  version**, and `Version Check` CI enforces this for every entry in the
+  `plugins` array (not just `ai-literacy-superpowers`). Bump it whenever
+  the corresponding plugin bumps.
 
 **When to update `plugin_version`:**
 
