@@ -1,5 +1,76 @@
 # Changelog
 
+## 0.6.0 — 2026-06-14
+
+### ConceptualPipelineMap data model (pipeline-map P1)
+
+Ships the `ConceptualPipelineMap` as its **own standalone data-model
+template** (`templates/conceptual-pipeline-map.md`) — the first slice
+(P1) of the task-scoped conceptual pipeline map feature (#363–#367). The
+map is a traced process through a codebase scope, expressed as stages
+connected by transitions, with decision points, grounding, and the
+provenance of the scope it was drawn for. It is **not** a collection
+bolted onto `LegibilityModel`: a flat enumeration cannot express
+ordering, branching, and convergence, so the pipeline map is its own
+artefact, produced/cross-checked/rendered on its own terms.
+
+- **Four record types**: the `ConceptualPipelineMap` wrapper (`task`,
+  `scope_resolution`, `entry`, `stages`, `transitions`, provenance),
+  `PipelineStage` (`id`, `label`, `kind`, `condition`, `part_of`,
+  `realises`, `evidence`, `confidence`, `challenge_notes`),
+  `PipelineTransition` (`from`, `to`, `condition_label`, `kind`,
+  `evidence`), and `ScopeResolution` (`in_scope`, `adjacent_excluded`,
+  `scope_confidence`).
+- **Presentation- and producer-agnostic, not structure-free** (spec
+  §4.1 / diaboli O2). The model deliberately commits to a conceptual
+  control-flow ontology — `kind: step | decision | outcome` is a
+  conceptual role, the diamond/rectangle/stadium glyph is the renderer's
+  projection. The decoupling holds for the glyph, not the existence of
+  the decision.
+- **Stable opaque `id`** — the load-bearing decoupling choice. Display
+  numbering (`1`/`5A`/`5A.1`), shapes, layout, node text, and target
+  format are all renderer-derived and never stored. Sub-step hierarchy is
+  expressed structurally via `part_of`.
+- **Derived-scope honesty** — because the scope is inferred from the
+  task rather than handed in, `ScopeResolution` records the bound for
+  audit; below `high` confidence the producer names the suspected
+  failure direction in the reasons.
+- **Cross-model seam** — a stage `realises` an architectural element
+  and/or domain concept **by name**, leaving the map valid standalone;
+  this is the P4 cross-check seam. Stages reuse the legibility
+  discipline's `confidence` + `challenge_notes` (`Q<N>`/`CC<N>`).
+- **Empty-task sentinel** (diaboli O7) — a task that resolves to no
+  process emits `stages: []` with a populated `scope_resolution` at
+  `low` confidence; it coexists with, and is matched independently of,
+  the `(empty scope)` sentinel governing the architectural[]/domain[]
+  collections.
+- **No agent logic and no rendering** in this slice — P1 fixes the
+  schema only, mirroring sub-S2a's role for `LegibilityElement`. Flow
+  tracing (P3), three-way cross-check (P4), and the `/pipeline-map`
+  command + Mermaid HTML render (P5) are later slices.
+
+Deterministic Layer-1 structural tests guard the template's documented
+field contract and decoupling invariants
+(`tdad_tests/tests/test_diagnostic_legibility_structural.py`).
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md`; slicing
+record at
+`docs/superpowers/slices/diagnostic-legibility-pipeline-map.md`;
+spec-mode diaboli at
+`docs/superpowers/objections/dl-pipeline-map-design.md` (12 objections,
+all accepted); choice-cartographer at
+`docs/superpowers/stories/dl-pipeline-map-design.md`.
+
+**Marketplace**: the `diagnostic-legibility` listing entry version bumps
+0.5.0 → 0.6.0 and its `description` gains a sentence naming the new
+template; the top-level listing `version` and `plugin_version` are
+unchanged (a per-plugin entry content change is the plugin's own
+contract, not the listing contract — S1–S4 precedent).
+
+P1 of the pipeline-map slicing record. Closes issue #363; parent feature
+(#363–#367) continues with P2.
+
 ## 0.5.0 — 2026-06-01
 
 ### On-demand `/diagnose` command (S4)
