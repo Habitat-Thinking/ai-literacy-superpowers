@@ -340,6 +340,33 @@
   story #7 (bind-to-a-scheduled-deliverable sharpening, 2026-06-12); tracking
   issues #350, #373.
 
+- Decision: **the S6 per-PR actuals calibration format assumes an
+  orchestrator pipeline run; cost from a direct-authoring session belongs in
+  the quarterly snapshot, not the per-PR record.** The per-PR actuals format
+  (`skills/cost-tracking/references/per-pr-actuals-format.md`) is built around
+  the five pipeline stages (spec-writer / tdd-agent / implementer /
+  code-reviewer / integration-agent) and exists to narrow per-stage **token**
+  ranges against this repo's history. A session that produced its PRs by
+  **direct authoring** (no orchestrator dispatch) has no per-stage attribution,
+  so forcing its cost into the per-PR format yields a record with every
+  `tokens_by_stage[].tokens` = `unavailable` that calibrates nothing. The right
+  home for that data is the **quarterly cost snapshot**
+  (`observability/costs/<date>-costs.md`), whose per-model Model-Breakdown shape
+  matches what Claude Code's `/cost` actually reports and grounds the estimator's
+  `$/token` rate. Reason: the two actuals formats answer different questions —
+  per-PR/per-stage *token* calibration vs per-model *dollar* grounding — and the
+  data source (`/cost`, a per-model session total) fits only the latter; the
+  `unavailable` discipline is honest but a record full of it is worthless.
+  Worked instance: the 2026-06-14 session shipped S4–S6 by hand, so `/cost`
+  ($287.64, per-model, cache-dominated) was captured as the first cost snapshot
+  (#391) and a per-PR record was **deliberately not written** because it would
+  have been an empty shell. Future per-stage token calibration must come from a
+  real orchestrator run, where the integration-agent captures stage actuals at
+  merge from figures the human supplies. Watch item: first worked instance —
+  confirm on the next direct-vs-pipeline cost capture (Rule of Three).
+  Source: `REFLECTION_LOG.md` 2026-06-14 (Proposal #2); snapshot
+  `observability/costs/2026-06-13-costs.md`; PR #391.
+
 ## TEST_STRATEGY
 
 <!-- How tests are structured in this project. Helps agents write consistent
