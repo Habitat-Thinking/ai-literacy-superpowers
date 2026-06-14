@@ -164,7 +164,10 @@ ScopeResolution = {
   **Coexistence with the `(empty scope)` sentinel.** This sentinel governs
   the **map only** (`stages == []`). The `architectural[]` / `domain[]`
   collections emitted alongside the map follow their *own* `(empty scope)`
-  rule from `legibility-element.md`, independently. The two may co-occur: a
+  rule — the `LegibilityModel` degenerate-output convention defined by the
+  `diagnostic-legibility` agent (`agents/diagnostic-legibility.agent.md`)
+  over the `legibility-element.md` schema — independently. The two may
+  co-occur: a
   task that touches no process yields an empty map, and — if the bound also
   surfaced no parts or concepts — an `(empty scope)` element in
   `architectural[]`. A consumer matches the map's empty state on
