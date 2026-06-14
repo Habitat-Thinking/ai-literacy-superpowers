@@ -155,6 +155,28 @@ staleness. Also flags when governance constraints exist in
 HARNESS.md but no audit has ever been run. Nudges
 `/governance-audit` or `/governance-health`.
 
+### Reservoir check (command)
+
+- **Event**: Stop
+- **Matcher**: `*`
+- **Type**: command
+- **Script**: `hooks/scripts/reservoir-check.sh`
+- **Timeout**: 10s
+
+An advisory watch on the human verifier the harness cannot verify.
+Self-gates: silent exit 0 unless `HARNESS.md` contains an **active**
+`## Cognitive reservoir` heading (the opt-in marker — the commented
+template block stays inert) and the directory is a git repo. When opted
+in, it counts observable proxies over the recent git window — continuous
+session span, decision volume, context switches, and wall-clock hour —
+and emits at most one `{"systemMessage": ...}` advisory if a disjunctive
+threshold is crossed. Advisory-only: never blocks, never exits non-zero,
+records no claim about the human's state. Every trigger is framed as a
+precaution under uncertainty; it does not assert ego depletion or the
+hungry-judges figure. See the `cognitive-reservoir` skill and the
+[Watching the Verifier](../explanation/watching-the-verifier.md)
+concept page.
+
 ---
 
 ## SessionStart Hooks

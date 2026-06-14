@@ -420,6 +420,42 @@ honour the values declared here when reading.
 
 ---
 
+<!-- ## Cognitive reservoir  (OPTIONAL — to opt in, remove this `<!--` line and the closing `-->` below)
+
+Advisory watch on the human verifier the harness cannot verify. Opt in
+by uncommenting this block so the `## Cognitive reservoir` heading
+becomes active — the reservoir-check Stop hook and the /reservoir agent
+only run when the heading is uncommented.
+
+NOT a Constraint. This is advisory-only: it never gates CI, never blocks
+a commit/merge/session, and never records a claim about your cognitive
+state to disk (you edit this block yourself). Do not promote it into a
+blocking gate — that would defeat its purpose and overclaim a precision
+the proxies cannot support.
+
+The proxies, the observed/inferred/asked confidence discipline, the
+default thresholds, and the contested-vs-robust scientific grounding
+(it does NOT assert ego depletion or the hungry-judges figure) all live
+in `skills/cognitive-reservoir/SKILL.md`.
+
+Thresholds are disjunctive — any one crossing fires a single session-end
+advisory. Tune to taste; a cluster of advisories you routinely ignore is
+a signal to raise a threshold, not to distrust the honesty rule.
+
+- window_hours: 8       # how far back the proxies look
+- span_minutes: 180     # continuous session span (min) before the span proxy fires
+- decision_volume: 8    # approval-like events (commits/merges) in the window
+- context_switches: 4   # distinct work streams touched in the window
+- chronotype:           # optional: early | late | intermediate. Only when
+                        #   declared is the late-hour circadian band labelled
+                        #   (optimal / dip / suboptimal); otherwise the hour is
+                        #   reported as asked/unverified.
+
+Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
+-->
+
+---
+
 ## Status
 
 <!-- Auto-updated by /harness-audit — do not edit manually -->

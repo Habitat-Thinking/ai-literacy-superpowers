@@ -367,6 +367,34 @@
   Source: `REFLECTION_LOG.md` 2026-06-14 (Proposal #2); snapshot
   `observability/costs/2026-06-13-costs.md`; PR #391.
 
+- Decision: the verifier-watch (`cognitive-reservoir` skill,
+  `reservoir-warden` agent, `/reservoir` command, `reservoir-check` Stop
+  hook) is **advisory-only and is NOT a Constraint** — do not promote it
+  into a CI gate. Reason: the mechanism watches the *human verifier*, the
+  one actor every other enforcement surface trusts blindly. It counts
+  observable proxies (session span, decision volume, context switches,
+  wall-clock hour) and infers risk, but the inputs cannot support a
+  precise measurement of cognitive state. Constraints are gates with a
+  scope that can fail CI; wiring a human-state advisory into a blocking
+  gate would (a) defeat its purpose — the engineer's *prohairesis* must
+  stay theirs, the warden watches but never chooses — and (b) overclaim a
+  precision the proxies lack. So it lives in its own `Cognitive
+  reservoir` HARNESS.md block (opt-in, never the Constraints section),
+  never blocks a commit/merge/session, never exits non-zero, and
+  persists **no** record of the human's state to disk. This generalises
+  the existing "hook scripts never block, only warn" decision to a
+  stronger rule for human-state observation: such a mechanism must also
+  never be a fatigue *score* and must keep contested science (ego
+  depletion, the hungry-judges figure) out of its assertions — the
+  honesty rule is load-bearing, not flavour. A future contributor who
+  "promotes" the warden into a blocking gate or a single combined score
+  has broken the design, not improved it. Alternative considered:
+  modelling it as a soft (non-blocking) Constraint for visibility in
+  health snapshots (rejected — even a non-blocking Constraint frames it
+  as a measured gate and invites later hardening). Source: spec
+  `docs/superpowers/specs/2026-06-14-reservoir-warden-design.md`
+  (Approach, FR-011); builds on the line-201 advisory-hook decision.
+
 ## TEST_STRATEGY
 
 <!-- How tests are structured in this project. Helps agents write consistent

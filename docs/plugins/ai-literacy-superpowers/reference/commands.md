@@ -3,7 +3,7 @@ title: Commands
 ---
 # Commands
 
-All 27 slash commands registered in `commands/`. Each command is
+All 28 slash commands registered in `commands/`. Each command is
 invoked as `/command-name` in a Claude Code session.
 
 ---
@@ -490,6 +490,29 @@ Manage git worktrees for parallel agent isolation. Three modes:
   the current branch.
 - **`/worktree clean [name]`** — Remove the named worktree and its
   branch.
+
+### /reservoir
+
+- **Skills read**: `cognitive-reservoir`
+- **Agents dispatched**: `reservoir-warden` (Read mode)
+
+An on-demand, read-only advisory on **you**, the verifier — not on the
+code. Two modes:
+
+- **`/reservoir [read]`** (default) — dispatch the `reservoir-warden`
+  agent for a fuller read than the automatic Stop-hook advisory: a proxy
+  table (continuous span, decision volume, context switches, wall-clock
+  hour), each line flagged `observed` / `inferred` / `asked`, and — if a
+  threshold is crossed — the single decide-your-stop-first
+  recommendation.
+- **`/reservoir tune`** — help you edit the `Cognitive reservoir` block
+  in `HARNESS.md` (thresholds and an optional `chronotype`), proposing
+  edits for you to confirm.
+
+Advisory-only and **not** a Constraint: it never blocks, never scores,
+and records no claim about your cognitive state. See the
+[Watching the Verifier](../explanation/watching-the-verifier.md) concept
+page and the [how-to guide](../how-to/watch-your-cognitive-reservoir.md).
 
 ---
 

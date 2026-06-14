@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.48.0 — 2026-06-14
+
+### Reservoir warden — watching the verifier the harness cannot verify
+
+The framework's first observability surface aimed at the **human verifier**
+rather than the session output. Every other enforcement mechanism checks what
+an agentic session produced; none checked the state of the human who approves
+it. This adds a read-only, advisory watch — opt-in per project, never a gate.
+New skill + agent + command + hook — minor bump.
+
+- **`cognitive-reservoir` skill (new).** The shared grounding: four observable
+  proxies (session span, decision volume, context switches, wall-clock hour),
+  the `observed`/`inferred`/`asked` confidence discipline, disjunctive default
+  thresholds (span 180 min, decision volume 8, context switches 4, window 8 h),
+  the one firm principle, six-level scaling, and the honesty rule that keeps
+  contested science (ego depletion, the hungry-judges study) out of the
+  mechanism's assertions while standing on the robust basis (vigilance
+  decrement, task-switching cost).
+- **`reservoir-warden` agent (new).** Read-only on the human (tools: Read,
+  Glob, Grep, Bash — no Write, no Edit). Counts the proxies via `git`/`date`,
+  reports each with a confidence flag, and offers the single
+  decide-your-stop-first recommendation when a threshold is crossed. Persists no
+  record of the human's state; produces no combined fatigue score. Routed to an
+  inexpensive tier in `MODEL_ROUTING.md`.
+- **`/reservoir` command (new) + Copilot prompt.** Read mode dispatches the
+  agent for a fuller read; Tune mode helps you edit the HARNESS.md block
+  (thresholds and an optional `chronotype`), proposing edits to confirm.
+- **`reservoir-check.sh` Stop hook (new).** Self-gates on an active
+  `## Cognitive reservoir` heading and a git repo, computes the proxies over the
+  recent window, and emits at most one `{"systemMessage": ...}` advisory.
+  Advisory-only: never blocks, never exits non-zero, never asserts ego depletion
+  or the hungry-judges figure.
+- **HARNESS template (updated).** Ships an optional, commented `Cognitive
+  reservoir` block (inert until uncommented) with the `chronotype` field and a
+  not-a-constraint note.
+- **AGENTS.md ARCH_DECISION (new).** Records that the verifier-watch is
+  advisory-only and must never be promoted into a CI gate or a single fatigue
+  score, so a future contributor does not "improve" it into one.
+- **Docs + TDAD.** New explanation and how-to pages, reference entries for the
+  new skill/agent/command/hook, and four TDAD scenarios (read-only boundary,
+  fires-on-long-session, silent-when-quiet, silent-when-not-opted-in); the test
+  runner gains hook-component discovery.
+
 ## 0.47.0 — 2026-06-12
 
 ### Calibration loop — per-PR actuals capture (S6 of the cost-estimator pipeline)
