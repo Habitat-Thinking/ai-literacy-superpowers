@@ -26,8 +26,8 @@
     {
       "name": "diagnostic-legibility",
       "source": "./diagnostic-legibility",
-      "description": "Agents accountable for helping to maintain human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report.",
-      "version": "0.5.0"
+      "description": "Agents accountable for helping to maintain human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. The `ConceptualPipelineMap` template adds a standalone, presentation-agnostic flow-perspective data model (first slice of the task-scoped pipeline-map feature).",
+      "version": "0.6.0"
     }
   ]
 }
