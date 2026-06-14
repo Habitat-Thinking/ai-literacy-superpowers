@@ -125,6 +125,18 @@ model's blended rate, and
 `cost_usd = Σ over stages (stage tokens range × tier $/token)`, with
 split-tier stages widened as above.
 
+**Per-stage `cost_usd` bands (cost-present records only).** When a record is
+cost-present (state 3 below), the emitter also surfaces the per-stage
+decomposition that produced the whole-record figure: each exercised stage
+carries a `tokens_by_stage[].cost_usd` `{ low, high }` band (the stage's
+`tokens` range × its tier rate), with split-tier stages priced `low` at the
+cheaper representative model and `high` at the dearer one so the spread is
+strictly positive (`low < high`). This follows the format reference's
+**per-stage band pricing convention** — an emitter obligation (a SHOULD), not a
+validation-rejection rule, and not a new derivation. On a cost-omitted record no
+stage carries the sub-field (the coupling is one-directional: a per-stage band
+never appears without the top-level `cost_usd`).
+
 **The three grounding states.** The snapshot's Model Breakdown is marked
 "(if available)" in the cost-tracking format, so the methodology branches
 on **three** states, not two:

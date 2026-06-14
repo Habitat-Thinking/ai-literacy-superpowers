@@ -148,8 +148,24 @@ largest token budget, so its rate dominates any cost figure. Price its cost
 contribution across both ends of the split — the cheaper end
 (`claude-sonnet-4`, low) and the dearer end (`claude-opus-4`, high) — and let it
 widen the **whole-record `cost_usd` band**. Disclose the widening in the prose
-body. You emit **no** machine-checkable per-stage cost band (that is a separate
-slice's deliverable); the widening lives in the whole-record band and the prose.
+body.
+
+**Per-stage `cost_usd` bands (cost-present records only).** When you emit a
+**cost-present** record (S1 grounding state 3 — a usable snapshot Model
+Breakdown exists), also populate a `tokens_by_stage[].cost_usd` `{ low, high }`
+band on **every exercised stage**: the stage's `tokens` range × its tier's
+`$/token` rate from the snapshot. A **split-tier** stage prices its `low` bound
+at the cheaper representative model and its `high` bound at the dearer one (per
+the binding table), giving a strictly-positive spread (`low < high`). Follow the
+format reference's **"Per-stage band pricing convention"** and **"Deriving a
+per-model rate from a snapshot"** sections
+(`skills/cost-estimation/references/estimate-record-format.md`) — do **not**
+redefine the convention here. This is an **emitter obligation**, not a new
+validation rule: absence of bands does not invalidate a record, and the only
+checked predicate on a present split-tier band is `low < high`. On a
+**cost-omitted** record (states 1 and 2) emit **no** per-stage `cost_usd` on any
+stage — the one-directional coupling (sub-field present ⟹ top-level `cost_usd`
+present) forbids a band without the whole-record figure.
 
 ### Calibration against per-PR history (S6 — token ranges only)
 

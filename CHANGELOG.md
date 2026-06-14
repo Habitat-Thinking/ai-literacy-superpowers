@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.49.0 — 2026-06-14
+
+### cost-estimator: populate per-stage cost_usd bands on cost-present records
+
+- **Per-stage `cost_usd` bands (#380).** Now that the repo has a usable cost
+  snapshot (`observability/costs/2026-06-13-costs.md`), the cost-estimator
+  emitter honours the #377 §4.3.1 SHOULD obligation: on a **cost-present**
+  record it populates a `tokens_by_stage[].cost_usd` `{ low, high }` band on
+  every exercised stage (stage `tokens` × tier `$/token`), with split-tier
+  stages priced cheaper-at-low / dearer-at-high so the spread is strictly
+  positive (`low < high`). Cost-omitted records are unchanged (no per-stage
+  band; the one-directional coupling forbids a band without the whole-record
+  `cost_usd`). The pricing convention is referenced from the format spec, not
+  redefined; no format change and no new validation-rejection rule. Behaviour
+  change to a shipped agent — minor bump. Spec:
+  `docs/superpowers/specs/2026-06-14-per-stage-cost-bands-emitter-design.md`.
+
 ## 0.48.1 — 2026-06-14
 
 ### cost-estimator: normalise the split-tier model_tier literal
