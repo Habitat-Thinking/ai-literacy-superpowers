@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Reservoir check — runs at session end (Stop hook).
+set -euo pipefail
 #
 # An advisory watch on the human verifier the harness cannot verify.
 # Counts observable proxies (continuous session span, decision volume,
@@ -19,8 +20,6 @@
 # heading to HARNESS.md. The template ships the block commented out (the
 # `<!--` sits on the heading line), so a freshly scaffolded project is
 # NOT opted in until the human uncomments it.
-
-set -euo pipefail
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 HARNESS_FILE="${PROJECT_DIR}/HARNESS.md"
