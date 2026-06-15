@@ -14,11 +14,11 @@
 
 ## 1. Problem (re-framed after the diaboli)
 
-#412 (v0.50.0) made the cost-estimation binding resolve tiers by **model
-family stem** (`claude-opus-4`, `claude-sonnet-4`). #414 (diaboli O8 of
-#411) asked how those stems stay current as model generations roll over.
-The spec-mode diaboli separated two problems the original framing
-conflated:
+Slice #412 (v0.50.0) made the cost-estimation binding resolve tiers by
+**model family stem** (`claude-opus-4`, `claude-sonnet-4`). Issue #414
+(diaboli O8 of #411) asked how those stems stay current as model
+generations roll over. The spec-mode diaboli separated two problems the
+original framing conflated:
 
 - **External staleness** — a new model generation outran the stems. This is
   **already adequately covered**: #412 turns an unresolved family into a

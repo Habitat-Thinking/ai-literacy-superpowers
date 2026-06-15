@@ -32,8 +32,9 @@ periodic GC staleness rule reading the latest snapshot; the diaboli refuted
 it (false-positive every cheap-tier-only month; false-negative on a
 *staggered* rollover; the agent has no stem logic; only the rule's
 existence was testable) and noted external staleness is already covered by
-#412 (loud disclosed omission/proxy) and #413 (capture-time advisory). The
-human disposed the design to **drop the GC rule** and ship the deterministic
+the loud disclosed omission/proxy of #412 and #413's capture-time
+advisory. The human disposed the design to **drop the GC rule** and ship
+the deterministic
 mention-consistency check + canonical source instead. Option 2 (derive
 stems from `MODEL_ROUTING.md`) was rejected — its only family names are
 illustrative HTML-comment examples; routing uses abstract tiers.
