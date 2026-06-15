@@ -1,6 +1,6 @@
 ---
 name: diagnostic-legibility
-description: "Use to build two refined models of a codebase scope — architectural moving parts and domain concepts — using the schema at diagnostic-legibility/templates/legibility-element.md. Constructs each element, applies a five-question self-challenge cycle (Phase B), and cross-checks the two collections against each other (Phase C, v0.4.0). Challenge notes follow the `Q<N> (question-name):` prefix; cross-check notes follow the `CC<N> (question-name):` prefix. Model-level cross-check outcome lives in the `cross_check_status` wrapper field (`completed | skipped_asymmetric | not_run`). Degenerate scopes use the literal `(empty scope)` sentinel. Four mode markers — full (default, Phase A+B+C), cross-check-only (Phase C against a fenced YAML payload), scope-resolution (v0.7.0 — answer 'what does my task touch?': derive a bounded, disclosed ScopeResolution from a natural-language work task, optionally biased by a `near:` hint, emitting `in_scope` / `adjacent_excluded` / `scope_confidence` per templates/conceptual-pipeline-map.md, with the suspected failure direction — under-reach or over-reach — named when confidence is below high), and pipeline (v0.8.0+ — the full task-scoped build: resolve the bound, trace control flow into a ConceptualPipelineMap, build the architectural/domain collections within the bound, self-challenge pipeline stages through a flow-flavoured five-question cover plus a scope-relevance feedback loop, then at v0.9.0 run the three-way Phase C cross-check across all six directed pairs — reporting the arch↔domain outcome in `cross_check_status` and the pipeline's outcome in the new `pipeline_cross_check_status`). Returns a LegibilityModel as YAML in full / cross-check-only modes, a ScopeResolution YAML in scope-resolution mode, or two standalone YAML blocks (ConceptualPipelineMap + LegibilityModel) in pipeline mode; the dispatching command or human writes the file."
+description: "Use to build two refined models of a codebase scope — architectural moving parts and domain concepts — using the schema at diagnostic-legibility/templates/legibility-element.md. Constructs each element, applies a five-question self-challenge cycle (Phase B), and cross-checks the two collections against each other (Phase C, v0.4.0). Challenge notes follow the `Q<N> (question-name):` prefix; cross-check notes follow the `CC<N> (question-name):` prefix. Model-level cross-check outcome lives in the `cross_check_status` wrapper field (`completed | skipped_asymmetric | not_run`). Degenerate scopes use the literal `(empty scope)` sentinel. Five mode markers — full (default, Phase A+B+C), cross-check-only (Phase C against a fenced YAML payload), scope-resolution (v0.7.0 — answer 'what does my task touch?': derive a bounded, disclosed ScopeResolution from a natural-language work task, optionally biased by a `near:` hint, emitting `in_scope` / `adjacent_excluded` / `scope_confidence` per templates/conceptual-pipeline-map.md, with the suspected failure direction — under-reach or over-reach — named when confidence is below high), pipeline (v0.8.0+ — the full task-scoped build: resolve the bound, trace control flow into a ConceptualPipelineMap, build the architectural/domain collections within the bound, self-challenge pipeline stages through a flow-flavoured five-question cover plus a scope-relevance feedback loop, then at v0.9.0 run the three-way Phase C cross-check across all six directed pairs — reporting the arch↔domain outcome in `cross_check_status` and the pipeline's outcome in the new `pipeline_cross_check_status`), and change-prediction (v0.11.0 — opt-in superset of pipeline that adds a `change_prediction` block predicting which stages the task will modify and where it will insert new ones, distinct from which it touches; a prediction that never directs, with typed modify/insert sites, evidence, a confidence floored over sites, and a structured over-/under-prediction failure direction). Returns a LegibilityModel as YAML in full / cross-check-only modes, a ScopeResolution YAML in scope-resolution mode, or two standalone YAML blocks (ConceptualPipelineMap + LegibilityModel) in pipeline / change-prediction modes; the dispatching command or human writes the file."
 tools: Read, Glob, Grep
 model: inherit
 ---
@@ -37,7 +37,7 @@ output. The human-facing surfacing layer (parent S4, issue #333 — the
 ## Inputs
 
 The first line of the prompt is a **mode marker** that selects what the
-agent runs. Four modes are recognised at v0.9.0:
+agent runs. Five modes are recognised at v0.11.0:
 
 - **`mode: full`** (default if no `mode:` line is given) — Phase A
   (construct) + Phase B (self-challenge) + Phase C (cross-check). The
@@ -66,8 +66,17 @@ agent runs. Four modes are recognised at v0.9.0:
   runs **Phase C (three-way cross-check)** across all three collections
   (§Phase C (pipeline)), and emits **two standalone fenced YAML blocks
   in one response** — a `ConceptualPipelineMap` then a `LegibilityModel`
-  (§Output). This is the mode the future `/pipeline-map` command (P5)
-  dispatches.
+  (§Output). This is the mode the `/pipeline-map` command dispatches.
+- **`mode: change-prediction`** (v0.11.0) — the full pipeline build
+  **plus** a change-site prediction pass. A **superset of
+  `mode: pipeline`**: same `task:`/`near:` inputs, same two-block output,
+  but the agent then runs the **Change-prediction pass** (§ below) and the
+  emitted `ConceptualPipelineMap` additionally carries a
+  **`change_prediction`** block predicting which stages the task will
+  *modify* and where it will *insert* new stages (distinct from which it
+  *touches*). `mode: pipeline` is unchanged and never emits
+  `change_prediction`; this prediction is opt-in. It is the mode
+  `/pipeline-map --predict-change` dispatches.
 
 **An unrecognised mode value is a precondition violation.** Refuse
 with the structured refusal line below (no YAML emitted). Do not
@@ -129,6 +138,15 @@ consume the YAML block would not see a prose warning.
 - The bound is resolved first (Scope-resolution protocol), then the
   Pipeline protocol runs **within** it.
 
+**Mode `change-prediction` inputs:**
+
+- **`task`** (required) and **`near`** (optional) — **identical** to the
+  `pipeline` inputs (same meaning, same `near` biases-not-bounds rule). A
+  missing or empty `task:` triggers a refusal.
+- No fenced YAML payload is expected; like pipeline mode, it builds from
+  the codebase. (A *consume-a-supplied-map* prediction variant is a
+  deliberately-deferred follow-on, not in v0.11.0.)
+
 **Refusal line shape (any precondition violation):**
 
 ```
@@ -137,7 +155,7 @@ diagnostic-legibility refusal: <single-sentence reason>.
 
 The line is the entire response — no YAML code block follows. Examples:
 
-- `diagnostic-legibility refusal: unrecognised mode value 'fast'; legal values are 'full', 'cross-check-only', 'scope-resolution', or 'pipeline'.`
+- `diagnostic-legibility refusal: unrecognised mode value 'fast'; legal values are 'full', 'cross-check-only', 'scope-resolution', 'pipeline', or 'change-prediction'.`
 - `diagnostic-legibility refusal: cross-check-only mode requires every element to have populated challenge_notes; element 'AuthenticationService' has an empty list.`
 - `diagnostic-legibility refusal: cross-check-only mode requires substituted dispatcher placeholders; generated_at still carries '<DISPATCHER: ISO 8601 timestamp>'.`
 - `diagnostic-legibility refusal: cross-check-only payload missing required field 'scope'.`
@@ -145,6 +163,7 @@ The line is the entire response — no YAML code block follows. Examples:
 - `diagnostic-legibility refusal: cross-check-only mode requires exactly one YAML payload; 2 blocks found.`
 - `diagnostic-legibility refusal: scope-resolution mode requires a non-empty task; none was supplied.`
 - `diagnostic-legibility refusal: pipeline mode requires a non-empty task; none was supplied.`
+- `diagnostic-legibility refusal: change-prediction mode requires a non-empty task; none was supplied.`
 
 **Note on the empty-task case (scope-resolution and pipeline modes).** A
 *present but unresolvable* task is **not** a refusal. In
@@ -273,6 +292,15 @@ pair (Phase B `Q<N>` entries still precede them in every
 `challenge_notes[]`). A producer that stops before Phase C (or any
 v0.8.0-era map) emits/omits `pipeline_cross_check_status: not_run` — the
 absence-means-`not_run` rule holds.
+
+### In `mode: change-prediction` — pipeline output + a `change_prediction` block (v0.11.0)
+
+Identical to the `mode: pipeline` two-block output, with **one addition**:
+the `ConceptualPipelineMap` block additionally carries a
+**`change_prediction`** block (per `conceptual-pipeline-map.md`
+§Change-site prediction) populated by the Change-prediction pass. The
+`LegibilityModel` block is unchanged. `mode: pipeline` itself **never**
+emits `change_prediction` (absence ⇒ "not run"); only this mode does.
 
 ### `generated_at` and `generated_by` are dispatcher-filled
 
@@ -514,6 +542,65 @@ arch↔domain outcome (its v0.4.0 meaning, unchanged) and
 `ConceptualPipelineMap.pipeline_cross_check_status` for the pipeline's
 outcome. If a collection is empty, the pairs touching it do not run and
 the affected scalar is `skipped_asymmetric` per the template's rules.
+
+### Change-prediction pass (mode: change-prediction, v0.11.0)
+
+Runs **only** in `mode: change-prediction`, **after** Phase C, over the
+fully-built and cross-checked map. It predicts which stages the task will
+**modify** and where it will **insert** new stages, and populates the
+`change_prediction` block (`conceptual-pipeline-map.md` §Change-site
+prediction). It is a prediction about *future human action* — the heaviest
+honesty burden in this agent — so the honesty contract below is
+non-negotiable. Trust boundary unchanged: this is reasoning over what was
+already read, not new capability.
+
+**Distinct from scope.** `scope_resolution.in_scope` is what the task
+**touches** (a deliberately wide bound — process + one hop). The
+prediction narrows that to what the task **edits**. The primary value is
+the **modify-narrowing**: turning a wide touched-set into the few nodes
+actually changed.
+
+**Four steps:**
+
+1. **Read the change intent.** From the task: *add/insert/new* leans
+   `insert`; *change/alter/modify/fix* leans `modify`. A task may imply
+   **both** (e.g. "add a fraud-hold step after risk evaluation" inserts a
+   new stage **and** modifies the gate's post-risk routing to reach it).
+2. **Locate each site against the built map.** For `modify`, the existing
+   stage whose logic/`condition` the task changes → `target`. For
+   `insert`, the existing stage the new stage is placed relative to →
+   `anchor` + `position` (`after`/`before`). Both `target` and `anchor`
+   **must be a stage that is in `scope_resolution.in_scope`** — not a
+   context-only stage.
+3. **Ground each site.** Give each a `reason` in the task's terms, and —
+   for a `modify` site at `medium`/`high` confidence — `evidence` citing
+   the implicated code (the checkable artefact). If a needed edit site is
+   **out of scope**, that is an **under-reach signal**: feed it back into
+   `scope_resolution` (promote it into `in_scope` with a reason, the same
+   scope-relevance loop) **before** predicting against it — never predict
+   an edit to a stage the scope panel disclosed as adjacent.
+4. **Disclose.** Set `change_confidence` to the **minimum** site
+   confidence (the honest floor). When it is below `high`, set
+   `change_direction` (`over-prediction` if the prediction may reach too
+   far; `under-prediction` if it may be too narrow). Emit
+   `predicted_sites: []` + `change_confidence: low` + a `change_direction`
+   when no edit site can be confidently predicted — an honest empty
+   result, never an invented site.
+
+**The honesty contract (load-bearing).**
+
+- **Predict, never direct.** Phrase every site as a prediction ("the task
+  likely edits …"), never an instruction ("edit …"). No imperative, no
+  "you must/should". Directive phrasing is an anti-pattern.
+- **`modify` vs `insert` is best judgement, not a guarantee.** Label from
+  the change intent grounded in code evidence where available; it **may be
+  wrong**, and misclassification is one of the failures `change_direction`
+  covers. (There is no "never conflated" guarantee — a task may need
+  both.)
+- **Structured failure direction.** `change_direction` is the structured
+  carrier — present whenever confidence < `high`, including the empty
+  case — so a consumer and the render checkpoint can read it. Never
+  prose-only.
 
 ## Construction protocol
 
@@ -1075,3 +1162,26 @@ before emitting.
   cross-check subject was elsewhere. The entry goes on the **subject**
   only (the pair's Subject column); the side-effect is named in the
   subject's prose. Three collections do not license a second write path.
+
+- **Directive change prediction (change-prediction mode)** — phrasing a
+  predicted site as an instruction ("edit `risk-gate`") rather than a
+  prediction ("the task likely edits `risk-gate`"). The capability
+  predicts future human action; it never directs. Imperatives are
+  forbidden in `reason`s and in the render.
+
+- **Predicting an edit to an out-of-scope stage (change-prediction
+  mode)** — a `target`/`anchor` that is not in `scope_resolution.in_scope`
+  (e.g. a context-only stage). It contradicts the scope panel. If the
+  prediction genuinely needs that site, feed it back into
+  `scope_resolution` as an under-reach correction first.
+
+- **Unstructured / missing failure direction (change-prediction mode)** —
+  a `change_confidence` below `high` with no `change_direction`, or the
+  direction left only in prose. The `change_direction` field is the
+  required structured carrier (present even when `predicted_sites: []`).
+
+- **Invented change site (change-prediction mode)** — emitting a predicted
+  site with no `reason` (or, for a `medium`/`high` `modify`, no
+  `evidence`), or fabricating a site rather than emitting the honest empty
+  result (`predicted_sites: []`). The prediction is grounded or it is
+  empty.

@@ -8,7 +8,7 @@ read-only.
 ## Signature
 
 ```text
-/pipeline-map "<task>" [--near <path>] [--out <dir>]
+/pipeline-map "<task>" [--near <path>] [--out <dir>] [--predict-change]
 ```
 
 | Argument | Required | Meaning |
@@ -16,6 +16,7 @@ read-only.
 | `"<task>"` | yes | Natural-language work task; forwarded to the agent's `task:` line verbatim. Empty/absent → usage error, no dispatch. |
 | `--near <path>` | no | Search-bias hint; forwarded to the agent's `near:` line. Biases, does **not** bound. |
 | `--out <dir>` | no | Output-directory override; the derived filename still applies beneath it. |
+| `--predict-change` | no | Dispatch `mode: change-prediction` instead of `mode: pipeline`; the map gains a `change_prediction` block and the render gains the predicted-change surface (see below). |
 
 ## Output path
 
@@ -34,13 +35,41 @@ diagnostic-legibility/output/<task-slug>-pipeline-<YYYY-MM-DD>.html
 
 ## Dispatch contract
 
-- `subagent_type: diagnostic-legibility`; prompt first line `mode:
-  pipeline`, then `task: <task>`, then `near: <path>` if supplied.
+- `subagent_type: diagnostic-legibility`; prompt first line
+  `mode: change-prediction` if `--predict-change` else `mode: pipeline`,
+  then `task: <task>`, then `near: <path>` if supplied.
 - Agent returns **two standalone fenced YAML blocks**
   (`ConceptualPipelineMap` then `LegibilityModel`) **or** a single
-  `diagnostic-legibility refusal: <reason>.` line.
+  `diagnostic-legibility refusal: <reason>.` line. With
+  `--predict-change`, the `ConceptualPipelineMap` additionally carries a
+  `change_prediction` block.
 - A refusal is surfaced verbatim and aborts (render nothing, fetch
   nothing, write nothing) — even if YAML also appears.
+
+## Change-site prediction (`--predict-change`, v0.11.0)
+
+Dispatches `mode: change-prediction` (a superset of `mode: pipeline`): the
+agent builds the map, then predicts which stages the task will **modify**
+and where it will **insert** new ones, in the `change_prediction` block —
+distinct from `scope_resolution` (which stages the task *touches*).
+
+- **Model** — `change_prediction.predicted_sites[]`:
+  `kind: modify` (a `target` stage.id) or `kind: insert` (a typed
+  `anchor` stage.id + `position: after | before`); each with a `reason`
+  and `evidence`. `change_confidence` is the **minimum** over sites;
+  `change_direction` (`over-prediction | under-prediction`) is present iff
+  confidence < `high`. Targets/anchors must be in
+  `scope_resolution.in_scope`. See the template's §Change-site prediction.
+- **Render** — predicted sites highlighted with a per-node **"predicted"
+  badge**; the legend keys the highlight to *"prediction, not
+  instruction"*; a **Predicted change sites** panel; outline + detail
+  table flags. The banner states the sites are **predictions, not
+  directives**.
+- **Honesty** — predict-never-direct (no imperatives); `modify`/`insert`
+  is a best-judgement label; an empty prediction is honest.
+- **Checkpoint additions (flag-only)** — predicted-sites panel
+  consistent; every `target`/`anchor` is a rendered, in-scope `stage.id`;
+  `change_direction` present below `high`; no directive phrasing.
 
 ## Mermaid vendoring (pin + SHA + cache)
 
@@ -100,10 +129,13 @@ human accept gate — not the checkpoint — is the last line of defence.
 
 ## Scope
 
-- Drives only `mode: pipeline`; the agent's `scope-resolution`, `full`,
-  and `cross-check-only` modes are not exposed here.
+- Drives `mode: pipeline` by default, or `mode: change-prediction` with
+  `--predict-change`; the agent's `scope-resolution`, `full`, and
+  `cross-check-only` modes are not exposed here.
 - Renders a **static structural** map — no execution overlay (P6).
-- Does not predict the change site (#368).
+- Change-site prediction is a **disclosed prediction, never a directive**,
+  and is opt-in via `--predict-change` (#368). The
+  consume-an-existing-map prediction variant is a deferred follow-on.
 
 ## See also
 

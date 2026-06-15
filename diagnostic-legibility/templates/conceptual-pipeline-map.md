@@ -58,6 +58,7 @@ architectural element and/or a domain concept by name), but it does not
 | `stages` | list of `PipelineStage` | yes | The conceptual stages of the process. May be empty **only** to express "the task resolved to no process" (see validation). |
 | `transitions` | list of `PipelineTransition` | yes | The directed flow between stages, with optional branch conditions. |
 | `pipeline_cross_check_status` | enum | no (additive, v0.9.0) | The outcome of the **pipeline's** participation in the three-way cross-check (Phase C across pipeline + architectural + domain). One of `completed \| skipped_asymmetric \| not_run`; **absence means `not_run`** (back-compat with v0.8.0 maps that pre-date the field). It is the pipeline-side sibling of the `LegibilityModel.cross_check_status` scalar — which keeps its **unchanged** meaning, the *arch↔domain* outcome. Kept on the **map** (not the `LegibilityModel`) so each model stays self-describing about its own cross-check; a v0.5.0/v0.8.0 consumer reading only `cross_check_status` is unaffected and ignores this field. See §Cross-check status. |
+| `change_prediction` | `ChangePrediction` | no (additive, v0.11.0) | The **change-site prediction** — which stages the task will *modify* and where it will *insert* new stages — distinct from `scope_resolution` (which stages it *touches*). **Absence means change prediction was not run** (back-compat with v0.10.0 maps; the default `mode: pipeline` never emits it — only `mode: change-prediction` does). See §Change-site prediction. |
 | `generated_at` | string (ISO 8601) | yes | Provenance timestamp. Dispatcher-filled via the `<DISPATCHER: ...>` placeholder, as in `LegibilityModel`. |
 | `generated_by` | string | yes | Producer + model identifier. Dispatcher-filled. |
 
@@ -116,8 +117,24 @@ ConceptualPipelineMap = {
   stages: [PipelineStage],
   transitions: [PipelineTransition],
   pipeline_cross_check_status?: "completed" | "skipped_asymmetric" | "not_run",
+  change_prediction?: ChangePrediction,
   generated_at: string,
   generated_by: string,
+}
+
+ChangePrediction = {
+  predicted_sites: [
+    {
+      kind: "modify" | "insert",
+      target?: string,             // modify only — an existing stage.id
+      anchor?: string,             // insert only — an existing stage.id
+      position?: "after" | "before", // insert only
+      reason: string,
+      evidence?: [{ path: string, excerpt?: string }],
+    }
+  ],
+  change_confidence: "low" | "medium" | "high",   // the minimum over sites
+  change_direction?: "over-prediction" | "under-prediction", // required iff change_confidence < high
 }
 
 PipelineStage = {
@@ -189,6 +206,63 @@ build, or any producer that stops before cross-check) carries
 `pipeline_cross_check_status: not_run` (or omits it — absence means the
 same).
 
+## Change-site prediction (`ChangePrediction`, v0.11.0)
+
+An **additive, optional** block recording which stages a task will
+**modify** and where it will **insert** new stages — distinct from
+`scope_resolution`, which records which stages the task **touches**. The
+touched set is deliberately wide (the process **plus one hop** of
+context); the predicted edited set narrows it to the few nodes actually
+changed. Only `mode: change-prediction` emits this block; the default
+`mode: pipeline` never does, and **absence means "not run"** (a v0.10.0
+map is still valid).
+
+It is on the **map wrapper**, referencing stages **by `id`** (as
+`scope_resolution` references files by `path`). It is **not** a per-stage
+field — this is the single representation of stage-level task implication
+(it closes the pipeline-map spec §9.2.3 `task_relevance` question).
+
+| Field | Type | Required | Purpose |
+| --- | --- | --- | --- |
+| `predicted_sites` | list of object | yes (may be `[]`) | The predicted edit locations. Empty is a valid honest result. |
+| `predicted_sites[].kind` | enum | yes | `modify` (edit an existing stage) or `insert` (add a new stage). **Best-judgement** labels — a task may imply both; misclassification is covered by `change_direction`, not forbidden. |
+| `predicted_sites[].target` | string | **`modify` only** | The existing `stage.id` the task edits. Must be in `stages` **and** in `scope_resolution.in_scope`. |
+| `predicted_sites[].anchor` | string | **`insert` only** | The existing `stage.id` the new stage is placed relative to (typed — not an `after:<id>` string). Must be in `stages` **and** in `scope_resolution.in_scope`. |
+| `predicted_sites[].position` | enum | **`insert` only** | `after` or `before` (relative to `anchor`). |
+| `predicted_sites[].reason` | string | yes | Why this is a predicted edit site, in the task's terms. |
+| `predicted_sites[].evidence` | list of `{ path, excerpt? }` | required for `modify` at `change_confidence` ≥ `medium`; encouraged for `insert` | The checkable citation behind the prediction (the heaviest honesty burden gets a grounding artefact, like stages/transitions). |
+| `change_confidence` | enum | yes | `low \| medium \| high` — the **minimum** over the predicted sites (the honest floor; a confident insert beside a guessy modify reports the lower value). |
+| `change_direction` | enum | **required iff `change_confidence < high`** | `over-prediction` (may flag a node the task will not edit) or `under-prediction` (may miss one). The **structured** carrier for the failure-direction disclosure — present even when `predicted_sites: []`. Omitted only at `change_confidence: high`. |
+
+**The honesty contract.** A change site is a prediction about *future
+human action*, so: it is phrased as a prediction, never a directive; every
+site carries a `reason` (and a `modify` site at `medium`/`high` carries
+`evidence`); below `high` confidence the `change_direction` names which way
+an uncertain prediction may have failed; an empty prediction is honest
+(`predicted_sites: []`, `change_confidence: low`, a `change_direction`),
+never an invented site.
+
+**Example:**
+
+```yaml
+change_prediction:
+  predicted_sites:
+    - kind: modify
+      target: risk-gate
+      reason: "the task edits the gate's post-risk routing to reach the new step"
+      evidence:
+        - path: src/refund/risk/gate.ts
+          excerpt: "if (riskScore > 0.65) return reviewPath()"
+    - kind: insert
+      anchor: risk-gate
+      position: after
+      reason: "'add a fraud-hold step after risk evaluation' inserts a new stage after the gate"
+      evidence:
+        - path: src/refund/risk/gate.ts
+  change_confidence: medium
+  change_direction: under-prediction
+```
+
 ## Validation rules
 
 - Every `entry` id and every `transition.from` / `transition.to` must
@@ -198,6 +272,18 @@ same).
   not form a cycle.
 - `evidence` must have at least one entry when `confidence` is `medium` or
   `high`; `low`-confidence stages may have empty `evidence: []`.
+- **`change_prediction` (when present, v0.11.0).** Optional; absence ⇒
+  "not run". Each `predicted_sites[]` entry has a legal `kind`
+  (`modify | insert`). `kind: modify` ⇒ `target` present, references an
+  existing `stage.id`, and that id is in `scope_resolution.in_scope`;
+  `anchor`/`position` absent. `kind: insert` ⇒ `anchor` present (existing
+  `stage.id`, in `in_scope`) **and** `position` present and legal
+  (`after | before`); `target` absent. `evidence` required on a `modify`
+  site when `change_confidence` is `medium` or `high`. `change_confidence`
+  is a legal enum equal to the minimum site confidence. `change_direction`
+  present **iff** `change_confidence < high` and a legal enum
+  (`over-prediction | under-prediction`). Empty `predicted_sites: []` ⇒
+  `change_confidence: low` with `change_direction` present.
 - **Empty-task sentinel.** A map whose `task` resolves to no process emits
   an **empty `stages: []`** with a populated `scope_resolution` whose
   `scope_confidence` is `low` and whose reasons explain the empty result.
