@@ -3,156 +3,158 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-06-15 |
-| Status | Drafted — ready for spec-mode diaboli, then plan/implementation |
+| Status | Diaboli-complete — 12 objections raised, all accepted; design pivoted (drop the GC staleness rule → deterministic mention-consistency check); ready for plan/implementation |
 | Author | claude-opus-4-8[1m] (interactive session with russmiles) |
-| Capability | Keep the cost-estimation tier→model **family stem table** current as model generations roll over — a single canonical source plus a periodic GC staleness check — so a renamed family does not silently degrade cost grounding |
+| Capability | Keep the cost-estimation tier→model **family stem table** singly-sourced and internally consistent — a declared canonical list, an add-and-retire maintenance discipline, and a deterministic check that the cost files do not drift from it |
 | Fixes | #414 |
 | Plugin version target | `ai-literacy-superpowers` v0.51.0 → v0.52.0 |
+| Diaboli record | `docs/superpowers/objections/cost-estimation-stem-table-maintenance-design.md` (12 objections, all accepted) |
 
 ---
 
-## 1. Problem
+## 1. Problem (re-framed after the diaboli)
 
 #412 (v0.50.0) made the cost-estimation binding resolve tiers by **model
-family stem** (`claude-opus-4` → Most capable, `claude-sonnet-4` →
-Standard), matched with a delimiter rule. Diaboli O8 named the residual:
-the stems are a **hand-maintained** table, so a **renamed family a
-generation later** (`claude-opus-5`, `claude-sonnet-5`) will not match the
-`*-4` stems. The miss is *signalled* (it falls through to a loud
-omission, not a silent wrong rate — unlike #411), and #413 already flags
-it at capture time ("if these are a newer model generation, the binding
-stem table needs updating"). But two gaps remain:
+family stem** (`claude-opus-4`, `claude-sonnet-4`). #414 (diaboli O8 of
+#411) asked how those stems stay current as model generations roll over.
+The spec-mode diaboli separated two problems the original framing
+conflated:
 
-1. **No periodic detection.** #413 only fires when a human runs
-   `/cost-capture`. A repo that has rolled onto a new model generation but
-   not re-captured will quietly stop grounding cost until someone notices.
-2. **No single source / maintenance ritual.** The stem values appear in
-   several cost files; there is no one declared canonical list, and no
-   stated discipline for bumping them per model generation.
+- **External staleness** — a new model generation outran the stems. This is
+  **already adequately covered**: #412 turns an unresolved family into a
+  *loud, disclosed* omission or cross-tier proxy (never a silent wrong
+  rate), and #413 flags it at **capture time**. A periodic snapshot-content
+  detector for this was specced first but the diaboli refuted it — it
+  false-positives on every legitimate cheap-tier-only month (O1),
+  false-negatives on a *staggered* rollover where one stem still resolves
+  (O2, the actual feared case), and cannot even cover the
+  rolled-over-but-not-recaptured gap it was motivated by (O9). It is
+  **dropped**.
+- **Internal drift** — the stems appear in **~8 files** with no single
+  enforced source (O3). After the *next* stem bump, those mentions can
+  silently disagree. This is the genuinely-unsolved problem #414 now
+  targets, with a **deterministic** check (O5).
 
-## 2. Options weighed (#414 named three)
+## 2. Options weighed
 
-- **Option 1 — documented maintenance ritual / single source.** Declare one
-  canonical stem list and a per-generation bump discipline.
-- **Option 2 — derive the stems from `MODEL_ROUTING.md`.** **Rejected.**
-  `MODEL_ROUTING.md` deliberately names **abstract tiers** ("Most capable",
-  "Standard") and **no concrete model families** — that abstraction is the
-  very reason the binding table exists (to map abstract tiers to
-  representative families). Deriving stems from MODEL_ROUTING would require
-  restructuring it to name model families, coupling routing to model ids it
-  intentionally omits. Not worth the coupling.
-- **Option 3 — a GC fitness-function staleness check.** A periodic check
-  that flags when the latest cost snapshot's models no longer resolve to
-  any stem — detection, not auto-change.
-
-**Chosen: Option 3 (the active mechanism) + Option 1 (the backing).** A GC
-staleness rule is exactly the idiom HARNESS.md already uses (Snapshot
-staleness, Documentation freshness, …), and detection-without-auto-change
-is correct for a **pricing-relevant** binding (it must never silently
-re-point itself at a different family). Option 1 gives the rule a single
-canonical target to point at.
+- **Option 1 — canonical source + maintenance ritual.** Kept (the backing).
+- **Option 2 — derive stems from `MODEL_ROUTING.md`.** **Rejected, and
+  confirmed by inspection:** the only model-family names in
+  `MODEL_ROUTING.md` / its template are **illustrative examples inside an
+  HTML comment**; the routing tables themselves name **abstract tiers**
+  (the abstraction the binding table exists to map). Deriving stems from it
+  would require restructuring routing to authoritatively name families it
+  deliberately omits.
+- **Option 3 — snapshot-content GC staleness rule.** **Dropped** (the
+  diaboli refuted it; external staleness is already covered — §1).
+- **Option 5 (diaboli) — deterministic mention-consistency check.**
+  **Adopted as the core mechanism.** Deterministic (no agent discretion,
+  O4), no operating-state false positive (O1), behaviourally falsifiable
+  (O6), and it directly enforces the single-source discipline (O3).
 
 ## 3. The capability
 
-### 3.1 A canonical stem source + maintenance note (Option 1)
+### 3.1 A declared canonical stem source + maintenance note
 
 The binding table in
-`skills/cost-estimation/references/estimate-record-format.md` is declared
-the **single canonical source** of the family stems. It gains a short
-**Stem-table maintenance** note: the stems (`claude-opus-4`,
-`claude-sonnet-4`) are a deliberately-maintained table, bumped **per model
-generation** (a new generation adds/replaces a stem), and the
-maintenance is driven by the GC rule (§3.2). The other cost files
-(`cost-estimation/SKILL.md`, `cost-tracking/SKILL.md`, the `cost-estimator`
-agent, the `cost-capture` command) **reference** that table as the
-authority for the stem values rather than asserting an independent list —
-the canonical-source discipline, not a rip-and-replace of every contextual
-mention.
+`skills/cost-estimation/references/estimate-record-format.md` is the
+**single canonical source** of the estimating-tier family stems. It gains:
 
-### 3.2 A GC staleness rule (Option 3)
+- an **authoritative, parseable stem declaration** — the estimating-tier
+  family stems listed in a form a test can extract (a clearly-delimited
+  list), so "the canonical set" is machine-defined, not prose-implied;
+- a **Stem-table maintenance note** with **add-and-retire** semantics (O10),
+  *not* replace-in-place:
+  - a new model generation **adds** a stem (e.g. `claude-opus-5` alongside
+    `claude-opus-4`); both coexist while transition-period snapshots may
+    carry either — consistent with the binding table's cross-generation
+    family aggregation;
+  - a stem is **retired** only when no snapshot in the retention window
+    still carries its family;
+  - a stem is **never silently replaced** (which would regress a
+    transition-quarter snapshot still keyed by the old family).
 
-A new garbage-collection rule, in the GC idiom:
+The other cost files (`cost-estimation/SKILL.md`, `cost-tracking/SKILL.md`,
+the `cost-estimator` agent, the `cost-capture` command) **reference** this
+table as the authority; the §3.2 check enforces that they do not drift from
+it.
 
-```text
-### Cost-estimation binding-stem staleness
+### 3.2 A deterministic mention-consistency check (the core — O5)
 
-- **What it checks**: Whether the latest observability/costs/ snapshot's
-  Model Breakdown keys still resolve to ≥1 estimating-tier family stem in
-  the cost-estimation binding table (claude-opus-4 / claude-sonnet-4, by
-  the stem + delimiter rule). If NONE resolve, the stem table is likely
-  stale for a new model generation.
-- **Frequency**: monthly (aligned with the cost cadence)
-- **Enforcement**: agent
-- **Tool**: harness-gc agent
-- **Auto-fix**: false
-```
+A **deterministic Layer-1 structural test** over the plugin's own cost
+files:
 
-It is added to **this project's `HARNESS.md`** (so it runs here) and to the
-**plugin template** `ai-literacy-superpowers/templates/HARNESS.md` (so
-harnessed projects inherit it), and catalogued in the
-`garbage-collection` skill's rule catalogue alongside the other staleness
-rules.
+- **Extract** the canonical estimating-tier stem set from the binding
+  table's authoritative declaration (§3.1).
+- **Assert** that no consumer cost file references an estimating-tier
+  family stem **absent** from the canonical set — i.e. every
+  `claude-opus-*` / `claude-sonnet-*` *binding-stem* token used in a
+  consumer cost file is one the canonical table declares.
+- It runs in the **CI-gated** structural layer (`test_layer1_structural.py`
+  family), so a stem bump that updates one file but not the canonical
+  declaration — or a consumer that introduces an undeclared stem — **fails
+  CI loudly**.
 
-- **Detection, never auto-fix** (`Auto-fix: false`): re-pointing a pricing
-  binding is a human, reviewed change. The rule *flags*; a human bumps the
-  stem in the canonical source.
-- **Agent-enforced, self-describing**: the harness-gc agent already runs
-  agent rules declared in HARNESS.md; this rule needs **no** agent code
-  change — its "What it checks" is the whole instruction (read the latest
-  snapshot, apply the binding table's stem+delimiter presence check).
-- **Honest framing**: a "no estimating-tier family resolves" result can
-  mean *stale stems* (a new generation) **or** *a genuinely cheap-tier-only
-  snapshot* (e.g. haiku-only). The rule's finding states both possibilities
-  — it points at the stem table as the **likely** cause for a new
-  generation, not the certain one — mirroring #413's no-fabrication
-  honesty.
+This is the falsifiable behaviour O6 demanded: it **fires** on a drifted or
+undeclared stem and is **silent** on consistency, asserted directly over
+file contents — no agent, no snapshot, no operating-state ambiguity.
 
-### 3.3 Relationship to #413
+**Scope of the check.** It guards the **plugin repo's own cost files**
+(where the stems live and could drift after a bump). Downstream harnessed
+projects install the plugin but do not edit these files, so internal drift
+is a plugin-repo concern only — there is **no** template GC rule to
+propagate (resolving O12).
 
-#413 catches the binding gap **at capture time** (per-`/cost-capture`);
-#414 catches it **periodically** (per GC cadence), even with no new
-capture, and frames it specifically as **stem-table staleness**. They
-share the same family-presence check (the binding table's stem+delimiter
-rule) — one source of truth — and neither re-implements the estimator's
-pricing.
+### 3.3 Relationship to #412 / #413
+
+- **#412** keeps external staleness loud (omission/proxy with disclosure).
+- **#413** flags external staleness at capture time (the
+  `Cost-estimate grounding:` Observations line).
+- **#414** (this slice) keeps the stem table **internally consistent and
+  singly-sourced** so a future bump cannot silently desync the ~8 files.
+
+Three disjoint surfaces over one binding rule; none re-implements the
+estimator's pricing, and #414 does **not** re-resolve snapshots (O7).
 
 ## 4. Surfaces changed
 
 1. `skills/cost-estimation/references/estimate-record-format.md` — the
-   canonical-source declaration + Stem-table maintenance note (§3.1).
-2. `HARNESS.md` (this project) — the new GC rule.
-3. `ai-literacy-superpowers/templates/HARNESS.md` — the new GC rule (so
-   harnessed projects inherit it).
-4. `skills/garbage-collection/` (the GC rule catalogue) — catalogue the new
-   rule alongside the other staleness rules.
-5. A TDAD scenario / Layer-1 assertion that the rule is declared in the
-   template and the maintenance note in the canonical source.
-6. Version triplet + CHANGELOG (the five CI-checked locations; minor bump).
+   authoritative parseable stem declaration + the add-and-retire
+   maintenance note (§3.1).
+2. `tdad_tests/tests/test_layer1_structural.py` — the deterministic
+   mention-consistency test (§3.2), CI-gated.
+3. Version triplet + CHANGELOG (the five CI-checked locations; minor bump).
+
+(No HARNESS.md / template GC rule, no MODEL_ROUTING change, no
+estimate-record format/field change.)
 
 ## 5. Out of scope
 
-- **Auto-bumping the stems** — detection only; a pricing binding change is
-  human-reviewed.
-- **Deriving stems from `MODEL_ROUTING.md`** (Option 2 — rejected, §2).
+- **A periodic external-staleness detector** — refuted by the diaboli;
+  external staleness is covered by #412 + #413 (§1).
+- **Auto-bumping or auto-fixing stems** — a pricing-binding change is
+  human-reviewed; the maintenance note is the human ritual, the §3.2 test is
+  the drift guard.
+- **Deriving stems from `MODEL_ROUTING.md`** (Option 2, rejected).
 - **Changing the binding, the proxy, or the estimate-record format** — the
-  stem *values* and the resolution rule are unchanged; this slice is about
-  keeping them current and singly-sourced.
-- **A deterministic script** for the check — the agent-enforced GC rule is
-  sufficient; a deterministic snapshot-parsing tool can come later if the
-  rule proves high-volume.
+  stem *values* and resolution rule are unchanged.
 
-## 6. Spec-mode diaboli
+## 6. Spec-mode diaboli — outcomes
 
-This spec goes through the spec-mode `/diaboli` gate; objections recorded
-at `docs/superpowers/objections/cost-estimation-stem-table-maintenance-design.md`
-and absorbed.
+The spec-mode `/diaboli` gate raised **12 objections — 5 high — all
+accepted**
+(`docs/superpowers/objections/cost-estimation-stem-table-maintenance-design.md`).
+The five highs refuted the original snapshot-content GC rule (O1
+false-positive, O2 false-negative, O4 no agent stem logic, O6 untestable,
+O3 single-source contradicted); the human disposed the design to **drop
+that rule** (external staleness covered by #412/#413 — O8) and **adopt the
+deterministic mention-consistency check** (O5) plus the canonical source +
+add-and-retire note (O10). Option 2 rejection confirmed by inspection.
 
 ## 7. References
 
-- Issue #414; diaboli O8 of #411
-  (`docs/superpowers/objections/cost-estimation-family-matching-design.md`);
-  the capture-time sibling #413.
-- `skills/cost-estimation/references/estimate-record-format.md` (the binding
-  table / canonical stems).
-- `HARNESS.md` and `ai-literacy-superpowers/templates/HARNESS.md` (GC rules);
-  `skills/garbage-collection/` (the catalogue).
+- Issue #414; diaboli O8 of #411; the siblings #412 (family matching) and
+  #413 (capture-time advisory).
+- `skills/cost-estimation/references/estimate-record-format.md` (canonical
+  stems / binding table).
+- `tdad_tests/tests/test_layer1_structural.py` (the deterministic check).
