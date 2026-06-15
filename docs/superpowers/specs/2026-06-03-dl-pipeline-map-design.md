@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-06-03 |
-| Status | In implementation — P1 (ConceptualPipelineMap template, v0.6.0, #363/#402), P2 (task→bounded scope resolution, v0.7.0, #364/#403, hand-validated), P3 (flow-tracing, `mode: pipeline`, v0.8.0, #365/#404), and P4 (three-way six-pair cross-check + `pipeline_cross_check_status`, v0.9.0, #366/#405) shipped; P5 (`/pipeline-map` command + vendored-Mermaid HTML) in progress; P6 deferred. §2.2 vendoring revised at P5 (pin+SHA+cache, not committed blob) |
+| Status | **Complete** — P1–P5 all shipped: P1 (ConceptualPipelineMap template, v0.6.0, #363/#402), P2 (task→bounded scope resolution, v0.7.0, #364/#403, hand-validated), P3 (flow-tracing, `mode: pipeline`, v0.8.0, #365/#404), P4 (three-way six-pair cross-check + `pipeline_cross_check_status`, v0.9.0, #366/#405), P5 (`/pipeline-map` command + self-contained Mermaid HTML, v0.10.0, #367/#406). P6 (live execution overlay) deferred; change-site prediction filed as follow-on #368. §2.2 vendoring revised at P5 (pin+SHA+cache, not committed blob) |
 | Author | claude-opus-4-8[1m] (interactive session with russmiles) |
 | Capability | Given a work task a developer is considering, derive the bounded slice of the process that task touches, model it as a flow perspective over the architectural and domain models, and render it as a self-contained HTML pipeline map |
 | Slicing record | `docs/superpowers/slices/diagnostic-legibility-pipeline-map.md` (slices P1–P6) |
