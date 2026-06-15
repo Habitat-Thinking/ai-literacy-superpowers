@@ -190,7 +190,10 @@ AGENTS.md/HARNESS.md edit, then regenerate the aggregate with
 
 ```text
 - **Promoted**: 2026-05-15 → AGENTS.md STYLE: "Multi-repo scheduled agents"
+- **Promoted**: 2026-05-15 → CLAUDE.md "Treat ports as the domain boundary"
+- **Promoted**: 2026-05-15 → src/renderer/CLAUDE.md "Wrap at column 80"
 - **Promoted**: 2026-05-15 → HARNESS.md: Reflections via PR workflow
+- **Promoted**: 2026-05-15 → .claude/HARNESS.md: Reflections via PR workflow
 - **Promoted**: 2026-05-15 → aged-out, no promotion warranted
 ```
 

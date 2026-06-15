@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.53.1 — 2026-06-15
+
+### reflections: verify_rhs recognises CLAUDE.md + .claude/HARNESS.md promotions (#319, #320)
+
+`verify_rhs` (the Path 1 archival pre-check) rejected valid, documented
+promotion forms, so `archive-promoted-reflections.sh` kept those entries
+in the active set forever.
+
+- **#320 — HARNESS path resolution.** The check hard-coded `HARNESS.md`
+  at the repo root, but the plugin's own `/superpowers-init` scaffolds to
+  `.claude/HARNESS.md`. A canonical `Promoted: → HARNESS.md: <constraint>`
+  line therefore never verified in projects that follow the recommended
+  layout. A new `resolve_file` helper now resolves the constraint heading
+  against the repo root **or** the `.claude/` scaffold; `propose_for_entry`
+  uses the same resolution.
+- **#319 — CLAUDE.md and explicit .claude paths.** Promotions to
+  `CLAUDE.md` (root or per-component `<subdir>/CLAUDE.md`) and the explicit
+  `.claude/HARNESS.md: <constraint>` form fell through to a rejection.
+  `verify_rhs` now models a `CLAUDE_FORM` (verifies the quoted excerpt in
+  the named CLAUDE.md) and accepts the `.claude/HARNESS.md:` alias. The
+  formal grammar in the archival spec and the RHS-form lists in `/reflect`
+  and the integration-agent are updated to match.
+- Layer 0 coverage added: eight `verify_rhs` unit cases plus an end-to-end
+  archival case proving a `.claude/HARNESS.md`-only project archives.
+
 ## 0.53.0 — 2026-06-15
 
 ### reflections: one-file-per-entry storage + union-merge default (#398)
