@@ -3,7 +3,16 @@
 #
 # Shared helpers for reflection-log archival scripts.
 # Sourced by archive-promoted-reflections.sh, migrate-reflection-log.sh,
-# and read-side filtering callers.
+# regenerate-reflection-log.sh, split-reflection-log.sh, and read-side
+# filtering callers.
+#
+# Storage model (see docs/superpowers/specs/
+# 2026-06-15-reflection-fragments-migration-design.md):
+#   - SOURCE OF TRUTH = per-entry fragments in reflections/active/<date>-<slug>.md,
+#     one entry body per file, no leading `---` separator.
+#   - GENERATED VIEW  = REFLECTION_LOG.md, a deterministic, committed,
+#     union-merged aggregate regenerated from the active fragments.
+# Readers consume the aggregate; writers write fragments and regenerate.
 #
 # Functions defined here:
 # - split_entries <log-path>      → emit each entry preceded by `---ENTRY---`
@@ -11,6 +20,10 @@
 # - extract_field <entry> <name>  → echo the value of `- **<name>**: ...`
 # - bounded_entries <log> <n> <m> → return entries within last n OR last m days
 # - resolve_year <entry-text>     → echo YYYY from the entry's Date field
+# - slugify <text>                → echo a kebab-case slug (≤6 words)
+# - fragment_paths [active-dir]   → list fragment files in Date-then-name order
+# - default_reflection_header     → print the canonical aggregate header
+# - regenerate_log [active] [out] → rewrite the aggregate from fragments
 
 set -euo pipefail
 
@@ -215,4 +228,110 @@ propose_for_entry() {
   # Recent, no overlap → leave alone
   echo "Recent (within threshold), no overlap. Recommend leaving untouched."
   echo ""
+}
+
+# ---------------------------------------------------------------------------
+# Fragment model: per-entry source of truth + generated aggregate.
+# ---------------------------------------------------------------------------
+
+# slugify: turn a Task line into a filesystem-safe kebab-case slug (≤6 words).
+# Used to name reflection fragment files.
+slugify() {
+  local text="$1"
+  local slug
+  slug=$(printf '%s' "$text" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' \
+    | cut -d- -f1-6)
+  # Fall back to a stable placeholder if the task had no usable characters.
+  [ -n "$slug" ] && printf '%s' "$slug" || printf 'entry'
+}
+
+# trim_blanks: strip leading and trailing blank lines from stdin, emitting
+# the inner content with a single trailing newline. Keeps fragment bodies and
+# the regenerated aggregate free of the stray blank lines that the monolith's
+# `---`/blank-line separators would otherwise leave behind.
+trim_blanks() {
+  awk '
+    { lines[NR] = $0 }
+    END {
+      start = 1
+      while (start <= NR && lines[start] ~ /^[[:space:]]*$/) start++
+      end = NR
+      while (end >= start && lines[end] ~ /^[[:space:]]*$/) end--
+      for (i = start; i <= end; i++) print lines[i]
+    }'
+}
+
+# fragment_paths: list active reflection fragments in deterministic order.
+# Filenames are date-prefixed (YYYY-MM-DD-slug.md), so a plain byte sort
+# yields Date order then slug order — the aggregate's canonical ordering.
+fragment_paths() {
+  local active_dir="${1:-reflections/active}"
+  [ -d "$active_dir" ] || return 0
+  find "$active_dir" -maxdepth 1 -name '*.md' 2>/dev/null | LC_ALL=C sort
+}
+
+# default_reflection_header: the canonical header for a freshly generated
+# aggregate (used when no existing REFLECTION_LOG.md is present to inherit a
+# header from). The example entry stays indented inside the comment so it
+# never matches the `^---$` / `^- **Date**:` greps that count real entries.
+default_reflection_header() {
+  cat <<'HEADER'
+# Reflection Log
+
+<!-- GENERATED FILE — do not edit by hand.
+
+     This file is a deterministic aggregate of the per-entry fragments in
+     reflections/active/. Add a reflection with /reflect (which writes a
+     fragment and regenerates this file); never append here directly.
+     Regenerate with: scripts/regenerate-reflection-log.sh
+
+     Each entry below mirrors one fragment. Entry format:
+
+     ---
+
+     - **Date**: YYYY-MM-DD
+     - **Agent**: integration-agent
+     - **Task**: [one-sentence summary]
+     - **Surprise**: [anything unexpected]
+     - **Proposal**: [pattern or gotcha for AGENTS.md, or "none"]
+     - **Improvement**: [what would make the pipeline smoother]
+     - **Signal**: [context | instruction | workflow | failure | none]
+     - **Constraint**: [proposed constraint, or "none"]
+-->
+
+HEADER
+}
+
+# regenerate_log: rewrite the aggregate REFLECTION_LOG.md from the active
+# fragments. Deterministic and idempotent. Preserves the existing header
+# (everything before the first `^---$`) so a project's customised header
+# survives; falls back to default_reflection_header for a fresh file.
+regenerate_log() {
+  local active_dir="${1:-reflections/active}"
+  local out="${2:-REFLECTION_LOG.md}"
+  local tmp="${out}.regen.tmp"
+
+  if [ -f "$out" ] && grep -q '^---$' "$out"; then
+    awk '/^---$/{exit} {print}' "$out" > "$tmp"
+  else
+    default_reflection_header > "$tmp"
+  fi
+
+  local f
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    {
+      echo "---"
+      echo ""
+      # Normalise each fragment to a clean body with a single trailing
+      # newline, then add one blank line before the next separator —
+      # robust to however the fragment was authored.
+      trim_blanks < "$f"
+      printf '\n'
+    } >> "$tmp"
+  done < <(fragment_paths "$active_dir")
+
+  mv "$tmp" "$out"
 }

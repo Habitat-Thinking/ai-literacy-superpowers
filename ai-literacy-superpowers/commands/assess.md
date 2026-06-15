@@ -227,7 +227,7 @@ below L3, skip silently.
 
 ```bash
 mkdir -p assessments
-git add assessments/ README.md HARNESS.md AGENTS.md CLAUDE.md REFLECTION_LOG.md
+git add assessments/ README.md HARNESS.md AGENTS.md CLAUDE.md reflections/active/ REFLECTION_LOG.md
 git commit -m "AI Literacy Assessment: Level N — LEVEL_NAME (YYYY-MM-DD)
 
 Assessment with immediate adjustments and accepted workflow changes."

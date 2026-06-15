@@ -5,7 +5,15 @@ description: Capture a reflection after completing work — what was surprising,
 
 # /reflect
 
-Capture a post-task reflection and append it to REFLECTION_LOG.md.
+Capture a post-task reflection as a per-entry fragment under
+`reflections/active/`, then regenerate the aggregate `REFLECTION_LOG.md`.
+
+Reflections use a **one-file-per-entry** storage model (see
+`docs/superpowers/specs/2026-06-15-reflection-fragments-migration-design.md`):
+each reflection is its own file, so two reflections authored concurrently
+never touch the same path and can never be silently dropped at merge time.
+`REFLECTION_LOG.md` is a generated, committed aggregate of the fragments —
+never edit it by hand.
 
 ## Process
 
@@ -90,16 +98,34 @@ Capture a post-task reflection and append it to REFLECTION_LOG.md.
      and record:
      `- **Constraint**: none`
 
-1. Append the entry to `REFLECTION_LOG.md` (after the last existing
-   entry, preserving the `---` separator)
+1. Write the entry as a **fragment file**. Derive a short kebab-case
+   slug from the Task (lowercase, hyphen-separated, ≤6 words) and write
+   the entry **body only** (no leading `---` separator) to:
 
-1. **Validate the reflection entry.** Read the last entry in
-   `REFLECTION_LOG.md` and verify its structure against the entry
-   template in step 2 above.
+   ```text
+   reflections/active/<YYYY-MM-DD>-<slug>.md
+   ```
+
+   If a file with that name already exists (another reflection the same
+   day), append a numeric suffix: `<date>-<slug>-2.md`, `-3.md`, etc.
+
+   Then regenerate the aggregate so readers see the new entry:
+
+   ```bash
+   bash ai-literacy-superpowers/scripts/regenerate-reflection-log.sh
+   ```
+
+   If that script is not present in the project, regenerate by hand:
+   write `REFLECTION_LOG.md` as its existing header followed by each
+   `reflections/active/*.md` fragment (Date order) separated by `---`.
+
+1. **Validate the reflection entry.** Read the fragment you just wrote
+   and verify its structure against the entry template in step 2 above.
 
    **Structural checks:**
 
-   1. Entry starts with `---` separator
+   1. Fragment body starts directly with the `- **Date**:` line (no
+      leading `---` separator — that belongs only to the aggregate)
    2. All 8 mandatory fields present: Date, Agent, Task, Surprise,
       Proposal, Improvement, Signal, Constraint
    3. Session metadata block present with all 4 subfields: Duration,
@@ -119,7 +145,7 @@ Capture a post-task reflection and append it to REFLECTION_LOG.md.
 1. Do NOT modify `AGENTS.md` — only humans edit that file. If the
    reflection contains a proposal, note it and let the human decide.
 
-1. Commit the updated REFLECTION_LOG.md.
+1. Commit the new fragment and the regenerated aggregate.
 
    Check whether the project declares a "Reflections via PR workflow"
    constraint (or equivalent) in `HARNESS.md`. If yes, use a branch and
@@ -130,7 +156,7 @@ Capture a post-task reflection and append it to REFLECTION_LOG.md.
    ```bash
    slug="<short-slug-derived-from-task>"
    git checkout -b "add-reflection-${slug}"
-   git add REFLECTION_LOG.md
+   git add reflections/active/ REFLECTION_LOG.md
    git commit -m "Add reflection: <one-line summary of the task>"
    git push -u origin "add-reflection-${slug}"
    gh pr create --label chore \
@@ -148,15 +174,17 @@ Capture a post-task reflection and append it to REFLECTION_LOG.md.
    **Direct commit (when the constraint is not declared):**
 
    ```bash
-   git add REFLECTION_LOG.md
+   git add reflections/active/ REFLECTION_LOG.md
    git commit -m "Add reflection: <one-line summary of the task>"
    ```
 
 ## Promoting an entry (curator action, post-reflection)
 
 When you later promote this reflection's content to `AGENTS.md` or
-`HARNESS.md`, add a `Promoted` line to this entry **in the same commit**
-as the AGENTS.md/HARNESS.md edit. The line follows the grammar in
+`HARNESS.md`, add a `Promoted` line to this entry's **fragment file**
+(`reflections/active/<date>-<slug>.md`) **in the same commit** as the
+AGENTS.md/HARNESS.md edit, then regenerate the aggregate with
+`scripts/regenerate-reflection-log.sh`. The line follows the grammar in
 `docs/superpowers/specs/2026-04-30-reflection-log-archival-design.md`
 (Schema change → Formal grammar). Examples:
 
@@ -166,5 +194,6 @@ as the AGENTS.md/HARNESS.md edit. The line follows the grammar in
 - **Promoted**: 2026-05-15 → aged-out, no promotion warranted
 ```
 
-The Path 1 weekly GC rule auto-archives entries with verified Promoted
-lines; you do not need to move the entry yourself.
+The Path 1 weekly GC rule auto-archives fragments with verified Promoted
+lines — moving them to `reflections/archive/<YYYY>.md` and regenerating
+the aggregate; you do not need to move the entry yourself.

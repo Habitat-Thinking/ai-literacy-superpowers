@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.53.0 — 2026-06-15
+
+### reflections: one-file-per-entry storage + union-merge default (#398)
+
+`REFLECTION_LOG.md` was a single, shared, append-only file. Every
+reflection PR appended at the same EOF location, so any two PRs cut from
+the same base conflicted at the same spot — and when that conflict was
+resolved against an already-merged block, a committed reflection was
+**silently dropped** (the PR merged green and the entry simply wasn't on
+`main`). This was an emergent property of the storage design, observed
+downstream, not a one-off mistake.
+
+- **Source of truth is now per-entry fragments.** `/reflect`, the
+  integration-agent, and the assessment skill write each reflection as
+  its own file under `reflections/active/<YYYY-MM-DD>-<slug>.md` (body
+  only, no leading `---`). Two reflections authored concurrently never
+  touch the same path, so the append-contention — and the silent-drop
+  failure — disappears at the source.
+- **`REFLECTION_LOG.md` becomes a generated aggregate.** It stays
+  committed (like a lockfile) and is deterministically regenerated from
+  the fragments in Date order by the new
+  `scripts/regenerate-reflection-log.sh`, so all existing readers
+  (agents, GC rules, health/status commands, observability) keep working
+  unchanged. A messy interim union merge self-heals on the next
+  regeneration because the fragments are canonical.
+- **Union-merge default shipped.** A root `.gitattributes` (and a
+  `templates/gitattributes` scaffolded by `/superpowers-init`) applies
+  git's built-in `merge=union` driver to `REFLECTION_LOG.md` and
+  `reflections/archive/*.md`, so even an un-migrated monolith or two
+  concurrent GC runs can never drop content.
+- **Archival preserved on fragments.** `archive-promoted-reflections.sh`
+  now moves promoted fragments to `reflections/archive/<YYYY>.md`,
+  deletes them, and regenerates the aggregate; the Promoted-line grammar
+  and archive format are unchanged. The weekly GC workflow counts and
+  commits fragments instead of monolith entries.
+- **One-time migration.** New `scripts/split-reflection-log.sh`
+  (idempotent) splits an existing monolith into fragments and
+  regenerates the aggregate, preserving Promoted lines and the existing
+  archive. This repo's own 49-entry log was migrated as part of this
+  change (verified lossless: all 591 content lines preserved).
+
 ## 0.52.1 — 2026-06-15
 
 ### gc-rotate: scope shell-script GC rules to project-owned files (#361)

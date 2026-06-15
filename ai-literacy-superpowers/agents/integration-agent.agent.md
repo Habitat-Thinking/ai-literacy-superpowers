@@ -128,15 +128,20 @@ git branch -v | grep '\[gone\]' | awk '{print $1}' | xargs git branch -D
 
 ### 8. Capture reflection
 
-Append a structured reflection entry to REFLECTION_LOG.md. Reflect on
-the full pipeline run — not just your own steps, but what you observed
-in the context object about how earlier agents performed.
+Write a structured reflection entry as a per-entry fragment under
+`reflections/active/`. Reflect on the full pipeline run — not just your
+own steps, but what you observed in the context object about how earlier
+agents performed.
 
-Format:
+Reflections use a **one-file-per-entry** storage model so concurrent
+pipeline runs never collide on a shared file (see
+`docs/superpowers/specs/2026-06-15-reflection-fragments-migration-design.md`).
+`REFLECTION_LOG.md` is a generated aggregate — never append to it
+directly.
+
+Fragment body format (no leading `---`):
 
 ```text
----
-
 - **Date**: [today's date in YYYY-MM-DD]
 - **Agent**: integration-agent
 - **Task**: [one-sentence summary from the context object's task_summary]
@@ -147,10 +152,13 @@ Format:
 - **Constraint**: [proposed constraint text, or "none"]
 ```
 
-Append after the last entry in REFLECTION_LOG.md. Then commit:
+Derive a kebab-case slug from the Task (≤6 words) and write the body to
+`reflections/active/<YYYY-MM-DD>-<slug>.md` (numeric suffix on same-day
+collisions). Regenerate the aggregate and commit both:
 
 ```bash
-git add REFLECTION_LOG.md
+bash ai-literacy-superpowers/scripts/regenerate-reflection-log.sh
+git add reflections/active/ REFLECTION_LOG.md
 git commit -m "Add reflection for: [task summary]"
 ```
 
@@ -168,9 +176,10 @@ Do NOT modify AGENTS.md. Only propose — humans curate.
 ## Promoted-field convention (post-task workflow)
 
 When a curator promotes a reflection entry's content to `AGENTS.md` or
-`HARNESS.md`, they add a `Promoted` line to the source entry **in the
-same commit** as the AGENTS.md/HARNESS.md edit. The line follows the
-grammar:
+`HARNESS.md`, they add a `Promoted` line to the source entry's fragment
+(`reflections/active/<date>-<slug>.md`) **in the same commit** as the
+AGENTS.md/HARNESS.md edit, then regenerate the aggregate. The line
+follows the grammar:
 
 ```text
 - **Promoted**: YYYY-MM-DD → <RHS>
