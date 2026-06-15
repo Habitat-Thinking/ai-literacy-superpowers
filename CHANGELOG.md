@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.52.0 — 2026-06-15
+
+### cost-estimation: single-source the family stem table + deterministic drift guard (#414)
+
+Keeps the v0.50.0 tier→model family stems (`claude-opus-4`,
+`claude-sonnet-4`) **singly-sourced and internally consistent** as model
+generations roll over.
+
+- **Declared canonical source.** The binding table in
+  `skills/cost-estimation/references/estimate-record-format.md` now carries
+  an authoritative, parseable `canonical-estimating-tier-family-stems`
+  block — the single source the other cost files reference.
+- **Add-and-retire maintenance note** (not replace-in-place): a new
+  generation **adds** a stem (both coexist while transition snapshots may
+  carry either — consistent with cross-generation family aggregation); a
+  stem is **retired** only when no snapshot in the retention window carries
+  its family; never silently replaced (which would regress a
+  transition-quarter snapshot to omission).
+- **Deterministic drift guard.** A CI-gated Layer-1 structural test
+  (`tdad_tests/tests/test_layer1_structural.py`,
+  `TestCostEstimationStemConsistency`) asserts that no consumer cost file
+  references an estimating-tier family stem absent from the canonical set
+  (every `claude-opus-*`/`claude-sonnet-*` family token must resolve, by
+  the delimiter-bounded stem rule, to a declared stem; documented
+  delimiter counter-examples like `claude-opus-40` are exempt). A future
+  stem bump that desyncs the files fails CI loudly.
+
+**Design pivot (spec-mode diaboli).** The slice originally proposed a
+periodic GC staleness rule reading the latest snapshot; the diaboli refuted
+it (false-positive every cheap-tier-only month; false-negative on a
+*staggered* rollover; the agent has no stem logic; only the rule's
+existence was testable) and noted external staleness is already covered by
+the loud disclosed omission/proxy of #412 and #413's capture-time
+advisory. The human disposed the design to **drop the GC rule** and ship
+the deterministic
+mention-consistency check + canonical source instead. Option 2 (derive
+stems from `MODEL_ROUTING.md`) was rejected — its only family names are
+illustrative HTML-comment examples; routing uses abstract tiers.
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-15-cost-estimation-stem-table-maintenance-design.md`;
+spec-mode diaboli at
+`docs/superpowers/objections/cost-estimation-stem-table-maintenance-design.md`
+(12 objections — 5 high — all accepted). Closes #414.
+
 ## 0.51.0 — 2026-06-15
 
 ### cost-capture: capture-time binding-gap advisory (#413)
