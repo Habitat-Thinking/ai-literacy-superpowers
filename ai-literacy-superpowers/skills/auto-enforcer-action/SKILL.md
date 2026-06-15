@@ -127,7 +127,9 @@ env:
 
 Controls when a PR comment is posted:
 
-- `findings-only` (default) — post only when agent findings exist
+- `findings-only` (default) — post only when there is something to act
+  on: any `FAIL`, `ADVISORY`, or `SKIP` result. An all-`PASS` run posts
+  no comment.
 - `always` — post a comment even when all constraints pass
 
 ```yaml
@@ -174,8 +176,11 @@ auto-enforcer posts a comment on the PR with a summary table:
   non-zero and blocks merge until fixed
 - **ADVISORY** — an agent constraint found potential issues; review
   the findings but the job does not fail
-- **SKIP** — the constraint was excluded by configuration or could
-  not be parsed
+- **SKIP** — the constraint was excluded by configuration, could not
+  be parsed, or its agent API call did not complete after retries
+  (transient `429`/`529` overloads are retried with backoff before a
+  SKIP is recorded). A SKIP surfaces a PR comment even in
+  `findings-only` mode so a silently-disabled gate stays visible.
 
 ### Distinguishing failures from advisories
 

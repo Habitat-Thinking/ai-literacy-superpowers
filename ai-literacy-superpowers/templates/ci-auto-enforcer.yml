@@ -67,9 +67,13 @@ jobs:
                   in_constraints = True
                   continue
               if in_constraints and line.strip().startswith("## ") and not line.strip().startswith("### "):
+                  # Section exit: flush the in-flight block and reset, so the
+                  # trailing EOF flush below cannot re-append it (#325).
                   in_constraints = False
                   if current_name:
                       blocks.append({"name": current_name, "lines": current_block})
+                      current_name = ""
+                      current_block = []
                   continue
               if in_constraints and line.strip().startswith("### "):
                   if current_name:
@@ -80,16 +84,33 @@ jobs:
               if in_constraints and current_name:
                   current_block.append(line)
 
-          if current_name:
+          # Trailing flush — only fires when EOF is reached *inside* the
+          # constraints section (gated on in_constraints so it cannot
+          # double-append a block already flushed at section exit, #325).
+          if in_constraints and current_name:
               blocks.append({"name": current_name, "lines": current_block})
 
-          # Parse each block for metadata
+          # Parse each block for metadata. A field's value runs from its
+          # `- Field:` list item until the next list item — continuation
+          # lines (wrapped multi-paragraph rules) are folded in, so a
+          # multi-line Rule reaches the agent whole rather than truncated
+          # to its first physical line (#324).
           def parse_field(lines, field):
+              pattern = rf"[-*]\s+\**{field}\**\s*:\s*(.*)"
+              value_parts = []
+              in_field = False
               for line in lines:
-                  match = re.match(rf"[-*]\s+\**{field}\**\s*:\s*(.*)", line, re.IGNORECASE)
-                  if match:
-                      return match.group(1).strip()
-              return ""
+                  if not in_field:
+                      m = re.match(pattern, line, re.IGNORECASE)
+                      if m:
+                          value_parts.append(m.group(1).strip())
+                          in_field = True
+                      continue
+                  if re.match(r"[-*]\s+", line):
+                      break
+                  if line.strip():
+                      value_parts.append(line.strip())
+              return " ".join(value_parts).strip()
 
           include = os.environ.get("INCLUDE_CONSTRAINTS", "").strip()
           exclude = os.environ.get("EXCLUDE_CONSTRAINTS", "").strip()
@@ -238,7 +259,7 @@ jobs:
 
             # Build the prompt and call Claude API via python to handle escaping
             python3 - "$name" "$rule" "$RESULTS_FILE" <<'AGENTEOF'
-          import json, sys, urllib.request, os
+          import json, sys, urllib.request, urllib.error, os, time
 
           name = sys.argv[1]
           rule = sys.argv[2]
@@ -281,20 +302,48 @@ jobs:
               }
           )
 
-          try:
-              with urllib.request.urlopen(req, timeout=60) as resp:
-                  data = json.loads(resp.read())
-                  text = data.get("content", [{}])[0].get("text", "Unable to parse response")
-                  if "NO_FINDINGS" in text:
-                      status = "PASS"
-                      finding_text = "--"
-                  else:
-                      status = "ADVISORY"
-                      finding_text = text[:500]
-          except Exception as e:
-              status = "SKIP"
-              finding_text = f"API call failed: {str(e)[:200]}"
-              print(f"::warning::Agent constraint '{name}' skipped — {e}")
+          # Call the API with bounded retry. Transient backpressure
+          # (429/529) and one-off network errors retry with backoff;
+          # non-transient HTTP errors (auth, malformed) fail fast so we
+          # don't burn the retry window. Without this a transient
+          # Anthropic overload silently turned an enforcement gate into a
+          # SKIP (#322).
+          status = "SKIP"
+          finding_text = "API call did not complete"
+          for attempt in range(3):
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as resp:
+                      data = json.loads(resp.read())
+                      text = data.get("content", [{}])[0].get("text", "Unable to parse response")
+                      if "NO_FINDINGS" in text:
+                          status = "PASS"
+                          finding_text = "--"
+                      else:
+                          status = "ADVISORY"
+                          finding_text = text[:500]
+                  break
+              except urllib.error.HTTPError as e:
+                  if e.code in (429, 529) and attempt < 2:
+                      time.sleep(2 ** (attempt + 1))  # 2s, then 4s
+                      continue
+                  status = "SKIP"
+                  finding_text = f"API call failed: HTTP Error {e.code}: {str(e)[:200]}"
+                  print(f"::warning::Agent constraint '{name}' skipped — {e}")
+                  break
+              except urllib.error.URLError as e:
+                  # Network-level error (DNS, timeout): retry once, then skip.
+                  if attempt < 1:
+                      time.sleep(2)
+                      continue
+                  status = "SKIP"
+                  finding_text = f"API call failed: {str(e)[:200]}"
+                  print(f"::warning::Agent constraint '{name}' skipped — {e}")
+                  break
+              except Exception as e:
+                  status = "SKIP"
+                  finding_text = f"API call failed: {str(e)[:200]}"
+                  print(f"::warning::Agent constraint '{name}' skipped — {e}")
+                  break
 
           print(f"Result: {status}")
 
@@ -309,6 +358,9 @@ jobs:
           AGENTEOF
 
             echo "::endgroup::"
+            # Flatten the call rate so a burst of agent constraints is less
+            # likely to trip Anthropic's overload signal (#322, Option B).
+            sleep 0.5
           done
 
           echo "ALL_RESULTS_FILE=$RESULTS_FILE" >> "$GITHUB_ENV"
@@ -326,14 +378,19 @@ jobs:
           fi
 
           # Build the comment body
-          COMMENT=$(python3 - "$RESULTS_FILE" <<'COMMENTEOF'
+          COMMENT=$(python3 - "$RESULTS_FILE" "$COMMENT_MODE" <<'COMMENTEOF'
           import json, sys
 
           results_file = sys.argv[1]
+          # COMMENT_MODE is passed as argv, not interpolated into the
+          # single-quoted heredoc (which would leave it the literal
+          # "${COMMENT_MODE}" and never match) (#323).
+          comment_mode = sys.argv[2]
           results = json.load(open(results_file))
-          comment_mode = "${COMMENT_MODE}"
 
-          has_findings = any(r["status"] in ("FAIL", "ADVISORY") for r in results)
+          # SKIP counts as a finding so a skipped enforcement gate stays
+          # visible even in findings-only mode (#322/#323).
+          has_findings = any(r["status"] in ("FAIL", "ADVISORY", "SKIP") for r in results)
 
           if not has_findings and comment_mode == "findings-only":
               print("SKIP_COMMENT")

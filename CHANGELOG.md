@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.53.2 — 2026-06-15
+
+### auto-enforcer: four PR-enforcement bug fixes (#322, #323, #324, #325)
+
+Four defects in `templates/ci-auto-enforcer.yml` quietly degraded PR-time
+constraint enforcement for every adopter of the GitHub Action.
+
+- **#325 — duplicate constraint rows.** The constraint parser appended
+  the final block at section exit **and** again at the EOF flush, so any
+  `HARNESS.md` with a `## ` section after `## Constraints` ran (and listed)
+  its last constraint twice. The section-exit path now resets state and the
+  trailing flush is gated on still being inside the section.
+- **#324 — truncated multi-line rules.** `parse_field` returned only the
+  first physical line of a `Rule:`, so multi-paragraph agent constraints
+  reached the model half-stated (the agent even reported the rule as
+  "incomplete"). It now folds continuation lines until the next list item.
+- **#323 — COMMENT_MODE never applied.** `comment_mode = "${COMMENT_MODE}"`
+  inside a single-quoted heredoc was a literal string, so `findings-only`
+  never suppressed all-PASS comments. The value is now passed as a
+  positional argv. `SKIP` also counts as a finding so a silently-disabled
+  gate still surfaces a comment.
+- **#322 — no retry on transient overload.** A single `urlopen` with a
+  broad `except` turned an Anthropic `429`/`529` into a `SKIP`pped
+  enforcement gate. Agent calls now retry transient overloads with backoff
+  (2s, 4s), retry one network error, and fail fast on non-transient HTTP
+  errors; a half-second pace between agent calls flattens the burst.
+- **Tests.** New Layer 0 suite (`test-auto-enforcer.sh`) extracts the real
+  embedded Python from the template and exercises all four fixes — nine
+  cases, verified to fail against the pre-fix template (RED→GREEN).
+
 ## 0.53.1 — 2026-06-15
 
 ### reflections: verify_rhs recognises CLAUDE.md + .claude/HARNESS.md promotions (#319, #320)
