@@ -1,6 +1,6 @@
 ---
 name: diagnostic-legibility
-description: "Use to build two refined models of a codebase scope — architectural moving parts and domain concepts — using the schema at diagnostic-legibility/templates/legibility-element.md. Constructs each element, applies a five-question self-challenge cycle (Phase B), and cross-checks the two collections against each other (Phase C, v0.4.0). Challenge notes follow the `Q<N> (question-name):` prefix; cross-check notes follow the `CC<N> (question-name):` prefix. Model-level cross-check outcome lives in the `cross_check_status` wrapper field (`completed | skipped_asymmetric | not_run`). Degenerate scopes use the literal `(empty scope)` sentinel. Four mode markers — full (default, Phase A+B+C), cross-check-only (Phase C against a fenced YAML payload), scope-resolution (v0.7.0 — answer 'what does my task touch?': derive a bounded, disclosed ScopeResolution from a natural-language work task, optionally biased by a `near:` hint, emitting `in_scope` / `adjacent_excluded` / `scope_confidence` per templates/conceptual-pipeline-map.md, with the suspected failure direction — under-reach or over-reach — named when confidence is below high), and pipeline (v0.8.0 — the full task-scoped build: resolve the bound, trace control flow into a ConceptualPipelineMap, build the architectural/domain collections within the bound, and self-challenge pipeline stages through a flow-flavoured five-question cover plus a scope-relevance feedback loop; cross-check deferred to P4 so `cross_check_status: not_run`). Returns a LegibilityModel as YAML in full / cross-check-only modes, a ScopeResolution YAML in scope-resolution mode, or two standalone YAML blocks (ConceptualPipelineMap + LegibilityModel) in pipeline mode; the dispatching command or human writes the file."
+description: "Use to build two refined models of a codebase scope — architectural moving parts and domain concepts — using the schema at diagnostic-legibility/templates/legibility-element.md. Constructs each element, applies a five-question self-challenge cycle (Phase B), and cross-checks the two collections against each other (Phase C, v0.4.0). Challenge notes follow the `Q<N> (question-name):` prefix; cross-check notes follow the `CC<N> (question-name):` prefix. Model-level cross-check outcome lives in the `cross_check_status` wrapper field (`completed | skipped_asymmetric | not_run`). Degenerate scopes use the literal `(empty scope)` sentinel. Four mode markers — full (default, Phase A+B+C), cross-check-only (Phase C against a fenced YAML payload), scope-resolution (v0.7.0 — answer 'what does my task touch?': derive a bounded, disclosed ScopeResolution from a natural-language work task, optionally biased by a `near:` hint, emitting `in_scope` / `adjacent_excluded` / `scope_confidence` per templates/conceptual-pipeline-map.md, with the suspected failure direction — under-reach or over-reach — named when confidence is below high), and pipeline (v0.8.0+ — the full task-scoped build: resolve the bound, trace control flow into a ConceptualPipelineMap, build the architectural/domain collections within the bound, self-challenge pipeline stages through a flow-flavoured five-question cover plus a scope-relevance feedback loop, then at v0.9.0 run the three-way Phase C cross-check across all six directed pairs — reporting the arch↔domain outcome in `cross_check_status` and the pipeline's outcome in the new `pipeline_cross_check_status`). Returns a LegibilityModel as YAML in full / cross-check-only modes, a ScopeResolution YAML in scope-resolution mode, or two standalone YAML blocks (ConceptualPipelineMap + LegibilityModel) in pipeline mode; the dispatching command or human writes the file."
 tools: Read, Glob, Grep
 model: inherit
 ---
@@ -62,12 +62,12 @@ agent runs. Four modes are recognised at v0.8.0:
   `ConceptualPipelineMap` *and* builds the `architectural[]` / `domain[]`
   collections, then self-challenges every element — pipeline stages
   through a flow-flavoured five-question cover, architectural/domain
-  elements through the existing five-question cover. It emits **two
-  standalone fenced YAML blocks in one response** — a
-  `ConceptualPipelineMap` then a `LegibilityModel` (§Output). Phase C
-  **cross-check does not run** at v0.8.0 (it is P4): the `LegibilityModel`
-  carries `cross_check_status: not_run`. This is the mode the future
-  `/pipeline-map` command (P5) dispatches.
+  elements through the existing five-question cover. At v0.9.0 it then
+  runs **Phase C (three-way cross-check)** across all three collections
+  (§Phase C (pipeline)), and emits **two standalone fenced YAML blocks
+  in one response** — a `ConceptualPipelineMap` then a `LegibilityModel`
+  (§Output). This is the mode the future `/pipeline-map` command (P5)
+  dispatches.
 
 **An unrecognised mode value is a precondition violation.** Refuse
 with the structured refusal line below (no YAML emitted). Do not
@@ -229,7 +229,7 @@ failure *direction*** — under-reach ("may have missed needed files") or
 over-reach ("may be wider than the task touches") — per
 §Scope-resolution protocol.
 
-### In `mode: pipeline` — two standalone YAML blocks (v0.8.0)
+### In `mode: pipeline` — two standalone YAML blocks (v0.8.0+)
 
 A single markdown response carrying **two clearly-delimited, standalone
 fenced YAML blocks**, in this order:
@@ -237,31 +237,42 @@ fenced YAML blocks**, in this order:
 1. A **`ConceptualPipelineMap`** — the full map per
    `diagnostic-legibility/templates/conceptual-pipeline-map.md`: `task`,
    the (possibly trace-corrected) `scope_resolution`, `entry`, `stages`
-   (each with `Q<N>` flow-flavoured `challenge_notes`), `transitions`,
-   and provenance.
+   (each with `Q<N>` then `CC<N>` `challenge_notes`), `transitions`,
+   `pipeline_cross_check_status` (v0.9.0 — see below), and provenance.
 2. A **`LegibilityModel`** — per
    `diagnostic-legibility/templates/legibility-element.md`, with `scope`
    set to a short description of the **resolved bound** (e.g.
    `"task-scoped bound for: add a fraud-hold step"`),
-   `architectural[]` / `domain[]` each refined by Phase B, and
-   `cross_check_status: not_run` (Phase C is P4 — see below).
+   `architectural[]` / `domain[]` each refined by Phase B and Phase C,
+   and `cross_check_status` (the arch↔domain outcome — see below).
 
 Precede each block with a one-line label (`ConceptualPipelineMap:` and
 `LegibilityModel:`) so a dispatcher can split the response
 deterministically. The two are **separate models**, not a merged
 envelope: the map embeds neither collection (P1's decoupling), and the
 `LegibilityModel` knows nothing of the map. They travel together in one
-response because the P4 cross-check and the P5 render consume both from a
+response because the cross-check and the P5 render consume both from a
 single dispatch.
 
-**`cross_check_status: not_run` at v0.8.0.** Pipeline mode builds and
-self-challenges all three collections but **does not** run Phase C
-cross-check — that is P4. So the `LegibilityModel` honestly carries
-`cross_check_status: not_run` (the value reserved for "cross-check has
-not run"), and **no** `CC<N>` entries appear in any
-`challenge_notes[]`. This is the one place the v0.8.0 agent legitimately
-emits `not_run` (the `full`-mode prohibition on emitting `not_run` does
-not apply to pipeline mode, where cross-check is deliberately deferred).
+**Cross-check status — two scalars, one per model (v0.9.0).** Pipeline
+mode runs the three-way Phase C (§Phase C (pipeline)). The outcome is
+reported by **two independent fields**, preserving the v0.4.0 contract:
+
+- `LegibilityModel.cross_check_status` — the **arch↔domain** outcome,
+  with its **unchanged** v0.4.0 meaning (`completed` when both arch and
+  domain are non-empty and cross-checked; `skipped_asymmetric` when one
+  is empty). A consumer reading only this scalar (e.g. `/diagnose`) is
+  unaffected by the pipeline's presence.
+- `ConceptualPipelineMap.pipeline_cross_check_status` — the **pipeline's**
+  outcome against its peers (`completed` when cross-checked against ≥1
+  non-empty peer; `skipped_asymmetric` when the pipeline is non-empty but
+  has no non-empty peer, or is the `stages: []` empty-task map).
+
+`CC<N>` entries now appear on the subject element of each cross-checked
+pair (Phase B `Q<N>` entries still precede them in every
+`challenge_notes[]`). A producer that stops before Phase C (or any
+v0.8.0-era map) emits/omits `pipeline_cross_check_status: not_run` — the
+absence-means-`not_run` rule holds.
 
 ### `generated_at` and `generated_by` are dispatcher-filled
 
@@ -459,6 +470,49 @@ Re-frame adversarially, as in the Construction-protocol Phase B. Then:
   bound. This closes the loop between the *predicted* scope (P2) and the
   *traced* reality — the corrected `scope_resolution` is what the
   emitted map carries.
+
+### Phase C (pipeline) — three-way cross-check (v0.9.0)
+
+After Phase B refines all three collections individually, re-frame them
+as **three peers**, each able to challenge the others. This generalises
+the two-collection Phase C (§Phase C — Cross-check segment) from the
+`A↔D` pair to the **full six directed pairs** — the maximal cover chosen
+deliberately (the combinatorial token cost is the accepted price of
+maximal mutual correction). Run **all six**:
+
+| Pair | Subject | Weighted to catch (named failure mode) |
+| --- | --- | --- |
+| `A→D` | domain element | architectural-implicit assumption in domain description *(unchanged from v0.4.0)* |
+| `D→A` | architectural element | domain-concept smear in architectural element *(unchanged)* |
+| `P→A` | architectural element | **flow-contradicts-architecture** — an architectural element whose stated behaviour the pipeline's traced flow contradicts |
+| `A→P` | pipeline stage | **architecture-unbacked gate** — a stage whose `condition`/boundary assumes an architectural boundary the arch model does not commit to |
+| `P→D` | domain concept | **flow-mis-sequenced concept** — a domain concept the flow orders or stages in a way the domain model does not support |
+| `D→P` | pipeline stage | **concept-redefining label** — a stage whose `label` silently redefines a domain concept the domain model pins differently |
+
+Mechanics carry over from the two-collection Phase C **unchanged**:
+
+- **Same five cross-check questions** (`CC1 (boundary contradiction):` …
+  `CC5 (mutual description integrity):`), now applied across the new
+  pairs with the direction-flavoured weighting above. Same canonical
+  `CC<N> (question-name):` prefix; same `Cross-check applied; no
+  questions surfaced changes` per-subject clean-run sentinel.
+- **Subject-only audit trail.** A `CC<N>` entry is written on the
+  **subject** element of the pair only (the right-hand "Subject" column
+  above). When a cross-check against subject X surfaces a revision in a
+  sibling Y in another collection, revise Y's Phase A/B fields but **do
+  not** append a `CC<N>` to Y — name the side-effect in X's prose. One
+  author per entry; the audit trail stays a graph rooted at subjects,
+  now over three collections.
+- **Q-before-CC ordering** holds in every `challenge_notes[]` (pipeline
+  stages included): all `Q<N>` entries precede all `CC<N>` entries;
+  re-order in place at emit time if needed.
+
+**Status.** Set the two scalars per §Output / the template's
+§Cross-check status: `LegibilityModel.cross_check_status` for the
+arch↔domain outcome (its v0.4.0 meaning, unchanged) and
+`ConceptualPipelineMap.pipeline_cross_check_status` for the pipeline's
+outcome. If a collection is empty, the pairs touching it do not run and
+the affected scalar is `skipped_asymmetric` per the template's rules.
 
 ## Construction protocol
 
@@ -997,10 +1051,26 @@ before emitting.
   wander.
 
 - **Multiple pipelines in one map (pipeline mode)** — tracing several
-  independent processes into one map. v0.8.0 traces **one dominant
+  independent processes into one map. Pipeline mode traces **one dominant
   pipeline per task**; a second independent flow is out of scope.
 
-- **Running cross-check in pipeline mode (pipeline mode)** — emitting
-  `CC<N>` entries or a non-`not_run` `cross_check_status` from
-  `mode: pipeline`. Phase C is P4; at v0.8.0 pipeline mode self-challenges
-  (`Q<N>`) only and emits `cross_check_status: not_run`.
+- **Trimming a directed pair (pipeline Phase C, v0.9.0)** — skipping one
+  of the six directed pairs because it "rarely fires". The maximal cover
+  is the deliberate design (diaboli O10); all six run when their
+  collections are non-empty. A pair is skipped **only** when one of its
+  collections is empty (recorded via the `skipped_asymmetric` status),
+  never to save tokens.
+
+- **Conflating the two cross-check scalars (pipeline Phase C, v0.9.0)** —
+  writing the pipeline's outcome into `cross_check_status` or the
+  arch↔domain outcome into `pipeline_cross_check_status`.
+  `cross_check_status` (on the `LegibilityModel`) keeps its **unchanged**
+  v0.4.0 meaning — the arch↔domain pair only; the pipeline's outcome
+  lives in `pipeline_cross_check_status` (on the `ConceptualPipelineMap`).
+  Two models, two self-describing scalars.
+
+- **Bidirectional CC writes across three collections (pipeline Phase C)**
+  — appending a `CC<N>` to a sibling in another collection when the
+  cross-check subject was elsewhere. The entry goes on the **subject**
+  only (the pair's Subject column); the side-effect is named in the
+  subject's prose. Three collections do not license a second write path.
