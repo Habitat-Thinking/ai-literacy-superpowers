@@ -1,10 +1,12 @@
 """Layer 1 structural tests for the diagnostic-legibility plugin at
-v0.3.0 / v0.4.0 / v0.5.0 / v0.6.0.
+v0.3.0 / v0.4.0 / v0.5.0 / v0.6.0 / v0.7.0.
 
 Sub-S2b shipped the working `diagnostic-legibility` agent (v0.3.0); S3
 shipped the cross-check (v0.4.0); S4 shipped the human-facing `/diagnose`
-command (v0.5.0); P1 of the pipeline-map feature ships the standalone
-`ConceptualPipelineMap` data-model template (v0.6.0). These are
+command (v0.5.0); P1 of the pipeline-map feature shipped the standalone
+`ConceptualPipelineMap` data-model template (v0.6.0); P2 adds the
+front-of-pipeline `mode: scope-resolution` capability — derive a bounded,
+disclosed `ScopeResolution` from a work task (v0.7.0). These are
 deterministic, file-shape assertions — the agent's and command's
 behavioural contracts are covered by their specs as acceptance
 documentation rather than executable tests.
@@ -64,12 +66,12 @@ def repo_root() -> Path:
 
 @pytest.mark.structural
 class TestDiagnosticLegibilityVersioning:
-    """The P1 plugin version bump from 0.5.0 to 0.6.0 must land in
+    """The P2 plugin version bump from 0.6.0 to 0.7.0 must land in
     lockstep across plugin.json, marketplace.json's per-plugin entry,
-    and the CHANGELOG heading. A new schema/data-model template is a
-    behavioural plugin addition (the S2a precedent shipped the
-    `LegibilityElement` schema as the v0.2.0 minor bump), so P1 takes a
-    minor bump.
+    and the CHANGELOG heading. A new agent capability (the
+    `mode: scope-resolution` front-of-pipeline behaviour) is a
+    behavioural plugin change, so P2 takes a minor bump (P1 took the
+    same for the new template; S2a/S3 precedent).
 
     The marketplace listing's top-level `version` (0.4.0) and its
     `plugin_version` pointer are explicitly unchanged by this slice —
@@ -77,7 +79,7 @@ class TestDiagnosticLegibilityVersioning:
     taking `plugin_version` from main verbatim at rebase time.
     """
 
-    def test_plugin_json_at_0_6_0(
+    def test_plugin_json_at_0_7_0(
         self, diagnostic_legibility_path: Path
     ) -> None:
         manifest_path = (
@@ -86,13 +88,13 @@ class TestDiagnosticLegibilityVersioning:
             / "plugin.json"
         )
         manifest = json.loads(manifest_path.read_text())
-        assert manifest["version"] == "0.6.0", (
+        assert manifest["version"] == "0.7.0", (
             "diagnostic-legibility/.claude-plugin/plugin.json must "
-            "carry version '0.6.0' (was '0.5.0' at S4). "
+            "carry version '0.7.0' (was '0.6.0' at P1). "
             f"Actual: {manifest['version']!r}"
         )
 
-    def test_marketplace_entry_at_0_6_0(self, repo_root: Path) -> None:
+    def test_marketplace_entry_at_0_7_0(self, repo_root: Path) -> None:
         marketplace_path = (
             repo_root / ".claude-plugin" / "marketplace.json"
         )
@@ -108,9 +110,9 @@ class TestDiagnosticLegibilityVersioning:
         assert entry is not None, (
             "No diagnostic-legibility entry in marketplace.json plugins[]"
         )
-        assert entry["version"] == "0.6.0", (
+        assert entry["version"] == "0.7.0", (
             "marketplace.json diagnostic-legibility entry must be at "
-            f"'0.6.0' (was '0.5.0' at S4). Actual: {entry['version']!r}"
+            f"'0.7.0' (was '0.6.0' at P1). Actual: {entry['version']!r}"
         )
 
     def test_marketplace_top_level_version_unchanged(
@@ -158,30 +160,34 @@ class TestDiagnosticLegibilityVersioning:
             "does not own (per spec §9)."
         )
 
-    def test_changelog_has_0_6_0_heading(
+    def test_changelog_has_0_7_0_heading(
         self, diagnostic_legibility_path: Path
     ) -> None:
+        changelog = (
+            diagnostic_legibility_path / "CHANGELOG.md"
+        ).read_text()
+        assert "## 0.7.0 — 2026-06-15" in changelog, (
+            "CHANGELOG.md must contain a `## 0.7.0 — 2026-06-15` heading "
+            "naming the P2 scope-resolution capability. Note: the dash "
+            "is the em-dash (U+2014), matching the format enforced by "
+            "the version-consistency CI check."
+        )
+
+    def test_changelog_prior_headings_persist(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Audit trail: the prior v0.6.0 (P1 template) and v0.5.0 (S4
+        `/diagnose`) headings must remain when v0.7.0 is prepended."""
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
         assert "## 0.6.0 — 2026-06-14" in changelog, (
-            "CHANGELOG.md must contain a `## 0.6.0 — 2026-06-14` heading "
-            "naming the P1 ConceptualPipelineMap template. Note: the "
-            "dash is the em-dash (U+2014), matching the format enforced "
-            "by the version-consistency CI check."
+            "Prior `## 0.6.0 — 2026-06-14` heading must persist as the "
+            "CHANGELOG audit trail when v0.7.0 is added."
         )
-
-    def test_changelog_0_5_0_heading_persists(
-        self, diagnostic_legibility_path: Path
-    ) -> None:
-        """Audit trail: the prior v0.5.0 heading (S4 `/diagnose`) must
-        remain in the file when the new v0.6.0 heading is prepended."""
-        changelog = (
-            diagnostic_legibility_path / "CHANGELOG.md"
-        ).read_text()
         assert "## 0.5.0 — 2026-06-01" in changelog, (
             "Prior `## 0.5.0 — 2026-06-01` heading must persist as the "
-            "CHANGELOG audit trail when v0.6.0 is added."
+            "CHANGELOG audit trail when v0.7.0 is added."
         )
 
     def test_changelog_references_followup_issues(
@@ -1576,4 +1582,258 @@ class TestConceptualPipelineMapTemplate:
         assert "<DISPATCHER:" in body, (
             "Template must use the `<DISPATCHER: ...>` placeholder "
             "convention for the provenance fields the dispatcher fills."
+        )
+
+
+# ---------------------------------------------------------------------
+# Scope-resolution mode (P2, v0.7.0)
+# ---------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestDiagnosticLegibilityScopeResolution:
+    """P2 adds the front-of-pipeline `mode: scope-resolution` capability
+    to the diagnostic-legibility agent: take a natural-language work task
+    (optionally biased by a `near:` hint) and emit a bounded, disclosed
+    `ScopeResolution` — the 'what does my task touch?' surface — rather
+    than a `LegibilityModel`. These are deterministic, file-shape
+    assertions over the agent file's static text and frontmatter. The
+    behavioural contract (a live dispatch actually resolving a real task
+    to a sound bound) is covered by spec §5 as acceptance documentation
+    and by the P2 hand-validation acceptance step, not as an executable
+    Layer-1 test.
+
+    Spec reference:
+        docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md (§3, §5)
+    """
+
+    def _agent_body(self, diagnostic_legibility_path: Path) -> str:
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        return agent_file.read_text()
+
+    # -- discovery surface (the frontmatter description) --------------
+
+    def test_description_names_scope_resolution_mode(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The description is what the skill matcher reads. It must name
+        the new `mode: scope-resolution` and the `ScopeResolution`
+        artefact so invocations route to it, and surface the
+        failure-direction disclosure contract."""
+        component = plugin_runner.find_component(
+            diagnostic_legibility_path,
+            name="diagnostic-legibility",
+            component_type="agent",
+        )
+        description = component.frontmatter.get("description") or ""
+        assert "scope-resolution" in description, (
+            "Agent description must name the `scope-resolution` mode "
+            "(spec §5). "
+            f"Actual: {description!r}"
+        )
+        assert "ScopeResolution" in description, (
+            "Agent description must name the `ScopeResolution` artefact "
+            "the scope-resolution mode emits."
+        )
+
+    # -- mode marker plumbing ----------------------------------------
+
+    def test_body_declares_three_modes(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The Inputs section must name `mode: scope-resolution` as a
+        third recognised mode alongside full and cross-check-only."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "mode: scope-resolution" in body, (
+            "Agent body must name the `mode: scope-resolution` marker."
+        )
+        assert "mode: full" in body and "mode: cross-check-only" in body, (
+            "Agent body must still name the prior two modes."
+        )
+
+    def test_unrecognised_mode_refusal_lists_scope_resolution(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The unrecognised-mode refusal example must list
+        `scope-resolution` among the legal values, so the structured
+        refusal stays accurate for programmatic dispatchers."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert (
+            "'full', 'cross-check-only', or 'scope-resolution'" in body
+        ), (
+            "The unrecognised-mode refusal example must enumerate all "
+            "three legal mode values including 'scope-resolution'."
+        )
+
+    # -- inputs: task (required) and near (biases, not bounds) -------
+
+    def test_body_documents_task_and_near_inputs(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """scope-resolution takes a required `task:` and an optional
+        `near:` hint that BIASES but does not BOUND the search
+        (spec §7.1 / diaboli O3)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "`task`" in body or "`task:`" in body, (
+            "Agent body must document the required `task` input."
+        )
+        assert "`near`" in body or "`near:`" in body, (
+            "Agent body must document the optional `near` hint input."
+        )
+        assert "biases" in body and "does not bound it" in body, (
+            "Agent body must state that `near` biases but does not bound "
+            "the search (spec §7.1 / diaboli O3) — e.g. the anti-pattern "
+            "'biases the search; it does not bound it'."
+        )
+
+    # -- the protocol ------------------------------------------------
+
+    def test_body_has_scope_resolution_protocol(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """A dedicated protocol section must describe the four-step
+        relevance-scoping behaviour (spec §5)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "Scope-resolution protocol" in body, (
+            "Agent body must carry a `Scope-resolution protocol` section."
+        )
+        # The four steps' verbs.
+        for cue in (
+            "Interpret the task intent",
+            "Locate implicated code",
+            "Bound the slice",
+            "Disclose",
+        ):
+            assert cue in body, (
+                f"Scope-resolution protocol must name the step {cue!r} "
+                "(spec §5)."
+            )
+
+    def test_body_names_failure_directions(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The honesty contract: below `high` confidence the producer
+        must name the suspected failure DIRECTION — under-reach or
+        over-reach (spec §3.2 / diaboli O4). A single scalar cannot say
+        which way an uncertain bound failed."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "under-reach" in body, (
+            "Agent body must name the `under-reach` failure direction "
+            "(spec §3.2)."
+        )
+        assert "over-reach" in body, (
+            "Agent body must name the `over-reach` failure direction "
+            "(spec §3.2)."
+        )
+
+    def test_body_documents_disclosure_fields(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The ScopeResolution disclosure surface: in_scope,
+        adjacent_excluded (the load-bearing honesty field, never
+        omitted), scope_confidence."""
+        body = self._agent_body(diagnostic_legibility_path)
+        for field in ("in_scope", "adjacent_excluded", "scope_confidence"):
+            assert field in body, (
+                f"Agent body must document the ScopeResolution field "
+                f"{field!r}."
+            )
+
+    def test_body_documents_empty_task_contract(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """A well-formed task that resolves to no process is an honest
+        empty result (in_scope: [] + scope_confidence: low), NOT a
+        refusal; refuse only when `task:` is missing/empty (spec §4.3
+        empty-task analogue)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "empty-task contract" in body.lower() or (
+            "empty-task" in body.lower()
+        ), (
+            "Agent body must document the empty-task contract for "
+            "scope-resolution mode."
+        )
+        assert "in_scope: []" in body, (
+            "Agent body must show the empty-task shape `in_scope: []`."
+        )
+        # The missing-task refusal example.
+        assert (
+            "scope-resolution mode requires a non-empty task" in body
+        ), (
+            "Agent body must carry the missing/empty-task refusal "
+            "example for scope-resolution mode."
+        )
+
+    # -- output shape divergence -------------------------------------
+
+    def test_body_states_output_is_scoperesolution_not_model(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """In scope-resolution mode the output is a ScopeResolution, NOT
+        a LegibilityModel and NOT a full ConceptualPipelineMap (no
+        stages/transitions — no flow traced at v0.7.0). The mode's
+        divergent output shape must be stated explicitly so consumers do
+        not expect a LegibilityModel."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "conceptual-pipeline-map.md" in body, (
+            "Agent body must reference the conceptual-pipeline-map.md "
+            "template as the home of the ScopeResolution contract."
+        )
+        # The divergence is stated near the scope-resolution output.
+        assert "not a `LegibilityModel`" in body or (
+            "*not* a `LegibilityModel`" in body
+        ), (
+            "Agent body must state that scope-resolution output is NOT a "
+            "LegibilityModel."
+        )
+
+    # -- read-only boundary unchanged --------------------------------
+
+    def test_scope_resolution_keeps_read_only_boundary(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Resolving scope is more reading, not more capability — the
+        Read/Glob/Grep boundary is unchanged (spec §5). Re-assert the
+        tool boundary holds with the new mode present."""
+        component = plugin_runner.find_component(
+            diagnostic_legibility_path,
+            name="diagnostic-legibility",
+            component_type="agent",
+        )
+        tools_raw = component.frontmatter.get("tools", "")
+        if isinstance(tools_raw, list):
+            tools = {t.strip() for t in tools_raw}
+        else:
+            tools = {t.strip() for t in str(tools_raw).split(",")}
+        for required in ("Read", "Glob", "Grep"):
+            assert required in tools, (
+                f"Agent tools must include {required!r}."
+            )
+        for forbidden in ("Write", "Edit", "Bash"):
+            assert forbidden not in tools, (
+                f"Agent tools must NOT include {forbidden!r} — "
+                "scope-resolution is more reading, not more capability "
+                "(spec §5)."
+            )
+
+    # -- anti-patterns (the failure modes the protocol guards) -------
+
+    def test_body_names_scope_resolution_anti_patterns(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The Anti-patterns section must name the scope-resolution
+        failure modes: silent boundary, near-as-hard-bound, and
+        change-site prediction (the deferred follow-on #368)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "silent boundary" in low, (
+            "Anti-patterns must name the `silent boundary` failure mode."
+        )
+        assert "#368" in body, (
+            "Anti-patterns must reference #368 — change-site prediction "
+            "is a deferred follow-on, not part of v0.7.0 scope-resolution."
         )

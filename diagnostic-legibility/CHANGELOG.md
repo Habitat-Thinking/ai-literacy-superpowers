@@ -1,5 +1,77 @@
 # Changelog
 
+## 0.7.0 — 2026-06-15
+
+### Task → bounded scope resolution (pipeline-map P2)
+
+Adds the **front-of-pipeline** `mode: scope-resolution` capability to the
+`diagnostic-legibility` agent — slice P2 of the task-scoped pipeline-map
+feature (#363–#367). The agent gains a third mode that **inverts the
+scoping direction**: instead of inspecting a code scope the human hands
+it, it takes a natural-language **work task** a developer is considering
+and **derives** the bounded slice of the system that task touches,
+answering *"what does my task touch?"* This is the first human-visible
+slice of the pipeline-map feature, surfaced via bare-Task agent dispatch
+(mirroring sub-S2b); the full `/pipeline-map` command and the rendered
+map are later slices (P5).
+
+- **New mode `scope-resolution`** alongside `full` and
+  `cross-check-only`. Inputs: a required `task:` and an optional `near:`
+  hint. It runs no Phase A/B/C, builds no `LegibilityModel`, and traces
+  no flow — it emits a **`ScopeResolution`** YAML (`task`,
+  `scope_resolution` with `in_scope` / `adjacent_excluded` /
+  `scope_confidence`, provenance) per the `conceptual-pipeline-map.md`
+  template. This is the one mode whose output shape differs from
+  `LegibilityModel`.
+- **`near:` biases, does not bound** (diaboli O3). The hint is a strong
+  starting prior; the agent may resolve the true touched process outside
+  it and records any out-of-hint inclusion with its reason. A wrong hint
+  cannot silently exclude the real process.
+- **Derived-scope honesty contract** (diaboli O4). Because a derived
+  bound is a prediction that can under- or over-reach, `adjacent_excluded`
+  (the boundary the agent chose) is never omitted, and **when
+  `scope_confidence` is below `high` the agent names the suspected failure
+  *direction*** — `under-reach` ("may have missed needed files") or
+  `over-reach` ("may be wider than the task touches") — since a bare
+  scalar cannot say which way an uncertain bound failed.
+- **Limiting policy**: the directly-touched process plus one hop of
+  upstream/downstream context, context entries marked distinctly in their
+  `reason` — limited, but not stranded.
+- **Empty-task contract**: a well-formed task that resolves to no process
+  is an honest empty result (`in_scope: []`, `scope_confidence: low`,
+  reasons explaining the empty match), **not** a refusal; the agent
+  refuses only when `task:` itself is missing or empty (a malformed
+  dispatch).
+- **New anti-patterns**: silent boundary, treating `near:` as a hard
+  bound, and predicting the change site instead of the touched scope
+  (change-site prediction is the deferred follow-on #368).
+- **Read-only boundary unchanged** (`Read`, `Glob`, `Grep`) — resolving
+  scope is more reading, not more capability.
+
+Deterministic Layer-1 structural tests guard the new mode's contract
+(`tdad_tests/tests/test_diagnostic_legibility_structural.py`,
+`TestDiagnosticLegibilityScopeResolution`). New how-to page
+`docs/plugins/diagnostic-legibility/how-to/resolve-task-scope.md`
+documents the surface.
+
+**Acceptance gate (spec §3.1).** P2 is the load-bearing relevance bet;
+before P3 traces flow inside the bound, the scope-resolution surface is
+hand-validated against a handful of worked tasks on a real repo. The
+gate is a human acceptance step, not an automated check.
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md` (§3, §5);
+slicing record `docs/superpowers/slices/diagnostic-legibility-pipeline-map.md`
+(P2); spec-mode diaboli `docs/superpowers/objections/dl-pipeline-map-design.md`
+(O1 the relevance bet, O3 `near`, O4 failure direction).
+
+**Marketplace**: the `diagnostic-legibility` listing entry version bumps
+0.6.0 → 0.7.0 and its `description` gains a clause naming the new mode;
+the top-level listing `version` and `plugin_version` are unchanged.
+
+P2 of the pipeline-map slicing record. Closes issue #364; parent feature
+(#363–#367) continues with P3.
+
 ## 0.6.0 — 2026-06-14
 
 ### ConceptualPipelineMap data model (pipeline-map P1)
