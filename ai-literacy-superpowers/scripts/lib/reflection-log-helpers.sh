@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 # reflection-log-helpers.sh
 #
-# Shared helpers for reflection-log archival scripts.
-# Sourced by archive-promoted-reflections.sh, migrate-reflection-log.sh,
+# Shared helpers for reflection-log archival scripts (sourced by
+# archive-promoted-reflections.sh, migrate-reflection-log.sh,
 # regenerate-reflection-log.sh, split-reflection-log.sh, and read-side
-# filtering callers.
-#
-# Storage model (see docs/superpowers/specs/
-# 2026-06-15-reflection-fragments-migration-design.md):
-#   - SOURCE OF TRUTH = per-entry fragments in reflections/active/<date>-<slug>.md,
-#     one entry body per file, no leading `---` separator.
+# callers). See the storage-model and function notes below the strict-mode
+# line.
+
+set -euo pipefail
+
+# Storage model (spec 2026-06-15-reflection-fragments-migration-design.md):
+#   - SOURCE OF TRUTH = per-entry fragments in
+#     reflections/active/<date>-<slug>.md, one entry body per file, no
+#     leading `---` separator.
 #   - GENERATED VIEW  = REFLECTION_LOG.md, a deterministic, committed,
 #     union-merged aggregate regenerated from the active fragments.
 # Readers consume the aggregate; writers write fragments and regenerate.
@@ -24,8 +27,6 @@
 # - fragment_paths [active-dir]   → list fragment files in Date-then-name order
 # - default_reflection_header     → print the canonical aggregate header
 # - regenerate_log [active] [out] → rewrite the aggregate from fragments
-
-set -euo pipefail
 
 # split_entries: emit log entries one at a time, separated by `---ENTRY---`
 # markers (so callers can iterate without running awk per call).
