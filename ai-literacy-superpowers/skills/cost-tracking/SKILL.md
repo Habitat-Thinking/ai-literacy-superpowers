@@ -77,6 +77,7 @@ Each file records one capture session (typically quarterly).
 ## Observations
 
 - [Any patterns noticed — cost spikes, model tier shifts, etc.]
+- Cost-estimate grounding: grounds | proxied (<absent tier(s)>) | omitted (no estimating-tier family) | omitted (no per-model breakdown)
 
 ## Budget Status
 
@@ -85,6 +86,27 @@ Each file records one capture session (typically quarterly).
 - Trend: increasing / stable / decreasing
 - Action needed: yes / no
 ```
+
+### Estimating-tier coverage and the `cost-estimation` sibling
+
+A captured snapshot's **Model Breakdown coverage** determines whether the
+prospective `cost-estimation` sibling can ground a dollar figure. The
+estimator binds its routing tiers to **model families** by stem
+(`claude-opus-4` → Most capable, `claude-sonnet-4` → Standard; see the
+`cost-estimation` binding table). So:
+
+- a breakdown containing an opus-4 **and** a sonnet-4 family row grounds
+  estimates directly;
+- a breakdown with only one of them grounds, but **proxies** the absent
+  tier (a disclosed over-estimate);
+- a breakdown with **neither** (e.g. only a `claude-haiku-4` row — a valid
+  breakdown entry, but Haiku is **not** an estimating tier) means estimates
+  **omit** cost; and a snapshot with no Model Breakdown at all omits for a
+  structural reason.
+
+`/cost-capture` reports which of these applies at capture time and records
+it in the `Cost-estimate grounding:` Observations line above, so the gap is
+visible when a human can act on it — not discovered estimate-by-estimate.
 
 ## Process
 

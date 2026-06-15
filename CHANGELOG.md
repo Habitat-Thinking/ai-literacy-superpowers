@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.51.0 — 2026-06-15
+
+### cost-capture: capture-time binding-gap advisory (#413)
+
+`/cost-capture` now tells the human, **at capture time**, whether the
+prospective `cost-estimation` sibling will be able to ground a dollar
+figure against the snapshot just written — closing the binding-gap
+feedback loop one step earlier than the per-estimate discovery #411
+suffered.
+
+- **Informational, never a gate.** A new advisory step (after structural
+  validation, before commit) emits no pass/fail token, never alters the
+  snapshot's cost data, and runs regardless of the validation result. A
+  thin snapshot remains a perfectly valid cost snapshot.
+- **A thin family-presence check, not a pricing re-run.** It applies the
+  `cost-estimation` binding table's family-stem + delimiter rule **by
+  reference** to detect which estimating-tier families (`claude-opus-4` /
+  `claude-sonnet-4`) are present — it does **not** re-implement
+  aggregation, rate derivation, or proxy selection (those stay
+  estimator-only, so there is no second copy of the pricing logic).
+- **A structured, checkable artefact.** The outcome is recorded as a
+  `Cost-estimate grounding:` line in the snapshot's `## Observations`
+  (and echoed in the capture summary): `grounds` / `proxied (<absent
+  tiers>)` / `omitted (no estimating-tier family)` / `omitted (no
+  per-model breakdown)` — so the advisory is falsifiable and a consumer
+  can corroborate it.
+- **Conditional, honest wording.** Proxy advisories are conditioned on a
+  future target *exercising* the absent tier; the no-estimating-family
+  case is the unconditional "will omit". The advisory distinguishes
+  *thin because data wasn't recorded* (actionable) from *thin because the
+  period genuinely used only some tiers* (not a defect) and **never**
+  nudges fabricating a model row for spend that did not occur.
+
+Touches `commands/cost-capture.md` and `skills/cost-tracking/SKILL.md`
+(the snapshot format gains the `Cost-estimate grounding:` Observations
+line and an estimating-tier-coverage pointer). Pure consumer of the
+v0.50.0 family-stem rule — no binding, proxy, or format-field change.
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-15-cost-capture-binding-gap-warning-design.md`;
+spec-mode diaboli at
+`docs/superpowers/objections/cost-capture-binding-gap-warning-design.md`
+(10 objections — 3 high — all accepted; the highs reshaped it to a thin
+presence check writing a structured, falsifiable line). Closes #413; the
+stem-table-maintenance sibling is #414.
+
 ## 0.50.0 — 2026-06-15
 
 ### cost-estimation: tier→model family matching + disclosed cross-tier proxy (#411)
