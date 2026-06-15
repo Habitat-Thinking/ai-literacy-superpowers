@@ -1,9 +1,9 @@
 ---
 name: pipeline-map
-description: Render the task-scoped conceptual pipeline map for a work task you are considering. /pipeline-map "<task>" drives the diagnostic-legibility agent in mode:pipeline (resolve bound → trace flow → three-way cross-check) and renders the bounded pipeline as a self-contained HTML flowchart (vendored, SHA-pinned Mermaid inlined; no CDN), with a scope-resolution panel, a node-detail table, and a no-JS plain-text fallback.
+description: Render the task-scoped conceptual pipeline map for a work task you are considering. /pipeline-map "<task>" drives the diagnostic-legibility agent in mode:pipeline (resolve bound → trace flow → three-way cross-check) and renders the bounded pipeline as a self-contained HTML flowchart (vendored, SHA-pinned Mermaid inlined; no CDN), with a scope-resolution panel, a node-detail table, and a no-JS plain-text fallback. Add --predict-change to also predict which stages the task will modify and where it will insert new ones (mode:change-prediction), highlighted as disclosed predictions (never directives) with a predicted-change-sites panel.
 ---
 
-# /pipeline-map "\<task\>" [--near \<path\>] [--out \<dir\>]
+# /pipeline-map "\<task\>" [--near \<path\>] [--out \<dir\>] [--predict-change]
 
 `/pipeline-map` is the human-facing surface for the task-scoped
 conceptual pipeline map. A developer states the **work they are
@@ -25,7 +25,7 @@ agent's `scope-resolution`, `full`, and `cross-check-only` modes are
 ## Usage
 
 ```text
-/pipeline-map "<task>" [--near <path>] [--out <dir>]
+/pipeline-map "<task>" [--near <path>] [--out <dir>] [--predict-change]
 ```
 
 - `"<task>"` — **required** positional. A natural-language description of
@@ -39,6 +39,15 @@ agent's `scope-resolution`, `full`, and `cross-check-only` modes are
   `near:` line.
 - `--out <dir>` — **optional** directory override for where the HTML is
   written. The filename convention still applies beneath it.
+- `--predict-change` — **optional** flag. When present, the command
+  dispatches **`mode: change-prediction`** instead of `mode: pipeline`,
+  so the map additionally **predicts which stages the task will *modify*
+  and where it will *insert* new stages** (distinct from which it
+  *touches*), and the render highlights those predicted sites and adds a
+  predicted-change-sites panel. Without it, behaviour is exactly as
+  before — no prediction, no panel, no highlight. The prediction is a
+  disclosed *prediction*, never a directive (see §The predicted-change
+  surface).
 
 There are no subcommands — `/pipeline-map` is a single verb.
 
@@ -54,15 +63,23 @@ single Write (step 9).
    agent dispatch, no fetch, no file written.
 2. **`--near <path>`** — optional hint.
 3. **`--out <dir>`** — optional directory override.
+4. **`--predict-change`** — optional boolean flag. When present, the
+   dispatch mode (step 2) is `change-prediction` and the render (step 6)
+   gains the predicted-change surface.
 
-### 2. Dispatch the agent in `mode: pipeline`
+### 2. Dispatch the agent (`mode: pipeline`, or `change-prediction` with `--predict-change`)
 
 Dispatch the `diagnostic-legibility` agent via the `Task` tool:
 
 - `subagent_type`: `diagnostic-legibility`
 - `description`: a short imperative, e.g. `"Map the fraud-hold task"`
-- `prompt`: first line `mode: pipeline`, then `task: <task>` (verbatim),
+- `prompt`: first line `mode: change-prediction` **if `--predict-change`
+  was supplied**, else `mode: pipeline`; then `task: <task>` (verbatim),
   then `near: <path>` **only if** `--near` was supplied.
+
+In `change-prediction` mode the returned `ConceptualPipelineMap`
+additionally carries a `change_prediction` block; everything else about
+the two-block response is identical.
 
 The agent returns **one of**:
 
@@ -226,6 +243,16 @@ check — referencing the model, **fixing structural deviations in place**,
    reserved live legend (O12).
 8. **Counts consistent** — header stage count matches the rendered nodes,
    the detail-table rows, and the parsed YAML.
+9. **Predicted-change surface (only when `--predict-change`)** — the
+   predicted-change-sites panel is present and consistent with
+   `change_prediction`; every `modify` `target` and `insert` `anchor`
+   references a rendered `stage.id` **that is in the scope panel's
+   in-scope set**; `change_direction` is present and rendered when
+   `change_confidence < high`; each highlighted node carries the
+   "predicted" badge and the legend keys the highlight to "prediction,
+   not instruction"; and **no imperative/directive phrasing** ("edit X",
+   "you must/should") appears in the panel or banner. (Skipped entirely
+   when the flag is absent — no `change_prediction` is expected.)
 
 If the YAML cannot be parsed at all (malformed, not a refusal), surface
 the failure and abort without writing a partial report. The checkpoint is
@@ -248,6 +275,36 @@ Runs only after the human accepts at step 8 — a real pre-write
 disposition (agent-emit + dispatcher-persist + human-disposes), never a
 post-hoc read of an already-written file.
 
+## The predicted-change surface (`--predict-change`)
+
+When `--predict-change` is set, the render projects the map's
+`change_prediction` block (renderer-derived; the model stores no styling)
+**as a prediction, never a directive** — the framing lives at the point of
+emphasis, not only in a banner:
+
+- **Highlighted sites with a per-node "predicted" badge.** A
+  `classDef change-site` styles each `modify` `target` stage, and a marked
+  insertion indicator sits at each `insert` `anchor`+`position`. Every
+  highlighted node carries a small **"predicted"** badge so the colour is
+  never read as a bare instruction.
+- **Legend entry.** The legend keys the change-site highlight to
+  **"predicted edit site — a prediction, not an instruction"**.
+- **A "Predicted change sites" panel** listing each site (`kind`,
+  `target` or `anchor`+`position`, `reason`, `evidence`),
+  `change_confidence`, and — when confidence < `high` — the
+  `change_direction` (over-/under-prediction). Each site is phrased as
+  "the task **likely** edits …" / "**likely** inserts … after …", never
+  "edit …".
+- **Flagged in the outline and detail table.** The `<noscript>` outline
+  and the stage-detail table mark which stages are predicted change sites
+  (and note insert anchors).
+- **Banner.** The structural banner additionally states the change sites
+  are **predictions, not directives**.
+
+The panel sits beside the scope-resolution panel; because every predicted
+`target`/`anchor` is in the in-scope set (agent contract), the two panels
+never contradict each other.
+
 ## Conversation summary
 
 ```text
@@ -256,15 +313,16 @@ Pipeline map ready to write: <resolved target path>
 Task: <task>
 Scope confidence: <low | medium | high>   In-scope: <N>   Adjacent-excluded: <M>
 Stages: <S>   pipeline_cross_check_status: <status>   cross_check_status: <status>
+Predicted change sites: <P> (<change_confidence>, <change_direction>)   # only with --predict-change
 Mermaid: mermaid@<version> (SHA-256 verified, inlined; no CDN)
 Write this map? (accept / abort)
 ```
 
 ## See also
 
-- The agent: `diagnostic-legibility/agents/diagnostic-legibility.agent.md` (`mode: pipeline`)
+- The agent: `diagnostic-legibility/agents/diagnostic-legibility.agent.md` (`mode: pipeline`, `mode: change-prediction`)
 - The model: `diagnostic-legibility/templates/conceptual-pipeline-map.md`
 - Mermaid vendoring manifest: `diagnostic-legibility/assets/mermaid-vendor.md`
 - How-to: `docs/plugins/diagnostic-legibility/how-to/run-the-pipeline-map-command.md`
 - Reference: `docs/plugins/diagnostic-legibility/reference/pipeline-map-command.md`
-- Design spec: `docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md` (§7)
+- Design spec: `docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md` (§7); change-site prediction `docs/superpowers/specs/2026-06-15-dl-change-site-prediction-design.md`

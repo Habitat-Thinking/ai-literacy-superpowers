@@ -1,5 +1,71 @@
 # Changelog
 
+## 0.11.0 — 2026-06-15
+
+### Change-site prediction (#368)
+
+Adds an **opt-in** capability over the task-scoped pipeline map: predict
+**which pipeline stages a task will modify** and **where it will insert
+new stages** — distinct from which slice it *touches* (#368, the follow-on
+deferred from the P1–P5 pipeline-map feature). It ships as a new
+`mode: change-prediction` and a `/pipeline-map --predict-change` flag;
+`mode: pipeline` and the default `/pipeline-map` are **unchanged**.
+
+- **Model** — an additive optional `change_prediction` block on the
+  `ConceptualPipelineMap` wrapper: `predicted_sites[]` (`kind: modify`
+  with a `target` stage.id, or `kind: insert` with a typed
+  `anchor`+`position`; each with a `reason` and `evidence`),
+  `change_confidence` (the **minimum** over sites), and a structured
+  `change_direction` (`over-prediction | under-prediction`). Absence ⇒
+  "not run" (back-compat; every v0.10.0 map is still valid). Closes the
+  pipeline-map spec §9.2.3 `task_relevance` open question — the wrapper
+  block is the single representation; no per-stage marker.
+- **Agent** — a fifth mode `change-prediction`, a superset of `pipeline`:
+  it runs the full pipeline build (resolve → trace → cross-check) **then**
+  a change-prediction pass that populates `change_prediction`. The mode
+  enumeration, refusal examples, inputs, output, and frontmatter
+  description all move in lockstep (so the agent never refuses its own new
+  mode).
+- **The honesty contract** (the load-bearing part — predicting future
+  human action is easier to assert with false confidence than verifiable
+  scope): it **predicts, never directs** (no imperatives); `modify` vs
+  `insert` is a **best-judgement** label that may be wrong (no "never
+  conflated" guarantee); the failure direction lives in the **structured**
+  `change_direction` field (present even for an empty prediction); targets
+  must be **in `scope_resolution.in_scope`** (an out-of-scope need is an
+  under-reach correction fed back to scope, never a contradiction); an
+  empty prediction is honest, never an invented site.
+- **Command** — `--predict-change` dispatches `mode: change-prediction`
+  and the render highlights predicted sites with a per-node **"predicted"
+  badge**, a legend keying the highlight to *"prediction, not
+  instruction"*, a **Predicted change sites** panel, and outline/table
+  flags. The output validation checkpoint gains (only with the flag)
+  in-scope-target, change_direction-present, and no-directive-phrasing
+  checks.
+- **Docs** (same PR): the `run-the-pipeline-map-command` how-to and the
+  `pipeline-map-command` reference are updated for the flag and the
+  predicted-change surface.
+
+Deterministic Layer-1 structural tests guard the block, the mode, the
+flag, and the honesty contract
+(`tdad_tests/tests/test_diagnostic_legibility_structural.py`,
+`TestDiagnosticLegibilityChangeSitePrediction`).
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-15-dl-change-site-prediction-design.md`;
+spec-mode diaboli at
+`docs/superpowers/objections/dl-change-site-prediction-design.md` (12
+objections — 1 critical, 4 high — all accepted and absorbed). The
+consume-an-existing-map prediction variant (diaboli O12) is a recorded,
+deliberately-deferred follow-on.
+
+**Marketplace**: the `diagnostic-legibility` listing entry version bumps
+0.10.0 → 0.11.0 and its `description` gains a clause naming
+`--predict-change`; the top-level listing `version` and `plugin_version`
+are unchanged.
+
+Closes issue #368.
+
 ## 0.10.0 — 2026-06-15
 
 ### `/pipeline-map` command + self-contained Mermaid HTML (pipeline-map P5)

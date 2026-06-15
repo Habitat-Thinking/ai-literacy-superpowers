@@ -15,7 +15,7 @@ It is the human-facing surface for the agent's `mode: pipeline`. Use
 ## Usage
 
 ```text
-/pipeline-map "<task>" [--near <path>] [--out <dir>]
+/pipeline-map "<task>" [--near <path>] [--out <dir>] [--predict-change]
 ```
 
 - `"<task>"` — **required**. The work you are considering, e.g.
@@ -26,6 +26,9 @@ It is the human-facing surface for the agent's `mode: pipeline`. Use
   process; the agent follows the flow where the evidence leads and
   discloses any out-of-hint inclusion.
 - `--out <dir>` — **optional** output-directory override.
+- `--predict-change` — **optional**. Also predict **which stages the task
+  will edit** and **where it will insert new ones** (see
+  [Predicting change sites](#predicting-change-sites)).
 
 ## What it does, end to end
 
@@ -83,11 +86,45 @@ the resolved path (flagging an overwrite if the file exists), the stage
 count, the scope confidence, and both cross-check statuses; you `accept`
 or `abort`. On abort, no file and no directory are created.
 
+## Predicting change sites
+
+Add `--predict-change` to go one step beyond "what does my task touch?"
+and ask **"which node will I edit?"**:
+
+```text
+/pipeline-map "add a fraud-hold step after risk evaluation" --predict-change
+```
+
+The map then **narrows** the (deliberately wide) touched scope to the few
+stages the task is predicted to **modify**, and marks where it is
+predicted to **insert** a new stage. In the report:
+
+- predicted sites are **highlighted** and each carries a **"predicted"
+  badge**; the legend keys the highlight to *"a prediction, not an
+  instruction"*;
+- a **Predicted change sites** panel lists each site — modify vs insert,
+  the reason, the evidence, the overall confidence, and (below `high`
+  confidence) the suspected failure direction: **over-prediction** ("may
+  flag a node you won't actually edit") or **under-prediction** ("may
+  miss one");
+- the no-JS outline and the detail table flag which stages are predicted
+  sites.
+
+**Read it as a prediction, not a to-do list.** Predicting a future edit
+is inherently uncertain — far more than the verifiable scope it sits
+beside — so the report never says "edit X"; it says "the task *likely*
+edits X", discloses *why*, and names which way it might be wrong. Use it
+to orient, then verify against the code. Without the flag, none of this
+appears — the map is exactly the v0.10.0 one.
+
 ## When to use it
 
 - Before starting a change, to see the traced process you are about to
   modify — not just which files it touches, but how control flows through
   them and where the decision points are.
+- With `--predict-change`, to get a *starting hypothesis* for where the
+  edit lands — narrowed from the wide touched scope, disclosed as a
+  prediction to verify, not a directive to follow.
 - To share a legible, self-contained map of a slice with a colleague or
   attach it to a design discussion.
 

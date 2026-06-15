@@ -1,5 +1,5 @@
 """Layer 1 structural tests for the diagnostic-legibility plugin at
-v0.3.0 / v0.4.0 / v0.5.0 / v0.6.0 / v0.7.0 / v0.8.0 / v0.9.0 / v0.10.0.
+v0.3.0 … v0.11.0.
 
 Sub-S2b shipped the working `diagnostic-legibility` agent (v0.3.0); S3
 shipped the cross-check (v0.4.0); S4 shipped the human-facing `/diagnose`
@@ -8,11 +8,14 @@ command (v0.5.0); pipeline-map P1 shipped the standalone
 `mode: scope-resolution` (v0.7.0); P3 added `mode: pipeline` —
 flow-tracing within the bound (v0.8.0); P4 extended pipeline Phase C to
 the three-way six-pair cross-check + `pipeline_cross_check_status`
-(v0.9.0); P5 ships the human-facing `/pipeline-map` command that renders
+(v0.9.0); P5 shipped the human-facing `/pipeline-map` command that renders
 the task-scoped map as a self-contained, pinned-Mermaid HTML file
-(v0.10.0). These are deterministic, file-shape assertions — the agent's
-and command's behavioural contracts are covered by their specs as
-acceptance documentation rather than executable tests.
+(v0.10.0); change-site prediction (#368) adds `mode: change-prediction`
+and the `--predict-change` flag — predict which stages the task will
+modify and where it will insert new ones, via an additive
+`change_prediction` block (v0.11.0). These are deterministic, file-shape
+assertions — the agent's and command's behavioural contracts are covered
+by their specs as acceptance documentation rather than executable tests.
 
 The TDAD scenario discipline does not extend to the diagnostic-legibility
 plugin (the TDAD-scenario-check workflow is scoped to the
@@ -69,11 +72,11 @@ def repo_root() -> Path:
 
 @pytest.mark.structural
 class TestDiagnosticLegibilityVersioning:
-    """The P5 plugin version bump from 0.9.0 to 0.10.0 must land in
-    lockstep across plugin.json, marketplace.json's per-plugin entry,
-    and the CHANGELOG heading. Shipping the human-facing `/pipeline-map`
-    command is a behavioural plugin change, so P5 takes a minor bump
-    (P1–P4 took the same; S2a/S3 precedent).
+    """The change-site-prediction (#368) plugin version bump from 0.10.0
+    to 0.11.0 must land in lockstep across plugin.json, marketplace.json's
+    per-plugin entry, and the CHANGELOG heading. Adding `mode:
+    change-prediction` + the `--predict-change` flag is a behavioural
+    plugin change, so it takes a minor bump (P1–P5 took the same).
 
     The marketplace listing's top-level `version` (0.4.0) and its
     `plugin_version` pointer are explicitly unchanged by this slice —
@@ -81,7 +84,7 @@ class TestDiagnosticLegibilityVersioning:
     taking `plugin_version` from main verbatim at rebase time.
     """
 
-    def test_plugin_json_at_0_10_0(
+    def test_plugin_json_at_0_11_0(
         self, diagnostic_legibility_path: Path
     ) -> None:
         manifest_path = (
@@ -90,13 +93,13 @@ class TestDiagnosticLegibilityVersioning:
             / "plugin.json"
         )
         manifest = json.loads(manifest_path.read_text())
-        assert manifest["version"] == "0.10.0", (
+        assert manifest["version"] == "0.11.0", (
             "diagnostic-legibility/.claude-plugin/plugin.json must "
-            "carry version '0.10.0' (was '0.9.0' at P4). "
+            "carry version '0.11.0' (was '0.10.0' at P5). "
             f"Actual: {manifest['version']!r}"
         )
 
-    def test_marketplace_entry_at_0_10_0(self, repo_root: Path) -> None:
+    def test_marketplace_entry_at_0_11_0(self, repo_root: Path) -> None:
         marketplace_path = (
             repo_root / ".claude-plugin" / "marketplace.json"
         )
@@ -112,9 +115,9 @@ class TestDiagnosticLegibilityVersioning:
         assert entry is not None, (
             "No diagnostic-legibility entry in marketplace.json plugins[]"
         )
-        assert entry["version"] == "0.10.0", (
+        assert entry["version"] == "0.11.0", (
             "marketplace.json diagnostic-legibility entry must be at "
-            f"'0.10.0' (was '0.9.0' at P4). Actual: {entry['version']!r}"
+            f"'0.11.0' (was '0.10.0' at P5). Actual: {entry['version']!r}"
         )
 
     def test_marketplace_top_level_version_unchanged(
@@ -162,29 +165,29 @@ class TestDiagnosticLegibilityVersioning:
             "does not own (per spec §9)."
         )
 
-    def test_changelog_has_0_10_0_heading(
+    def test_changelog_has_0_11_0_heading(
         self, diagnostic_legibility_path: Path
     ) -> None:
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
-        assert "## 0.10.0 — 2026-06-15" in changelog, (
-            "CHANGELOG.md must contain a `## 0.10.0 — 2026-06-15` heading "
-            "naming the P5 /pipeline-map command. Note: the dash is the "
-            "em-dash (U+2014), matching the format enforced by the "
+        assert "## 0.11.0 — 2026-06-15" in changelog, (
+            "CHANGELOG.md must contain a `## 0.11.0 — 2026-06-15` heading "
+            "naming the change-site-prediction capability. Note: the dash "
+            "is the em-dash (U+2014), matching the format enforced by the "
             "version-consistency CI check."
         )
 
     def test_changelog_prior_headings_persist(
         self, diagnostic_legibility_path: Path
     ) -> None:
-        """Audit trail: the prior v0.9.0 (P4), v0.8.0 (P3), v0.7.0 (P2),
-        v0.6.0 (P1) and v0.5.0 (S4) headings must remain when v0.10.0 is
-        prepended."""
+        """Audit trail: the prior v0.10.0 (P5) … v0.5.0 (S4) headings must
+        remain when v0.11.0 is prepended."""
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
         for heading in (
+            "## 0.10.0 — 2026-06-15",
             "## 0.9.0 — 2026-06-15",
             "## 0.8.0 — 2026-06-15",
             "## 0.7.0 — 2026-06-15",
@@ -1913,13 +1916,14 @@ class TestDiagnosticLegibilityPipelineMode:
     def test_unrecognised_mode_refusal_lists_pipeline(
         self, diagnostic_legibility_path: Path
     ) -> None:
+        """The refusal enumeration must include 'pipeline'. (The list
+        grows as modes are added — #368 appends 'change-prediction' — so
+        this test only requires 'pipeline' to remain present, not the
+        exact four-value form.)"""
         body = self._agent_body(diagnostic_legibility_path)
-        assert (
-            "'full', 'cross-check-only', 'scope-resolution', or 'pipeline'"
-            in body
-        ), (
-            "The unrecognised-mode refusal example must enumerate all "
-            "four legal mode values including 'pipeline'."
+        assert "'pipeline'" in body, (
+            "The unrecognised-mode refusal example must enumerate "
+            "'pipeline' among the legal mode values."
         )
 
     def test_pipeline_missing_task_refusal_example(
@@ -2527,4 +2531,253 @@ class TestDiagnosticLegibilityPipelineMapCommand:
         assert "/pipeline-map" in claude_md, (
             "CLAUDE.md Output Validation Checkpoints list must include "
             "`/pipeline-map` (spec §7.4)."
+        )
+
+
+# ---------------------------------------------------------------------
+# Change-site prediction (#368, v0.11.0)
+# ---------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestDiagnosticLegibilityChangeSitePrediction:
+    """#368 adds change-site prediction: an opt-in `mode: change-prediction`
+    (superset of pipeline) + a `/pipeline-map --predict-change` flag that
+    predict which stages the task will MODIFY and where it will INSERT new
+    ones, recorded in an additive `change_prediction` block on the
+    ConceptualPipelineMap. Deterministic file-shape assertions over the
+    template, the agent, and the command. The defining concern is the
+    HONESTY contract (predict-not-direct, structured failure direction,
+    in-scope targets) — guarded here at the static-text level.
+
+    Spec reference:
+        docs/superpowers/specs/2026-06-15-dl-change-site-prediction-design.md
+    """
+
+    def _template_body(self, diagnostic_legibility_path: Path) -> str:
+        return (
+            diagnostic_legibility_path
+            / "templates"
+            / "conceptual-pipeline-map.md"
+        ).read_text()
+
+    def _agent_body(self, diagnostic_legibility_path: Path) -> str:
+        return (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        ).read_text()
+
+    def _command_body(self, diagnostic_legibility_path: Path) -> str:
+        return (
+            diagnostic_legibility_path / "commands" / "pipeline-map.md"
+        ).read_text()
+
+    # -- template: the change_prediction block -----------------------
+
+    def test_template_documents_change_prediction(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._template_body(diagnostic_legibility_path)
+        assert "change_prediction" in body, (
+            "Template must document the additive `change_prediction` block."
+        )
+        # The typed fields (O3: typed anchor/position, not after:<id>).
+        for field in (
+            "predicted_sites",
+            "change_confidence",
+            "change_direction",
+            "anchor",
+            "position",
+        ):
+            assert field in body, (
+                f"Template must document the change_prediction field "
+                f"{field!r}."
+            )
+
+    def test_template_change_kinds_and_directions(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._template_body(diagnostic_legibility_path)
+        for kind in ("modify", "insert"):
+            assert kind in body, (
+                f"Template must document the predicted-site kind {kind!r}."
+            )
+        for direction in ("over-prediction", "under-prediction"):
+            assert direction in body, (
+                f"Template must document the change_direction value "
+                f"{direction!r}."
+            )
+
+    def test_template_change_prediction_validation_rules(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """O3/O8/O1/O11: the template's Validation rules must cover the
+        block — in-scope targets, typed insert anchor+position, evidence
+        on medium/high modify, confidence-as-floor, and the
+        change_direction-iff-below-high rule."""
+        body = self._template_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "in_scope" in body and "change_prediction" in body, (
+            "Validation rules must tie change_prediction targets to "
+            "scope_resolution.in_scope (O8)."
+        )
+        assert "minimum" in low and "change_confidence" in body, (
+            "Template must state change_confidence is the minimum over "
+            "sites (O11)."
+        )
+        assert "iff" in low or "required iff" in low or (
+            "present **iff**" in body
+        ) or ("present iff" in low), (
+            "Template must state change_direction is present iff "
+            "change_confidence < high (O1)."
+        )
+
+    # -- agent: the new mode -----------------------------------------
+
+    def test_agent_declares_five_modes(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        for marker in (
+            "mode: full",
+            "mode: cross-check-only",
+            "mode: scope-resolution",
+            "mode: pipeline",
+            "mode: change-prediction",
+        ):
+            assert marker in body, (
+                f"Agent body must name the `{marker}` marker (five modes "
+                "at v0.11.0)."
+            )
+
+    def test_agent_description_names_change_prediction(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        component = plugin_runner.find_component(
+            diagnostic_legibility_path,
+            name="diagnostic-legibility",
+            component_type="agent",
+        )
+        description = component.frontmatter.get("description") or ""
+        assert "change-prediction" in description, (
+            "Agent description must name the `change-prediction` mode."
+        )
+
+    def test_agent_refusal_lists_change_prediction(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """O2: the closed mode enumeration in the refusal example must
+        include change-prediction, else the agent refuses its own mode."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "'pipeline', or 'change-prediction'" in body, (
+            "The unrecognised-mode refusal example must enumerate "
+            "'change-prediction' among the legal values (O2)."
+        )
+        assert (
+            "change-prediction mode requires a non-empty task" in body
+        ), (
+            "Agent must carry the missing-task refusal example for "
+            "change-prediction mode."
+        )
+
+    def test_agent_has_change_prediction_pass(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "Change-prediction pass" in body, (
+            "Agent body must carry a `Change-prediction pass` section."
+        )
+        # It runs after Phase C, over the built map.
+        low = body.lower()
+        assert "after" in low and "phase c" in low, (
+            "The change-prediction pass must run after Phase C."
+        )
+
+    def test_agent_honesty_contract(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The load-bearing honesty contract: predict-not-direct,
+        structured failure direction, in-scope targets, best-judgement
+        kind."""
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "predict, never direct" in low or (
+            "predict" in low and "never direct" in low
+        ), (
+            "Agent must state the predict-never-direct rule."
+        )
+        for direction in ("over-prediction", "under-prediction"):
+            assert direction in low, (
+                f"Agent must name the {direction!r} failure direction."
+            )
+        assert "change_direction" in body, (
+            "Agent must use the structured change_direction carrier (O1)."
+        )
+
+    def test_agent_change_prediction_anti_patterns(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "directive change prediction" in low, (
+            "Anti-patterns must forbid directive change prediction."
+        )
+        assert "out-of-scope stage" in low, (
+            "Anti-patterns must forbid predicting an edit to an "
+            "out-of-scope stage (O8)."
+        )
+
+    # -- command: the --predict-change flag --------------------------
+
+    def test_command_documents_predict_change_flag(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._command_body(diagnostic_legibility_path)
+        assert "--predict-change" in body, (
+            "Command must document the `--predict-change` flag."
+        )
+        assert "mode: change-prediction" in body, (
+            "Command must dispatch `mode: change-prediction` when the flag "
+            "is set."
+        )
+
+    def test_command_predicted_change_surface(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """O4: anti-directive framing at the point of emphasis — a
+        'predicted' badge + legend keying the highlight to 'prediction,
+        not instruction', plus a predicted-change-sites panel."""
+        body = self._command_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "predicted" in low and "badge" in low, (
+            "Command must specify a per-node 'predicted' badge (O4)."
+        )
+        assert "prediction, not" in low, (
+            "Command must key the highlight/legend to 'prediction, not "
+            "instruction/directive' (O4)."
+        )
+        assert "predicted change sites" in low or (
+            "predicted-change-sites panel" in low
+        ), (
+            "Command must specify a predicted-change-sites panel."
+        )
+
+    def test_command_predict_change_checkpoint(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The checkpoint gains predicted-change checks only when the flag
+        is set: in-scope targets, change_direction present below high, no
+        directive phrasing."""
+        body = self._command_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "--predict-change" in body and "in-scope" in low, (
+            "Checkpoint must verify predicted targets/anchors are in the "
+            "scope panel's in-scope set (O8)."
+        )
+        assert "directive phrasing" in low or (
+            "no imperative" in low
+        ), (
+            "Checkpoint must fail on imperative/directive phrasing in the "
+            "predicted-change surface (O4)."
         )

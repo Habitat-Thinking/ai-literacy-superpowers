@@ -21,12 +21,14 @@ and process the task touches — and discloses the boundary it drew.
 > **Want the flow, not just the bound?** Since **v0.8.0** the agent also
 > has **`mode: pipeline`** — it resolves the same bound and then *traces
 > the control flow within it*, emitting a `ConceptualPipelineMap` (stages,
-> decisions, transitions) plus the architectural/domain models. Use
-> `mode: scope-resolution` (this guide) when you only want "what does my
-> task touch?"; use `mode: pipeline` when you want the traced process
-> inside the bound. The dispatch is identical except the first line is
-> `mode: pipeline`. (Cross-check across the three models is P4; the
-> rendered HTML map is P5.)
+> decisions, transitions) plus the architectural/domain models, and (since
+> v0.9.0) cross-checks all three. Use `mode: scope-resolution` (this guide)
+> when you only want "what does my task touch?"; use `mode: pipeline` when
+> you want the traced process inside the bound. The dispatch is identical
+> except the first line is `mode: pipeline`. The rendered HTML map ships as
+> the [`/pipeline-map`](run-the-pipeline-map-command.md) command (v0.10.0),
+> and `/pipeline-map --predict-change` (v0.11.0) additionally predicts
+> *which* nodes the task will edit (`mode: change-prediction`).
 
 ## Inputs
 
