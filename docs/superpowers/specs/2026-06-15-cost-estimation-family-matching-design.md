@@ -3,11 +3,12 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-06-15 |
-| Status | Drafted — ready for spec-mode diaboli, then plan/implementation |
+| Status | Diaboli-complete — 12 objections raised, all accepted; §3 fork disposed to **Option B′** (engineered proxy); ready for plan/implementation |
 | Author | claude-opus-4-8[1m] (interactive session with russmiles) |
-| Capability | Make the cost-estimation tier→model binding resolve by **model family** (not an exact key string), so a real captured snapshot grounds a dollar figure instead of silently omitting cost |
+| Capability | Make the cost-estimation tier→model binding resolve by **model family** (not an exact key string), and price a tier whose family is absent from the snapshot via a **distinctly-typed, disclosed proxy** — so a real captured snapshot grounds a dollar figure instead of silently omitting cost |
 | Fixes | #411 |
 | Plugin version target | `ai-literacy-superpowers` v0.49.0 → v0.50.0 (behaviour change to the cost-estimation methodology) |
+| Diaboli record | `docs/superpowers/objections/cost-estimation-family-matching-design.md` (12 objections, all accepted) |
 
 ---
 
@@ -16,175 +17,197 @@
 The cost-estimation methodology grounds a dollar figure by binding each
 MODEL_ROUTING tier to a **representative model key** and reading that
 model's blended rate from the latest `observability/costs/<date>-costs.md`
-snapshot's Model Breakdown. The binding table
-(`skills/cost-estimation/references/estimate-record-format.md`) names those
-keys **literally**: Most capable → `claude-opus-4`, Standard →
-`claude-sonnet-4`. The `cost-estimator` agent's mechanical check
-(`agents/cost-estimator.agent.md`, "Missing model key") omits cost when a
-named key is **absent** from the snapshot.
+snapshot's Model Breakdown. The binding table names those keys
+**literally**: Most capable → `claude-opus-4`, Standard →
+`claude-sonnet-4`. The `cost-estimator` agent omits cost when a named key
+is **absent**.
 
 The repo's only snapshot, `observability/costs/2026-06-13-costs.md`, keys
 its Model Breakdown as **`claude-opus-4-8`** and **`claude-haiku-4-5`** —
-the *actual* model ids. Neither literal binding key (`claude-opus-4`,
-`claude-sonnet-4`) is present, so **every** estimate omits cost — even
-though that snapshot was captured precisely so the estimator could ground
-cost (its prose flags the ~$0.83/1M Opus blended rate for exactly this).
-Observed across six consecutive estimates (#363–#368). The omission is
-**silent** (a cost-omitted record is valid-and-complete), so nothing
-surfaces the mismatch. (#411.)
+the *actual* model ids. Neither literal binding key is present, so **every**
+estimate omits cost — even though that snapshot was captured precisely so
+the estimator could ground cost. Observed across six consecutive estimates
+(#363–#368); the omission is **silent** (a cost-omitted record is
+valid-and-complete). (#411.)
 
-## 2. The fix — family matching (firm)
+This spec has **two parts**, kept separable (diaboli O10):
+
+- **§2 — family matching** (the firm core; the literal #411 fix).
+- **§3 — the engineered proxy** (Option B′; pricing a tier whose family is
+  absent, disposed by the human after the diaboli broke the naïve proxy).
+
+## 2. Family matching (firm core)
 
 The binding resolves a tier's representative by **model-family stem**, not
 an exact string. A snapshot Model Breakdown key `K` resolves to a tier `T`
-**iff `K`, lowercased, starts with `T`'s family stem**:
+**iff `K`, lowercased, starts with `T`'s family stem _and_ the character
+after the stem is `-` or end-of-string** (the delimiter rule, diaboli O8):
 
-| Tier | Family stem | Matches (examples) |
-| --- | --- | --- |
-| Most capable | `claude-opus-4` | `claude-opus-4`, `claude-opus-4-8`, `claude-opus-4-1`, … |
-| Standard | `claude-sonnet-4` | `claude-sonnet-4`, `claude-sonnet-4-5`, … |
-| Standard / Capable (split) | low `claude-sonnet-4` … high `claude-opus-4` | as above, per end |
+| Tier | Family stem | Matches | Does **not** match |
+| --- | --- | --- | --- |
+| Most capable | `claude-opus-4` | `claude-opus-4`, `claude-opus-4-8`, `claude-opus-4-1` | `claude-opus-40`, `claude-opus-4o`, `claude-opus-5` |
+| Standard | `claude-sonnet-4` | `claude-sonnet-4`, `claude-sonnet-4-5` | `claude-sonnet-45`, `claude-sonnet-5` |
+| Standard / Capable (split) | low `claude-sonnet-4` … high `claude-opus-4` | as above, per end | — |
 
-Rules:
+- **Delimiter-bounded prefix**, case-insensitive — closes the
+  false-positive match (`claude-opus-40`) the bare prefix would admit (O8).
+- **Multiple matches in one family are aggregated** into one blended family
+  rate: `$/token = Σ estimated_cost ÷ Σ (input + output) tokens` over the
+  matching rows. **When >1 row is aggregated, the agent discloses it** in
+  `Confidence rationale` (mirroring the blended-rate-skew disclosure) —
+  cross-generation blends are named, not silent (O7).
+- `claude-haiku-4-5` and any non-opus-4 / non-sonnet-4 key resolve to **no**
+  estimating tier (the table has only Most capable / Standard / the split).
+  They are never a binding *or* a proxy source — neither grounds nor blocks
+  a tier (O9).
+- **Stem-table maintenance (O8 false-negative side):** a future renamed
+  family (e.g. `claude-opus-5`) deliberately does **not** match — it is a
+  *signalled* miss (it drives state-3-with-no-family → state 2 omission,
+  which is loud), and the stem table is a per-model-generation maintenance
+  point, noted in §6. This is the opposite of #411's *silent* miss.
 
-- **Prefix-on-family-stem**, case-insensitive. The stems are the
-  family roots `claude-opus-4` / `claude-sonnet-4` (a major family the
-  routing tiers actually map to), not full ids.
-- **Multiple matches in one family are aggregated** into a single blended
-  family rate: sum the matching rows' `estimated_cost` and their
-  `(input + output)` tokens, then `$/token = Σcost ÷ Σtokens`. This uses
-  all of a family's observed data and stays deterministic.
-- `claude-haiku-4-5` and other non-opus-4/non-sonnet-4 keys resolve to
-  **no** estimating tier (the binding table has only Most capable /
-  Standard / the split). They are simply not used for binding — their
-  presence neither grounds nor blocks a tier.
-- The match is documented and deterministic — **not** agent discretion.
-  The agent still holds no write tool and applies the table mechanically.
+With §2 alone the 2026-06-13 snapshot grounds the **Most capable** tier
+(`claude-opus-4-8` → Most-capable rate). It does not, alone, ground the
+**Standard** tier from that snapshot (no `claude-sonnet-4*` row) — which §3
+handles.
 
-This is necessary and unambiguous, and it directly answers #411. With it,
-the 2026-06-13 snapshot grounds the **Most capable** tier
-(`claude-opus-4-8` → Most-capable rate). It does **not**, on its own,
-ground the **Standard** tier from that snapshot, because the snapshot
-contains no `claude-sonnet-4*` row — which §3 addresses.
+## 3. The engineered proxy (Option B′)
 
-## 3. The partial-snapshot decision (the genuine fork)
+When an exercised tier's estimating family is **absent** from the snapshot
+but **≥1 estimating-tier family resolves** (a usable rate exists), the
+missing tier is priced by a **proxy** rather than omitted — but as a
+**distinctly-typed, disclosed, direction-forced** figure, not a figure
+masquerading as direct grounding. (The naïve "reuse `snapshot-actuals`,
+disclose in prose" proxy was broken by diaboli O1/O2/O3/O5 and is **not**
+what ships.)
 
-Family matching alone leaves a real gap: the only snapshot we have is
-**opus-only** (the single-machine session it captured ran ~100% on Opus).
-A typical multi-stage task exercises Standard-tier stages (tdd-agent,
-integration-agent) whose family (`claude-sonnet-4*`) is **absent**. So
-after §2, those tasks would *still* omit cost. Two honest options:
+The engineered proxy:
 
-### Option A — precise omission (conservative)
+1. **Distinct basis (O2/O11/O5).** A record with **any** proxied tier
+   carries the new, additive `cost_basis` value
+   **`snapshot-actuals-proxied`** (not `snapshot-actuals`). This is
+   machine-distinguishable: a consumer keys on `cost_basis`, not on prose
+   or the (routinely-`low`) cost confidence. Fully-direct records keep
+   `snapshot-actuals`. Backward-compatible — old records and unaware
+   consumers are unaffected.
+2. **Dearest-present source, over-stating and saying so (O3/O4).** The
+   missing tier binds to the **dearest present estimating family's** rate.
+   A proxied record **forces `failure_direction: likely-overrun`** and the
+   prose states the figure is a **deliberate over-estimate, unsuitable for
+   trend aggregation** — the directional bias is named, not implied. The
+   proxy is **not** defended as "still observed actuals"; it is a distinct,
+   opted-into third basis. The no-list-price-fallback rule is untouched:
+   vendor price cards are still never used; the proxy is anchored only in
+   this repo's observed snapshot rates.
+3. **Forced low cost confidence.** `confidence.cost: low` whenever any
+   proxy is used (secondary to the `cost_basis` marker, not the sole
+   signal).
+4. **Per-tier disclosure.** `Included`/`Confidence rationale` names every
+   proxied tier and its source ("Standard priced via a cross-tier proxy at
+   the Most-capable rate — the snapshot carries no Sonnet family").
+5. **Split-tier collapse is allowed when proxied (O1).** A split-tier stage
+   whose one end is proxied legitimately collapses to a single rate
+   (`low == high`); such a band is **exempt** from the "Split-tier spread"
+   strict-`low < high` check (§4 amends the checklist line). The exemption
+   keys on the proxied basis, so a *directly-bound* split tier is still
+   required to spread.
 
-`cost_usd` is present **iff every exercised tier's family resolves** in
-the snapshot; otherwise omit, but with a **precise** `Excluded`
-disclosure naming the **specific missing tier family** (e.g. "Standard
-tier — no `claude-sonnet-4*` row in the snapshot"), rather than today's
-generic "keys absent". No approximation is introduced.
+Consequence: the 2026-06-13 opus-only snapshot now **grounds cost** —
+Most-capable directly, Standard and the split's low end via the
+`snapshot-actuals-proxied` Opus rate — relieving #411 with the data we
+have, honestly and machine-distinguishably.
 
-- *Pro:* maximally honest; no new approximation class; smallest change.
-- *Con:* does **not** relieve #411's symptom for the current opus-only
-  snapshot — multi-tier tasks still omit (truthfully) until a snapshot
-  containing Sonnet data is captured. Family matching only fixes
-  Most-capable-only tasks and the disclosure quality.
+## 4. Grounding states, the closed omission set, and the validator
 
-### Option B — disclosed cross-tier proxy (recommended)
+### 4.1 The closed omission set (restated in full — O12)
 
-When an exercised tier's family is **absent** but the snapshot has a
-usable rate for **another** family, bind the missing tier to the
-**dearest present family's** rate, **disclosed** as a cross-tier proxy and
-with `confidence.cost` forced to **`low`**:
+The agent's omission decision is a closed set; family matching merges the
+old "unmapped tier" + "missing model key" triggers into one
+family-resolution trigger:
 
-- The proxy uses an **observed snapshot rate** (this repo's actual spend),
-  never a vendor list price — the no-list-price-fallback rule is intact.
-- **Dearest-present** is deliberately conservative: proxying Standard to
-  the Opus rate **over**-states (never under-states) the Standard cost, so
-  a "can I afford this?" read is not lulled by an optimistic figure.
-- The `Included`/`Confidence rationale` prose **names** every proxied
-  tier ("Standard priced via a cross-tier proxy at the Most-capable rate —
-  the snapshot carries no Sonnet data"), and `confidence.cost: low` is
-  forced whenever any proxy is used.
-- Only applies when **≥1** family is present (a usable rate exists). With
-  **no** usable Model Breakdown at all, the existing state-2 omission is
-  unchanged.
+1. **No snapshot** → omit.
+2. **Snapshot present, no usable Model Breakdown** → omit ("no usable
+   per-model breakdown").
+3. **Model Breakdown present but NO estimating-tier family resolves**
+   (neither `claude-opus-4*` nor `claude-sonnet-4*`, after §2) → omit,
+   naming the cause. (A haiku-only snapshot lands here — O9.)
+4. **≥1 estimating-tier family resolves** → `cost_usd` **present**. Tiers
+   whose family resolves bind directly (`cost_basis: snapshot-actuals`);
+   tiers whose family is absent are **proxied** per §3 (`cost_basis:
+   snapshot-actuals-proxied` for the whole record).
 
-- *Pro:* the 2026-06-13 snapshot now **grounds cost** (Most capable
-  directly; Standard/split-low via the disclosed Opus proxy), matching the
-  snapshot author's stated intent and relieving #411 with the data we
-  have.
-- *Con:* introduces a new, disclosed approximation class; the proxied
-  figure is a deliberate over-estimate.
+### 4.2 Format-reference changes
 
-**Recommendation: Option B**, because #411's intent is "real snapshots
-should ground cost", the proxy is grounded in observed actuals (not list
-price), it is conservative, loudly disclosed, and confidence-capped — and
-it is the behaviour the captured snapshot's own prose anticipates. Option
-A is the fallback if the diaboli/human judges the proxy too strong; family
-matching (§2) ships either way and is itself a real improvement.
+- **`cost_basis` enum** gains `snapshot-actuals-proxied` alongside
+  `snapshot-actuals` (additive; backward-compatible).
+- **Binding table** documents the family stems + delimiter rule + family
+  aggregation (§2).
+- **Three grounding states** reworded to family resolution (§4.1); state 2
+  "missing model key" language replaced.
+- **"Split-tier spread" checklist line** amended: applies to a present
+  split-tier `cost_usd` band **only when that record's `cost_basis` is
+  `snapshot-actuals`** (both ends directly bound); a
+  `snapshot-actuals-proxied` split-tier band is **exempt** and may collapse
+  (O1).
+- **Cost-pairing checklist line**: `cost_usd` is present with `cost_basis`
+  ∈ {`snapshot-actuals`, `snapshot-actuals-proxied`}.
 
-**This is the load-bearing decision for the spec-mode diaboli and the
-human to dispose.**
+## 5. Surfaces changed (tagged firm-core vs proxy — O10)
 
-## 4. Grounding-state changes
-
-The three grounding states (`estimate-record-format.md`) are refined:
-
-- **State 1 (no snapshot):** unchanged — omit.
-- **State 2 (snapshot, no usable Model Breakdown / no family resolves at
-  all):** unchanged — omit, with the "no usable per-model breakdown"
-  cause. The "missing model key" trigger is **reworded** to "no tier
-  family resolves" (a tier family resolves by §2, not an exact key).
-- **State 3 (≥1 tier family resolves):** `cost_usd` **present**. Under
-  Option B, tiers whose family is absent are **proxied** (dearest present
-  family) with the disclosure + `confidence.cost: low`; under Option A,
-  cost is present **only** if *all* exercised families resolve, else state
-  2.
-
-No estimate-record **format** field changes — `cost_usd`, `cost_basis:
-snapshot-actuals`, `confidence.cost` are as today. (A proxy is disclosed
-in prose, not a new field — consistent with how the methodology discloses
-other caveats.) The blended-rate-skew simplification is unchanged.
-
-## 5. Surfaces changed
-
-1. `skills/cost-estimation/references/estimate-record-format.md` — the
-   binding table (family stems + aggregation), the "deriving a per-model
-   rate" step (resolve by family), the three grounding states (§4), and
-   (Option B) the proxy rule + its disclosure obligation.
-2. `skills/cost-estimation/SKILL.md` — the grounding-methodology section
-   mirrors the binding table; updated in lockstep.
-3. `agents/cost-estimator.agent.md` — the mechanical binding check
-   (currently "Missing model key" → omit) becomes family resolution +
-   (Option B) the proxy step; the worked-example caveat about
-   `claude-opus-4-8` is updated to reflect that it now **resolves** to
-   Most capable.
-4. Tests — a TDAD scenario / Layer-1 assertion that family matching
-   resolves `claude-opus-4-8` → Most capable and (Option B) that an
-   opus-only snapshot grounds cost with the proxy disclosure.
-5. Version triplet + CHANGELOG (the five `ai-literacy-superpowers`
-   CI-checked locations; minor bump).
+1. `skills/cost-estimation/references/estimate-record-format.md` —
+   **[core]** binding table (family stems, delimiter, aggregation
+   disclosure), grounding states / closed omission set; **[proxy]** the new
+   `cost_basis` enum value, the proxy rule + disclosure, the split-tier
+   exemption + cost-pairing checklist edits.
+2. `skills/cost-estimation/SKILL.md` — **[core]** mirror the binding-table
+   family resolution; **[proxy]** the proxy methodology + its disclosure
+   and `likely-overrun` forcing.
+3. `agents/cost-estimator.agent.md` — **[core]** the mechanical check
+   restated as the §4.1 closed set with family resolution (the
+   `claude-opus-4-8`-worked-example caveat updated to "resolves to Most
+   capable"); **[proxy]** the proxy step, the forced overrun + low cost
+   confidence, the per-tier disclosure.
+4. Tests (**O6 — surfaces clarified**) — **Layer-1 / structural** asserts
+   the *static contract data*: the family-stem + delimiter rule and the new
+   `snapshot-actuals-proxied` enum value documented in the format reference,
+   and the amended split-tier-spread exemption text. The *behavioural*
+   claim (the agent resolving `claude-opus-4-8` → Most capable and
+   proxying Standard on a fixture snapshot) is **Layer-2/3 acceptance
+   documentation**, gated on an API key — **not** a Layer-1 assertion of
+   agent-internal reasoning.
+5. Version triplet + CHANGELOG — the five `ai-literacy-superpowers`
+   CI-checked locations; minor bump 0.49.0 → 0.50.0.
 
 ## 6. Out of scope
 
-- **Capture-time validation** (warning in `/cost-capture` when a
-  snapshot's keys won't bind) — a complementary idea from #411, deferrable
-  to its own slice; family matching makes most snapshots bind anyway.
+- **Capture-time validation** (a `/cost-capture` warning when a snapshot's
+  keys won't bind) — a complementary #411 idea, deferred to its own slice;
+  family matching makes most snapshots bind anyway.
+- **Stem-table auto-discovery** — the family stems (`claude-opus-4`,
+  `claude-sonnet-4`) are a **maintained** table, bumped per model
+  generation (O8); auto-deriving them from MODEL_ROUTING is not in scope.
 - **Per-direction (input/output) rates** — the blended-rate skew stays.
 - **Calibration / per-PR actuals** — untouched.
-- **Adding new tiers** (e.g. an `Inexpensive`/Haiku estimating tier) — the
-  binding table keeps Most capable / Standard / split.
+- **Adding an Inexpensive/Haiku estimating tier** — the table keeps Most
+  capable / Standard / split.
 
-## 7. Spec-mode diaboli
+## 7. Spec-mode diaboli — outcomes
 
-This spec goes through the spec-mode `/diaboli` gate before
-implementation — the §3 proxy decision especially. Objections recorded at
-`docs/superpowers/objections/2026-06-15-cost-estimation-family-matching-design.md`
-and absorbed here.
+The spec-mode `/diaboli` gate raised **12 objections** — **2 critical, 4
+high, 5 medium, 1 low** — **all accepted**
+(`docs/superpowers/objections/cost-estimation-family-matching-design.md`).
+The criticals (O1 split-tier-spread collapse; O2 `cost_basis` lie) and
+O3/O5/O11 all struck the naïve proxy; the human disposed the §3 fork to
+**Option B′ — engineer the proxy properly**, whose load-bearing
+resolutions are the additive `snapshot-actuals-proxied` basis (O2/O11), the
+split-tier-spread exemption (O1), the forced `likely-overrun` +
+over-estimate disclosure (O3/O4), the delimiter rule + aggregation
+disclosure (O7/O8), the haiku→state-2 clarification (O9), the restated
+closed omission set (O12), and the clarified test surfaces (O6).
 
 ## 8. References
 
 - Issue #411; the 2026-06-15 reflection (`REFLECTION_LOG.md`).
-- `skills/cost-estimation/references/estimate-record-format.md` (binding table, grounding states).
-- `skills/cost-estimation/SKILL.md`; `agents/cost-estimator.agent.md`.
+- `skills/cost-estimation/references/estimate-record-format.md`;
+  `skills/cost-estimation/SKILL.md`; `agents/cost-estimator.agent.md`.
 - `observability/costs/2026-06-13-costs.md` (the opus-only snapshot).
