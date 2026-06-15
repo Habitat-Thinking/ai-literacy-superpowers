@@ -779,4 +779,3 @@
   - Model tiers used: claude-opus-4-8[1m] for the main driving/design loop throughout; dispatched subagents per MODEL_ROUTING (`cost-estimator` → Standard; `code-reviewer` and `advocatus-diaboli` → Most capable). Main-loop-dominant; exact split unknown.
   - Pipeline stages completed: not an orchestrator run — manual per-slice spec-first: spec (commit 1) → **spec-mode diaboli** → implement (+ Layer-1 structural test / TDAD scenario) → dispatched code-review → manual integration (version triplet, CHANGELOG, PR, CI, merge).
   - Agent delegation: manual — orchestrator not invoked; advocatus-diaboli / cost-estimator / code-reviewer dispatched individually per slice, everything else driven by hand.
-

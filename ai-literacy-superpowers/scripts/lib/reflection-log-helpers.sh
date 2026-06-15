@@ -333,5 +333,10 @@ regenerate_log() {
     } >> "$tmp"
   done < <(fragment_paths "$active_dir")
 
+  # Drop the trailing blank line left after the final entry so the file
+  # ends with a single newline (keeps markdownlint MD012 happy).
+  awk 'NF{last=NR} {line[NR]=$0} END{for(i=1;i<=last;i++) print line[i]}' \
+    "$tmp" > "${tmp}.trim" && mv "${tmp}.trim" "$tmp"
+
   mv "$tmp" "$out"
 }
