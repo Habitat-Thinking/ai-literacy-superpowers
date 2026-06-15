@@ -47,7 +47,9 @@ six-pair cover
 
 **Watch item (story #6, revisit):** instrument which directed pairs
 actually fire corrections on real invocations and trim any pair that
-never does — deferred, not scheduled.
+never does — **via a deliberate cover revision, not an ad-hoc per-run
+skip** (the "trimming a directed pair" anti-pattern forbids the latter).
+Deferred, not scheduled.
 
 **Decision discipline** — spec at
 `docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md` (§6.3);

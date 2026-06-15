@@ -37,7 +37,7 @@ output. The human-facing surfacing layer (parent S4, issue #333 — the
 ## Inputs
 
 The first line of the prompt is a **mode marker** that selects what the
-agent runs. Four modes are recognised at v0.8.0:
+agent runs. Four modes are recognised at v0.9.0:
 
 - **`mode: full`** (default if no `mode:` line is given) — Phase A
   (construct) + Phase B (self-challenge) + Phase C (cross-check). The
@@ -54,7 +54,7 @@ agent runs. Four modes are recognised at v0.8.0:
   **Scope-resolution protocol** (§ below) and emits a **`ScopeResolution`
   YAML**, *not* a `LegibilityModel`. It does **not** trace flow or build
   models — it resolves the bound only.
-- **`mode: pipeline`** (v0.8.0) — the full task-scoped pipeline build.
+- **`mode: pipeline`** (v0.8.0; three-way cross-check added v0.9.0) — the full task-scoped pipeline build.
   The prompt names a `task:` and, optionally, a `near:` hint (same inputs
   as `scope-resolution`). The agent (1) resolves the bound via the
   **Scope-resolution protocol**, then (2) **within that bound** runs the
@@ -392,13 +392,14 @@ predict the **change site** — which node you will *edit* — as opposed to
 which slice the task *touches* (a deferred follow-on, #368). It scopes the
 task; it does not design the edit.
 
-## Pipeline protocol (mode: pipeline, v0.8.0)
+## Pipeline protocol (mode: pipeline, v0.9.0)
 
 This protocol runs **only** in `mode: pipeline`. It is the full
-task-scoped build: resolve the bound, trace the flow within it, build all
-three collections, and self-challenge each. It emits the two-block output
-(§Output). Phase C cross-check is **not** part of this protocol at
-v0.8.0 — it is P4. Trust boundary is unchanged (`Read`, `Glob`, `Grep`).
+task-scoped build, in order: **Step 0** resolve the bound → **Phase A**
+trace the flow and build all three collections → **Phase B** self-
+challenge each → **Phase C** three-way cross-check across all three. It
+emits the two-block output (§Output). Trust boundary is unchanged
+(`Read`, `Glob`, `Grep`).
 
 **Step 0 — resolve the bound.** Run the **Scope-resolution protocol**
 above on the `task:` (+ optional `near:`) to produce `scope_resolution`
@@ -415,7 +416,7 @@ Within the bound, in one continuous reasoning context:
    These become the `entry` ids.
 2. **Follow the dominant call/data path.** Trace control flow forward
    from each entry, following the **one dominant path** the task
-   concerns. At v0.8.0 you trace **one dominant pipeline per task** —
+   concerns. You trace **one dominant pipeline per task** —
    multiple independent pipelines are out of scope.
 3. **Classify each stage.** A node is a `step` (ordinary stage), a
    `decision` (a fork/branch point — give it a `condition` in the
@@ -431,7 +432,7 @@ Within the bound, in one continuous reasoning context:
 5. **Record `realises` links.** Where a stage corresponds to an
    architectural element or domain concept you are also building, set
    `realises: { architectural?: <name>, domain?: <name> }` by **name**.
-   This is the seam the P4 cross-check reads; it leaves the map valid
+   This is the seam the Phase C cross-check reads; it leaves the map valid
    standalone.
 6. **Ground every stage** in `evidence` (`{ path, excerpt? }`) and set a
    starting `confidence`. Leave `challenge_notes: []` for now — Phase B
@@ -858,7 +859,7 @@ per-element protocol step, not ambient awareness — apply it as you
 challenge each element. The dimension-weighting sentences in Phase B
 above are load-bearing prompt content; do not summarise them away.
 
-## The five flow-flavoured challenge questions (pipeline mode, v0.8.0)
+## The five flow-flavoured challenge questions (pipeline mode, v0.8.0+)
 
 These are the Phase B (pipeline) cover for **pipeline stages** — the
 flow analogue of the five-question challenge above. Control-flow
