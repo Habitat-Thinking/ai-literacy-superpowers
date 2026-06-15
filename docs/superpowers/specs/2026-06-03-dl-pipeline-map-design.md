@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-06-03 |
-| Status | In implementation — P1 (ConceptualPipelineMap template, v0.6.0, #363/#402), P2 (task→bounded scope resolution, `mode: scope-resolution`, v0.7.0, #364/#403, hand-validated), and P3 (flow-tracing within scope, `mode: pipeline`, v0.8.0, #365/#404) shipped; P4 (three-way six-pair cross-check) in progress; P5 filed (#367), P6 deferred |
+| Status | In implementation — P1 (ConceptualPipelineMap template, v0.6.0, #363/#402), P2 (task→bounded scope resolution, v0.7.0, #364/#403, hand-validated), P3 (flow-tracing, `mode: pipeline`, v0.8.0, #365/#404), and P4 (three-way six-pair cross-check + `pipeline_cross_check_status`, v0.9.0, #366/#405) shipped; P5 (`/pipeline-map` command + vendored-Mermaid HTML) in progress; P6 deferred. §2.2 vendoring revised at P5 (pin+SHA+cache, not committed blob) |
 | Author | claude-opus-4-8[1m] (interactive session with russmiles) |
 | Capability | Given a work task a developer is considering, derive the bounded slice of the process that task touches, model it as a flow perspective over the architectural and domain models, and render it as a self-contained HTML pipeline map |
 | Slicing record | `docs/superpowers/slices/diagnostic-legibility-pipeline-map.md` (slices P1–P6) |
@@ -57,10 +57,32 @@ re-litigation here.
    gate annotation become a later slice (P6). The static slices must keep
    that seam open but not implement it.
 2. **Vendored Mermaid render.** The flow diagram is a **Mermaid flowchart**
-   inside a single self-contained HTML file, Mermaid's JS **vendored
-   locally and version-pinned** (never CDN-linked) — a deliberate, scoped
-   exception to the repo's "readable-without-JS / no-external-deps" norm,
-   justified because a branching flow graph needs a real layout engine.
+   inside a single self-contained HTML file, Mermaid's JS **version-pinned
+   and inlined into the report** (the output **never** carries a CDN
+   `<script src>`) — a deliberate, scoped exception to the repo's
+   "readable-without-JS / no-external-deps" norm, justified because a
+   branching flow graph needs a real layout engine.
+
+   > **Revised at P5 (implementation, 2026-06-15).** The original wording
+   > "vendored **locally**" implied committing the ~2.7 MB
+   > `mermaid.min.js` blob into the repo. That is **not** required to meet
+   > this design input's intent (a portable, CDN-free report) and was
+   > revised, with the human's decision, to **pin + SHA-verify + cache
+   > locally** instead: a small provenance **manifest** in the repo
+   > records `{version, source URL, SHA-256}`; the `/pipeline-map` command
+   > fetches the pinned bundle on first use into a **gitignored cache**,
+   > verifies the SHA-256 against the manifest (**aborting** on mismatch),
+   > and **inlines** the verified bytes into each report. This keeps the
+   > supply-chain *integrity* the diaboli O6 cared about (the exact pinned
+   > bytes are SHA-checked before inlining; a tampered or substituted CDN
+   > artefact fails the check) and the output portability (still a
+   > single self-contained file, no CDN link in the report), while
+   > keeping a multi-megabyte third-party binary out of git history. The
+   > trade accepted: generation needs network on first use (until the
+   > cache is warm), and the guarantee is "integrity-verified" rather than
+   > "exact bytes vendored offline". O6's *output* requirement (inlined,
+   > portable) is unchanged; only the *source* of the inlined bytes moves
+   > from committed-blob to pinned-and-verified-cache.
 3. **New `/pipeline-map` command.** A new command parallel to `/diagnose`,
    not a flag on it, not a render-only skill.
 4. **Third model, full treatment — maximal cross-check.** The pipeline is a
