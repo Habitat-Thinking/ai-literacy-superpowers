@@ -9,7 +9,7 @@ constraint enforcement for every adopter of the GitHub Action.
 
 - **#325 — duplicate constraint rows.** The constraint parser appended
   the final block at section exit **and** again at the EOF flush, so any
-  `HARNESS.md` with a `## ` section after `## Constraints` ran (and listed)
+  `HARNESS.md` with a `##` section after `## Constraints` ran (and listed)
   its last constraint twice. The section-exit path now resets state and the
   trailing flush is gated on still being inside the section.
 - **#324 — truncated multi-line rules.** `parse_field` returned only the
