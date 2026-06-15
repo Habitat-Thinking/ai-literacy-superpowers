@@ -1,5 +1,70 @@
 # Changelog
 
+## 0.8.0 — 2026-06-15
+
+### Flow-tracing within scope + self-challenge (pipeline-map P3)
+
+Adds **`mode: pipeline`** to the `diagnostic-legibility` agent — slice P3
+of the task-scoped pipeline-map feature (#363–#367). It is the full
+task-scoped build: given a work `task:` (+ optional `near:` hint), the
+agent resolves the bound (the P2 scope-resolution protocol), then
+**within that bound** traces control flow into a `ConceptualPipelineMap`,
+builds the `architectural[]` / `domain[]` collections, and self-challenges
+every element. The cross-check across all three collections is the next
+slice (P4); v0.8.0 ships the individually-refined build.
+
+- **New `mode: pipeline`** (fourth mode, alongside `full`,
+  `cross-check-only`, `scope-resolution`). Inputs are the same as
+  scope-resolution (`task:` required, `near:` optional, biases-not-bounds).
+- **Phase A (pipeline) — trace + build**: discover entry points within the
+  bound, follow the one dominant call/data path, classify each stage
+  (`step` / `decision` with a `condition` / `outcome`), record
+  `transitions` (grounding non-trivial ones in evidence), record
+  `realises` cross-model links by name (the P4 seam), and build the
+  architectural/domain collections for the same bound. One dominant
+  pipeline per task (multiple pipelines out of scope).
+- **Phase B (pipeline) — flow-flavoured self-challenge**: every pipeline
+  stage is challenged through a new **five-question cover** — *phantom
+  edge, condition fidelity, missed branch, smeared step, ungrounded node*
+  — recorded as `Q<N>` notes; architectural/domain elements keep the
+  existing five-question cover. Control-flow inference is more error-prone
+  than enumeration, so the cover targets edges, conditions, and ordering.
+- **Scope-relevance feedback loop**: after tracing, the bound is re-tested
+  against what the trace surfaced and under-reach/over-reach corrections
+  are fed back into `scope_resolution`, closing the predicted-vs-traced
+  loop. The corrected bound is what the emitted map carries.
+- **Output — two standalone YAML blocks in one response**: a
+  `ConceptualPipelineMap` then a `LegibilityModel` (`scope` = the resolved
+  bound). The two are separate models (the map embeds neither collection —
+  P1's decoupling holds); they travel together because P4's cross-check
+  and P5's render consume both from one dispatch. This resolves the spec
+  §4.3 open question (one response, two standalone blocks — not a merged
+  envelope, not three dispatches).
+- **Cross-check deferred**: the `LegibilityModel` carries
+  `cross_check_status: not_run` and no `CC<N>` entries — the one place the
+  agent legitimately emits `not_run` (Phase C is P4).
+- **New anti-patterns**: phantom edges / straight-lined branches, tracing
+  beyond the bound, multiple pipelines in one map, and running cross-check
+  in pipeline mode.
+- **Read-only boundary unchanged** (`Read`, `Glob`, `Grep`).
+
+Deterministic Layer-1 structural tests guard the new mode
+(`tdad_tests/tests/test_diagnostic_legibility_structural.py`,
+`TestDiagnosticLegibilityPipelineMode`). The `resolve-task-scope.md`
+how-to gains a pointer to the fuller pipeline build.
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md` (§6.1–§6.2;
+the §4.3 bundle-shape resolution recorded there); slicing record
+`docs/superpowers/slices/diagnostic-legibility-pipeline-map.md` (P3).
+
+**Marketplace**: the `diagnostic-legibility` listing entry version bumps
+0.7.0 → 0.8.0 and its `description` gains a clause naming the pipeline
+mode; the top-level listing `version` and `plugin_version` are unchanged.
+
+P3 of the pipeline-map slicing record. Closes issue #365; parent feature
+(#363–#367) continues with P4 (three-way cross-check).
+
 ## 0.7.0 — 2026-06-15
 
 ### Task → bounded scope resolution (pipeline-map P2)

@@ -1,6 +1,6 @@
 ---
 name: diagnostic-legibility
-description: "Use to build two refined models of a codebase scope — architectural moving parts and domain concepts — using the schema at diagnostic-legibility/templates/legibility-element.md. Constructs each element, applies a five-question self-challenge cycle (Phase B), and cross-checks the two collections against each other (Phase C, v0.4.0). Challenge notes follow the `Q<N> (question-name):` prefix; cross-check notes follow the `CC<N> (question-name):` prefix. Model-level cross-check outcome lives in the `cross_check_status` wrapper field (`completed | skipped_asymmetric | not_run`). Degenerate scopes use the literal `(empty scope)` sentinel. Three mode markers — full (default, Phase A+B+C), cross-check-only (Phase C against a fenced YAML payload), and scope-resolution (v0.7.0 — answer 'what does my task touch?': derive a bounded, disclosed ScopeResolution from a natural-language work task, optionally biased by a `near:` hint, emitting `in_scope` / `adjacent_excluded` / `scope_confidence` per templates/conceptual-pipeline-map.md, with the suspected failure direction — under-reach or over-reach — named when confidence is below high). Returns a LegibilityModel as YAML in full / cross-check-only modes, or a ScopeResolution YAML in scope-resolution mode; the dispatching command or human writes the file."
+description: "Use to build two refined models of a codebase scope — architectural moving parts and domain concepts — using the schema at diagnostic-legibility/templates/legibility-element.md. Constructs each element, applies a five-question self-challenge cycle (Phase B), and cross-checks the two collections against each other (Phase C, v0.4.0). Challenge notes follow the `Q<N> (question-name):` prefix; cross-check notes follow the `CC<N> (question-name):` prefix. Model-level cross-check outcome lives in the `cross_check_status` wrapper field (`completed | skipped_asymmetric | not_run`). Degenerate scopes use the literal `(empty scope)` sentinel. Four mode markers — full (default, Phase A+B+C), cross-check-only (Phase C against a fenced YAML payload), scope-resolution (v0.7.0 — answer 'what does my task touch?': derive a bounded, disclosed ScopeResolution from a natural-language work task, optionally biased by a `near:` hint, emitting `in_scope` / `adjacent_excluded` / `scope_confidence` per templates/conceptual-pipeline-map.md, with the suspected failure direction — under-reach or over-reach — named when confidence is below high), and pipeline (v0.8.0 — the full task-scoped build: resolve the bound, trace control flow into a ConceptualPipelineMap, build the architectural/domain collections within the bound, and self-challenge pipeline stages through a flow-flavoured five-question cover plus a scope-relevance feedback loop; cross-check deferred to P4 so `cross_check_status: not_run`). Returns a LegibilityModel as YAML in full / cross-check-only modes, a ScopeResolution YAML in scope-resolution mode, or two standalone YAML blocks (ConceptualPipelineMap + LegibilityModel) in pipeline mode; the dispatching command or human writes the file."
 tools: Read, Glob, Grep
 model: inherit
 ---
@@ -37,7 +37,7 @@ output. The human-facing surfacing layer (parent S4, issue #333 — the
 ## Inputs
 
 The first line of the prompt is a **mode marker** that selects what the
-agent runs. Three modes are recognised at v0.7.0:
+agent runs. Four modes are recognised at v0.8.0:
 
 - **`mode: full`** (default if no `mode:` line is given) — Phase A
   (construct) + Phase B (self-challenge) + Phase C (cross-check). The
@@ -52,9 +52,22 @@ agent runs. Three modes are recognised at v0.7.0:
   capability. The prompt names a `task:` (a natural-language work task)
   and, optionally, a `near:` hint. The agent runs the
   **Scope-resolution protocol** (§ below) and emits a **`ScopeResolution`
-  YAML**, *not* a `LegibilityModel`. It does **not** run Phase A/B/C —
-  no models are built and no flow is traced (that is P3+). This is the
-  one mode whose output shape differs from `LegibilityModel`.
+  YAML**, *not* a `LegibilityModel`. It does **not** trace flow or build
+  models — it resolves the bound only.
+- **`mode: pipeline`** (v0.8.0) — the full task-scoped pipeline build.
+  The prompt names a `task:` and, optionally, a `near:` hint (same inputs
+  as `scope-resolution`). The agent (1) resolves the bound via the
+  **Scope-resolution protocol**, then (2) **within that bound** runs the
+  **Pipeline protocol** (§ below): traces control flow into a
+  `ConceptualPipelineMap` *and* builds the `architectural[]` / `domain[]`
+  collections, then self-challenges every element — pipeline stages
+  through a flow-flavoured five-question cover, architectural/domain
+  elements through the existing five-question cover. It emits **two
+  standalone fenced YAML blocks in one response** — a
+  `ConceptualPipelineMap` then a `LegibilityModel` (§Output). Phase C
+  **cross-check does not run** at v0.8.0 (it is P4): the `LegibilityModel`
+  carries `cross_check_status: not_run`. This is the mode the future
+  `/pipeline-map` command (P5) dispatches.
 
 **An unrecognised mode value is a precondition violation.** Refuse
 with the structured refusal line below (no YAML emitted). Do not
@@ -106,6 +119,16 @@ consume the YAML block would not see a prose warning.
 - No fenced YAML payload is expected in this mode (unlike
   `cross-check-only`); a payload is ignored, not required.
 
+**Mode `pipeline` inputs:**
+
+- **`task`** (required) and **`near`** (optional) — **identical** to the
+  `scope-resolution` inputs above (same meaning, same `near` biases-not-
+  bounds rule). A missing or empty `task:` triggers a refusal.
+- No fenced YAML payload is expected; pipeline mode builds its models
+  from the codebase, it does not accept a pre-built one.
+- The bound is resolved first (Scope-resolution protocol), then the
+  Pipeline protocol runs **within** it.
+
 **Refusal line shape (any precondition violation):**
 
 ```
@@ -114,21 +137,28 @@ diagnostic-legibility refusal: <single-sentence reason>.
 
 The line is the entire response — no YAML code block follows. Examples:
 
-- `diagnostic-legibility refusal: unrecognised mode value 'fast'; legal values are 'full', 'cross-check-only', or 'scope-resolution'.`
+- `diagnostic-legibility refusal: unrecognised mode value 'fast'; legal values are 'full', 'cross-check-only', 'scope-resolution', or 'pipeline'.`
 - `diagnostic-legibility refusal: cross-check-only mode requires every element to have populated challenge_notes; element 'AuthenticationService' has an empty list.`
 - `diagnostic-legibility refusal: cross-check-only mode requires substituted dispatcher placeholders; generated_at still carries '<DISPATCHER: ISO 8601 timestamp>'.`
 - `diagnostic-legibility refusal: cross-check-only payload missing required field 'scope'.`
 - `diagnostic-legibility refusal: cross-check-only mode requires a fenced ```yaml code block; payload appears unfenced.`
 - `diagnostic-legibility refusal: cross-check-only mode requires exactly one YAML payload; 2 blocks found.`
 - `diagnostic-legibility refusal: scope-resolution mode requires a non-empty task; none was supplied.`
+- `diagnostic-legibility refusal: pipeline mode requires a non-empty task; none was supplied.`
 
-**Note on the empty-task case (scope-resolution mode).** A *present but
-unresolvable* task is **not** a refusal: if a well-formed `task:` is
-supplied but resolves to no touched process, emit a valid
-`ScopeResolution` with empty `in_scope: []`, `scope_confidence: low`, and
-reasons explaining the empty result (the empty-task contract,
-§Scope-resolution protocol). Refuse only when the `task:` itself is
-**missing or empty** — a malformed dispatch, not an honest empty result.
+**Note on the empty-task case (scope-resolution and pipeline modes).** A
+*present but unresolvable* task is **not** a refusal. In
+`scope-resolution`, a well-formed `task:` that resolves to no touched
+process emits a valid `ScopeResolution` with empty `in_scope: []`,
+`scope_confidence: low`, and the explanation in a structured
+`adjacent_excluded` entry (the empty-task contract, §Scope-resolution
+protocol). In `pipeline`, the same empty bound yields a
+`ConceptualPipelineMap` with empty `stages: []` plus that low-confidence
+`scope_resolution` (the map's empty-task sentinel,
+`conceptual-pipeline-map.md` §Validation), alongside whatever (possibly
+`(empty scope)`) the `LegibilityModel` collections resolve to. Refuse
+only when the `task:` itself is **missing or empty** — a malformed
+dispatch, not an honest empty result.
 
 ## Output
 
@@ -198,6 +228,40 @@ boundary you chose. `scope_confidence` is `low | high` inclusive of
 failure *direction*** — under-reach ("may have missed needed files") or
 over-reach ("may be wider than the task touches") — per
 §Scope-resolution protocol.
+
+### In `mode: pipeline` — two standalone YAML blocks (v0.8.0)
+
+A single markdown response carrying **two clearly-delimited, standalone
+fenced YAML blocks**, in this order:
+
+1. A **`ConceptualPipelineMap`** — the full map per
+   `diagnostic-legibility/templates/conceptual-pipeline-map.md`: `task`,
+   the (possibly trace-corrected) `scope_resolution`, `entry`, `stages`
+   (each with `Q<N>` flow-flavoured `challenge_notes`), `transitions`,
+   and provenance.
+2. A **`LegibilityModel`** — per
+   `diagnostic-legibility/templates/legibility-element.md`, with `scope`
+   set to a short description of the **resolved bound** (e.g.
+   `"task-scoped bound for: add a fraud-hold step"`),
+   `architectural[]` / `domain[]` each refined by Phase B, and
+   `cross_check_status: not_run` (Phase C is P4 — see below).
+
+Precede each block with a one-line label (`ConceptualPipelineMap:` and
+`LegibilityModel:`) so a dispatcher can split the response
+deterministically. The two are **separate models**, not a merged
+envelope: the map embeds neither collection (P1's decoupling), and the
+`LegibilityModel` knows nothing of the map. They travel together in one
+response because the P4 cross-check and the P5 render consume both from a
+single dispatch.
+
+**`cross_check_status: not_run` at v0.8.0.** Pipeline mode builds and
+self-challenges all three collections but **does not** run Phase C
+cross-check — that is P4. So the `LegibilityModel` honestly carries
+`cross_check_status: not_run` (the value reserved for "cross-check has
+not run"), and **no** `CC<N>` entries appear in any
+`challenge_notes[]`. This is the one place the v0.8.0 agent legitimately
+emits `not_run` (the `full`-mode prohibition on emitting `not_run` does
+not apply to pipeline mode, where cross-check is deliberately deferred).
 
 ### `generated_at` and `generated_by` are dispatcher-filled
 
@@ -312,10 +376,89 @@ explicit "nothing matched", never an invented scope. Refuse **only** when
 the `task:` itself is missing or empty (a malformed dispatch).
 
 **What this protocol does not do.** It does not trace control flow, build
-stages/transitions, or emit a map (P3+). It does not predict the
-**change site** — which node you will *edit* — as opposed to which slice
-the task *touches* (a deferred follow-on, #368). It scopes the task; it
-does not design the edit.
+stages/transitions, or emit a map (that is `mode: pipeline`). It does not
+predict the **change site** — which node you will *edit* — as opposed to
+which slice the task *touches* (a deferred follow-on, #368). It scopes the
+task; it does not design the edit.
+
+## Pipeline protocol (mode: pipeline, v0.8.0)
+
+This protocol runs **only** in `mode: pipeline`. It is the full
+task-scoped build: resolve the bound, trace the flow within it, build all
+three collections, and self-challenge each. It emits the two-block output
+(§Output). Phase C cross-check is **not** part of this protocol at
+v0.8.0 — it is P4. Trust boundary is unchanged (`Read`, `Glob`, `Grep`).
+
+**Step 0 — resolve the bound.** Run the **Scope-resolution protocol**
+above on the `task:` (+ optional `near:`) to produce `scope_resolution`
+and the bounded file set. **Everything that follows happens *within* that
+bound** — you do not wander the whole codebase. The bound is provisional:
+the trace can correct it (Phase B scope-relevance check below).
+
+### Phase A (pipeline) — trace the flow and build the collections
+
+Within the bound, in one continuous reasoning context:
+
+1. **Discover entry points.** Find where the touched process begins
+   inside the bound (a handler, a command, a public entry function).
+   These become the `entry` ids.
+2. **Follow the dominant call/data path.** Trace control flow forward
+   from each entry, following the **one dominant path** the task
+   concerns. At v0.8.0 you trace **one dominant pipeline per task** —
+   multiple independent pipelines are out of scope.
+3. **Classify each stage.** A node is a `step` (ordinary stage), a
+   `decision` (a fork/branch point — give it a `condition` in the
+   process's own terms, e.g. `"riskScore > 0.65"`), or an `outcome`
+   (a terminal sink/result). A branch becomes a `decision` stage when
+   control genuinely forks on a condition; a call that merely delegates
+   is a `step`, not a new pipeline.
+4. **Record transitions.** One `PipelineTransition` per directed edge
+   (`from`/`to` by stage `id`), with `condition_label` on branch edges
+   and `kind` (`sequence | branch | converge`). Ground **non-trivial**
+   transitions (branches, dispatch sites) in `evidence` — a transition
+   is a refutable claim, not free wiring.
+5. **Record `realises` links.** Where a stage corresponds to an
+   architectural element or domain concept you are also building, set
+   `realises: { architectural?: <name>, domain?: <name> }` by **name**.
+   This is the seam the P4 cross-check reads; it leaves the map valid
+   standalone.
+6. **Ground every stage** in `evidence` (`{ path, excerpt? }`) and set a
+   starting `confidence`. Leave `challenge_notes: []` for now — Phase B
+   fills it.
+7. **Build `architectural[]` and `domain[]`** for the same bound, exactly
+   as Phase A (Construction) does for a handed-in scope — but scoped to
+   the resolved bound rather than a human-supplied area. The
+   `(empty scope)` sentinel rules still apply to these collections,
+   independently of the map's empty-task sentinel.
+
+Do not start challenging while you are still tracing. Phase A is one
+continuous construction pass across the map and both collections.
+
+### Phase B (pipeline) — flow-flavoured self-challenge + scope feedback
+
+Re-frame adversarially, as in the Construction-protocol Phase B. Then:
+
+- **Challenge every pipeline stage** through the **five flow-flavoured
+  questions** (§The five flow-flavoured challenge questions), recording
+  `Q<N> (question-name):` notes on each stage's `challenge_notes[]`
+  exactly as the standard challenge does, or the
+  `Challenge applied; no questions surfaced changes` sentinel when a
+  stage's five all came back clean.
+- **Challenge every architectural / domain element** through the
+  **existing** five-question cover (§The five-question challenge). The
+  two covers are distinct: flow-flavoured questions interrogate *edges,
+  conditions, and ordering*; the standard cover interrogates *boundaries,
+  evidence, confounders, confidence, description integrity*.
+- **Run the scope-relevance check (the predicted-vs-traced loop).** After
+  tracing, re-test the P2 bound against what the trace actually
+  surfaced. If the trace reached a needed file the bound missed
+  (**under-reach**), add it to `scope_resolution.in_scope` with a reason
+  noting it was surfaced by the trace. If the trace never touched a file
+  the bound included (**over-reach**), move it to `adjacent_excluded`
+  with a reason. Re-set `scope_confidence` in light of the corrected
+  bound. This closes the loop between the *predicted* scope (P2) and the
+  *traced* reality — the corrected `scope_resolution` is what the
+  emitted map carries.
 
 ## Construction protocol
 
@@ -661,6 +804,49 @@ per-element protocol step, not ambient awareness — apply it as you
 challenge each element. The dimension-weighting sentences in Phase B
 above are load-bearing prompt content; do not summarise them away.
 
+## The five flow-flavoured challenge questions (pipeline mode, v0.8.0)
+
+These are the Phase B (pipeline) cover for **pipeline stages** — the
+flow analogue of the five-question challenge above. Control-flow
+inference from static code is more error-prone than enumeration: edges,
+conditions, and ordering are claims a static reader can assert with false
+confidence. Each question targets a distinct, named failure mode, asked
+once per stage, recorded as a `Q<N> (question-name):` note (same prefix
+mechanism as the standard cover). Like the standard five, this cover is a
+**working hypothesis** — surface a recurring miss in a reflection so it
+can be revised.
+
+1. **Phantom edge** — does each `transition` from this stage correspond
+   to control flow that *actually exists* in the code, or did I infer an
+   edge the code does not take? *Catches invented wiring.* The
+   flow-tracing analogue of the evidence check.
+
+2. **Condition fidelity** — for a `decision` stage, does the `condition`
+   match the real branch predicate (operator, threshold, variable), not
+   a paraphrase or a stale comment? *Catches mis-stated gates.* Confirm
+   the `0.65` against the branch site, not a doc.
+
+3. **Missed branch** — does this stage have a branch, early return, or
+   error path I did not trace? *Catches the silent dropped edge.* The
+   most common flow miss: a real fork rendered as a straight line.
+
+4. **Smeared step** — is this one stage actually two distinct stages
+   collapsed (e.g. "validate and persist" when validation and
+   persistence are separable steps with their own outcomes)? *Catches
+   stage smearing.* The flow analogue of the boundary check.
+
+5. **Ungrounded node** — is this stage backed by `evidence`, or did I
+   invent a conceptual stage with no code behind it (a step that "ought
+   to" exist but does not)? *Catches the fabricated node.* A
+   `medium`/`high` stage with empty `evidence` fails this question.
+
+**Plus the scope-relevance check** (a protocol step, not a per-stage
+`Q<N>` note): after the five, re-test the P2 bound against the trace and
+feed under-reach/over-reach corrections back into `scope_resolution`
+(Pipeline-protocol Phase B). It re-tests the *bound*, not a single
+stage, so it is recorded as a correction to `scope_resolution`, not as a
+sixth challenge note.
+
 ## Honesty rules
 
 - **`confidence: low`** for any element whose evidence is thin or
@@ -796,3 +982,25 @@ before emitting.
   rather than which slice it *touches*. Change-site prediction is a
   deliberately-deferred follow-on (#368); v0.7.0 scopes the task, it does
   not design the edit.
+
+- **Phantom edges / straight-lined branches (pipeline mode)** — emitting
+  a `transition` for control flow the code does not take, or rendering a
+  real fork/early-return/error path as a single straight edge. The
+  phantom-edge and missed-branch challenge questions exist to catch
+  exactly this; a `decision` stage with one outgoing edge is a smell.
+
+- **Tracing beyond the bound (pipeline mode)** — following the call
+  graph out of the resolved scope into the whole codebase. The Pipeline
+  protocol runs *within* the bound; if the trace genuinely needs a file
+  the bound missed, that is an under-reach correction fed back into
+  `scope_resolution` (Phase B scope-relevance check), not licence to
+  wander.
+
+- **Multiple pipelines in one map (pipeline mode)** — tracing several
+  independent processes into one map. v0.8.0 traces **one dominant
+  pipeline per task**; a second independent flow is out of scope.
+
+- **Running cross-check in pipeline mode (pipeline mode)** — emitting
+  `CC<N>` entries or a non-`not_run` `cross_check_status` from
+  `mode: pipeline`. Phase C is P4; at v0.8.0 pipeline mode self-challenges
+  (`Q<N>`) only and emits `cross_check_status: not_run`.

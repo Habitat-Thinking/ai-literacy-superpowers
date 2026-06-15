@@ -14,9 +14,19 @@ and process the task touches — and discloses the boundary it drew.
 > **Surface note.** v0.7.0 ships this via the **bare Task-tool** dispatch
 > (the same lower-level surface [invoke-the-agent](invoke-the-agent.md)
 > documents). The agent emits the bound alone — no flow diagram and no
-> rendered map. Flow tracing (P3), the three-way cross-check (P4), and
-> the `/pipeline-map` command with its Mermaid HTML render (P5) are later
-> slices. Until P5 lands, scope-resolution is the agent-output surface.
+> rendered map. The three-way cross-check (P4) and the `/pipeline-map`
+> command with its Mermaid HTML render (P5) are later slices. Until P5
+> lands, scope-resolution and pipeline modes are the agent-output surface.
+
+> **Want the flow, not just the bound?** Since **v0.8.0** the agent also
+> has **`mode: pipeline`** — it resolves the same bound and then *traces
+> the control flow within it*, emitting a `ConceptualPipelineMap` (stages,
+> decisions, transitions) plus the architectural/domain models. Use
+> `mode: scope-resolution` (this guide) when you only want "what does my
+> task touch?"; use `mode: pipeline` when you want the traced process
+> inside the bound. The dispatch is identical except the first line is
+> `mode: pipeline`. (Cross-check across the three models is P4; the
+> rendered HTML map is P5.)
 
 ## Inputs
 

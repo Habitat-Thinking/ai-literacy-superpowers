@@ -1,14 +1,17 @@
 """Layer 1 structural tests for the diagnostic-legibility plugin at
-v0.3.0 / v0.4.0 / v0.5.0 / v0.6.0 / v0.7.0.
+v0.3.0 / v0.4.0 / v0.5.0 / v0.6.0 / v0.7.0 / v0.8.0.
 
 Sub-S2b shipped the working `diagnostic-legibility` agent (v0.3.0); S3
 shipped the cross-check (v0.4.0); S4 shipped the human-facing `/diagnose`
 command (v0.5.0); P1 of the pipeline-map feature shipped the standalone
-`ConceptualPipelineMap` data-model template (v0.6.0); P2 adds the
-front-of-pipeline `mode: scope-resolution` capability — derive a bounded,
-disclosed `ScopeResolution` from a work task (v0.7.0). These are
-deterministic, file-shape assertions — the agent's and command's
-behavioural contracts are covered by their specs as acceptance
+`ConceptualPipelineMap` data-model template (v0.6.0); P2 added the
+front-of-pipeline `mode: scope-resolution` capability (v0.7.0); P3 adds
+`mode: pipeline` — within the resolved bound, trace control flow into a
+ConceptualPipelineMap and build the architectural/domain collections,
+self-challenging pipeline stages through a flow-flavoured five-question
+cover plus a scope-relevance feedback loop (v0.8.0; cross-check deferred
+to P4). These are deterministic, file-shape assertions — the agent's and
+command's behavioural contracts are covered by their specs as acceptance
 documentation rather than executable tests.
 
 The TDAD scenario discipline does not extend to the diagnostic-legibility
@@ -66,12 +69,11 @@ def repo_root() -> Path:
 
 @pytest.mark.structural
 class TestDiagnosticLegibilityVersioning:
-    """The P2 plugin version bump from 0.6.0 to 0.7.0 must land in
+    """The P3 plugin version bump from 0.7.0 to 0.8.0 must land in
     lockstep across plugin.json, marketplace.json's per-plugin entry,
     and the CHANGELOG heading. A new agent capability (the
-    `mode: scope-resolution` front-of-pipeline behaviour) is a
-    behavioural plugin change, so P2 takes a minor bump (P1 took the
-    same for the new template; S2a/S3 precedent).
+    `mode: pipeline` flow-tracing build) is a behavioural plugin change,
+    so P3 takes a minor bump (P1/P2 took the same; S2a/S3 precedent).
 
     The marketplace listing's top-level `version` (0.4.0) and its
     `plugin_version` pointer are explicitly unchanged by this slice —
@@ -79,7 +81,7 @@ class TestDiagnosticLegibilityVersioning:
     taking `plugin_version` from main verbatim at rebase time.
     """
 
-    def test_plugin_json_at_0_7_0(
+    def test_plugin_json_at_0_8_0(
         self, diagnostic_legibility_path: Path
     ) -> None:
         manifest_path = (
@@ -88,13 +90,13 @@ class TestDiagnosticLegibilityVersioning:
             / "plugin.json"
         )
         manifest = json.loads(manifest_path.read_text())
-        assert manifest["version"] == "0.7.0", (
+        assert manifest["version"] == "0.8.0", (
             "diagnostic-legibility/.claude-plugin/plugin.json must "
-            "carry version '0.7.0' (was '0.6.0' at P1). "
+            "carry version '0.8.0' (was '0.7.0' at P2). "
             f"Actual: {manifest['version']!r}"
         )
 
-    def test_marketplace_entry_at_0_7_0(self, repo_root: Path) -> None:
+    def test_marketplace_entry_at_0_8_0(self, repo_root: Path) -> None:
         marketplace_path = (
             repo_root / ".claude-plugin" / "marketplace.json"
         )
@@ -110,9 +112,9 @@ class TestDiagnosticLegibilityVersioning:
         assert entry is not None, (
             "No diagnostic-legibility entry in marketplace.json plugins[]"
         )
-        assert entry["version"] == "0.7.0", (
+        assert entry["version"] == "0.8.0", (
             "marketplace.json diagnostic-legibility entry must be at "
-            f"'0.7.0' (was '0.6.0' at P1). Actual: {entry['version']!r}"
+            f"'0.8.0' (was '0.7.0' at P2). Actual: {entry['version']!r}"
         )
 
     def test_marketplace_top_level_version_unchanged(
@@ -160,35 +162,36 @@ class TestDiagnosticLegibilityVersioning:
             "does not own (per spec §9)."
         )
 
-    def test_changelog_has_0_7_0_heading(
+    def test_changelog_has_0_8_0_heading(
         self, diagnostic_legibility_path: Path
     ) -> None:
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
-        assert "## 0.7.0 — 2026-06-15" in changelog, (
-            "CHANGELOG.md must contain a `## 0.7.0 — 2026-06-15` heading "
-            "naming the P2 scope-resolution capability. Note: the dash "
-            "is the em-dash (U+2014), matching the format enforced by "
-            "the version-consistency CI check."
+        assert "## 0.8.0 — 2026-06-15" in changelog, (
+            "CHANGELOG.md must contain a `## 0.8.0 — 2026-06-15` heading "
+            "naming the P3 pipeline mode. Note: the dash is the em-dash "
+            "(U+2014), matching the format enforced by the "
+            "version-consistency CI check."
         )
 
     def test_changelog_prior_headings_persist(
         self, diagnostic_legibility_path: Path
     ) -> None:
-        """Audit trail: the prior v0.6.0 (P1 template) and v0.5.0 (S4
-        `/diagnose`) headings must remain when v0.7.0 is prepended."""
+        """Audit trail: the prior v0.7.0 (P2), v0.6.0 (P1) and v0.5.0
+        (S4) headings must remain when v0.8.0 is prepended."""
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
-        assert "## 0.6.0 — 2026-06-14" in changelog, (
-            "Prior `## 0.6.0 — 2026-06-14` heading must persist as the "
-            "CHANGELOG audit trail when v0.7.0 is added."
-        )
-        assert "## 0.5.0 — 2026-06-01" in changelog, (
-            "Prior `## 0.5.0 — 2026-06-01` heading must persist as the "
-            "CHANGELOG audit trail when v0.7.0 is added."
-        )
+        for heading in (
+            "## 0.7.0 — 2026-06-15",
+            "## 0.6.0 — 2026-06-14",
+            "## 0.5.0 — 2026-06-01",
+        ):
+            assert heading in changelog, (
+                f"Prior `{heading}` heading must persist as the CHANGELOG "
+                "audit trail when v0.8.0 is added."
+            )
 
     def test_changelog_references_followup_issues(
         self, diagnostic_legibility_path: Path
@@ -1660,11 +1663,12 @@ class TestDiagnosticLegibilityScopeResolution:
     ) -> None:
         """The unrecognised-mode refusal example must list
         `scope-resolution` among the legal values, so the structured
-        refusal stays accurate for programmatic dispatchers."""
+        refusal stays accurate for programmatic dispatchers. (P3 extends
+        the enumeration to include `pipeline` — the value list grows as
+        modes are added; this test only requires scope-resolution to
+        remain present.)"""
         body = self._agent_body(diagnostic_legibility_path)
-        assert (
-            "'full', 'cross-check-only', or 'scope-resolution'" in body
-        ), (
+        assert "'scope-resolution'" in body, (
             "The unrecognised-mode refusal example must enumerate all "
             "three legal mode values including 'scope-resolution'."
         )
@@ -1836,4 +1840,242 @@ class TestDiagnosticLegibilityScopeResolution:
         assert "#368" in body, (
             "Anti-patterns must reference #368 — change-site prediction "
             "is a deferred follow-on, not part of v0.7.0 scope-resolution."
+        )
+
+
+# ---------------------------------------------------------------------
+# Pipeline mode (P3, v0.8.0)
+# ---------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestDiagnosticLegibilityPipelineMode:
+    """P3 adds `mode: pipeline` to the diagnostic-legibility agent: within
+    the bound resolved by the scope-resolution protocol, trace control
+    flow into a ConceptualPipelineMap and build the architectural/domain
+    LegibilityModel collections, then self-challenge pipeline stages
+    through a flow-flavoured five-question cover plus a scope-relevance
+    feedback loop. Cross-check is deferred to P4. Output is one response
+    with two standalone fenced YAML blocks. Deterministic, file-shape
+    assertions over the agent file's static text and frontmatter.
+
+    Spec reference:
+        docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md (§6.1, §6.2)
+    """
+
+    def _agent_body(self, diagnostic_legibility_path: Path) -> str:
+        agent_file = (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        )
+        return agent_file.read_text()
+
+    # -- discovery surface -------------------------------------------
+
+    def test_description_names_pipeline_mode(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        component = plugin_runner.find_component(
+            diagnostic_legibility_path,
+            name="diagnostic-legibility",
+            component_type="agent",
+        )
+        description = component.frontmatter.get("description") or ""
+        assert "pipeline" in description, (
+            "Agent description must name the `pipeline` mode (spec §6)."
+        )
+        assert "ConceptualPipelineMap" in description, (
+            "Agent description must name the ConceptualPipelineMap the "
+            "pipeline mode emits."
+        )
+
+    # -- mode plumbing -----------------------------------------------
+
+    def test_body_declares_four_modes(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        for marker in (
+            "mode: full",
+            "mode: cross-check-only",
+            "mode: scope-resolution",
+            "mode: pipeline",
+        ):
+            assert marker in body, (
+                f"Agent body must name the `{marker}` marker (four modes "
+                "at v0.8.0)."
+            )
+
+    def test_unrecognised_mode_refusal_lists_pipeline(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        assert (
+            "'full', 'cross-check-only', 'scope-resolution', or 'pipeline'"
+            in body
+        ), (
+            "The unrecognised-mode refusal example must enumerate all "
+            "four legal mode values including 'pipeline'."
+        )
+
+    def test_pipeline_missing_task_refusal_example(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        assert (
+            "pipeline mode requires a non-empty task" in body
+        ), (
+            "Agent body must carry the missing/empty-task refusal example "
+            "for pipeline mode."
+        )
+
+    # -- the protocol ------------------------------------------------
+
+    def test_body_has_pipeline_protocol(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "Pipeline protocol" in body, (
+            "Agent body must carry a `Pipeline protocol` section."
+        )
+
+    def test_pipeline_phase_a_trace_steps(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Phase A (pipeline) must name the trace behaviour: entry-point
+        discovery, following the dominant path, classifying stage kinds,
+        recording transitions + realises, and building the
+        architectural/domain collections within the bound (spec §6.1)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "entry point" in low or "entry points" in low, (
+            "Pipeline Phase A must name entry-point discovery (spec §6.1)."
+        )
+        assert "dominant" in low, (
+            "Pipeline Phase A must name following the dominant call/data "
+            "path (spec §6.1)."
+        )
+        # Stage kinds the trace classifies.
+        for kind in ("step", "decision", "outcome"):
+            assert kind in body, (
+                f"Pipeline Phase A must name the `{kind}` stage kind."
+            )
+        assert "realises" in body, (
+            "Pipeline Phase A must record `realises` cross-model links "
+            "(the P4 cross-check seam)."
+        )
+
+    def test_pipeline_builds_all_three_collections(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Pipeline mode builds the ConceptualPipelineMap AND the
+        architectural[]/domain[] collections within the bound (spec
+        §4.3 / §6.1 — the cross-model bundle P4 reads)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "architectural[]" in body and "domain[]" in body, (
+            "Pipeline mode must build the architectural[]/domain[] "
+            "collections alongside the map."
+        )
+
+    def test_one_dominant_pipeline_per_task(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "one dominant pipeline" in body.lower(), (
+            "Pipeline mode traces ONE dominant pipeline per task at "
+            "v0.8.0 (multiple pipelines out of scope, spec §8)."
+        )
+
+    # -- flow-flavoured challenge cover -------------------------------
+
+    def test_five_flow_flavoured_questions(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The Phase B (pipeline) cover: phantom edge, condition
+        fidelity, missed branch, smeared step, ungrounded node (spec
+        §6.2)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        for q in (
+            "phantom edge",
+            "condition fidelity",
+            "missed branch",
+            "smeared step",
+            "ungrounded node",
+        ):
+            assert q in low, (
+                f"Agent body must name the flow-flavoured challenge "
+                f"question {q!r} (spec §6.2)."
+            )
+
+    def test_scope_relevance_feedback_loop(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Phase B re-tests the P2 bound against the trace and feeds
+        under/over-reach corrections back into scope_resolution — the
+        predicted-vs-traced loop (spec §6.2)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "scope-relevance" in low, (
+            "Pipeline Phase B must name the scope-relevance check."
+        )
+        # It feeds corrections back into scope_resolution.
+        assert "scope_resolution" in body, (
+            "The scope-relevance check must feed corrections back into "
+            "`scope_resolution`."
+        )
+
+    # -- output shape ------------------------------------------------
+
+    def test_pipeline_output_two_blocks(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Pipeline mode emits two standalone fenced YAML blocks in one
+        response: ConceptualPipelineMap then LegibilityModel (spec §4.3
+        resolution)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        # The output section names the two-block contract.
+        assert "two" in body.lower() and "ConceptualPipelineMap" in body, (
+            "Pipeline output must be documented as two standalone YAML "
+            "blocks (ConceptualPipelineMap + LegibilityModel)."
+        )
+        assert "LegibilityModel" in body, (
+            "Pipeline output must name the second block, LegibilityModel."
+        )
+
+    def test_pipeline_defers_cross_check(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """At v0.8.0 pipeline mode does NOT run Phase C: the
+        LegibilityModel carries `cross_check_status: not_run` and no
+        CC<N> entries (cross-check is P4)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "cross_check_status: not_run" in body, (
+            "Pipeline mode must document emitting "
+            "`cross_check_status: not_run` (Phase C deferred to P4)."
+        )
+
+    # -- anti-patterns -----------------------------------------------
+
+    def test_pipeline_anti_patterns(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Anti-patterns must name the pipeline failure modes: phantom
+        edges, tracing beyond the bound, multiple pipelines, and running
+        cross-check in pipeline mode."""
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "phantom edge" in low, (
+            "Anti-patterns must name phantom edges (pipeline mode)."
+        )
+        assert "beyond the bound" in low, (
+            "Anti-patterns must name tracing beyond the bound."
+        )
+        assert "multiple pipelines" in low, (
+            "Anti-patterns must name multiple pipelines in one map."
+        )
+        assert "running cross-check in pipeline mode" in low, (
+            "Anti-patterns must forbid running cross-check in pipeline "
+            "mode (Phase C is P4)."
         )
