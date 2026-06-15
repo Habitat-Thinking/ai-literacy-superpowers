@@ -1,18 +1,18 @@
 """Layer 1 structural tests for the diagnostic-legibility plugin at
-v0.3.0 / v0.4.0 / v0.5.0 / v0.6.0 / v0.7.0 / v0.8.0.
+v0.3.0 / v0.4.0 / v0.5.0 / v0.6.0 / v0.7.0 / v0.8.0 / v0.9.0 / v0.10.0.
 
 Sub-S2b shipped the working `diagnostic-legibility` agent (v0.3.0); S3
 shipped the cross-check (v0.4.0); S4 shipped the human-facing `/diagnose`
-command (v0.5.0); P1 of the pipeline-map feature shipped the standalone
-`ConceptualPipelineMap` data-model template (v0.6.0); P2 added the
-front-of-pipeline `mode: scope-resolution` capability (v0.7.0); P3 adds
-`mode: pipeline` — within the resolved bound, trace control flow into a
-ConceptualPipelineMap and build the architectural/domain collections,
-self-challenging pipeline stages through a flow-flavoured five-question
-cover plus a scope-relevance feedback loop (v0.8.0; cross-check deferred
-to P4). These are deterministic, file-shape assertions — the agent's and
-command's behavioural contracts are covered by their specs as acceptance
-documentation rather than executable tests.
+command (v0.5.0); pipeline-map P1 shipped the standalone
+`ConceptualPipelineMap` data-model template (v0.6.0); P2 added
+`mode: scope-resolution` (v0.7.0); P3 added `mode: pipeline` —
+flow-tracing within the bound (v0.8.0); P4 extended pipeline Phase C to
+the three-way six-pair cross-check + `pipeline_cross_check_status`
+(v0.9.0); P5 ships the human-facing `/pipeline-map` command that renders
+the task-scoped map as a self-contained, pinned-Mermaid HTML file
+(v0.10.0). These are deterministic, file-shape assertions — the agent's
+and command's behavioural contracts are covered by their specs as
+acceptance documentation rather than executable tests.
 
 The TDAD scenario discipline does not extend to the diagnostic-legibility
 plugin (the TDAD-scenario-check workflow is scoped to the
@@ -69,11 +69,11 @@ def repo_root() -> Path:
 
 @pytest.mark.structural
 class TestDiagnosticLegibilityVersioning:
-    """The P4 plugin version bump from 0.8.0 to 0.9.0 must land in
+    """The P5 plugin version bump from 0.9.0 to 0.10.0 must land in
     lockstep across plugin.json, marketplace.json's per-plugin entry,
-    and the CHANGELOG heading. Extending pipeline mode's Phase C to the
-    three-way (six-pair) cross-check is a behavioural plugin change, so
-    P4 takes a minor bump (P1–P3 took the same; S2a/S3 precedent).
+    and the CHANGELOG heading. Shipping the human-facing `/pipeline-map`
+    command is a behavioural plugin change, so P5 takes a minor bump
+    (P1–P4 took the same; S2a/S3 precedent).
 
     The marketplace listing's top-level `version` (0.4.0) and its
     `plugin_version` pointer are explicitly unchanged by this slice —
@@ -81,7 +81,7 @@ class TestDiagnosticLegibilityVersioning:
     taking `plugin_version` from main verbatim at rebase time.
     """
 
-    def test_plugin_json_at_0_9_0(
+    def test_plugin_json_at_0_10_0(
         self, diagnostic_legibility_path: Path
     ) -> None:
         manifest_path = (
@@ -90,13 +90,13 @@ class TestDiagnosticLegibilityVersioning:
             / "plugin.json"
         )
         manifest = json.loads(manifest_path.read_text())
-        assert manifest["version"] == "0.9.0", (
+        assert manifest["version"] == "0.10.0", (
             "diagnostic-legibility/.claude-plugin/plugin.json must "
-            "carry version '0.9.0' (was '0.8.0' at P3). "
+            "carry version '0.10.0' (was '0.9.0' at P4). "
             f"Actual: {manifest['version']!r}"
         )
 
-    def test_marketplace_entry_at_0_9_0(self, repo_root: Path) -> None:
+    def test_marketplace_entry_at_0_10_0(self, repo_root: Path) -> None:
         marketplace_path = (
             repo_root / ".claude-plugin" / "marketplace.json"
         )
@@ -112,9 +112,9 @@ class TestDiagnosticLegibilityVersioning:
         assert entry is not None, (
             "No diagnostic-legibility entry in marketplace.json plugins[]"
         )
-        assert entry["version"] == "0.9.0", (
+        assert entry["version"] == "0.10.0", (
             "marketplace.json diagnostic-legibility entry must be at "
-            f"'0.9.0' (was '0.8.0' at P3). Actual: {entry['version']!r}"
+            f"'0.10.0' (was '0.9.0' at P4). Actual: {entry['version']!r}"
         )
 
     def test_marketplace_top_level_version_unchanged(
@@ -162,15 +162,15 @@ class TestDiagnosticLegibilityVersioning:
             "does not own (per spec §9)."
         )
 
-    def test_changelog_has_0_9_0_heading(
+    def test_changelog_has_0_10_0_heading(
         self, diagnostic_legibility_path: Path
     ) -> None:
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
-        assert "## 0.9.0 — 2026-06-15" in changelog, (
-            "CHANGELOG.md must contain a `## 0.9.0 — 2026-06-15` heading "
-            "naming the P4 three-way cross-check. Note: the dash is the "
+        assert "## 0.10.0 — 2026-06-15" in changelog, (
+            "CHANGELOG.md must contain a `## 0.10.0 — 2026-06-15` heading "
+            "naming the P5 /pipeline-map command. Note: the dash is the "
             "em-dash (U+2014), matching the format enforced by the "
             "version-consistency CI check."
         )
@@ -178,12 +178,14 @@ class TestDiagnosticLegibilityVersioning:
     def test_changelog_prior_headings_persist(
         self, diagnostic_legibility_path: Path
     ) -> None:
-        """Audit trail: the prior v0.8.0 (P3), v0.7.0 (P2), v0.6.0 (P1)
-        and v0.5.0 (S4) headings must remain when v0.9.0 is prepended."""
+        """Audit trail: the prior v0.9.0 (P4), v0.8.0 (P3), v0.7.0 (P2),
+        v0.6.0 (P1) and v0.5.0 (S4) headings must remain when v0.10.0 is
+        prepended."""
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
         for heading in (
+            "## 0.9.0 — 2026-06-15",
             "## 0.8.0 — 2026-06-15",
             "## 0.7.0 — 2026-06-15",
             "## 0.6.0 — 2026-06-14",
@@ -2228,4 +2230,301 @@ class TestDiagnosticLegibilityThreeWayCrossCheck:
         assert "bidirectional cc writes across three collections" in low, (
             "Anti-patterns must forbid bidirectional CC writes across "
             "three collections (single-writer audit trail)."
+        )
+
+
+# ---------------------------------------------------------------------
+# /pipeline-map command (P5, v0.10.0)
+# ---------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestDiagnosticLegibilityPipelineMapCommand:
+    """P5 ships the human-facing `/pipeline-map` command: a task-driven
+    surface that dispatches the agent in `mode: pipeline` and renders the
+    map as a self-contained, pinned-Mermaid HTML file. Deterministic,
+    offline file-shape assertions over the command file, the Mermaid
+    vendoring manifest, the docs pages, the .gitignore cache entry, the
+    CLAUDE.md checkpoint-list entry, and the version triplet. The render
+    behaviour itself (a live dispatch producing a conforming HTML) is
+    covered by spec §7 as acceptance documentation, not a Layer-1 test.
+
+    Spec reference:
+        docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md (§7)
+    """
+
+    def _command_body(self, diagnostic_legibility_path: Path) -> str:
+        return (
+            diagnostic_legibility_path / "commands" / "pipeline-map.md"
+        ).read_text()
+
+    # -- file + frontmatter ------------------------------------------
+
+    def test_command_file_present(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        cmd = (
+            diagnostic_legibility_path / "commands" / "pipeline-map.md"
+        )
+        assert cmd.is_file(), (
+            "Expected command file at "
+            f"{cmd.relative_to(diagnostic_legibility_path.parent)}"
+        )
+
+    def test_command_frontmatter(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        component = plugin_runner.find_component(
+            diagnostic_legibility_path,
+            name="pipeline-map",
+            component_type="command",
+        )
+        assert component.parse_error is None, (
+            "Command frontmatter must parse as strict YAML. "
+            f"Parse error: {component.parse_error!r}"
+        )
+        assert component.frontmatter.get("name") == "pipeline-map", (
+            "Command frontmatter `name` must be 'pipeline-map'. "
+            f"Actual: {component.frontmatter.get('name')!r}"
+        )
+        assert (component.frontmatter.get("description") or "").strip(), (
+            "Command frontmatter must have a non-empty `description`."
+        )
+
+    # -- signature + dispatch ----------------------------------------
+
+    def test_command_documents_signature(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._command_body(diagnostic_legibility_path)
+        assert (
+            '/pipeline-map "<task>" [--near <path>] [--out <dir>]' in body
+        ), (
+            "Command body must document the task-driven signature "
+            "`/pipeline-map \"<task>\" [--near <path>] [--out <dir>]`."
+        )
+
+    def test_command_dispatches_mode_pipeline(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._command_body(diagnostic_legibility_path)
+        assert "mode: pipeline" in body, (
+            "Command body must dispatch the agent in `mode: pipeline`."
+        )
+        assert "diagnostic-legibility" in body, (
+            "Command body must name the `diagnostic-legibility` agent."
+        )
+
+    def test_command_documents_refusal_handling(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._command_body(diagnostic_legibility_path)
+        assert "diagnostic-legibility refusal:" in body, (
+            "Command body must carry the literal refusal-line prefix it "
+            "pattern-matches on."
+        )
+        assert "verbatim" in body, (
+            "Command body must surface the refusal line verbatim."
+        )
+
+    def test_command_consumes_two_yaml_blocks(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The agent emits two blocks (ConceptualPipelineMap +
+        LegibilityModel); the command must consume both."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "ConceptualPipelineMap" in body and "LegibilityModel" in body, (
+            "Command body must reference both emitted blocks "
+            "(ConceptualPipelineMap + LegibilityModel)."
+        )
+
+    # -- output path -------------------------------------------------
+
+    def test_command_output_path(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._command_body(diagnostic_legibility_path)
+        assert "diagnostic-legibility/output/" in body, (
+            "Command body must state the default output directory."
+        )
+        assert "<task-slug>-pipeline-" in body, (
+            "Command body must state the filename convention "
+            "`<task-slug>-pipeline-<YYYY-MM-DD>.html`."
+        )
+        assert ".html" in body, (
+            "Command body must state the `.html` extension (the report "
+            "is HTML, not markdown)."
+        )
+
+    # -- diaboli-gate deliverables (O5, O6, O9, O12) -----------------
+
+    def test_structural_not_executed_banner_o12(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """O12: a 'structural — not executed' banner, and no reserved
+        live legend / executed-status styling at P5."""
+        body = self._command_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "structural" in low and "not" in low and "execut" in low, (
+            "Command body must specify a 'structural — not executed' "
+            "banner (diaboli O12)."
+        )
+        # No reserved live legend until P6.
+        assert "no" in low and "live" in low and "legend" in low, (
+            "Command body must state there is NO reserved live legend at "
+            "P5 (diaboli O12 — live styling ships only with P6)."
+        )
+
+    def test_noscript_fallback_o5(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """O5: a `<noscript>` plain-text-outline static fallback."""
+        body = self._command_body(diagnostic_legibility_path)
+        assert "<noscript>" in body, (
+            "Command body must specify a `<noscript>` static fallback "
+            "(diaboli O5)."
+        )
+
+    def test_mermaid_inlined_not_cdn_o6(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """O6: the Mermaid bundle is inlined into the report; the output
+        carries no CDN `<script src>`."""
+        body = self._command_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "inline" in low, (
+            "Command body must specify the Mermaid bundle is INLINED "
+            "into the report (diaboli O6)."
+        )
+        assert "no cdn" in low, (
+            "Command body must state the report carries NO CDN link "
+            "(e.g. 'No CDN.')."
+        )
+        assert "<script src" in low, (
+            "Command body must name the `<script src>` form it forbids "
+            "for the output (the inlined bundle is not a CDN link)."
+        )
+
+    def test_scope_resolution_panel(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._command_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "scope-resolution panel" in low or (
+            "scope_resolution" in body and "panel" in low
+        ), (
+            "Command body must specify a scope-resolution panel surfacing "
+            "in_scope / adjacent_excluded / scope_confidence."
+        )
+
+    def test_validation_checkpoint_and_confirm_gate(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._command_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "validation checkpoint" in low, (
+            "Command body must document an output validation checkpoint."
+        )
+        assert "<DISPATCHER:" in body, (
+            "Checkpoint must include the no-unsubstituted-placeholder "
+            "(`<DISPATCHER:`) check."
+        )
+        assert "accept" in low and "abort" in low, (
+            "Command body must document the confirm-before-write "
+            "accept/abort gate."
+        )
+        assert "last line of defence" in low, (
+            "Command body must state the human accept gate is the last "
+            "line of defence."
+        )
+
+    # -- Mermaid vendoring manifest (spec §2.2, revised at P5) --------
+
+    def test_mermaid_manifest_present(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        manifest = (
+            diagnostic_legibility_path / "assets" / "mermaid-vendor.md"
+        )
+        assert manifest.is_file(), (
+            "Expected the Mermaid vendoring manifest at "
+            f"{manifest.relative_to(diagnostic_legibility_path.parent)}"
+        )
+        body = manifest.read_text()
+        # A pinned version and a SHA-256 must be recorded.
+        assert "version" in body.lower() and "sha256" in body.lower(), (
+            "Manifest must record a pinned version and a SHA-256."
+        )
+        assert "mermaid@" in body, (
+            "Manifest must pin an exact Mermaid version (mermaid@X.Y.Z)."
+        )
+
+    def test_command_references_manifest_and_verify(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The command must fetch → SHA-verify → cache → inline, and
+        abort on mismatch (the supply-chain gate)."""
+        body = self._command_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "mermaid-vendor.md" in body, (
+            "Command body must reference the vendoring manifest."
+        )
+        assert "sha-256" in low or "sha256" in low, (
+            "Command body must specify SHA-256 verification of the "
+            "fetched bundle."
+        )
+        assert "abort" in low and "mismatch" in low, (
+            "Command body must abort on a SHA mismatch (no report "
+            "written)."
+        )
+
+    def test_cache_gitignored(self, repo_root: Path) -> None:
+        gitignore = (repo_root / ".gitignore").read_text()
+        assert "diagnostic-legibility/assets/cache/" in gitignore, (
+            "Repo-root .gitignore must ignore the Mermaid bundle cache "
+            "`diagnostic-legibility/assets/cache/` (spec §2.2 revised: "
+            "pin+SHA+cache, not a committed blob)."
+        )
+
+    # -- docs pages (O9, same PR) ------------------------------------
+
+    def test_how_to_page_present(self, repo_root: Path) -> None:
+        page = (
+            repo_root
+            / "docs"
+            / "plugins"
+            / "diagnostic-legibility"
+            / "how-to"
+            / "run-the-pipeline-map-command.md"
+        )
+        assert page.is_file(), (
+            f"Expected how-to page at {page.relative_to(repo_root)!s} "
+            "(diaboli O9 — docs ship in the same PR)."
+        )
+
+    def test_reference_page_present(self, repo_root: Path) -> None:
+        page = (
+            repo_root
+            / "docs"
+            / "plugins"
+            / "diagnostic-legibility"
+            / "reference"
+            / "pipeline-map-command.md"
+        )
+        assert page.is_file(), (
+            f"Expected reference page at {page.relative_to(repo_root)!s} "
+            "(diaboli O9 — docs ship in the same PR)."
+        )
+
+    # -- CLAUDE.md checkpoint list ------------------------------------
+
+    def test_claude_md_lists_pipeline_map_checkpoint(
+        self, repo_root: Path
+    ) -> None:
+        """Spec §7.4: /pipeline-map joins the CLAUDE.md Output Validation
+        Checkpoints list."""
+        claude_md = (repo_root / "CLAUDE.md").read_text()
+        assert "/pipeline-map" in claude_md, (
+            "CLAUDE.md Output Validation Checkpoints list must include "
+            "`/pipeline-map` (spec §7.4)."
         )

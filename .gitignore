@@ -20,6 +20,13 @@ site/
 # cache (S4 spec §7.2 / O3).
 diagnostic-legibility/output/
 
+# Vendored Mermaid bundle cache — the /pipeline-map command fetches the
+# pinned, SHA-verified Mermaid bundle here on first use and reuses it.
+# Derived/regenerable from the manifest (assets/mermaid-vendor.md), never
+# committed (pipeline-map spec §2.2 revised at P5: pin+SHA+cache, not a
+# committed blob).
+diagnostic-legibility/assets/cache/
+
 # Cost estimate records — derived, regenerable artefacts written by the
 # /cost-estimate command. An estimate references a moving target (an
 # unmerged spec, a since-renamed slice, changing task text), so it is
