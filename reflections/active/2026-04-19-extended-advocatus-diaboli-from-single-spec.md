@@ -1,0 +1,13 @@
+- **Date**: 2026-04-19
+- **Agent**: claude-sonnet-4-6 (main conversation, no subagents)
+- **Task**: Extended advocatus-diaboli from single spec-time dispatch to two dispatch points — spec-time (before plan approval) and code-time (after code-reviewer, before integration); same agent, same trust boundary, mode-based category weighting. PR #188, v0.26.0. Also added docs site review convention to CLAUDE.md and HARNESS.md constraint. PR #190.
+- **Surprise**: Two things. (1) Dogfooding `/diaboli` on the spec caught real structural issues before implementation: O2 identified that `pr_ref:` in code-mode frontmatter was impossible (the PR does not exist when code-time runs — integration-agent creates it after the gate); O1 identified "after PASS" was too narrow (MAX_REVIEW_CYCLES escalation exits without a PASS). Both were spec-level gaps caught exactly where the gate was designed to catch them. (2) The docs site review gap was not caught at plan time — the user had to prompt "have we missed checking docs site changes?" mid-session after implementation was complete.
+- **Proposal**: WORKFLOW: When extending an existing agent or skill to a new dispatch point, treat the dispatch context (inputs available, pipeline state) as potentially different even when core behaviour is identical. The `pr_ref:` gap arose because the spec assumed the same context as spec-time; code-time has different available inputs and different downstream state.
+- **Improvement**: Plan-presentation should include docs site review as a named, visible checkpoint — not just a standing convention, but an explicit stage in the file-change list so it is not missed under implementation momentum.
+- **Signal**: workflow
+- **Constraint**: Docs site kept current constraint added in this session (HARNESS.md + CLAUDE.md); no further constraint proposed.
+- **Session metadata**:
+  - Duration: ~3 hrs across two sessions (second session ~30 min post-compaction)
+  - Model tiers used: flagship (main conversation, 100%; no subagents)
+  - Pipeline stages completed: spec commit, diaboli spec-mode (dogfood), dispositions by user, implementation commit, version bump commit, PR #188, CI, merge; docs convention branch, commit, PR #190, CI, merge
+  - Agent delegation: manual

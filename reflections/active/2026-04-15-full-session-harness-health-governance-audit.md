@@ -1,0 +1,13 @@
+- **Date**: 2026-04-15
+- **Agent**: claude-opus-4-6 (main conversation + haiku/Explore subagents)
+- **Task**: Full session: harness health, governance audit, Observatory signal verification, output validation checkpoints for 8 commands, convention sync, GC workflow expansion, README/docs audit and remediation, and /harness-onboarding command. Plugin v0.19.2 to v0.20.0 across PRs #142-#157.
+- **Surprise**: The plugin had strong generation capabilities but weak verification — nothing checked that structured output matched its spec. This manifested at every layer: governance-auditor ignoring its format spec, /harness-health generating deprecated YAML, docs site with a "Coming Soon" stub for the HARNESS.md format reference, README counts drifting from reality. Verification was treated as optional rather than structural. Once the checkpoint pattern was established (PR #144), it propagated to 7 more commands with haiku subagents in under a minute — the pattern was simple, the gap was recognising it was needed.
+- **Proposal**: ARCH_DECISION: Every command that produces structured output parsed by downstream consumers must include a validation checkpoint step. This is not optional — it is the verification layer that makes the generation layer trustworthy. The pattern is: generate, read back, check against format spec, fix in place. Reference templates set intent; checkpoints guarantee compliance. Implemented across 8 commands; apply to any new command that generates parseable output.
+- **Improvement**: A standing `/observatory-verify` command that runs the 72-signal checklist on demand would make signal contract auditing reusable. The one-off prompt found 13 gaps (6 PARTIAL, 7 MISSING) that drove most of the session's work — making it a command would let any session start with "what signals are we missing?"
+- **Signal**: workflow
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: ~3 hours
+  - Model tiers used: most-capable (main conversation, ~55%), haiku (implementation subagents, ~25%), capable (Explore/governance subagents, ~20%)
+  - Pipeline stages completed: harness-health, governance-audit, signal verification, brainstorming, spec, plan, subagent-driven implementation, convention-sync, docs audit, docs remediation, issue creation, /harness-onboarding feature, 16 PRs (#142-#157), 3 reflects
+  - Agent delegation: partial (subagents for implementation, exploration, and governance audit; manual for design, verification, and coordination)

@@ -1,0 +1,13 @@
+- **Date**: 2026-04-14
+- **Agent**: claude-opus-4-6 (main conversation)
+- **Task**: Added Tier 1 and Tier 2 Observatory metrics to harness health snapshots — YAML metrics block, regression detection, feedback loop tracking, session metadata in reflections, governance YAML standardisation, and configurable snapshot cadence
+- **Surprise**: The files referenced in the spec existed in two locations — some at the repo root (e.g. `skills/`, `hooks/`, `templates/`) and others nested under `ai-literacy-superpowers/` (e.g. `ai-literacy-superpowers/commands/`, `ai-literacy-superpowers/agents/`). The spec used root-relative paths for all files, which required discovery to find the actual locations.
+- **Proposal**: GOTCHA: Plugin files are split between the repo root and the `ai-literacy-superpowers/` subdirectory. Root-level `skills/`, `hooks/`, `templates/` are the plugin's own development files. Files under `ai-literacy-superpowers/` are the packaged plugin that gets distributed. When a spec references a file path, check both locations.
+- **Improvement**: Specs that reference files across both locations should use explicit prefixes (`root:` vs `plugin:`) or full paths to avoid ambiguity. Alternatively, a file map in the spec preamble would save discovery time.
+- **Signal**: context
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: unknown
+  - Model tiers used: unknown
+  - Pipeline stages completed: manual implementation (no orchestrator pipeline)
+  - Agent delegation: manual

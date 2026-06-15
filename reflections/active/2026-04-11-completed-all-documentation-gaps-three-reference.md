@@ -1,0 +1,8 @@
+- **Date**: 2026-04-11
+- **Agent**: claude-opus-4-6 (interactive + background subagents)
+- **Task**: Completed all documentation gaps — three reference page stubs (commands, agents, templates), wired Article 08 into docs nav, added Human Pace how-to guide, fixed stale design spec counts, bumped to v0.9.4
+- **Surprise**: Background subagents drafted all three reference pages but couldn't write files due to permission denials — had to extract content from their output logs and write from the parent context. Also, the version consistency CI check I suggested adding at the end already existed at `.github/workflows/version-check.yml`.
+- **Proposal**: Future agents should know: (1) background subagents may lack Write/Edit permissions — use foreground agents for write-heavy tasks, or have the parent do the final writes; (2) before proposing new CI checks, grep `.github/workflows/` for related workflows to avoid duplicating existing enforcement; (3) the docs site now has zero "Coming Soon" stubs — all reference pages (skills, commands, agents, hooks, templates, harness-md-format) are complete
+- **Improvement**: Grep for existing CI workflows before suggesting new ones. For parallel doc writing, foreground agents with approved permissions would avoid the extract-and-rewrite overhead.
+- **Signal**: workflow
+- **Constraint**: none

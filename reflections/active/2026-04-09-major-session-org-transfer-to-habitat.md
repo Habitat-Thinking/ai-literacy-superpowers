@@ -1,0 +1,8 @@
+- **Date**: 2026-04-09
+- **Agent**: claude-opus-4-6 (interactive + haiku/sonnet subagents)
+- **Task**: Major session — org transfer to Habitat-Thinking, feedback flywheel signal classification, model sovereignty skill, Article 07 (The Assessment Practice), literacy-improvements skill bridging assessment to action, portfolio-assessment skill for multi-repo aggregation, semver workflow convention. Plugin went from v0.1.0 to v0.6.0 across PRs #79–#90.
+- **Surprise**: The three-layer assessment stack (assess → literacy-improvements → portfolio-assess) emerged iteratively from conversation rather than being designed upfront. Each layer naturally read the output of the layer below — the improvement mapping reads assessment gaps, the portfolio reads individual assessments and the improvement mapping. The architecture was coherent despite being discovered incrementally.
+- **Proposal**: Future agents should know: (1) the assessment system is now three layers deep — single-repo assessment, improvement planning, and portfolio aggregation — and changes to the assessment document format affect all three layers; (2) iterative design conversations that start with "does X do Y?" and evolve through "what about Z?" can produce coherent multi-layer architectures if each layer reads the output of the layer below rather than inventing its own data model; (3) when adding new skills or commands, update the improvement-mapping.md reference if the new capability closes a gap at any literacy level
+- **Improvement**: The version bump workflow (CLAUDE.md convention) worked well — every PR checked whether a bump was needed. Could be automated further with a CI check that compares plugin.json version to the latest git tag.
+- **Signal**: workflow
+- **Constraint**: none
