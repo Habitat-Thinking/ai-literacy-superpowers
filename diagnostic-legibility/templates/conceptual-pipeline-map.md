@@ -57,6 +57,7 @@ architectural element and/or a domain concept by name), but it does not
 | `entry` | list of string | yes | The `id`(s) of the stage(s) where the process begins. Each must reference an existing stage. |
 | `stages` | list of `PipelineStage` | yes | The conceptual stages of the process. May be empty **only** to express "the task resolved to no process" (see validation). |
 | `transitions` | list of `PipelineTransition` | yes | The directed flow between stages, with optional branch conditions. |
+| `pipeline_cross_check_status` | enum | no (additive, v0.9.0) | The outcome of the **pipeline's** participation in the three-way cross-check (Phase C across pipeline + architectural + domain). One of `completed \| skipped_asymmetric \| not_run`; **absence means `not_run`** (back-compat with v0.8.0 maps that pre-date the field). It is the pipeline-side sibling of the `LegibilityModel.cross_check_status` scalar — which keeps its **unchanged** meaning, the *arch↔domain* outcome. Kept on the **map** (not the `LegibilityModel`) so each model stays self-describing about its own cross-check; a v0.5.0/v0.8.0 consumer reading only `cross_check_status` is unaffected and ignores this field. See §Cross-check status. |
 | `generated_at` | string (ISO 8601) | yes | Provenance timestamp. Dispatcher-filled via the `<DISPATCHER: ...>` placeholder, as in `LegibilityModel`. |
 | `generated_by` | string | yes | Producer + model identifier. Dispatcher-filled. |
 
@@ -114,6 +115,7 @@ ConceptualPipelineMap = {
   entry: [string],
   stages: [PipelineStage],
   transitions: [PipelineTransition],
+  pipeline_cross_check_status?: "completed" | "skipped_asymmetric" | "not_run",
   generated_at: string,
   generated_by: string,
 }
@@ -144,6 +146,48 @@ ScopeResolution = {
   scope_confidence: "low" | "medium" | "high",
 }
 ```
+
+## Cross-check status (three-way, v0.9.0)
+
+When the map is produced alongside the architectural/domain
+`LegibilityModel` (the `mode: pipeline` two-block bundle), Phase C
+cross-checks **all three** collections against each other. The outcome is
+reported by **two independent scalar fields**, one per model, so that
+each model stays self-describing and a pre-v0.9.0 consumer is unaffected:
+
+| Field | Lives on | Reports | Legal values |
+| --- | --- | --- | --- |
+| `cross_check_status` | `LegibilityModel` | the **arch↔domain** outcome — **unchanged** from v0.4.0 | `completed \| skipped_asymmetric \| not_run` |
+| `pipeline_cross_check_status` | `ConceptualPipelineMap` | the **pipeline's** outcome against its peers | `completed \| skipped_asymmetric \| not_run` |
+
+Both share the same enum and the same **absence ⇒ `not_run`** rule. The
+split is the backward-compat contract: a consumer that read only
+`cross_check_status` before v0.9.0 keeps reading exactly the arch↔domain
+fact it always did; the pipeline outcome is additive and ignorable.
+
+**The six directed pairs.** The maximal cover runs deliberately: the
+existing `A↔D` (two directions) plus the four pipeline-touching pairs
+`P→A`, `A→P`, `P→D`, `D→P`. Each pair carries direction-flavoured
+weighting and its own named failure mode (agent file). `CC<N>` notes are
+written on the **subject** element of each pair only — the single-writer
+audit trail extended to three collections; a side-effect on another
+collection is named in the subject's prose, never double-written.
+
+**Status assignment.**
+
+- `pipeline_cross_check_status: completed` — the pipeline was cross-checked
+  against **at least one** non-empty peer collection (arch and/or domain).
+- `pipeline_cross_check_status: skipped_asymmetric` — the pipeline is
+  non-empty but **no** peer collection is non-empty (nothing to
+  cross-check against), or the pipeline itself is the `stages: []`
+  empty-task map (no stages to cross-check).
+- `cross_check_status` follows its **existing** v0.4.0 rule, governing the
+  arch↔domain pair only — entirely unaffected by the pipeline's presence.
+
+A map emitted **without** running Phase C (e.g. the P3-era `mode: pipeline`
+build, or any producer that stops before cross-check) carries
+`pipeline_cross_check_status: not_run` (or omits it — absence means the
+same).
 
 ## Validation rules
 

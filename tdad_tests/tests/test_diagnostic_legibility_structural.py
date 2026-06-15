@@ -69,11 +69,11 @@ def repo_root() -> Path:
 
 @pytest.mark.structural
 class TestDiagnosticLegibilityVersioning:
-    """The P3 plugin version bump from 0.7.0 to 0.8.0 must land in
+    """The P4 plugin version bump from 0.8.0 to 0.9.0 must land in
     lockstep across plugin.json, marketplace.json's per-plugin entry,
-    and the CHANGELOG heading. A new agent capability (the
-    `mode: pipeline` flow-tracing build) is a behavioural plugin change,
-    so P3 takes a minor bump (P1/P2 took the same; S2a/S3 precedent).
+    and the CHANGELOG heading. Extending pipeline mode's Phase C to the
+    three-way (six-pair) cross-check is a behavioural plugin change, so
+    P4 takes a minor bump (P1–P3 took the same; S2a/S3 precedent).
 
     The marketplace listing's top-level `version` (0.4.0) and its
     `plugin_version` pointer are explicitly unchanged by this slice —
@@ -81,7 +81,7 @@ class TestDiagnosticLegibilityVersioning:
     taking `plugin_version` from main verbatim at rebase time.
     """
 
-    def test_plugin_json_at_0_8_0(
+    def test_plugin_json_at_0_9_0(
         self, diagnostic_legibility_path: Path
     ) -> None:
         manifest_path = (
@@ -90,13 +90,13 @@ class TestDiagnosticLegibilityVersioning:
             / "plugin.json"
         )
         manifest = json.loads(manifest_path.read_text())
-        assert manifest["version"] == "0.8.0", (
+        assert manifest["version"] == "0.9.0", (
             "diagnostic-legibility/.claude-plugin/plugin.json must "
-            "carry version '0.8.0' (was '0.7.0' at P2). "
+            "carry version '0.9.0' (was '0.8.0' at P3). "
             f"Actual: {manifest['version']!r}"
         )
 
-    def test_marketplace_entry_at_0_8_0(self, repo_root: Path) -> None:
+    def test_marketplace_entry_at_0_9_0(self, repo_root: Path) -> None:
         marketplace_path = (
             repo_root / ".claude-plugin" / "marketplace.json"
         )
@@ -112,9 +112,9 @@ class TestDiagnosticLegibilityVersioning:
         assert entry is not None, (
             "No diagnostic-legibility entry in marketplace.json plugins[]"
         )
-        assert entry["version"] == "0.8.0", (
+        assert entry["version"] == "0.9.0", (
             "marketplace.json diagnostic-legibility entry must be at "
-            f"'0.8.0' (was '0.7.0' at P2). Actual: {entry['version']!r}"
+            f"'0.9.0' (was '0.8.0' at P3). Actual: {entry['version']!r}"
         )
 
     def test_marketplace_top_level_version_unchanged(
@@ -162,28 +162,29 @@ class TestDiagnosticLegibilityVersioning:
             "does not own (per spec §9)."
         )
 
-    def test_changelog_has_0_8_0_heading(
+    def test_changelog_has_0_9_0_heading(
         self, diagnostic_legibility_path: Path
     ) -> None:
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
-        assert "## 0.8.0 — 2026-06-15" in changelog, (
-            "CHANGELOG.md must contain a `## 0.8.0 — 2026-06-15` heading "
-            "naming the P3 pipeline mode. Note: the dash is the em-dash "
-            "(U+2014), matching the format enforced by the "
+        assert "## 0.9.0 — 2026-06-15" in changelog, (
+            "CHANGELOG.md must contain a `## 0.9.0 — 2026-06-15` heading "
+            "naming the P4 three-way cross-check. Note: the dash is the "
+            "em-dash (U+2014), matching the format enforced by the "
             "version-consistency CI check."
         )
 
     def test_changelog_prior_headings_persist(
         self, diagnostic_legibility_path: Path
     ) -> None:
-        """Audit trail: the prior v0.7.0 (P2), v0.6.0 (P1) and v0.5.0
-        (S4) headings must remain when v0.8.0 is prepended."""
+        """Audit trail: the prior v0.8.0 (P3), v0.7.0 (P2), v0.6.0 (P1)
+        and v0.5.0 (S4) headings must remain when v0.9.0 is prepended."""
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
         for heading in (
+            "## 0.8.0 — 2026-06-15",
             "## 0.7.0 — 2026-06-15",
             "## 0.6.0 — 2026-06-14",
             "## 0.5.0 — 2026-06-01",
@@ -2044,26 +2045,17 @@ class TestDiagnosticLegibilityPipelineMode:
             "Pipeline output must name the second block, LegibilityModel."
         )
 
-    def test_pipeline_defers_cross_check(
-        self, diagnostic_legibility_path: Path
-    ) -> None:
-        """At v0.8.0 pipeline mode does NOT run Phase C: the
-        LegibilityModel carries `cross_check_status: not_run` and no
-        CC<N> entries (cross-check is P4)."""
-        body = self._agent_body(diagnostic_legibility_path)
-        assert "cross_check_status: not_run" in body, (
-            "Pipeline mode must document emitting "
-            "`cross_check_status: not_run` (Phase C deferred to P4)."
-        )
-
-    # -- anti-patterns -----------------------------------------------
+    # -- anti-patterns (P3-era; cross-check-deferral inverted at P4) --
 
     def test_pipeline_anti_patterns(
         self, diagnostic_legibility_path: Path
     ) -> None:
-        """Anti-patterns must name the pipeline failure modes: phantom
-        edges, tracing beyond the bound, multiple pipelines, and running
-        cross-check in pipeline mode."""
+        """Anti-patterns must name the pipeline trace failure modes:
+        phantom edges, tracing beyond the bound, and multiple pipelines.
+        (The P3-era 'do not run cross-check in pipeline mode' anti-pattern
+        is INVERTED at P4 — pipeline mode now runs the three-way Phase C —
+        so it is replaced by the P4 cross-check anti-patterns asserted in
+        TestDiagnosticLegibilityThreeWayCrossCheck.)"""
         body = self._agent_body(diagnostic_legibility_path)
         low = body.lower()
         assert "phantom edge" in low, (
@@ -2075,7 +2067,165 @@ class TestDiagnosticLegibilityPipelineMode:
         assert "multiple pipelines" in low, (
             "Anti-patterns must name multiple pipelines in one map."
         )
-        assert "running cross-check in pipeline mode" in low, (
-            "Anti-patterns must forbid running cross-check in pipeline "
-            "mode (Phase C is P4)."
+        assert "running cross-check in pipeline mode" not in low, (
+            "The P3-era 'running cross-check in pipeline mode' "
+            "anti-pattern must be REMOVED at P4 — pipeline mode now runs "
+            "the three-way Phase C cross-check."
+        )
+
+
+# ---------------------------------------------------------------------
+# Three-way (six-pair) cross-check (P4, v0.9.0)
+# ---------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestDiagnosticLegibilityThreeWayCrossCheck:
+    """P4 extends pipeline-mode Phase C from the two-collection
+    `A↔D` cross-check to the maximal three-collection cover — all six
+    directed pairs — and adds the `pipeline_cross_check_status` field on
+    the ConceptualPipelineMap (the pipeline-side sibling of the
+    unchanged `LegibilityModel.cross_check_status`). Deterministic
+    file-shape assertions over the template and the agent file.
+
+    Spec reference:
+        docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md (§6.3)
+    """
+
+    def _agent_body(self, diagnostic_legibility_path: Path) -> str:
+        return (
+            diagnostic_legibility_path
+            / "agents"
+            / "diagnostic-legibility.agent.md"
+        ).read_text()
+
+    def _template_body(self, diagnostic_legibility_path: Path) -> str:
+        return (
+            diagnostic_legibility_path
+            / "templates"
+            / "conceptual-pipeline-map.md"
+        ).read_text()
+
+    # -- template: the new status field (backward-compat, diaboli O8) --
+
+    def test_template_documents_pipeline_cross_check_status(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._template_body(diagnostic_legibility_path)
+        assert "pipeline_cross_check_status" in body, (
+            "Template must document the additive "
+            "`pipeline_cross_check_status` field on the "
+            "ConceptualPipelineMap (spec §6.3 / diaboli O8)."
+        )
+        for value in ("completed", "skipped_asymmetric", "not_run"):
+            assert value in body, (
+                f"Template must document the "
+                f"`pipeline_cross_check_status` value {value!r}."
+            )
+
+    def test_template_keeps_cross_check_status_meaning(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The backward-compat contract (diaboli O8): the existing
+        `cross_check_status` keeps its arch↔domain meaning; the new
+        field carries the pipeline outcome — two scalars, one per
+        model."""
+        body = self._template_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "cross_check_status" in body, (
+            "Template must reference the unchanged `cross_check_status` "
+            "(arch↔domain) when documenting the new pipeline field."
+        )
+        assert "arch↔domain" in body or "arch↔domain outcome" in low, (
+            "Template must state `cross_check_status` keeps its "
+            "arch↔domain meaning (the backward-compat split)."
+        )
+
+    # -- agent: the three-way Phase C ---------------------------------
+
+    def test_agent_has_pipeline_phase_c(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "Phase C (pipeline)" in body, (
+            "Agent body must carry a `Phase C (pipeline)` three-way "
+            "cross-check section (spec §6.3)."
+        )
+
+    def test_agent_names_six_directed_pairs(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """All six directed pairs must be named: A↔D (existing) plus the
+        four pipeline-touching pairs (diaboli O10, the maximal cover)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        for pair in ("A→D", "D→A", "P→A", "A→P", "P→D", "D→P"):
+            assert pair in body, (
+                f"Agent body must name the directed pair {pair!r} "
+                "(spec §6.3 — the maximal six-pair cover)."
+            )
+
+    def test_agent_names_four_new_failure_modes(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The four new directed pairs each carry a named,
+        direction-flavoured failure mode (spec §6.3)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        for mode in (
+            "flow-contradicts-architecture",
+            "architecture-unbacked gate",
+            "flow-mis-sequenced concept",
+            "concept-redefining label",
+        ):
+            assert mode in low, (
+                f"Agent body must name the P4 failure mode {mode!r} "
+                "(spec §6.3)."
+            )
+
+    def test_agent_documents_two_status_scalars(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Both scalars are documented and kept distinct:
+        cross_check_status (arch↔domain, unchanged) and
+        pipeline_cross_check_status (pipeline outcome)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        assert "pipeline_cross_check_status" in body, (
+            "Agent body must name `pipeline_cross_check_status`."
+        )
+        assert "cross_check_status" in body, (
+            "Agent body must name the unchanged `cross_check_status`."
+        )
+
+    def test_agent_reuses_five_cc_questions(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The same five CC questions apply across the new pairs (spec
+        §6.3 — mechanics carry over unchanged)."""
+        body = self._agent_body(diagnostic_legibility_path)
+        for prefix in (
+            "CC1 (boundary contradiction):",
+            "CC5 (mutual description integrity):",
+        ):
+            assert prefix in body, (
+                f"Agent body must reference the canonical CC prefix "
+                f"{prefix!r} (reused across the three-way pairs)."
+            )
+
+    def test_agent_pipeline_cross_check_anti_patterns(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """P4 anti-patterns: trimming a directed pair, conflating the two
+        scalars, and bidirectional CC writes across three collections."""
+        body = self._agent_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "trimming a directed pair" in low, (
+            "Anti-patterns must forbid trimming a directed pair (the "
+            "maximal cover is deliberate — diaboli O10)."
+        )
+        assert "conflating the two cross-check scalars" in low, (
+            "Anti-patterns must forbid conflating the two status scalars."
+        )
+        assert "bidirectional cc writes across three collections" in low, (
+            "Anti-patterns must forbid bidirectional CC writes across "
+            "three collections (single-writer audit trail)."
         )

@@ -26,8 +26,8 @@
     {
       "name": "diagnostic-legibility",
       "source": "./diagnostic-legibility",
-      "description": "Agents accountable for helping to maintain human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. The `ConceptualPipelineMap` template adds a standalone, presentation-agnostic flow-perspective data model; the agent's `scope-resolution` mode answers 'what does my task touch?' (a bounded, disclosed scope from a work task); and its `pipeline` mode traces control flow within that bound into a self-challenged ConceptualPipelineMap alongside the architectural/domain collections (task-scoped pipeline-map feature, slices P1–P3).",
-      "version": "0.8.0"
+      "description": "Agents accountable for helping to maintain human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. The `ConceptualPipelineMap` template adds a standalone, presentation-agnostic flow-perspective data model; the agent's `scope-resolution` mode answers 'what does my task touch?' (a bounded, disclosed scope from a work task); and its `pipeline` mode traces control flow within that bound into a ConceptualPipelineMap alongside the architectural/domain collections, then cross-checks all three against each other (the maximal six directed pairs) for mutual correction (task-scoped pipeline-map feature, slices P1–P4).",
+      "version": "0.9.0"
     }
   ]
 }

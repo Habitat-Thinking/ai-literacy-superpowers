@@ -1,5 +1,69 @@
 # Changelog
 
+## 0.9.0 — 2026-06-15
+
+### Three-way (six-pair) cross-check (pipeline-map P4)
+
+Extends pipeline-mode **Phase C** from the two-collection `A↔D`
+cross-check to the maximal **three-collection** cover — slice P4 of the
+task-scoped pipeline-map feature (#363–#367). The pipeline collection now
+challenges and is challenged by the architectural and domain collections,
+so a stage's `condition`/`realises` claim is corrected by — and corrects —
+the other two models.
+
+- **All six directed pairs run** (diaboli O10, the maximal cover chosen
+  deliberately; the combinatorial token cost is the accepted price of
+  maximal mutual correction): the existing `A→D` / `D→A`, plus the four
+  pipeline-touching pairs `P→A`, `A→P`, `P→D`, `D→P`.
+- **Four new direction-flavoured failure modes**, one per new pair:
+  *flow-contradicts-architecture* (`P→A`), *architecture-unbacked gate*
+  (`A→P`), *flow-mis-sequenced concept* (`P→D`), *concept-redefining
+  label* (`D→P`). The existing `A↔D` failure modes are unchanged.
+- **Mechanics carry over unchanged**: the same five cross-check questions
+  (`CC1 (boundary contradiction):` … `CC5 (mutual description
+  integrity):`), the canonical `CC<N>` prefix, the per-subject
+  `Cross-check applied; …` clean-run sentinel, the subject-only
+  single-writer audit trail (now a graph rooted at subjects over three
+  collections), and the Q-before-CC ordering invariant.
+- **Backward-compatible status reporting** (diaboli O8): the scalar
+  `cross_check_status` on the `LegibilityModel` keeps its **unchanged**
+  v0.4.0 meaning — the **arch↔domain** outcome — so a consumer that read
+  only that scalar (e.g. `/diagnose`) is unaffected. A **new**
+  `pipeline_cross_check_status` field on the `ConceptualPipelineMap`
+  template (same `completed | skipped_asymmetric | not_run` enum, same
+  absence-means-`not_run` rule) carries the **pipeline's** outcome. Two
+  models, two self-describing scalars.
+- **Pipeline mode now runs cross-check**: the P3-era
+  `cross_check_status: not_run` deferral is lifted; `CC<N>` entries now
+  appear on subject elements, and both status scalars are set. The
+  P3 anti-pattern forbidding cross-check in pipeline mode is replaced by
+  P4 anti-patterns (trimming a directed pair, conflating the two scalars,
+  bidirectional CC writes across three collections).
+
+Deterministic Layer-1 structural tests guard the new field and the
+six-pair cover
+(`tdad_tests/tests/test_diagnostic_legibility_structural.py`,
+`TestDiagnosticLegibilityThreeWayCrossCheck`).
+
+**Watch item (story #6, revisit):** instrument which directed pairs
+actually fire corrections on real invocations and trim any pair that
+never does — **via a deliberate cover revision, not an ad-hoc per-run
+skip** (the "trimming a directed pair" anti-pattern forbids the latter).
+Deferred, not scheduled.
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md` (§6.3);
+slicing record `docs/superpowers/slices/diagnostic-legibility-pipeline-map.md`
+(P4); spec-mode diaboli O8 (status back-compat) and O10 (maximal cover).
+
+**Marketplace**: the `diagnostic-legibility` listing entry version bumps
+0.8.0 → 0.9.0 and its `description` gains a clause naming the three-way
+cross-check; the top-level listing `version` and `plugin_version` are
+unchanged.
+
+P4 of the pipeline-map slicing record. Closes issue #366; parent feature
+(#363–#367) continues with P5 (the `/pipeline-map` command + render).
+
 ## 0.8.0 — 2026-06-15
 
 ### Flow-tracing within scope + self-challenge (pipeline-map P3)
