@@ -286,7 +286,7 @@ when those mixes diverge the figure skews. This is by design, so a
 downstream S2 author should not "fix" it by reintroducing a per-direction
 rate.
 
-## The three grounding states for cost
+## The grounding states for cost (four, under family resolution — v0.50.0)
 
 1. **No snapshot exists** → `cost_usd` and `cost_basis` **omitted**;
    omission disclosed in `Excluded`. `tokens`/`agent_compute_time` still
@@ -328,9 +328,11 @@ is the **defined cost-omitted sentinel**: the entry remains *present*
 path records what the emitter actually read — the directory it inspected and
 found empty (or without a usable snapshot). The `Excluded` prose names that the
 directory held no usable snapshot. The entry is **never dropped** and **never
-given a fabricated snapshot file path**. When a usable snapshot file exists
-(state 3), the `path` is that **file** (e.g.
-`observability/costs/2026-08-15-costs.md`).
+given a fabricated snapshot file path**. When a snapshot **file** exists
+(states 3 and 4 — a Model Breakdown is present, whether or not an
+estimating-tier family resolves), the `path` is that **file** (e.g.
+`observability/costs/2026-08-15-costs.md`); the directory sentinel is only
+for states 1 and 2, where no usable snapshot file exists.
 
 **Consumer special-case (do not double-count).** Because the trailing-slash
 directory path means *looked-and-found-nothing* rather than
