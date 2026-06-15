@@ -104,7 +104,7 @@ no model or price, while the snapshot's Model Breakdown is keyed by model
 name. The binding is fixed in the format reference's
 **tier→model→$/token binding table**:
 
-| Model tier (MODEL_ROUTING) | Representative model (snapshot key) |
+| Model tier (MODEL_ROUTING) | Representative model **family stem** |
 | --- | --- |
 | Most capable | `claude-opus-4` |
 | Standard | `claude-sonnet-4` |
@@ -114,6 +114,17 @@ name. The binding is fixed in the format reference's
 capable` — and one complexity-dependent split, the implementer's
 `Standard / Capable`. There is **no standalone `Capable` tier with its
 own model**; the dearer end of the split resolves to `Most capable`.
+
+**Family resolution, not exact keys (v0.50.0).** A snapshot Model
+Breakdown key resolves to a tier's representative **by family stem** — it
+matches iff it starts with the stem and the next character is `-` or
+end-of-string (so `claude-opus-4` resolves the real id `claude-opus-4-8`,
+but not `claude-opus-40`). Multiple rows in one family aggregate into one
+blended rate (disclosed when >1). This is the #411 fix: a snapshot keyed
+by the actual model id now grounds cost where the old exact-string match
+silently omitted it. The full rule (delimiter, aggregation, and the
+**cross-tier proxy** for a tier whose family is absent) lives in the
+format reference's binding table — this skill does not restate it.
 
 **Deriving a per-model rate from a snapshot.** The snapshot's
 `## Model Breakdown` table gives, per model, quarter-aggregate
@@ -137,24 +148,33 @@ validation-rejection rule, and not a new derivation. On a cost-omitted record no
 stage carries the sub-field (the coupling is one-directional: a per-stage band
 never appears without the top-level `cost_usd`).
 
-**The three grounding states.** The snapshot's Model Breakdown is marked
-"(if available)" in the cost-tracking format, so the methodology branches
-on **three** states, not two:
+**The grounding states (four, under family resolution — v0.50.0).** The
+snapshot's Model Breakdown is marked "(if available)" in the cost-tracking
+format, and binding resolves tiers by **family stem** (above), so the
+methodology branches on **four** states. The canonical statement is the
+format reference's "grounding states for cost"; in brief:
 
-1. **No snapshot exists** — today's state; `observability/costs/` is
-   empty (the 2026-05-29 health snapshot records "Last cost capture:
-   never"). → `cost_usd` **omitted**, omission disclosed in `Excluded`.
+1. **No snapshot exists** — `observability/costs/` is empty. → `cost_usd`
+   **omitted**, disclosed in `Excluded`.
 2. **Snapshot exists but the Model Breakdown is absent or too coarse**
-   to yield a per-tier rate (only the always-present Provider Spend table
-   is populated, or the breakdown lacks the tiers the stage set needs). →
-   `cost_usd` **omitted**, omission disclosed in `Excluded` **naming this
-   specific cause** ("a cost snapshot exists but carries no usable
-   per-model breakdown"). The methodology does **not** silently fall
-   through to list price.
-3. **Snapshot exists with a usable Model Breakdown** → `cost_usd`
-   **present**, `cost_basis: snapshot-actuals`, `confidence.cost` set from
-   the snapshot's age and granularity, and the snapshot date/quality
-   disclosed in `Included`.
+   to yield a per-tier rate. → `cost_usd` **omitted**, disclosed **naming
+   this specific cause** ("a cost snapshot exists but carries no usable
+   per-model breakdown"). The methodology does **not** fall through to
+   list price.
+3. **Snapshot present but NO estimating-tier family resolves** — after
+   family resolution, neither the `claude-opus-4` nor the
+   `claude-sonnet-4` family is present (e.g. a haiku-only snapshot). →
+   `cost_usd` **omitted**, naming the cause. (This is the family-resolution
+   successor of the old "missing model key" omission.)
+4. **Snapshot present with ≥1 estimating-tier family resolving** →
+   `cost_usd` **present**, `confidence.cost` from the snapshot's
+   age/granularity, snapshot date/quality disclosed in `Included`. The
+   **basis** distinguishes two cases: every exercised tier's family
+   resolves directly → `cost_basis: snapshot-actuals`; at least one
+   exercised tier's family is absent and is priced by the **cross-tier
+   proxy** (binding table) → `cost_basis: snapshot-actuals-proxied`, with
+   `failure_direction: likely-overrun` and `confidence.cost: low` forced
+   and every proxied tier disclosed.
 
 **There is no list-price fallback.** A list-price guess is not an
 observed cost; emitting it as a first-class figure was the false
@@ -163,7 +183,7 @@ actuals, it is **omitted with disclosure**, and the day-one deliverable
 remains the token + time estimate.
 
 **The no-cost case is honest, not a failure.** When `cost_usd` is omitted
-(states 1 and 2), the record is **valid and complete** — it is the
+(states 1–3), the record is **valid and complete** — it is the
 expected day-one shape. The `Excluded` section carries an explicit
 omission disclosure, e.g.:
 

@@ -30,7 +30,7 @@ the body carries the human-readable disclosure prose.
 | `tokens_by_stage` | list of objects | yes | Per-stage breakdown. Each entry: `stage` (string — spec-writer, tdd-agent, implementer, code-reviewer, integration), `tokens` (range object), `model_tier` (string from the agent→model-tier mapping — may be a split tier such as `Standard/Capable`). May omit stages a target does not exercise; the omission must be reflected in the `Excluded` prose. |
 | `tokens_by_stage[].cost_usd` | range object `{ low, high }` | **optional, one-directionally coupled** — **present ⟹ top-level `cost_usd` present** (enforced); top-level `cost_usd` present ⟹ bands **SHOULD** be populated by emitters, but their **absence does NOT invalidate** the record (**not** an `iff` — the asymmetry is deliberate) | The per-stage dollar contribution. Makes the split-tier widening a machine-readable disclosure surface and a **record-internal** spread check: a validator can assert a split-tier stage's band is **non-collapsed (strictly spread)** — `low < high` — consistent with the binding table's tier ordering. It **cannot** assert the bounds equal the absolute `claude-sonnet-4`/`claude-opus-4` rates — those live in the snapshot, not the record (see the per-stage cost validation notes below). |
 | `cost_usd` | range object | **conditional (present-when-grounded)** | Estimated dollar cost as `{ low: float, high: float }`. **Present ONLY when an `observability/costs/` snapshot supplies a usable per-tier $/token rate.** When no usable rate exists, the field is **omitted entirely** and the omission is disclosed in `Excluded`. The format must not carry a placeholder, a null, or a forced list-price value. |
-| `cost_basis` | enum | **conditional (present-when-grounded)** | Present **iff** `cost_usd` is present. One of `snapshot-actuals` (rate derived from a snapshot Model Breakdown) — currently the only grounded basis. Records the provenance of the $/token rate so a reader knows the cost is observed, not guessed. |
+| `cost_basis` | enum | **conditional (present-when-grounded)** | Present **iff** `cost_usd` is present. One of `snapshot-actuals` (every priced tier's rate is derived from a snapshot Model Breakdown row of *that tier's own* model family) **or** `snapshot-actuals-proxied` (v0.50.0 — at least one exercised tier's family was **absent** from the snapshot and was priced by a disclosed **cross-tier proxy** at another present family's rate; see the binding table's *Cross-tier proxy* rule). Records the provenance of the $/token rate so a reader — human **or** machine — knows whether the cost is directly grounded or partly proxied **without reading prose**. The `snapshot-actuals-proxied` value is additive and backward-compatible: a record predating it carries `snapshot-actuals`, and a consumer that does not recognise the new value treats it as grounded-with-caveat. |
 | `agent_compute_time` | range object | yes | Estimated wall-clock spent in agent execution as `{ low: <duration>, high: <duration> }`. Durations are ISO 8601 durations or plain `"Nm"`/`"Nh"` strings. Derived from token volume. |
 | `human_gate_time` | string (qualitative caveat) | yes | A **disclosed qualitative caveat string**, NOT a numeric range. Total wall-clock is dominated by human availability at the orchestrator's disposition gates, and **is not estimated numerically at S1**. Carries a short prose statement to that effect, never a `{ low, high }` range. |
 | `confidence` | object | yes | **Per-axis** confidence object with keys `tokens`, `time`, and (iff `cost_usd` present) `cost`, each one of `low`, `medium`, `high`. A whole-record summary tier MAY be reported as `min()` of the present axes, but the per-axis values are authoritative. |
@@ -184,16 +184,60 @@ The single source of the `tier → model` map for cost derivation. The cost
 derivation reads this table so the binding is **not left to agent
 discretion**.
 
-| Model tier (MODEL_ROUTING) | Representative model (snapshot key) | $/token source |
+| Model tier (MODEL_ROUTING) | Representative model **family stem** | $/token source |
 | --- | --- | --- |
-| Most capable | `claude-opus-4` | blended rate from the snapshot Model Breakdown row for `claude-opus-4` |
-| Standard | `claude-sonnet-4` | blended rate from the snapshot Model Breakdown row for `claude-sonnet-4` |
-| Standard / Capable (split) | spans `claude-sonnet-4` (low) … `claude-opus-4` (high) | **widened**: low bound uses the `claude-sonnet-4` rate, high bound uses the `claude-opus-4` rate |
+| Most capable | `claude-opus-4` | blended rate from the snapshot Model Breakdown row(s) of the `claude-opus-4` family |
+| Standard | `claude-sonnet-4` | blended rate from the snapshot Model Breakdown row(s) of the `claude-sonnet-4` family |
+| Standard / Capable (split) | spans `claude-sonnet-4` (low) … `claude-opus-4` (high) | **widened**: low bound uses the `claude-sonnet-4`-family rate, high bound uses the `claude-opus-4`-family rate |
 
 `MODEL_ROUTING.md` names exactly two tiers — `Standard` and `Most
 capable` — and one complexity-dependent split, the implementer's
 `Standard / Capable`. There is **no standalone `Capable` tier with its own
 model**; the dearer end of the split resolves to `Most capable`.
+
+**Family resolution — match by family stem, not exact key (v0.50.0).** A
+snapshot Model Breakdown key `K` resolves to a tier's representative
+**iff `K`, lowercased, starts with the family stem AND the next character
+is `-` or end-of-string** (the delimiter rule). So `claude-opus-4` resolves
+`claude-opus-4` and `claude-opus-4-8`, but **not** `claude-opus-40`,
+`claude-opus-4o`, or `claude-opus-5`. This is why a snapshot keyed by the
+*actual* model id (`claude-opus-4-8`) now grounds Most capable, where the
+old exact-string match silently omitted cost (#411). The stems
+(`claude-opus-4` / `claude-sonnet-4`) are a **maintained** table, bumped
+per model generation; a renamed family that no longer matches is a
+*signalled* miss (it falls through to omission — loud — never a silent
+wrong rate).
+
+**Family aggregation.** When **>1** Model Breakdown row matches one
+family, aggregate them into a single blended family rate:
+`$/token = Σ estimated_cost ÷ Σ (input + output) tokens` over the matching
+rows. Aggregating across model generations can blend divergent rates, so
+**when >1 row is aggregated the emitter discloses it** in
+`Confidence rationale` (the same disclosure discipline as the
+blended-rate skew below).
+
+**Cross-tier proxy — pricing a tier whose family is absent (v0.50.0).**
+When an exercised tier's family does **not** resolve in the snapshot but
+**≥1 estimating-tier family does** (Most capable / Standard — *not* haiku
+or any non-estimating family), the missing tier is priced by a **proxy**
+at the **dearest present estimating family's** rate, rather than omitted.
+A proxy is **distinctly typed and disclosed**, never a figure masquerading
+as direct grounding:
+
+- the record's `cost_basis` is **`snapshot-actuals-proxied`** (the
+  machine-readable marker — a consumer keys on this, not on prose);
+- the record **forces `failure_direction: likely-overrun`** — dearest-
+  present deliberately **over**-states the proxied tier, so the figure is
+  unsuitable for trend aggregation, and the prose says so;
+- `confidence.cost` is forced to **`low`** (secondary to the basis marker);
+- `Included`/`Confidence rationale` **names every proxied tier** and its
+  proxy source ("Standard priced via a cross-tier proxy at the
+  Most-capable rate — the snapshot carries no `claude-sonnet-4` family").
+
+The proxy is anchored **only** in this repo's observed snapshot rates — a
+vendor price card is still **never** used (the no-list-price-fallback rule
+is untouched). It is a distinct *third basis*, not a relaxation of
+`snapshot-actuals`.
 
 **Stage/tier normalisation (the join key).** A `tokens_by_stage[].stage`
 maps to a MODEL_ROUTING Agent Routing row by **stripping the
@@ -242,7 +286,7 @@ when those mixes diverge the figure skews. This is by design, so a
 downstream S2 author should not "fix" it by reintroducing a per-direction
 rate.
 
-## The three grounding states for cost
+## The grounding states for cost (four, under family resolution — v0.50.0)
 
 1. **No snapshot exists** → `cost_usd` and `cost_basis` **omitted**;
    omission disclosed in `Excluded`. `tokens`/`agent_compute_time` still
@@ -251,10 +295,22 @@ rate.
    `cost_usd` **omitted**; `Excluded` names this specific cause ("a cost
    snapshot exists but carries no usable per-model breakdown"). **No**
    silent fall-through to list price.
-3. **Snapshot present with a usable Model Breakdown** → `cost_usd`
-   **present**, `cost_basis: snapshot-actuals`, `confidence.cost` from the
-   snapshot's age/granularity, snapshot date/quality disclosed in
-   `Included`.
+3. **Snapshot present but NO estimating-tier family resolves** — the Model
+   Breakdown exists but, after family resolution (binding table), neither
+   the `claude-opus-4` nor the `claude-sonnet-4` family is present (e.g. a
+   haiku-only snapshot) → `cost_usd` **omitted**, `Excluded` naming the
+   cause. (This is the family-matching successor of the old "missing model
+   key" / "unmapped tier" omission triggers — v0.50.0.)
+4. **Snapshot present with ≥1 estimating-tier family resolving** →
+   `cost_usd` **present**, `confidence.cost` from the snapshot's
+   age/granularity, snapshot date/quality disclosed in `Included`. The
+   **basis** distinguishes two cases:
+   - every exercised tier's family resolves directly → `cost_basis:
+     snapshot-actuals`;
+   - at least one exercised tier's family is absent and is priced by the
+     **cross-tier proxy** (binding table) → `cost_basis:
+     snapshot-actuals-proxied`, with `failure_direction: likely-overrun`
+     and `confidence.cost: low` forced and every proxied tier disclosed.
 
 **There is no list-price fallback.** When cost cannot be grounded in
 actuals, it is omitted with disclosure — the no-cost record is **valid and
@@ -272,9 +328,11 @@ is the **defined cost-omitted sentinel**: the entry remains *present*
 path records what the emitter actually read — the directory it inspected and
 found empty (or without a usable snapshot). The `Excluded` prose names that the
 directory held no usable snapshot. The entry is **never dropped** and **never
-given a fabricated snapshot file path**. When a usable snapshot file exists
-(state 3), the `path` is that **file** (e.g.
-`observability/costs/2026-08-15-costs.md`).
+given a fabricated snapshot file path**. When a snapshot **file** exists
+(states 3 and 4 — a Model Breakdown is present, whether or not an
+estimating-tier family resolves), the `path` is that **file** (e.g.
+`observability/costs/2026-08-15-costs.md`); the directory sentinel is only
+for states 1 and 2, where no usable snapshot file exists.
 
 **Consumer special-case (do not double-count).** Because the trailing-slash
 directory path means *looked-and-found-nothing* rather than
@@ -338,7 +396,14 @@ The checks a consuming command's Output Validation Checkpoint runs:
   label contains a `/`** (after the join-key whitespace normalisation);
   otherwise it is a single tier. A collapsed band (`low == high`) on a
   split-tier stage fails this check. **Single-tier** stages are exempt (they
-  may carry `low == high`, governed only by "Ranges well-formed"). A record
+  may carry `low == high`, governed only by "Ranges well-formed"). **Proxied
+  records are exempt (v0.50.0):** when the record's `cost_basis` is
+  `snapshot-actuals-proxied`, a split-tier band **may** collapse
+  (`low == high`) — the cross-tier proxy legitimately prices one or both ends
+  at the *same* present-family rate, so the both-ends-bind-different-models
+  assumption this check rests on no longer holds. The strict-spread predicate
+  therefore applies **only** when `cost_basis` is `snapshot-actuals` (every end
+  directly bound). A record
   with no per-stage `cost_usd` satisfies this check vacuously. (`model_tier` is a
   **required** sub-field of every `tokens_by_stage[]` entry, so a cost-bearing
   stage with an absent `model_tier` is a structural failure caught by the
@@ -363,8 +428,12 @@ The checks a consuming command's Output Validation Checkpoint runs:
   the `cost` axis by `target_kind` — it is independent (see the Cost axis
   rule above), so a `cost: low` beside `tokens: high` is valid.
 - [ ] **Cost pairing** — `cost_usd` and `cost_basis` are **both present or
-  both absent**; when absent, the `Excluded` section contains the
-  cost-omission disclosure.
+  both absent**; when present, `cost_basis` is one of `snapshot-actuals` or
+  `snapshot-actuals-proxied`; when absent, the `Excluded` section contains the
+  cost-omission disclosure. **Proxy coherence (v0.50.0):** a record with
+  `cost_basis: snapshot-actuals-proxied` must carry
+  `failure_direction: likely-overrun`, `confidence.cost: low`, and a proxied-
+  tier disclosure in `Included`/`Confidence rationale`.
 - [ ] **Time split** — both time fields present and **separate**:
   `agent_compute_time` a `{ low, high }` range, `human_gate_time` a
   qualitative caveat string (NOT a range).

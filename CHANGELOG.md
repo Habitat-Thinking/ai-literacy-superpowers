@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.50.0 — 2026-06-15
+
+### cost-estimation: tier→model family matching + disclosed cross-tier proxy (#411)
+
+Fixes the silent cost-omission #411 surfaced: the cost-estimation binding
+matched representative model keys **literally** (`claude-opus-4`,
+`claude-sonnet-4`), but real snapshots key their Model Breakdown by the
+**actual** model ids (`claude-opus-4-8`, …), so every estimate omitted
+cost even when a snapshot existed to ground it.
+
+- **Family matching (the core fix).** A snapshot key now resolves to a
+  tier's representative **by family stem** — it matches iff it starts with
+  the stem (`claude-opus-4` / `claude-sonnet-4`) **and** the next character
+  is `-` or end-of-string (so `claude-opus-4-8` → Most capable;
+  `claude-opus-40` does **not** match). Multiple rows in one family
+  aggregate into one blended rate, disclosed when >1. Only
+  `claude-opus-4` / `claude-sonnet-4` are estimating-tier families; haiku
+  and others bind to no tier. The stems are a maintained table (bumped per
+  model generation); a renamed family is a *signalled* miss (omission),
+  never a silent wrong rate.
+- **Disclosed cross-tier proxy (Option B′).** When an exercised tier's
+  family is **absent** but ≥1 estimating-tier family resolves, the missing
+  tier is **priced by a proxy** at the dearest present family's rate rather
+  than omitted — but as a **distinctly-typed, disclosed** figure: a new
+  additive `cost_basis` value **`snapshot-actuals-proxied`** (machine-
+  distinguishable from direct `snapshot-actuals`), with
+  `failure_direction: likely-overrun` and `confidence.cost: low` forced and
+  every proxied tier named. The proxy uses only observed snapshot rates —
+  never a vendor list price (the no-list-price-fallback rule is intact).
+- **Validator changes.** The `cost_basis` enum gains
+  `snapshot-actuals-proxied`; the "Split-tier spread" check exempts a
+  proxied (`snapshot-actuals-proxied`) split-tier band from the strict
+  `low < high` requirement (a cross-tier proxy legitimately collapses it);
+  the cost-pairing check requires a proxied record to carry the forced
+  overrun/low-confidence/disclosure trio. The three grounding states /
+  closed omission set are restated under family resolution.
+
+Touches the format reference (`skills/cost-estimation/references/estimate-record-format.md`),
+the skill (`skills/cost-estimation/SKILL.md`), and the `cost-estimator`
+agent in lockstep.
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-15-cost-estimation-family-matching-design.md`;
+spec-mode diaboli at
+`docs/superpowers/objections/cost-estimation-family-matching-design.md`
+(12 objections — 2 critical, 4 high — all accepted; the two criticals
+broke the naïve proxy and drove the engineered Option B′). Closes #411.
+
 ## 0.49.0 — 2026-06-14
 
 ### cost-estimator: populate per-stage cost_usd bands on cost-present records
