@@ -195,9 +195,8 @@ Glob `observability/costs/per-pr/` for per-PR actuals records (format:
 
 ### Mechanical cost-omission (no salience judgment)
 
-When you compute a cost figure (state 3 — a usable snapshot exists), re-verify
-the binding **mechanically** — there is **no judgment about whether an unmapped
-tier "matters"**:
+When you compute a cost figure, re-verify the binding **mechanically** — there is
+**no judgment about whether an unmapped tier "matters"**:
 
 1. **Tier-mapping check.** Confirm every tier exercised by the target's stage set
    (each exercised `tokens_by_stage[].model_tier`, including each side of a
@@ -206,48 +205,53 @@ tier "matters"**:
    **"Stage/tier normalisation (the join key)"** section)
    **before** deciding a tier is unmapped: **strip the `{{LANGUAGE}}-` prefix**
    from the stage name, and compare tier labels **whitespace-insensitively** (so
-   `Standard/Capable` ↔ `Standard / Capable`). A literal-string match is **not**
-   sufficient — without normalisation a correctly-mapped split tier (the
-   implementer stage, the dominant cost driver) would be falsely reported unmapped
-   on a spacing mismatch and cost over-omitted.
+   `Standard/Capable` ↔ `Standard / Capable`).
 
-   > **Omit `cost_usd` (emit a cost-omitted record with disclosure) on any of
-   > this closed set of mechanical conditions** — each maps to one of the S1
-   > three grounding states; there is **no residual "or otherwise ungrounded"
-   > clause** and **no judgment** about whether an unmapped tier is
-   > "load-bearing":
+2. **Family-resolution check (v0.50.0 — family, not exact key).** For each
+   exercised tier, resolve its representative against the snapshot's Model
+   Breakdown **by family stem**, per the binding table: a snapshot key matches the
+   stem (`claude-opus-4` / `claude-sonnet-4`) iff it starts with the stem **and**
+   the next character is `-` or end-of-string (so `claude-opus-4-8` resolves Most
+   capable; `claude-opus-40` does not). Aggregate multiple matching rows into one
+   blended family rate (disclose when >1). Only `claude-opus-4` / `claude-sonnet-4`
+   are **estimating-tier** families; `claude-haiku-4-5` and others resolve to no
+   tier and are never a binding or proxy source.
+
+   > **The closed omission/grounding set (v0.50.0).** No residual "or otherwise
+   > ungrounded" clause; no salience judgment:
    >
-   > 1. **No cost snapshot** (S1 state 1) — `observability/costs/` holds no
-   >    usable snapshot.
-   > 2. **Snapshot present but no usable Model Breakdown** (S1 state 2) — the
-   >    snapshot exists but yields no usable Model Breakdown to rate against.
-   > 3. **Unmapped tier** — ANY exercised stage's tier is unmapped by the
-   >    binding table after the join-key normalisation above.
-   > 4. **Missing model key** — a representative model key the binding names
-   >    (`claude-opus-4`, `claude-sonnet-4`) is absent from the snapshot's
-   >    Model Breakdown.
-   >
-   > A **usable snapshot with every exercised tier mapped and every named key
-   > present** is S1 state 3 — `cost_usd` is **present**. Every omission
-   > trigger is one of the four named, checkable conditions above; none asks
-   > you to judge whether something is "ungrounded."
+   > 1. **No cost snapshot** → omit.
+   > 2. **Snapshot present but no usable Model Breakdown** → omit.
+   > 3. **Model Breakdown present but NO estimating-tier family resolves**
+   >    (neither `claude-opus-4` nor `claude-sonnet-4` family present — e.g. a
+   >    haiku-only snapshot) → omit, naming the cause. (This merges the old
+   >    "unmapped tier" + "missing model key" triggers under family resolution.)
+   > 4. **≥1 estimating-tier family resolves** → `cost_usd` **present** (see the
+   >    proxy step for any exercised tier whose family is absent).
 
-   On omission, **disclose the unmapped tier(s) in `Confidence rationale`** and
-   **name them in `Excluded`** as the omission cause. Do **not** invent a binding
-   for an unmapped tier.
-
-2. **Model-key check.** Confirm the representative model keys the binding table
-   names (`claude-opus-4`, `claude-sonnet-4`) exist in the snapshot's Model
-   Breakdown. A missing key is the same mechanical trigger as an unmapped tier:
-   the binding is **ungrounded**, so **omit `cost_usd` with disclosure** (the S1
-   state 2), naming the missing key as the cause. Do **not** invent a substitute
-   rate.
+3. **Cross-tier proxy (v0.50.0).** When some exercised tier's family is absent but
+   **≥1 estimating-tier family resolves**, do **not** omit — **proxy** the absent
+   tier at the **dearest present estimating family's** rate, and emit a
+   **distinctly-typed** record:
+   - set `cost_basis: snapshot-actuals-proxied` (not `snapshot-actuals`);
+   - **force `failure_direction: likely-overrun`** (dearest-present over-states)
+     and state in the prose that the figure is a deliberate over-estimate,
+     unsuitable for trend aggregation;
+   - force `confidence.cost: low`;
+   - **name every proxied tier and its source** in `Included`/`Confidence
+     rationale` ("Standard priced via a cross-tier proxy at the Most-capable
+     rate — the snapshot carries no `claude-sonnet-4` family").
+   - A proxied split-tier stage's per-stage band **may collapse**
+     (`low == high`) — that is exempt from the split-tier strict-spread check
+     under `snapshot-actuals-proxied` (format reference).
+   The proxy uses **only** observed snapshot rates — **never** a vendor list
+   price (the no-list-price-fallback rule is untouched). It is a distinct third
+   basis, not a relaxed `snapshot-actuals`.
 
 You **never edit** the binding table (you have no write tool, and the binding is
-the named revisable artefact, not your judgement). You only **detect** an
-ungrounded binding by the mechanical yes/no test and degrade to cost-omission,
-disclosing the cause. The only branch is "is every exercised tier mapped and every
-named key present?" — never a judgment about salience.
+the named revisable artefact, not your judgement). You only **detect** the
+grounding state by the mechanical family-resolution test and either ground
+directly, proxy with disclosure, or omit — never a judgment about salience.
 
 ## Provenance — `generated_by`
 

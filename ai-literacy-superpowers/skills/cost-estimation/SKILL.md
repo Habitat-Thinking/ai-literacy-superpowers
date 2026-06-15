@@ -104,7 +104,7 @@ no model or price, while the snapshot's Model Breakdown is keyed by model
 name. The binding is fixed in the format reference's
 **tier→model→$/token binding table**:
 
-| Model tier (MODEL_ROUTING) | Representative model (snapshot key) |
+| Model tier (MODEL_ROUTING) | Representative model **family stem** |
 | --- | --- |
 | Most capable | `claude-opus-4` |
 | Standard | `claude-sonnet-4` |
@@ -114,6 +114,17 @@ name. The binding is fixed in the format reference's
 capable` — and one complexity-dependent split, the implementer's
 `Standard / Capable`. There is **no standalone `Capable` tier with its
 own model**; the dearer end of the split resolves to `Most capable`.
+
+**Family resolution, not exact keys (v0.50.0).** A snapshot Model
+Breakdown key resolves to a tier's representative **by family stem** — it
+matches iff it starts with the stem and the next character is `-` or
+end-of-string (so `claude-opus-4` resolves the real id `claude-opus-4-8`,
+but not `claude-opus-40`). Multiple rows in one family aggregate into one
+blended rate (disclosed when >1). This is the #411 fix: a snapshot keyed
+by the actual model id now grounds cost where the old exact-string match
+silently omitted it. The full rule (delimiter, aggregation, and the
+**cross-tier proxy** for a tier whose family is absent) lives in the
+format reference's binding table — this skill does not restate it.
 
 **Deriving a per-model rate from a snapshot.** The snapshot's
 `## Model Breakdown` table gives, per model, quarter-aggregate
