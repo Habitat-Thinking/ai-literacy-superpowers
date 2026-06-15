@@ -193,8 +193,8 @@ jobs:
 
       - name: "GC: Reflection log archival of promoted entries (Path 1)"
         run: |
-          if [ ! -f REFLECTION_LOG.md ]; then
-            echo "No REFLECTION_LOG.md — skipping Path 1 archival"
+          if [ ! -d reflections/active ] || [ -z "$(ls -A reflections/active/*.md 2>/dev/null)" ]; then
+            echo "No reflection fragments in reflections/active — skipping Path 1 archival"
             exit 0
           fi
           if [ ! -x ai-literacy-superpowers/scripts/archive-promoted-reflections.sh ]; then
@@ -202,15 +202,15 @@ jobs:
             exit 0
           fi
 
-          # Run Path 1 archival; commit only if it actually moved entries.
-          before=$(grep -c '^---$' REFLECTION_LOG.md || echo 0)
+          # Run Path 1 archival; commit only if it actually moved fragments.
+          before=$(ls -1 reflections/active/*.md 2>/dev/null | wc -l | tr -d ' ')
           bash ai-literacy-superpowers/scripts/archive-promoted-reflections.sh --dry-run=false
-          after=$(grep -c '^---$' REFLECTION_LOG.md || echo 0)
+          after=$(ls -1 reflections/active/*.md 2>/dev/null | wc -l | tr -d ' ')
 
           if [ "$before" != "$after" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add REFLECTION_LOG.md reflections/archive/ 2>/dev/null || true
+            git add reflections/active/ reflections/archive/ REFLECTION_LOG.md 2>/dev/null || true
             moved=$(( before - after ))
             git commit -m "GC: archive $moved promoted reflection(s)"
             git push

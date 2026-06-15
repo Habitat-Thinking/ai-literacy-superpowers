@@ -1,0 +1,13 @@
+- **Date**: 2026-04-15
+- **Agent**: claude-opus-4-6 (main conversation + 7 haiku subagents)
+- **Task**: Added output validation checkpoints to 7 commands following the governance-audit pattern, via brainstorming, spec, plan, and subagent-driven implementation. Plugin 0.19.3 to 0.19.4.
+- **Surprise**: Two things: (1) The subagent-driven implementation was remarkably clean — 7 haiku-model agents dispatched in two parallel batches completed all mechanical edits with zero errors and zero review loops. The plan file in the first commit tripped the spec-first CI check (same friction as PR #143), requiring a `chore` label. (2) More fundamentally, the need for output validation checkpoints at all was surprising — commands, skills, and agents already reference detailed format templates and specs, yet agents consistently drift from those templates under cognitive load. Reference templates set intent but do not guarantee compliance. The gap between "the spec says X" and "the output actually contains X" is real and requires an explicit verification step, the same way compiled code passes a type checker even though the programmer intended correct types.
+- **Proposal**: STYLE: When using subagent-driven development for mechanical edits (insert markdown section, renumber headings), haiku-model agents are sufficient and reliable. The key is a self-contained prompt with the exact content to insert and explicit renumbering instructions. No judgment calls = no need for a capable model. This scales well — 7 parallel agents completed in ~50 seconds wall time. ARCH_DECISION: Reference templates are necessary but not sufficient for structured output compliance. Every command that produces machine-readable output parsed by downstream consumers needs an explicit validation checkpoint between generation and commit — the same way a compiler enforces types even though the programmer wrote the code with correct types in mind.
+- **Improvement**: Spec and plan should be committed separately (spec first, plan second) to satisfy the spec-first CI check without needing a label workaround. Future plans should note this in their Task 1.
+- **Signal**: workflow
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: ~60 min
+  - Model tiers used: most-capable (main conversation, brainstorming, coordination, ~50%), capable (Explore subagent for audit, ~10%), haiku (7 implementation subagents, ~40%)
+  - Pipeline stages completed: brainstorming, spec, plan, subagent-driven implementation (7 tasks), version bump, PR, reflect
+  - Agent delegation: partial (subagents for implementation, manual for design and coordination)

@@ -1,0 +1,13 @@
+- **Date**: 2026-04-18
+- **Agent**: claude-opus-4-7 (main conversation, no subagents)
+- **Task**: Added docs/tutorials/first-time-tour.md — a single-route walk through all 21 plugin capabilities in the order most useful on a first run, organised into eight phases with the sequencing rationale made explicit. PR #173, merged to main. No plugin version bump (docs-only).
+- **Surprise**: The version-consistency CI failure that bit me today was explicitly documented in the 2026-04-16 reflection's Improvement field — "date-only heading silently extracts '2026' and fails with a cryptic mismatch; CLAUDE.md should call out the heading format." I hit the exact same bug two days later because REFLECTION_LOG.md Improvements are not load-bearing — they are captured but not routed anywhere that influences future sessions. The compound-learning loop has generation (we reflect) and storage (log grows) but no *retrieval* — future agents do not read the log for warnings before touching the relevant surface. This is a gap between "we captured the signal" and "the signal changed behaviour next time."
+- **Proposal**: CONTEXT: Update CLAUDE.md "CHANGELOG" section to state the hard invariant enforced by CI: "Every top-level `## ...` heading MUST begin with a semver version (e.g. `## 0.22.0 — YYYY-MM-DD`). For docs-only changes that do not bump the plugin version, append entries under the most recent version's heading — do not create a dated-only top-level heading." This is the fix the previous reflection recommended; it is still unactioned. WORKFLOW: When a session's Surprise field describes a failure mode, consider running `/harness-constrain` or editing CLAUDE.md in the same session rather than leaving the fix implicit in the log. The prior reflection shows that "improvements" left to propagate organically do not propagate.
+- **Improvement**: Reflections need a retrieval hook, not just a write hook. Candidate: a SessionStart-phase GC rule that scans recent REFLECTION_LOG.md Improvement fields for keywords matching the files/commands touched in the current session, and surfaces them as warnings before the work starts. The current architecture treats REFLECTION_LOG.md as a write-only audit trail; to close the learning loop it needs to be read at the right moments.
+- **Signal**: failure
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: ~45 min
+  - Model tiers used: most-capable (main conversation, 100%; no subagents dispatched)
+  - Pipeline stages completed: manual tutorial draft, commit, push, PR, 2 CI failures (spec-first, version-consistency), fix-up commit, label add (chore), merge; no orchestrator pipeline used
+  - Agent delegation: manual

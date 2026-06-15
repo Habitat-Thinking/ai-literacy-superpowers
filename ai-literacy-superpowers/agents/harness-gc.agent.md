@@ -157,12 +157,13 @@ When this rule fires, run:
 bash ai-literacy-superpowers/scripts/archive-promoted-reflections.sh
 ```
 
-The script identifies entries with a `Promoted` line, verifies the
-right-hand side resolves to actual AGENTS.md / HARNESS.md content (or is
-a closure form), and moves verified entries to
-`reflections/archive/<YYYY>.md`. Report the script's stdout to the user
-verbatim. Do not modify the active log directly — the script handles
-that.
+The script identifies active fragments (`reflections/active/*.md`) with a
+`Promoted` line, verifies the right-hand side resolves to actual
+AGENTS.md / HARNESS.md content (or is a closure form), moves verified
+fragments to `reflections/archive/<YYYY>.md`, deletes them, and
+regenerates the aggregate `REFLECTION_LOG.md`. Report the script's stdout
+to the user verbatim. Do not modify the fragments or the aggregate
+directly — the script handles that.
 
 ### Path 2 — Aged-out review (monthly, agent-driven, opt-in)
 

@@ -206,7 +206,10 @@ Capture a reflection on the assessment itself:
 - Where did observable evidence diverge from the team's self-perception?
 - What should future assessments pay attention to?
 
-Append this to REFLECTION_LOG.md as a structured entry.
+Write this as a per-entry fragment under `reflections/active/` (one
+file per reflection, body only, no leading `---`), then regenerate the
+aggregate with `scripts/regenerate-reflection-log.sh`. Never append to
+`REFLECTION_LOG.md` directly — it is a generated view.
 
 ### Phase 7: README Badge
 

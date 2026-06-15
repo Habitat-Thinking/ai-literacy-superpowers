@@ -1,0 +1,13 @@
+- **Date**: 2026-04-19
+- **Agent**: claude-sonnet-4-6 (main conversation, no subagents)
+- **Task**: Added update-the-plugin documentation to README and docs site (three discovery signals: SessionStart hook, weekly GC rule, `claude plugin list`; `/harness-upgrade` as post-update step); fixed the Claude Code plugin update command to include the marketplace specifier (`ai-literacy-superpowers@ai-literacy-superpowers`). Two PRs: #183 and #184.
+- **Surprise**: The `chore` label applied to a PR *after* creation does not affect already-triggered CI runs — the spec-first check reads labels at trigger time, so anything added post-push is invisible to the running job. The fix (push an empty no-op commit) works but leaves junk history, and we hit this exact pattern twice in the same session (PRs #183 and #184).
+- **Proposal**: WORKFLOW: When a PR needs a `chore`, `fix`, or `cross-repo` label to skip a CI gate, pass `--label` directly in `gh pr create` rather than adding it after. This ensures the label is present when the first CI run is queued.
+- **Improvement**: `gh pr create` accepts `--label <label>` — use it in the create command itself so the label is present at trigger time. No empty commits needed.
+- **Signal**: failure
+- **Constraint**: Label PRs at creation time (agent)
+- **Session metadata**:
+  - Duration: ~30 min (this session; total across summarised + live session ~3 hrs)
+  - Model tiers used: most-capable (main conversation, 100%; no subagents dispatched)
+  - Pipeline stages completed: docs update (commit, push, PR #183, empty-commit retrigger, CI pass, merge), fix command (branch, commit, push, PR #184, label, empty-commit retrigger, CI pass, merge)
+  - Agent delegation: manual

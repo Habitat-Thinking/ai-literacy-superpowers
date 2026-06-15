@@ -1,0 +1,13 @@
+- **Date**: 2026-04-19
+- **Agent**: claude-sonnet-4-6 (main conversation, no subagents)
+- **Task**: Added advocatus-diaboli adversarial spec review — skill, agent, command, Copilot CLI prompt, orchestrator wiring, HARNESS.md constraint + GC rule, MODEL_ROUTING.md update, AGENTS.md ARCH_DECISION, README badge/table/pipeline-diagram updates, plugin v0.22.0 → v0.23.0. PR #177 merged; follow-up PR #178 added .gitkeep to docs/superpowers/objections/.
+- **Surprise**: All 5 CI checks (spec-first commit ordering, version consistency, constraint enforcement, markdownlint ×2) passed on the first push — no iteration required for a 14-file, 693-insertion PR. The deeper surprise was structural: `docs/superpowers/objections/` was created with `mkdir -p` and staged, but git does not track empty directories. The directory was absent from the repo after merge, meaning the harness-enforcer's path reference and the constraint wording pointed into a location that would not exist until the first `/diaboli` run. The fix (a `.gitkeep`) is one file, but discovering the gap required a post-merge reflection — not CI.
+- **Proposal**: STYLE: When a PR introduces a new directory that must exist for a constraint or agent to function correctly, always commit a `.gitkeep` in that directory as part of the implementation commit — not as a follow-up. Git's empty-directory behaviour is a well-known gotcha but easy to forget under implementation load. This applies to any `docs/`, `observability/`, or `objections/`-style directory referenced in a constraint rule.
+- **Improvement**: The read-only tool boundary on the advocatus-diaboli agent (`tools: [Read, Glob, Grep]`) is the cognitive-engagement mechanism, not a security afterthought. Future agents or contributors modifying the agent definition should understand that adding Write access would silently bypass the human-disposition gate. This design intent is not obvious from the file alone — it is explained in the skill and the orchestrator, but the agent file would benefit from a short note in its Trust Boundary section (already present, but worth reinforcing in AGENTS.md if the pattern is adopted elsewhere).
+- **Signal**: workflow
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: ~60 min
+  - Model tiers used: most-capable (main conversation, 100%; no subagents dispatched)
+  - Pipeline stages completed: spec (commit 1), implementation (commit 2), version bump (commit 3), PR #177, CI pass, merge; follow-up fix PR #178, CI pass, merge; reflect
+  - Agent delegation: manual (direct implementation; no orchestrator pipeline invoked)

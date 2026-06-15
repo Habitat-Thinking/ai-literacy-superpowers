@@ -1,0 +1,13 @@
+- **Date**: 2026-04-15
+- **Agent**: claude-opus-4-6 (main conversation + governance-auditor subagent + Explore subagent)
+- **Task**: Observatory signal verification (72 signals across 5 sources), Governance Summary validation checkpoint, harness health snapshot regeneration
+- **Surprise**: The governance-auditor agent consistently ignored its own `## Governance Summary` format spec despite having detailed instructions (lines 92-144 of the agent file). The instructions were correct but the agent produced a loose `## Summary` section with missing fields every time — including when dispatched with explicit context about the required format. A subagent also hallucinated "23 GC rules" when there were 13 — a clean factual error on a countable quantity. Separately, the /harness-health command still generated the deprecated YAML `observatory_metrics` block (removed in v0.16.0) because the command spec did not explicitly forbid it.
+- **Proposal**: GOTCHA: Agent format specs for machine-readable output (regex-parsed headings, structured field lists) need three layers of defence: (1) clear instructions in the agent file, (2) a self-check instruction telling the agent to verify its own output before returning, (3) a validation checkpoint in the dispatching command that fixes the output in place. Instructions alone are not sufficient — agents drift from structured output formats under cognitive load, especially when the report body requires substantial analysis.
+- **Improvement**: The Observatory signal verification checklist should be a reusable skill or command (`/observatory-verify`) rather than a one-off prompt. It produced high-value findings (6 PARTIAL, 7 MISSING across 72 signals) and the structured table format made gaps immediately actionable.
+- **Signal**: failure
+- **Constraint**: none (fix already in place as command checkpoint in step 5 of /governance-audit)
+- **Session metadata**:
+  - Duration: ~45 min
+  - Model tiers used: most-capable (main conversation, ~70%), standard (Explore subagent, ~10%), capable (governance-auditor subagent, ~20%)
+  - Pipeline stages completed: harness-health, governance-audit, signal verification, fix, 3 PRs (#142-#144), reflect
+  - Agent delegation: partial (subagents for governance audit and exploration, manual for verification and fixes)

@@ -1,0 +1,13 @@
+- **Date**: 2026-04-14
+- **Agent**: claude-opus-4-6 (main conversation)
+- **Task**: Diagnosed and fixed intermittent YAML block omission in harness-health snapshots by restructuring command spec instructions
+- **Surprise**: The bug was not in code but in prompt architecture. The YAML block instruction was a single trailing sentence inside the content-heaviest step of the command spec. When previous snapshots existed (adding cognitive load from trend computation and template bias from reading old snapshots that predate the YAML spec), the model would treat its job as done after writing the last markdown section. The same instruction design principles that prevent bugs in code — single responsibility, explicit contracts, verification steps — apply directly to prompt-based command specs.
+- **Proposal**: GOTCHA: Command specs that instruct the model to generate multi-part output (e.g. markdown sections + YAML block) must give each part its own numbered step. Trailing instructions inside content-heavy steps are unreliable — the model loses them under cognitive load. Mandatory outputs should be marked **bold mandatory**, contrasted with conditional outputs, and include a self-verification checkpoint ("confirm the file ends with X before proceeding"). This applies to all command specs in the plugin, not just harness-health.
+- **Improvement**: Audit other command specs for "trailing instruction" patterns where a required output is appended as an afterthought inside a step that already produces substantial content. The snapshot-format reference should also lead with the mandatory/conditional distinction for each section.
+- **Signal**: instruction
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: ~15 min
+  - Model tiers used: most-capable (main conversation), standard (Explore subagent)
+  - Pipeline stages completed: manual investigation, fix, reflect
+  - Agent delegation: manual

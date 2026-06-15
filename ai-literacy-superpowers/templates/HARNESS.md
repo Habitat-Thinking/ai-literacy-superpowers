@@ -264,13 +264,14 @@ Use /governance-constrain for guided authoring of governance constraints.
 
 ### Reflection log archival of promoted entries
 
-- **What it checks**: Whether `REFLECTION_LOG.md` contains entries with a
-  `Promoted` line that pass pre-archive verification (RHS resolves to
+- **What it checks**: Whether any `reflections/active/` fragment carries a
+  `Promoted` line that passes pre-archive verification (RHS resolves to
   AGENTS.md or HARNESS.md content, or matches a closure form).
 - **Frequency**: weekly
 - **Enforcement**: deterministic
 - **Tool**: `ai-literacy-superpowers/scripts/archive-promoted-reflections.sh`
-- **Auto-fix**: true (moves entries to `reflections/archive/<YYYY>.md`)
+- **Auto-fix**: true (moves the fragment to `reflections/archive/<YYYY>.md`,
+  deletes it, and regenerates the aggregate `REFLECTION_LOG.md`)
 
 ### Reflection log aged-out review
 

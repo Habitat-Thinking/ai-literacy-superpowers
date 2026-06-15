@@ -1,0 +1,13 @@
+- **Date**: 2026-04-16
+- **Agent**: claude-opus-4-6 (main conversation + Explore subagent)
+- **Task**: Codified validation checkpoint architectural decision (3-place: AGENTS.md + HARNESS.md + CLAUDE.md), built /harness-onboarding command (issue #37), built /observatory-verify command with 82-signal checklist. Plugin v0.20.0 to v0.21.0 across PRs #157-#159.
+- **Surprise**: The reflection-to-implementation loop ran in real time. Both /harness-onboarding and /observatory-verify originated directly from the previous reflection's Proposal and Improvement fields. The architectural decision codification also came from a reflection. Three consecutive reflections each produced actionable work implemented in the same session — compound learning with minutes of latency, not days. This only worked because each proposal was self-contained (single command or constraint).
+- **Proposal**: STYLE: When a reflection's Proposal or Improvement field describes something actionable and self-contained, explore implementing it in the same session while context is warm. This works when the work is a single skill/command/constraint — larger proposals should still go through spec-first planning. The three-place codification pattern (AGENTS.md decision + HARNESS.md constraint + CLAUDE.md convention) should be documented as a how-to guide for future agents — it's a reusable process for turning architectural decisions into discoverable, enforceable, and primed conventions.
+- **Improvement**: none
+- **Signal**: workflow
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: ~45 min
+  - Model tiers used: most-capable (main conversation, ~80%), capable (Explore subagent, ~20%)
+  - Pipeline stages completed: architectural decision codification, /harness-onboarding feature (spec, skill, command, template, GC rule), /observatory-verify feature (spec, command, signal checklist reference), 3 PRs (#157-#159), reflect
+  - Agent delegation: partial (Explore subagent for research, manual for implementation and design)

@@ -122,17 +122,23 @@ entries before starting work to avoid repeating past mistakes.
 
 ## Reflection Log Curation
 
-Reflections are appended to `REFLECTION_LOG.md` via `/reflect`. The
-log is **a working file**, not the permanent record. The permanent
-record lives in `reflections/archive/<YYYY>.md`, populated by the
-weekly Path 1 GC rule from entries the curator has tagged with a
-`Promoted` line.
+Reflections are written as **per-entry fragments** under
+`reflections/active/<YYYY-MM-DD>-<slug>.md` via `/reflect` — one file
+per reflection, so two reflections authored concurrently never touch
+the same path and can never be silently dropped at merge time.
+`REFLECTION_LOG.md` is a **generated, committed aggregate** of those
+fragments (regenerate with `scripts/regenerate-reflection-log.sh`);
+read it, but never edit it by hand. The active fragments are a working
+set, not the permanent record. The permanent record lives in
+`reflections/archive/<YYYY>.md`, populated by the weekly Path 1 GC rule
+from fragments the curator has tagged with a `Promoted` line.
 
 ### Promoted-line schema
 
 When promoting an entry's content to `AGENTS.md` or `HARNESS.md`, add
-a single line to the source reflection entry **in the same commit**
-as the AGENTS.md / HARNESS.md edit:
+a single line to the source reflection **fragment**
+(`reflections/active/<date>-<slug>.md`) **in the same commit** as the
+AGENTS.md / HARNESS.md edit, then regenerate the aggregate:
 
     - **Promoted**: YYYY-MM-DD → <RHS>
 
@@ -150,8 +156,8 @@ the curator to interpret.
 
 If neither rule is engaged, the system reverts to today's behaviour
 plus read-side filtering: agents and commands still bound their
-intake by default, but the log itself accumulates entries until the
-curator manually intervenes.
+intake by default, but `reflections/active/` accumulates fragments
+until the curator manually intervenes.
 
 ## Docs Site Review
 

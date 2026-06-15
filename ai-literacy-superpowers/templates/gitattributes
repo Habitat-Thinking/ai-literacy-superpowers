@@ -1,0 +1,12 @@
+# Reflection surfaces use git's built-in union merge driver so that
+# concurrent merges combine both sides' appended lines instead of
+# conflicting — no committed reflection can be silently dropped.
+#
+# Source of truth is the per-entry fragments in reflections/active/
+# (one file per reflection, so they never collide); these rules protect
+# the generated aggregate and the append-only annual archives.
+#
+# Scaffolded by /superpowers-init and /harness-init. Merge these lines
+# into the project root .gitattributes.
+REFLECTION_LOG.md merge=union
+reflections/archive/*.md merge=union

@@ -1,0 +1,6 @@
+- **Date**: 2026-04-08
+- **Agent**: claude-opus-4-6 (interactive)
+- **Task**: Closed gaps in all three harness feedback loops and updated docs to reflect the improvements (PRs #76–#77)
+- **Surprise**: Nothing unexpected — the work went smoothly as planned
+- **Proposal**: Future agents should know that the three harness feedback loops (enforcement, observation, garbage collection) are tightly coupled — changing one loop's behaviour or output format can affect the other two. When modifying any single loop, check the interfaces between all three before considering the work complete.
+- **Improvement**: none
