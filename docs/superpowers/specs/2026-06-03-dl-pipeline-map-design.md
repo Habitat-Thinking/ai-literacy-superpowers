@@ -365,9 +365,11 @@ the other models can refute).
 
 ## 7. The `/pipeline-map` command and HTML render (slice P5)
 
-Structurally mirrors `/diagnose` (S4) — dispatch in `mode: full`, render,
-validation checkpoint, summary, confirm-before-write — but with a
-**task-driven** input and a Mermaid HTML target. The agent stays read-only;
+Structurally mirrors `/diagnose` (S4) — dispatch in `mode: pipeline`
+(the dedicated task-scoped mode resolved at §4.3; the original "dispatch
+in `mode: full`" shorthand is reconciled there), render, validation
+checkpoint, summary, confirm-before-write — but with a **task-driven**
+input and a Mermaid HTML target. The agent stays read-only;
 the command is the dispatcher that performs the single `Write`, the
 `mkdir -p`, and the `<DISPATCHER: ...>` substitution.
 
