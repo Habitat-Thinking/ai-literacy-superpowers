@@ -152,14 +152,25 @@ ineligible for Path 1 auto-archive until tagged.
 ```text
 PROMOTED_LINE := "- **Promoted**: " DATE " " "→" " " RHS
 DATE          := YYYY "-" MM "-" DD
-RHS           := AGENTS_FORM | HARNESS_FORM | CLOSURE_FORM | SUPERSEDE_FORM
+RHS           := AGENTS_FORM | CLAUDE_FORM | HARNESS_FORM
+               | CLOSURE_FORM | SUPERSEDE_FORM
 AGENTS_FORM   := "AGENTS.md " SECTION ": " QUOTED_STRING
-HARNESS_FORM  := "HARNESS.md: " CONSTRAINT_NAME
+CLAUDE_FORM   := [ PATH "/" ] "CLAUDE.md " QUOTED_STRING
+HARNESS_FORM  := [ ".claude/" ] "HARNESS.md: " CONSTRAINT_NAME
 CLOSURE_FORM  := "no promotion (" RATIONALE ")"
                 | "aged-out, no promotion warranted"
 SUPERSEDE_FORM := "superseded by " DATE
 SECTION       := "STYLE" | "GOTCHA" | "ARCH_DECISION"
+PATH          := relative directory of a per-component CLAUDE.md
 ```
+
+`CLAUDE_FORM` covers promotions to the root `CLAUDE.md` or a
+per-component sub-`CLAUDE.md` (verified by grepping the quoted excerpt
+in that file). `HARNESS_FORM` resolves the constraint heading against
+whichever `HARNESS.md` the project uses — the repo root or the
+`.claude/HARNESS.md` location `/superpowers-init` scaffolds to — and
+the `.claude/` prefix may be stated explicitly. (Added per issues
+#319 and #320.)
 
 Implementation contract: **all parseable Promoted lines trigger
 archival regardless of right-hand side**. The right-hand side is

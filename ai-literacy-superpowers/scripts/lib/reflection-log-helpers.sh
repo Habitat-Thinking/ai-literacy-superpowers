@@ -136,9 +136,30 @@ bounded_entries() {
   rm -f "$tmpfile"
 }
 
+# resolve_file: echo the first existing path among the candidates, or
+# return 1 if none exist. Lets verifiers honour the plugin's own scaffold
+# layout — /superpowers-init writes HARNESS.md to .claude/HARNESS.md, not
+# the repo root — without hard-coding a single location.
+resolve_file() {
+  local p
+  for p in "$@"; do
+    if [ -f "$p" ]; then
+      printf '%s' "$p"
+      return 0
+    fi
+  done
+  return 1
+}
+
 # verify_rhs: return 0 if the Promoted line's right-hand side resolves to
-# actual content in the current tree (AGENTS.md / HARNESS.md) or is a
-# closure form. Return 1 otherwise.
+# actual content in the current tree, or is a closure form. Return 1
+# otherwise. Recognised promotion targets:
+#   - AGENTS.md <SECTION>: "<quote>"          → quote present in AGENTS.md
+#   - [<subdir>/]CLAUDE.md "<quote>"          → quote present in that CLAUDE.md
+#   - [.claude/]HARNESS.md: <constraint>      → `### <constraint>` heading,
+#                                               resolved against root or the
+#                                               .claude/ scaffold location
+#   - closure / supersede forms               → accepted as-is
 verify_rhs() {
   local rhs="$1"
   case "$rhs" in
@@ -146,9 +167,21 @@ verify_rhs() {
       local quoted; quoted=$(echo "$rhs" | sed -E 's/^.*"(.*)".*$/\1/')
       [ -f AGENTS.md ] && grep -qF "$quoted" AGENTS.md
       ;;
-    HARNESS.md:*)
-      local cname; cname=$(echo "$rhs" | sed -E 's/^HARNESS.md:[[:space:]]*//')
-      [ -f HARNESS.md ] && grep -qF "### $cname" HARNESS.md
+    *CLAUDE.md\ \"*\")
+      # CLAUDE_FORM: the path is everything before the quoted excerpt, so a
+      # bare `CLAUDE.md` and a per-component `<subdir>/CLAUDE.md` both work.
+      local cpath cquoted
+      cpath="${rhs%% \"*}"
+      cquoted=$(echo "$rhs" | sed -E 's/^.*"(.*)".*$/\1/')
+      [ -f "$cpath" ] && grep -qF "$cquoted" "$cpath"
+      ;;
+    HARNESS.md:*|.claude/HARNESS.md:*)
+      # HARNESS_FORM: .claude/HARNESS.md is an alias for HARNESS.md; verify
+      # the `### <constraint>` heading in whichever location the project uses.
+      local cname hpath
+      cname=$(echo "$rhs" | sed -E 's#^(\.claude/)?HARNESS\.md:[[:space:]]*##')
+      hpath=$(resolve_file HARNESS.md .claude/HARNESS.md) \
+        && grep -qF "### $cname" "$hpath"
       ;;
     aged-out*|"no promotion"*|superseded\ by\ *)
       return 0
@@ -201,10 +234,12 @@ propose_for_entry() {
     return 0
   fi
 
-  # Cross-reference Constraint field against HARNESS.md
-  local constraint; constraint=$(extract_field "$entry" "Constraint")
-  if [ -f HARNESS.md ] && [ -n "$constraint" ] && [ "$constraint" != "none" ]; then
-    if grep -qF "$constraint" HARNESS.md; then
+  # Cross-reference Constraint field against HARNESS.md (root or .claude/ scaffold)
+  local constraint hpath
+  constraint=$(extract_field "$entry" "Constraint")
+  hpath=$(resolve_file HARNESS.md .claude/HARNESS.md || true)
+  if [ -n "$hpath" ] && [ -n "$constraint" ] && [ "$constraint" != "none" ]; then
+    if grep -qF "$constraint" "$hpath"; then
       echo "**Likely-promoted to HARNESS.md** (constraint \"$constraint\" matches)."
       echo ""
       echo "Proposed line:"

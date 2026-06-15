@@ -65,6 +65,19 @@ test_archives_harness_form_when_constraint_present() {
   assert_contains "$WORK_DIR/reflections/archive/2026.md" "Reflections via PR workflow"
 }
 
+test_archives_harness_form_when_constraint_in_dot_claude() {
+  # #320: HARNESS.md lives only at .claude/HARNESS.md (the /superpowers-init
+  # scaffold). A bare `HARNESS.md: <constraint>` promotion must still archive.
+  setup_workspace
+  rm -f "$WORK_DIR/HARNESS.md"
+  mkdir -p "$WORK_DIR/.claude"
+  echo "### Reflections via PR workflow" > "$WORK_DIR/.claude/HARNESS.md"
+  load_fixture "reflection-log-promoted-harness.md"
+  ( cd "$WORK_DIR" && bash "$SCRIPT" --dry-run=false )
+  assert_file_exists "$WORK_DIR/reflections/archive/2026.md"
+  assert_contains "$WORK_DIR/reflections/archive/2026.md" "Reflections via PR workflow"
+}
+
 test_skips_harness_form_when_constraint_missing() {
   setup_workspace
   echo "# HARNESS.md (empty)" > "$WORK_DIR/HARNESS.md"
@@ -87,6 +100,7 @@ test_happy_path_archives_agents_promoted_entry
 test_skips_when_agents_content_missing
 test_archives_aged_out_form
 test_archives_harness_form_when_constraint_present
+test_archives_harness_form_when_constraint_in_dot_claude
 test_skips_harness_form_when_constraint_missing
 test_2025_entry_archives_to_2025_md
 echo "All tests passed."

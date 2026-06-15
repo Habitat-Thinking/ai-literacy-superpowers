@@ -15,6 +15,18 @@ source "$LIB_PATH"
 fail() { echo "FAIL: $*" >&2; exit 1; }
 assert_eq() { [ "$1" = "$2" ] || fail "expected '$2' got '$1'"; }
 
+# mk_workspace: create a throwaway tree wired for verify_rhs, which greps
+# promotion targets relative to the current directory.
+mk_workspace() {
+  local ws; ws=$(mktemp -d)
+  printf '## STYLE\n- Multi-repo scheduled agents\n' > "$ws/AGENTS.md"
+  printf '# Project Conventions\n- Treat ports as the domain boundary\n' > "$ws/CLAUDE.md"
+  mkdir -p "$ws/src" "$ws/.claude"
+  printf '# Module Notes\n- Renderer wraps at column 80\n' > "$ws/src/CLAUDE.md"
+  printf '## Constraints\n### Reflections via PR workflow\n' > "$ws/.claude/HARNESS.md"
+  printf '%s' "$ws"
+}
+
 test_split_entries_on_empty_log() {
   local count
   count=$(split_entries "$FIXTURES_DIR/reflection-log-empty.md" | grep -c "^---ENTRY---$" || true)
@@ -97,6 +109,61 @@ test_bounded_entries_day_window_clips() {
   assert_eq "$count" "50"
 }
 
+# --- verify_rhs promotion-target coverage (#319, #320) ---
+# verify_rhs greps targets relative to cwd; a ( cd … ) subshell inherits the
+# sourced functions, so each case runs against a purpose-built workspace.
+
+test_verify_rhs_agents_form() {
+  local ws; ws=$(mk_workspace)
+  ( cd "$ws" && verify_rhs 'AGENTS.md STYLE: "Multi-repo scheduled agents"' ) \
+    || fail "AGENTS form should verify"
+  rm -rf "$ws"
+}
+test_verify_rhs_claude_root_form() {
+  local ws; ws=$(mk_workspace)
+  ( cd "$ws" && verify_rhs 'CLAUDE.md "Treat ports as the domain boundary"' ) \
+    || fail "root CLAUDE.md form should verify"
+  rm -rf "$ws"
+}
+test_verify_rhs_claude_subcomponent_form() {
+  local ws; ws=$(mk_workspace)
+  ( cd "$ws" && verify_rhs 'src/CLAUDE.md "Renderer wraps at column 80"' ) \
+    || fail "sub-component CLAUDE.md form should verify"
+  rm -rf "$ws"
+}
+test_verify_rhs_claude_form_negative() {
+  local ws; ws=$(mk_workspace)
+  ( cd "$ws" && ! verify_rhs 'CLAUDE.md "text that is not present"' ) \
+    || fail "CLAUDE.md form with absent quote should not verify"
+  rm -rf "$ws"
+}
+test_verify_rhs_harness_form_resolves_dot_claude() {
+  # Only .claude/HARNESS.md exists; the bare HARNESS.md: form must still verify.
+  local ws; ws=$(mk_workspace)
+  ( cd "$ws" && verify_rhs 'HARNESS.md: Reflections via PR workflow' ) \
+    || fail "HARNESS.md: form should resolve .claude/HARNESS.md"
+  rm -rf "$ws"
+}
+test_verify_rhs_dot_claude_harness_explicit_form() {
+  local ws; ws=$(mk_workspace)
+  ( cd "$ws" && verify_rhs '.claude/HARNESS.md: Reflections via PR workflow' ) \
+    || fail "explicit .claude/HARNESS.md: form should verify"
+  rm -rf "$ws"
+}
+test_verify_rhs_harness_form_resolves_root() {
+  local ws; ws=$(mk_workspace)
+  printf '## Constraints\n### Root-only constraint\n' > "$ws/HARNESS.md"
+  ( cd "$ws" && verify_rhs 'HARNESS.md: Root-only constraint' ) \
+    || fail "HARNESS.md: form should still resolve a root HARNESS.md"
+  rm -rf "$ws"
+}
+test_verify_rhs_unknown_form_fails() {
+  local ws; ws=$(mk_workspace)
+  ( cd "$ws" && ! verify_rhs 'README.md: something' ) \
+    || fail "unknown target should not verify"
+  rm -rf "$ws"
+}
+
 test_split_entries_on_empty_log
 test_split_entries_on_single_entry
 test_parse_promoted_agents_form
@@ -111,4 +178,12 @@ test_extract_field_signal
 test_resolve_year
 test_bounded_entries_count_is_inclusive_of_max
 test_bounded_entries_day_window_clips
+test_verify_rhs_agents_form
+test_verify_rhs_claude_root_form
+test_verify_rhs_claude_subcomponent_form
+test_verify_rhs_claude_form_negative
+test_verify_rhs_harness_form_resolves_dot_claude
+test_verify_rhs_dot_claude_harness_explicit_form
+test_verify_rhs_harness_form_resolves_root
+test_verify_rhs_unknown_form_fails
 echo "All tests passed."

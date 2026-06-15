@@ -188,7 +188,8 @@ follows the grammar:
 Where `<RHS>` is one of:
 
 - `AGENTS.md <SECTION>: "<quoted excerpt>"`
-- `HARNESS.md: <constraint name>`
+- `[<subdir>/]CLAUDE.md "<quoted excerpt>"`
+- `[.claude/]HARNESS.md: <constraint name>`
 - `aged-out, no promotion warranted`
 - `superseded by <YYYY-MM-DD>`
 
