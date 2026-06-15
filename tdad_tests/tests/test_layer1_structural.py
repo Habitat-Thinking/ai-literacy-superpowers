@@ -310,7 +310,12 @@ class TestCostEstimationStemConsistency:
     # The consumer cost files that reference the binding stems. The
     # canonical file itself is NOT scanned — it deliberately contains
     # non-matching illustrative tokens (e.g. `claude-opus-5`) to teach the
-    # delimiter rule.
+    # delimiter rule. This list is **deliberately scoped to the
+    # estimating-tier binding consumers** — not every file that mentions a
+    # model id (e.g. `templates/MODEL_ROUTING.md`'s illustrative comment and
+    # `skills/auto-enforcer-action/SKILL.md`'s CI example are intentionally
+    # out of scope). A reviewer adding a fifth cost file that binds the
+    # stems should extend this tuple.
     _CONSUMERS = (
         "skills/cost-estimation/SKILL.md",
         "skills/cost-tracking/SKILL.md",
