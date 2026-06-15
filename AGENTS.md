@@ -42,6 +42,28 @@
   building on the marker-bump and Cartographer flows from earlier
   in the same conversation.)
 
+- A spec's **recommended option is a hypothesis for the spec-mode
+  diaboli to stress, not a default to confirm** — most acutely when the
+  slice carries an *honesty burden* (predicting or pricing) or touches a
+  *closed contract* (a validator checklist, an enum). Across the
+  cost-estimation chain the diaboli refuted or reshaped the recommended
+  design in three consecutive slices and twice showed the recommended
+  *mechanism* was wrong, not just the wording: the naïve cross-tier proxy
+  would have reused a grounding-basis a consumer could not distinguish
+  from a real one **and** collapsed the existing split-tier-spread
+  validator (2 criticals); the snapshot-content staleness rule
+  false-positived on every legitimate cheap-tier-only month and
+  false-negatived the actual feared staggered-rollover case (5 highs,
+  refuted outright). So when the diaboli lands a **critical/high on the
+  recommended path itself, surface the genuine fork to the human** rather
+  than absorb-and-proceed — both pivots produced materially better, more
+  honest designs than the recommendation would have. Reinforce the pass
+  by **pre-listing, in the spec, the contract surfaces a recommendation
+  could break** (validator lines, enums, grounding states) so the
+  diaboli's scrutiny is scoped and the criticals surface in one round.
+  (Source: REFLECTION_LOG 2026-06-15 entry on the cost-estimation chain,
+  issues #411–#414.)
+
 ## GOTCHAS
 
 <!-- Traps, surprises, and non-obvious constraints. Entries
