@@ -1,5 +1,79 @@
 # Changelog
 
+## 0.10.0 — 2026-06-15
+
+### `/pipeline-map` command + self-contained Mermaid HTML (pipeline-map P5)
+
+Ships the human-facing **`/pipeline-map "<task>" [--near <path>] [--out
+<dir>]`** command — the final slice (P5) of the task-scoped pipeline-map
+feature (#363–#367) and its first polished human-visible artefact. A
+developer states the work they are considering; the command drives the
+agent in `mode: pipeline` (resolve bound → trace flow → three-way
+cross-check) and renders the bounded pipeline as a **self-contained HTML
+flowchart**. Structurally mirrors `/diagnose` (dispatch → render →
+validation checkpoint → confirm-before-write → single Write; the agent
+stays read-only and the command owns the Write).
+
+- **Command** (`commands/pipeline-map.md`): task-driven signature;
+  dispatches `mode: pipeline`; consumes the agent's two YAML blocks
+  (ConceptualPipelineMap + LegibilityModel); refusal surfaced verbatim
+  and aborts. Default output
+  `diagnostic-legibility/output/<task-slug>-pipeline-<YYYY-MM-DD>.html`
+  (gitignored), overridable via `--out`.
+- **Mermaid vendoring — pin + SHA + cache, not a committed blob** (spec
+  §2.2, revised at P5). A provenance manifest
+  (`assets/mermaid-vendor.md`) pins `mermaid@11.6.0` and records its
+  SHA-256; the command fetches the bundle once into a gitignored cache
+  (`assets/cache/`), **verifies the SHA-256** (aborting on mismatch), and
+  **inlines** the verified bytes into each report. The output carries
+  **no** CDN `<script src>` — a portable single file — while the repo
+  stays free of the ~2.7 MB binary. Integrity is enforced by the hash
+  check; first generation needs network until the cache is warm.
+- **HTML render** (diaboli gate deliverables): a **"structural — not
+  executed" banner** and **no** reserved live legend (O12); a
+  **scope-resolution panel** surfacing in_scope / adjacent_excluded /
+  scope_confidence (+ failure direction when < high); the **Mermaid
+  flowchart** (renderer-derived shapes/numbering/edge-labels from the
+  display-agnostic model); a **`<noscript>` plain-text-outline fallback**
+  so the file is readable without JavaScript (O5); a **stage-detail
+  table** (evidence, confidence, grouped `Q<N>`/`CC<N>`); a cross-check
+  summary; and a legend.
+- **Output validation checkpoint** (the command joins the CLAUDE.md
+  list, alongside `/diagnose`): banner present; no `<DISPATCHER:` leak;
+  **no** CDN `<script src>`; scope panel consistent; `<noscript>` outline
+  lists every `stage.id`; every `stage.id` in both the Mermaid source and
+  the detail table; transitions reference rendered stages; single
+  `flowchart`; no live-status styling; counts consistent. Deviations
+  fixed in place, agent not re-dispatched; the human accept gate is the
+  last line of defence.
+- **Docs (same PR, diaboli O9)**: how-to
+  (`run-the-pipeline-map-command.md`) and reference
+  (`pipeline-map-command.md`).
+
+Deterministic Layer-1 structural tests guard the command, the manifest,
+the docs pages, the `.gitignore` cache entry, and the CLAUDE.md
+checkpoint entry
+(`tdad_tests/tests/test_diagnostic_legibility_structural.py`,
+`TestDiagnosticLegibilityPipelineMapCommand`).
+
+**This completes the P1–P5 task-scoped conceptual pipeline map.** P6 (the
+live execution overlay) remains deferred.
+
+**Decision discipline** — spec at
+`docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md` (§7; §2.2
+vendoring revision recorded there); slicing record
+`docs/superpowers/slices/diagnostic-legibility-pipeline-map.md` (P5);
+spec-mode diaboli O5 (no-JS fallback), O6 (inlined bundle), O9 (same-PR
+docs), O12 (structural banner / no live legend).
+
+**Marketplace**: the `diagnostic-legibility` listing entry version bumps
+0.9.0 → 0.10.0 and its `description` gains a clause naming the
+`/pipeline-map` command; the top-level listing `version` and
+`plugin_version` are unchanged.
+
+P5 of the pipeline-map slicing record. Closes issue #367 and the P1–P5
+pipeline-map feature.
+
 ## 0.9.0 — 2026-06-15
 
 ### Three-way (six-pair) cross-check (pipeline-map P4)

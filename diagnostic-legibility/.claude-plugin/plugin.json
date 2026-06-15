@@ -1,6 +1,6 @@
 {
   "name": "diagnostic-legibility",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Agents accountable for helping to maintain human understanding. The first agent builds, self-challenges, and cross-checks two models of a codebase scope — architectural moving parts and domain concepts — and surfaces the mutually-corrected models on demand. Future agents will extend the discipline to other domains.",
   "author": {
     "name": "Russ Miles"

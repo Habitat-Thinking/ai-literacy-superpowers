@@ -164,7 +164,8 @@ consumers must include a validation checkpoint step. The pattern:
 
 Commands with checkpoints: `/harness-health`, `/assess`, `/reflect`,
 `/cost-capture`, `/cost-estimate`, `/harness-constrain`, `/harness-init`,
-`/superpowers-init`, `/governance-audit`, `/harness-onboarding`.
+`/superpowers-init`, `/governance-audit`, `/harness-onboarding`,
+`/diagnose`, `/pipeline-map`.
 
 When adding a new command that writes structured markdown, add a
 validation step following this pattern. Reference the format spec
