@@ -1,11 +1,13 @@
 """Layer 1 structural tests for the diagnostic-legibility plugin at
-v0.3.0 / v0.4.0 / v0.5.0.
+v0.3.0 / v0.4.0 / v0.5.0 / v0.6.0.
 
 Sub-S2b shipped the working `diagnostic-legibility` agent (v0.3.0); S3
-shipped the cross-check (v0.4.0); S4 ships the human-facing `/diagnose`
-command (v0.5.0). These are deterministic, file-shape assertions — the
-agent's and command's behavioural contracts are covered by their specs
-as acceptance documentation rather than executable tests.
+shipped the cross-check (v0.4.0); S4 shipped the human-facing `/diagnose`
+command (v0.5.0); P1 of the pipeline-map feature ships the standalone
+`ConceptualPipelineMap` data-model template (v0.6.0). These are
+deterministic, file-shape assertions — the agent's and command's
+behavioural contracts are covered by their specs as acceptance
+documentation rather than executable tests.
 
 The TDAD scenario discipline does not extend to the diagnostic-legibility
 plugin (the TDAD-scenario-check workflow is scoped to the
@@ -18,6 +20,7 @@ Spec references:
     docs/superpowers/specs/2026-05-28-dl-s2b-challenge-protocol-design.md
     docs/superpowers/specs/2026-05-29-dl-s3-cross-check-mechanism-design.md
     docs/superpowers/specs/2026-06-01-dl-s4-diagnose-command-design.md
+    docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md
 """
 
 from __future__ import annotations
@@ -61,9 +64,12 @@ def repo_root() -> Path:
 
 @pytest.mark.structural
 class TestDiagnosticLegibilityVersioning:
-    """The S4 plugin version bump from 0.4.0 to 0.5.0 must land in
+    """The P1 plugin version bump from 0.5.0 to 0.6.0 must land in
     lockstep across plugin.json, marketplace.json's per-plugin entry,
-    and the CHANGELOG heading.
+    and the CHANGELOG heading. A new schema/data-model template is a
+    behavioural plugin addition (the S2a precedent shipped the
+    `LegibilityElement` schema as the v0.2.0 minor bump), so P1 takes a
+    minor bump.
 
     The marketplace listing's top-level `version` (0.4.0) and its
     `plugin_version` pointer are explicitly unchanged by this slice —
@@ -71,7 +77,7 @@ class TestDiagnosticLegibilityVersioning:
     taking `plugin_version` from main verbatim at rebase time.
     """
 
-    def test_plugin_json_at_0_5_0(
+    def test_plugin_json_at_0_6_0(
         self, diagnostic_legibility_path: Path
     ) -> None:
         manifest_path = (
@@ -80,13 +86,13 @@ class TestDiagnosticLegibilityVersioning:
             / "plugin.json"
         )
         manifest = json.loads(manifest_path.read_text())
-        assert manifest["version"] == "0.5.0", (
+        assert manifest["version"] == "0.6.0", (
             "diagnostic-legibility/.claude-plugin/plugin.json must "
-            "carry version '0.5.0' (was '0.4.0' at S3). "
+            "carry version '0.6.0' (was '0.5.0' at S4). "
             f"Actual: {manifest['version']!r}"
         )
 
-    def test_marketplace_entry_at_0_5_0(self, repo_root: Path) -> None:
+    def test_marketplace_entry_at_0_6_0(self, repo_root: Path) -> None:
         marketplace_path = (
             repo_root / ".claude-plugin" / "marketplace.json"
         )
@@ -102,9 +108,9 @@ class TestDiagnosticLegibilityVersioning:
         assert entry is not None, (
             "No diagnostic-legibility entry in marketplace.json plugins[]"
         )
-        assert entry["version"] == "0.5.0", (
+        assert entry["version"] == "0.6.0", (
             "marketplace.json diagnostic-legibility entry must be at "
-            f"'0.5.0' (was '0.4.0' at S3). Actual: {entry['version']!r}"
+            f"'0.6.0' (was '0.5.0' at S4). Actual: {entry['version']!r}"
         )
 
     def test_marketplace_top_level_version_unchanged(
@@ -116,7 +122,9 @@ class TestDiagnosticLegibilityVersioning:
         marketplace = json.loads(marketplace_path.read_text())
         assert marketplace["version"] == "0.4.0", (
             "marketplace.json top-level `version` must remain at '0.4.0' "
-            f"per spec §9. Actual: {marketplace['version']!r}"
+            "per spec §9 (a per-plugin entry's content change is the "
+            "plugin's own contract, not the listing contract). "
+            f"Actual: {marketplace['version']!r}"
         )
 
     def test_marketplace_plugin_version_matches_canonical(
@@ -150,17 +158,30 @@ class TestDiagnosticLegibilityVersioning:
             "does not own (per spec §9)."
         )
 
-    def test_changelog_has_0_5_0_heading(
+    def test_changelog_has_0_6_0_heading(
         self, diagnostic_legibility_path: Path
     ) -> None:
         changelog = (
             diagnostic_legibility_path / "CHANGELOG.md"
         ).read_text()
+        assert "## 0.6.0 — 2026-06-14" in changelog, (
+            "CHANGELOG.md must contain a `## 0.6.0 — 2026-06-14` heading "
+            "naming the P1 ConceptualPipelineMap template. Note: the "
+            "dash is the em-dash (U+2014), matching the format enforced "
+            "by the version-consistency CI check."
+        )
+
+    def test_changelog_0_5_0_heading_persists(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Audit trail: the prior v0.5.0 heading (S4 `/diagnose`) must
+        remain in the file when the new v0.6.0 heading is prepended."""
+        changelog = (
+            diagnostic_legibility_path / "CHANGELOG.md"
+        ).read_text()
         assert "## 0.5.0 — 2026-06-01" in changelog, (
-            "CHANGELOG.md must contain a `## 0.5.0 — 2026-06-01` heading "
-            "naming the S4 `/diagnose` command. Note: the dash is the "
-            "em-dash (U+2014), matching the format enforced by the "
-            "version-consistency CI check."
+            "Prior `## 0.5.0 — 2026-06-01` heading must persist as the "
+            "CHANGELOG audit trail when v0.6.0 is added."
         )
 
     def test_changelog_references_followup_issues(
@@ -1265,4 +1286,294 @@ class TestDiagnosticLegibilityDiagnoseCommand:
             "Repo-root .gitignore must contain an entry for "
             "`diagnostic-legibility/output/` (spec §7.2 / O3) so "
             "generated reports stay out of the repo and the plugin cache."
+        )
+
+
+# ---------------------------------------------------------------------
+# ConceptualPipelineMap data-model template (P1, v0.6.0)
+# ---------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestConceptualPipelineMapTemplate:
+    """P1 ships the `ConceptualPipelineMap` as its own standalone
+    data-model template — NOT a collection bolted onto `LegibilityModel`
+    (spec §4). These are deterministic, file-shape assertions over the
+    template's documented field contract and its decoupling invariants.
+    The model's behavioural production (the agent emitting a conforming
+    map) is later-slice work (P3+); P1 fixes the schema, mirroring the
+    role sub-S2a played for `LegibilityElement`.
+
+    Spec reference:
+        docs/superpowers/specs/2026-06-03-dl-pipeline-map-design.md
+    """
+
+    def _template_body(self, diagnostic_legibility_path: Path) -> str:
+        template = (
+            diagnostic_legibility_path
+            / "templates"
+            / "conceptual-pipeline-map.md"
+        )
+        return template.read_text()
+
+    # -- file presence (spec §4) --------------------------------------
+
+    def test_template_file_present(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Spec §4: the model is defined in its OWN template at
+        `templates/conceptual-pipeline-map.md`, not folded into
+        `legibility-element.md`."""
+        template = (
+            diagnostic_legibility_path
+            / "templates"
+            / "conceptual-pipeline-map.md"
+        )
+        assert template.is_file(), (
+            "Expected the ConceptualPipelineMap template at "
+            f"{template.relative_to(diagnostic_legibility_path.parent)} "
+            "(spec §4 — the map is its own standalone model)."
+        )
+
+    def test_template_names_the_model(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        body = self._template_body(diagnostic_legibility_path)
+        assert "ConceptualPipelineMap" in body, (
+            "Template must name the top-level model `ConceptualPipelineMap`."
+        )
+
+    # -- the four record types and their fields (spec §4, slice P1) ----
+
+    def test_wrapper_fields_documented(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The ConceptualPipelineMap wrapper carries task,
+        scope_resolution, entry, stages, transitions, and the two
+        dispatcher-filled provenance fields."""
+        body = self._template_body(diagnostic_legibility_path)
+        for field in (
+            "task",
+            "scope_resolution",
+            "entry",
+            "stages",
+            "transitions",
+            "generated_at",
+            "generated_by",
+        ):
+            assert field in body, (
+                f"Template must document the wrapper field {field!r} "
+                "(spec §4 / template top-level field set)."
+            )
+
+    def test_pipeline_stage_fields_documented(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """PipelineStage: id, label, kind, condition, part_of, realises,
+        evidence, confidence, challenge_notes."""
+        body = self._template_body(diagnostic_legibility_path)
+        assert "PipelineStage" in body, (
+            "Template must define the `PipelineStage` record."
+        )
+        for field in (
+            "id",
+            "label",
+            "kind",
+            "condition",
+            "part_of",
+            "realises",
+            "evidence",
+            "confidence",
+            "challenge_notes",
+        ):
+            assert field in body, (
+                f"Template must document the PipelineStage field "
+                f"{field!r} (spec §4)."
+            )
+
+    def test_pipeline_transition_fields_documented(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """PipelineTransition: from, to, condition_label, kind,
+        evidence."""
+        body = self._template_body(diagnostic_legibility_path)
+        assert "PipelineTransition" in body, (
+            "Template must define the `PipelineTransition` record."
+        )
+        for field in ("from", "to", "condition_label", "evidence"):
+            assert field in body, (
+                f"Template must document the PipelineTransition field "
+                f"{field!r} (spec §4)."
+            )
+
+    def test_scope_resolution_fields_documented(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """ScopeResolution: in_scope, adjacent_excluded,
+        scope_confidence — the disclosed provenance of the DERIVED
+        bound (spec §3.1, §4)."""
+        body = self._template_body(diagnostic_legibility_path)
+        assert "ScopeResolution" in body, (
+            "Template must define the `ScopeResolution` record."
+        )
+        for field in (
+            "in_scope",
+            "adjacent_excluded",
+            "scope_confidence",
+        ):
+            assert field in body, (
+                f"Template must document the ScopeResolution field "
+                f"{field!r} (spec §3.1 / §4)."
+            )
+
+    # -- the control-flow ontology (spec §4.1) ------------------------
+
+    def test_stage_kind_enum_values(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """`kind` is a conceptual role with exactly three values:
+        step | decision | outcome (spec §4.1 — a conceptual category,
+        not a shape)."""
+        body = self._template_body(diagnostic_legibility_path)
+        for value in ("step", "decision", "outcome"):
+            assert value in body, (
+                f"Template must document the stage `kind` value "
+                f"{value!r} (spec §4.1)."
+            )
+
+    def test_confidence_enum_values_reused(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The model reuses the legibility discipline's epistemic
+        `confidence` (low/medium/high) on stages and `scope_confidence`
+        (spec §4.2)."""
+        body = self._template_body(diagnostic_legibility_path)
+        for value in ("low", "medium", "high"):
+            assert value in body, (
+                f"Template must document the confidence value {value!r}."
+            )
+
+    # -- the decoupling invariants (spec §4.1, §4.2) ------------------
+
+    def test_id_is_opaque_not_display_numbering(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """The load-bearing decoupling choice: `id` is a stable OPAQUE
+        slug, and display numbering (`5A`, `5A.1`) is renderer-derived,
+        never stored (spec §4.1 / §4.2)."""
+        body = self._template_body(diagnostic_legibility_path)
+        assert "opaque" in body.lower(), (
+            "Template must state that `id` is a stable OPAQUE identifier "
+            "(spec §4.2 — the load-bearing decoupling choice)."
+        )
+        # The display-numbering examples are named as renderer-derived,
+        # NOT stored.
+        assert "5A" in body, (
+            "Template must name display numbering (e.g. `5A`/`5A.1`) as "
+            "a renderer-derived concern the model does not store "
+            "(spec §4.1)."
+        )
+
+    def test_presentation_and_producer_agnostic_claim(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Spec §4.1: the honest claim is presentation- and
+        producer-agnostic — NOT the over-broad 'implementation-agnostic'
+        (diaboli O2). The model deliberately commits to a control-flow
+        ontology."""
+        body = self._template_body(diagnostic_legibility_path)
+        low = body.lower()
+        assert "presentation-agnostic" in low, (
+            "Template must claim the model is `presentation-agnostic` "
+            "(spec §4.1)."
+        )
+        assert "producer-agnostic" in low, (
+            "Template must claim the model is `producer-agnostic` "
+            "(spec §4.1)."
+        )
+
+    def test_realises_cross_reference_seam(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """A stage cross-references the architectural/domain element it
+        `realises` BY NAME — the P4 cross-check seam that leaves the map
+        valid standalone (spec §4.2 / §4.3)."""
+        body = self._template_body(diagnostic_legibility_path)
+        assert "realises" in body, (
+            "Template must document the `realises` cross-reference."
+        )
+        for key in ("architectural", "domain"):
+            assert key in body, (
+                f"Template must document the `realises.{key}` "
+                "cross-reference key (spec §4.2)."
+            )
+
+    def test_empty_task_sentinel_documented(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Spec §4.3 / template Validation (diaboli O7): a task that
+        resolves to no process emits an empty `stages: []` with a
+        populated scope_resolution at `low` confidence — distinct from,
+        and able to co-occur with, the `(empty scope)` sentinel that
+        governs the architectural[]/domain[] collections."""
+        body = self._template_body(diagnostic_legibility_path)
+        assert "stages: []" in body, (
+            "Template must document the empty-task sentinel "
+            "(`stages: []`) per spec §4.3 / O7."
+        )
+        assert "(empty scope)" in body, (
+            "Template must name the `(empty scope)` sentinel and explain "
+            "the two degenerate sentinels coexist (spec §4.3 / O7)."
+        )
+
+    def test_challenge_notes_prefix_conventions(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Stages reuse the legibility audit-trail convention: `Q<N>`
+        self-challenge and `CC<N>` cross-check note prefixes (spec §4.2
+        — the same convention as legibility-element.md)."""
+        body = self._template_body(diagnostic_legibility_path)
+        assert "Q<N>" in body, (
+            "Template must reference the `Q<N>` self-challenge note "
+            "prefix convention (spec §4.2)."
+        )
+        assert "CC<N>" in body, (
+            "Template must reference the `CC<N>` cross-check note prefix "
+            "convention (spec §4.2 — the P4 cross-check seam)."
+        )
+
+    def test_excludes_display_and_implementation_concerns(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """Spec §4.1 / template Boundaries: the model deliberately
+        EXCLUDES display concerns (numbering, shapes, layout, target
+        format) and implementation concerns (tracing strategy,
+        persistence, runtime/execution overlay). Stating the exclusions
+        is what keeps the decoupling enforceable."""
+        body = self._template_body(diagnostic_legibility_path)
+        low = body.lower()
+        # Display concerns named as out-of-model.
+        for term in ("shapes", "layout"):
+            assert term in low, (
+                f"Template must name the display concern {term!r} as a "
+                "renderer concern the model excludes (spec §4.1)."
+            )
+        # Implementation concerns named as out-of-model.
+        for term in ("persistence", "overlay"):
+            assert term in low, (
+                f"Template must name the implementation concern {term!r} "
+                "as a producer/consumer concern the model excludes "
+                "(spec §4.1)."
+            )
+
+    def test_dispatcher_placeholders_for_provenance(
+        self, diagnostic_legibility_path: Path
+    ) -> None:
+        """generated_at / generated_by are dispatcher-filled via the
+        `<DISPATCHER: ...>` placeholder convention, matching
+        LegibilityModel (spec §4 / template field table)."""
+        body = self._template_body(diagnostic_legibility_path)
+        assert "<DISPATCHER:" in body, (
+            "Template must use the `<DISPATCHER: ...>` placeholder "
+            "convention for the provenance fields the dispatcher fills."
         )
