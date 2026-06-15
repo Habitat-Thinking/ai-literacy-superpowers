@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-06-15 |
-| Status | Diaboli-complete — 12 objections raised, all accepted; design pivoted (drop the GC staleness rule → deterministic mention-consistency check); ready for plan/implementation |
+| Status | **Complete** — shipped as `ai-literacy-superpowers` v0.52.0 (#414 / PR #416); 12 objections raised, all accepted; design pivoted (dropped the GC staleness rule → deterministic mention-consistency check) |
 | Author | claude-opus-4-8[1m] (interactive session with russmiles) |
 | Capability | Keep the cost-estimation tier→model **family stem table** singly-sourced and internally consistent — a declared canonical list, an add-and-retire maintenance discipline, and a deterministic check that the cost files do not drift from it |
 | Fixes | #414 |
