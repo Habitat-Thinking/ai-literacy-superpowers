@@ -127,6 +127,11 @@ plugin manifest currency) are not included — they require LLM
 judgement and are triggered via `/harness-gc` or
 `/harness-health --deep`.
 
+The two shell-script rules scope their scan to project-owned scripts
+via `git ls-files` (falling back to a filesystem walk outside a git
+repo), so vendored `node_modules` scripts, nested worktrees, and
+`CLAUDE_CONFIG_DIR` shell snapshots do not trigger false positives.
+
 ### Curation nudge
 
 - **Script**: `hooks/scripts/curation-nudge.sh`
