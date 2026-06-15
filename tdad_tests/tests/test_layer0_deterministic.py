@@ -47,6 +47,7 @@ BASH_TEST_SCRIPTS = [
     "test-reflection-log-helpers",
     "test-archive-promoted-reflections",
     "test-migrate-reflection-log",
+    "test-auto-enforcer",
 ]
 
 
