@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-06-03 |
-| Status | In implementation — P1 shipped (ConceptualPipelineMap template, diagnostic-legibility v0.6.0, #363/#402); P2 (task→bounded scope resolution) in progress; P3–P5 filed (#365–#367), P6 deferred |
+| Status | In implementation — P1 shipped (ConceptualPipelineMap template, v0.6.0, #363/#402); P2 shipped (task→bounded scope resolution, `mode: scope-resolution`, v0.7.0, #364/#403) and hand-validated (gate §3.1 accepted); P3 (flow-tracing within scope + self-challenge) in progress; P4–P5 filed (#366–#367), P6 deferred |
 | Author | claude-opus-4-8[1m] (interactive session with russmiles) |
 | Capability | Given a work task a developer is considering, derive the bounded slice of the process that task touches, model it as a flow perspective over the architectural and domain models, and render it as a self-contained HTML pipeline map |
 | Slicing record | `docs/superpowers/slices/diagnostic-legibility-pipeline-map.md` (slices P1–P6) |
@@ -246,6 +246,22 @@ to re-test).
 > earns its keep at P1; and whether the cross-model bundle (map + arch +
 > domain) is one agent-output envelope or three separately-persisted
 > artefacts.
+>
+> **Resolved at P3 (implementation, 2026-06-15):** `realises` is carried
+> **on the stage** (the seam P1 fixed); `PipelineTransition.evidence`
+> **earns its keep** (a transition is a refutable claim — P3 grounds
+> non-trivial transitions). The cross-model bundle is **one agent
+> response carrying two clearly-delimited, standalone fenced YAML
+> blocks** — first a `ConceptualPipelineMap`, then a `LegibilityModel`
+> (`scope` = the resolved bound) — *not* a new merged envelope and *not*
+> three separate dispatches. This keeps each model pure and standalone
+> (the map embeds neither collection — P1's decoupling holds), while
+> letting the P4 three-way cross-check and the P5 renderer consume both
+> from a single dispatch. This also reconciles the spec §7 shorthand
+> "dispatch in `mode: full`": the task-scoped pipeline runs under a
+> dedicated **`mode: pipeline`** marker (the same add-a-mode choice P2
+> made for `scope-resolution` rather than overloading `full`), and
+> `/pipeline-map` (P5) dispatches `mode: pipeline`.
 
 ## 5. Task → bounded scope resolution (slice P2)
 
