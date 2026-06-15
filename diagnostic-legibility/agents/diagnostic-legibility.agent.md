@@ -417,8 +417,8 @@ the `task:` itself is missing or empty (a malformed dispatch).
 **What this protocol does not do.** It does not trace control flow, build
 stages/transitions, or emit a map (that is `mode: pipeline`). It does not
 predict the **change site** — which node you will *edit* — as opposed to
-which slice the task *touches* (a deferred follow-on, #368). It scopes the
-task; it does not design the edit.
+which slice the task *touches* (that is `mode: change-prediction`, #368).
+It scopes the task; it does not design the edit.
 
 ## Pipeline protocol (mode: pipeline, v0.9.0)
 
@@ -1121,9 +1121,9 @@ before emitting.
 
 - **Predicting the edit site instead of the touched scope
   (scope-resolution mode)** — marking which node the task will *modify*
-  rather than which slice it *touches*. Change-site prediction is a
-  deliberately-deferred follow-on (#368); v0.7.0 scopes the task, it does
-  not design the edit.
+  rather than which slice it *touches*. Change-site prediction lives in
+  `mode: change-prediction` (#368), **not** here; `scope-resolution`
+  scopes the task, it does not design the edit.
 
 - **Phantom edges / straight-lined branches (pipeline mode)** — emitting
   a `transition` for control flow the code does not take, or rendering a
