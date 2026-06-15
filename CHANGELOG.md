@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.52.1 — 2026-06-15
+
+### gc-rotate: scope shell-script GC rules to project-owned files (#361)
+
+The rotating GC check's shell-syntax (rule 2) and strict-mode (rule 3)
+rules scanned **every** `*.sh` under the project, excluding only
+`*/.git/*`. In non-trivial projects this pulled in vendored, generated,
+and untracked scripts and flooded the session-end banner with
+false positives — `bash -n` choking on `zsh` snapshots written under
+`CLAUDE_CONFIG_DIR`, `node_modules` scripts, and nested worktrees that
+were never meant to follow this plugin's conventions.
+
+- **Scope to tracked files.** Both rules now enumerate scripts via a new
+  `list_owned_shell_scripts` helper that uses `git ls-files -z -- '*.sh'`,
+  which skips `node_modules`, nested worktrees, `CLAUDE_CONFIG_DIR`
+  snapshots, and build output for free. Paths are re-anchored to
+  `PROJECT_DIR` and the loops read NUL-delimited entries so paths with
+  spaces survive.
+- **Graceful fallback.** Outside a git repo the helper falls back to the
+  previous `find` walk, so non-git projects are unaffected.
+
 ## 0.52.0 — 2026-06-15
 
 ### cost-estimation: single-source the family stem table + deterministic drift guard (#414)

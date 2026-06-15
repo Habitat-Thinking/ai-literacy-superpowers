@@ -30,6 +30,24 @@ case "$cadence" in
   monthly)     STALENESS_THRESHOLD=30 ;;
 esac
 
+# Emit the shell scripts the project actually owns, NUL-delimited.
+#
+# Prefer git's tracked-file set: it skips node_modules, nested worktrees,
+# CLAUDE_CONFIG_DIR zsh snapshots, and build output for free, so the shell
+# rules only ever see scripts this project is responsible for. Fall back to
+# a filesystem walk when the project is not a git repo. Paths from
+# `git ls-files` are relative to PROJECT_DIR, so re-anchor them.
+list_owned_shell_scripts() {
+  if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git -C "$PROJECT_DIR" ls-files -z -- '*.sh' \
+      | while IFS= read -r -d '' rel; do
+          printf '%s\0' "${PROJECT_DIR%/}/$rel"
+        done
+  else
+    find "$PROJECT_DIR" -name "*.sh" -not -path "*/.git/*" -print0 2>/dev/null
+  fi
+}
+
 # Rotate through rules by day-of-year
 day_of_year=$(date +%j | sed 's/^0*//')
 rule_index=$((day_of_year % 4))
@@ -72,11 +90,11 @@ case $rule_index in
   2)
     # Shell scripts syntax
     failed_files=""
-    while IFS= read -r f; do
+    while IFS= read -r -d '' f; do
       if ! bash -n "$f" 2>/dev/null; then
         failed_files="${failed_files}\n- $f"
       fi
-    done < <(find "$PROJECT_DIR" -name "*.sh" -not -path "*/.git/*" 2>/dev/null)
+    done < <(list_owned_shell_scripts)
     if [ -n "$failed_files" ]; then
       printf '{"systemMessage": "GC check (shell syntax): syntax errors found in:%s"}' "$failed_files"
     fi
@@ -84,11 +102,11 @@ case $rule_index in
   3)
     # Shell scripts strict mode
     missing_files=""
-    while IFS= read -r f; do
+    while IFS= read -r -d '' f; do
       if ! head -15 "$f" | grep -q "set -euo pipefail"; then
         missing_files="${missing_files}\n- $f"
       fi
-    done < <(find "$PROJECT_DIR" -name "*.sh" -not -path "*/.git/*" 2>/dev/null)
+    done < <(list_owned_shell_scripts)
     if [ -n "$missing_files" ]; then
       printf '{"systemMessage": "GC check (strict mode): missing set -euo pipefail in:%s"}' "$missing_files"
     fi
