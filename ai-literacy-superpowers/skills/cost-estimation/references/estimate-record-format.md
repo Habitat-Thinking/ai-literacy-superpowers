@@ -202,11 +202,39 @@ is `-` or end-of-string** (the delimiter rule). So `claude-opus-4` resolves
 `claude-opus-4` and `claude-opus-4-8`, but **not** `claude-opus-40`,
 `claude-opus-4o`, or `claude-opus-5`. This is why a snapshot keyed by the
 *actual* model id (`claude-opus-4-8`) now grounds Most capable, where the
-old exact-string match silently omitted cost (#411). The stems
-(`claude-opus-4` / `claude-sonnet-4`) are a **maintained** table, bumped
-per model generation; a renamed family that no longer matches is a
-*signalled* miss (it falls through to omission — loud — never a silent
-wrong rate).
+old exact-string match silently omitted cost (#411).
+
+**Canonical estimating-tier family stems (the single source — v0.52.0).**
+This block is the **authoritative** stem set. Every other cost file (the
+`cost-estimation`/`cost-tracking` skills, the `cost-estimator` agent, the
+`/cost-capture` command) references it; a deterministic consistency check
+(`tdad_tests/tests/test_layer1_structural.py`) asserts no cost file names
+an estimating-tier family stem absent from it, so a future bump cannot
+silently desync the files (#414).
+
+```text
+canonical-estimating-tier-family-stems:
+  - claude-opus-4
+  - claude-sonnet-4
+```
+
+**Stem-table maintenance — add and retire, never replace in place
+(#414).** The stems are a deliberately-maintained table, bumped **per model
+generation**:
+
+- a new generation **adds** a stem (e.g. `claude-opus-5` alongside
+  `claude-opus-4`); both coexist while transition-period snapshots may
+  carry either — consistent with the cross-generation **Family
+  aggregation** rule below;
+- a stem is **retired** only when no snapshot in the retention window still
+  carries its family;
+- a stem is **never silently replaced** — dropping `claude-opus-4` the
+  moment `claude-opus-5` ships would regress a transition-quarter snapshot
+  still keyed by the old family back to a cost-omission.
+
+A renamed family that no longer matches any stem is a *signalled* miss (it
+falls through to omission — loud — never a silent wrong rate; #412), and
+`/cost-capture` flags it at capture time (#413).
 
 **Family aggregation.** When **>1** Model Breakdown row matches one
 family, aggregate them into a single blended family rate:

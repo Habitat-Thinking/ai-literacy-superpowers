@@ -22,6 +22,7 @@ lands.
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -278,4 +279,106 @@ class TestScenarioCorpus:
         missing = targets - present
         assert not missing, (
             f"Spike targets missing scenarios: {sorted(missing)}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Cost-estimation family stem-table consistency (#414)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.structural
+class TestCostEstimationStemConsistency:
+    """#414: the cost-estimation tier→model family stem table is
+    **singly-sourced**. The binding table
+    (`skills/cost-estimation/references/estimate-record-format.md`) declares
+    the canonical estimating-tier family stems; **no consumer cost file may
+    reference an estimating-tier family stem absent from that canonical
+    set** — every `claude-opus-*` / `claude-sonnet-*` family token in a
+    consumer must resolve, by the delimiter-bounded stem rule, to a declared
+    stem. This is the deterministic drift guard the spec-mode diaboli chose
+    over the (refuted) snapshot-content GC rule: it fires on a future stem
+    bump that desyncs the files and is silent on consistency — no agent, no
+    snapshot, no operating-state false positive.
+
+    Spec: docs/superpowers/specs/2026-06-15-cost-estimation-stem-table-maintenance-design.md
+    """
+
+    _CANONICAL = (
+        "skills/cost-estimation/references/estimate-record-format.md"
+    )
+    # The consumer cost files that reference the binding stems. The
+    # canonical file itself is NOT scanned — it deliberately contains
+    # non-matching illustrative tokens (e.g. `claude-opus-5`) to teach the
+    # delimiter rule.
+    _CONSUMERS = (
+        "skills/cost-estimation/SKILL.md",
+        "skills/cost-tracking/SKILL.md",
+        "agents/cost-estimator.agent.md",
+        "commands/cost-capture.md",
+    )
+    # Documented delimiter-rule COUNTER-examples — tokens shown precisely as
+    # NON-matching to teach the rule ("claude-opus-4-8 matches the
+    # claude-opus-4 stem; claude-opus-40 does not"). They are illustrations,
+    # not binding-stem references, so they are exempt from the resolve check.
+    _COUNTER_EXAMPLES = {"claude-opus-40", "claude-opus-4o"}
+    _TOKEN = re.compile(r"claude-(?:opus|sonnet)-[0-9][a-z0-9.-]*")
+
+    def _canonical_stems(self, plugin_path: Path) -> list[str]:
+        text = (plugin_path / self._CANONICAL).read_text()
+        m = re.search(
+            r"canonical-estimating-tier-family-stems:\n"
+            r"((?:[ \t]*-[ \t]*\S+\n)+)",
+            text,
+        )
+        assert m is not None, (
+            "The binding table must declare a parseable "
+            "`canonical-estimating-tier-family-stems:` block (#414) — it is "
+            "the single source the consistency check reads."
+        )
+        return [
+            tok.strip("`")
+            for tok in re.findall(r"-[ \t]*(\S+)", m.group(1))
+        ]
+
+    def test_canonical_stem_block_present_and_complete(
+        self, plugin_path: Path
+    ) -> None:
+        stems = self._canonical_stems(plugin_path)
+        for expected in ("claude-opus-4", "claude-sonnet-4"):
+            assert expected in stems, (
+                f"The canonical estimating-tier stem set must include "
+                f"{expected!r}. Declared: {stems!r}"
+            )
+
+    def test_no_consumer_references_an_undeclared_stem(
+        self, plugin_path: Path
+    ) -> None:
+        stems = self._canonical_stems(plugin_path)
+
+        def resolves(tok: str) -> bool:
+            # Delimiter-bounded stem rule (mirrors the binding table): a
+            # token resolves iff a canonical stem is it, or is a prefix
+            # followed by '-'.
+            return any(
+                tok == s or tok.startswith(s + "-") for s in stems
+            )
+
+        offenders: dict[str, set[str]] = {}
+        for rel in self._CONSUMERS:
+            text = (plugin_path / rel).read_text().lower()
+            for tok in set(self._TOKEN.findall(text)):
+                if tok in self._COUNTER_EXAMPLES:
+                    continue
+                if not resolves(tok):
+                    offenders.setdefault(rel, set()).add(tok)
+
+        assert not offenders, (
+            "Consumer cost file(s) reference an estimating-tier family "
+            f"stem absent from the canonical set {stems!r} (#414 drift): "
+            f"{ {k: sorted(v) for k, v in offenders.items()} }. Bump the "
+            "`canonical-estimating-tier-family-stems` block in "
+            "estimate-record-format.md (add-and-retire, never replace), or "
+            "remove the stray reference. If a token is a deliberate "
+            "delimiter-rule counter-example, add it to _COUNTER_EXAMPLES."
         )
