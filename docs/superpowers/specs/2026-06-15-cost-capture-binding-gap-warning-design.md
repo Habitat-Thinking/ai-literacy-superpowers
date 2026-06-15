@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-06-15 |
-| Status | Diaboli-complete — 10 objections raised, all accepted and absorbed; ready for plan/implementation |
+| Status | **Complete** — shipped as `ai-literacy-superpowers` v0.51.0 (#413 / PR #415); 10 objections raised, all accepted and absorbed |
 | Author | claude-opus-4-8[1m] (interactive session with russmiles) |
 | Capability | At capture time, `/cost-capture` tells the human whether the snapshot it just wrote will let the prospective `cost-estimator` ground a dollar figure — recorded as a structured, checkable line — closing the binding-gap feedback loop where a human can act |
 | Fixes | #413 |
