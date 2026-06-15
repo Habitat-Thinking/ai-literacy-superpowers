@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Date | 2026-06-03 |
-| Status | In implementation — P1 shipped (ConceptualPipelineMap template, v0.6.0, #363/#402); P2 shipped (task→bounded scope resolution, `mode: scope-resolution`, v0.7.0, #364/#403) and hand-validated (gate §3.1 accepted); P3 (flow-tracing within scope + self-challenge) in progress; P4–P5 filed (#366–#367), P6 deferred |
+| Status | In implementation — P1 (ConceptualPipelineMap template, v0.6.0, #363/#402), P2 (task→bounded scope resolution, `mode: scope-resolution`, v0.7.0, #364/#403, hand-validated), and P3 (flow-tracing within scope, `mode: pipeline`, v0.8.0, #365/#404) shipped; P4 (three-way six-pair cross-check) in progress; P5 filed (#367), P6 deferred |
 | Author | claude-opus-4-8[1m] (interactive session with russmiles) |
 | Capability | Given a work task a developer is considering, derive the bounded slice of the process that task touches, model it as a flow perspective over the architectural and domain models, and render it as a self-contained HTML pipeline map |
 | Slicing record | `docs/superpowers/slices/diagnostic-legibility-pipeline-map.md` (slices P1–P6) |
