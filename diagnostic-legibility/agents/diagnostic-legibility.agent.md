@@ -296,10 +296,18 @@ uncertainty named — never a confident silent boundary.
 
 **The empty-task contract.** A well-formed `task:` that resolves to **no
 touched process** is an honest result, **not** a refusal: emit a valid
-`ScopeResolution` with `in_scope: []`, `scope_confidence: low`, and at
-least one `reason` (under `adjacent_excluded` if anything was seen, else
-a top-level note in the prose) explaining why nothing matched. This is
-the scope-resolution analogue of the `(empty scope)` sentinel — an
+`ScopeResolution` with `in_scope: []`, `scope_confidence: low`, and the
+explanation carried in a **structured `adjacent_excluded` entry** — never
+only in surrounding prose, which a programmatic consumer does not parse.
+When you saw candidate-but-untouched code, name it as an
+`adjacent_excluded` entry as usual. When you saw **nothing at all**, still
+emit one `adjacent_excluded` entry whose `path` names the area or terms
+you searched and whose `reason` explains why nothing in it is touched
+(e.g. `path: "grep 'fraud-hold' across src/"`, `reason: "no matching
+process found; task may reference unbuilt or externally-owned code —
+suspected under-reach"`). So `adjacent_excluded` is **never empty in the
+empty-task case**: the disclosure always lives in the YAML. This is the
+scope-resolution analogue of the `(empty scope)` sentinel — an
 explicit "nothing matched", never an invented scope. Refuse **only** when
 the `task:` itself is missing or empty (a malformed dispatch).
 
