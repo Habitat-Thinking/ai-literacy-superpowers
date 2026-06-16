@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.55.0 — 2026-06-16
+
+### affordances: chained constraints — declaration-vs-enforcement loop (#201)
+
+Sequencing steps 4+5 of the harness-affordances epic: the asymmetric
+constraint pair that checks the `## Affordances` section against the
+permissions allowlist.
+
+- **`scripts/harness-affordance-check.sh`** — one deterministic `shell + jq`
+  script, two directions: `--direction=blocking` (affordance-without-
+  permission, exits 1 on a gap) and `--direction=advisory` (permission-
+  without-affordance, warns, always exits 0). Matching is **string equality**
+  on the permission pattern.
+- **Two-condition gate.** The check is `unverified` (exit 0, no-op) unless
+  the section has a real (non-example) affordance **and** a project
+  permissions allowlist is readable — so it never fires on un-migrated
+  adopters or in CI without a committed allowlist. Example entries (marked
+  `<!-- affordance-example -->`) and hook-mode affordances are skipped.
+- **Two constraint entries** in the HARNESS.md template's `## Constraints`
+  (commented opt-in, `Scope: pr`); adopters pick them up via
+  `/harness-upgrade`. The step-3 example entries gain the per-entry marker.
+- **Layer 0 tests** exercise all acceptance scenarios against hermetic
+  fixture directories (the check takes a project-dir argument).
+- Spec-mode `/diaboli` raised 12 objections (1 critical, 4 high); all
+  adjudicated before implementation — the critical caught that hook
+  affordances would false-fire the blocking check (now skipped), and the
+  enforcement model (pr scope, honest self-gating) was user-confirmed.
+
 ## 0.54.0 — 2026-06-16
 
 ### affordances: HARNESS.md section + guided `/harness-affordance add` (#200)

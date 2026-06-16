@@ -49,6 +49,7 @@ BASH_TEST_SCRIPTS = [
     "test-migrate-reflection-log",
     "test-auto-enforcer",
     "test-affordances-template",
+    "test-affordance-check",
 ]
 
 

@@ -78,10 +78,26 @@ the prose layer.
 
 Permissions enforce *what tools the agent actually has*; affordances declare
 *what tools it should have, and under what authority*. Pairing the two makes
-the governance loop explicit and sets up **chained constraints** (later
-sequencing steps) that reason across the inventory — e.g. "every affordance
-has a matching permission allowlist entry" (blocking) and "every permission
-has a declared affordance" (advisory). The affordance section is the
+the governance loop explicit through an **asymmetric pair of chained
+constraints** (`scripts/harness-affordance-check.sh`) that reason across the
+inventory:
+
+- **Affordances have matching permissions** — *blocking*. Every non-example,
+  non-hook affordance's `Permission` pattern must appear verbatim in the
+  permissions allowlist. A declared tool the agent cannot actually invoke is
+  a real safety gap.
+- **Permissions have declared affordances** — *advisory*. Every allowlist
+  entry should have a governing affordance. An ungoverned grant is paperwork
+  debt, flagged not blocked.
+
+Matching is string equality on the permission pattern (one affordance per
+pattern). Both directions **self-gate to `unverified`** until the project has
+a real affordance *and* a readable allowlist, so they never fire on a project
+that has not adopted affordances yet, and they skip the example entries
+(marked with `<!-- affordance-example -->`) and hook-mode affordances (whose
+`Permission` is a hook registration, not an allowlist pattern). The
+constraints ship commented in the HARNESS.md template's `## Constraints`
+section; uncomment them to activate. The affordance section is the
 declarative half of a capability model that was previously implicit in
 scattered config.
 

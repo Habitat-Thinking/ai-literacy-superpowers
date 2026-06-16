@@ -10,7 +10,7 @@
 
      Inspired by Birgitta Boeckeler's "Harness Engineering":
      https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->
-<!-- template-version: 0.54.0 -->
+<!-- template-version: 0.55.0 -->
 
 ## Context
 
@@ -105,6 +105,38 @@
 - **Enforcement**: unverified
 - **Tool**: none yet
 - **Scope**: pr
+
+<!-- Uncomment if using the Affordances feature (the chained-constraint
+     pair from the harness-affordances design, steps 4-5). The check
+     self-gates to "unverified" (passes, no-op) until the project has at
+     least one real (non-example) affordance AND a readable project
+     permissions allowlist, so it is safe to leave active. Matching is
+     string equality on the permission pattern; hook-mode affordances are
+     skipped. The Tool path assumes the plugin is vendored at
+     `ai-literacy-superpowers/` (as in this repo) — adjust it to your
+     plugin install location otherwise.
+
+### Affordances have matching permissions
+
+- **Rule**: Every non-example, non-hook affordance declared in the
+  `## Affordances` section must have a `Permission` pattern that appears
+  verbatim (string equality) in the permissions allowlist
+  (`.claude/settings.json` or `.claude/settings.local.json`). An affordance
+  without a matching permission is a tool the agent has declared but cannot
+  invoke — a safety gap.
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=blocking
+- **Scope**: pr
+
+### Permissions have declared affordances
+
+- **Rule**: Every entry in the permissions allowlist should have a matching
+  affordance in the `## Affordances` section. An ungoverned permission is
+  paperwork debt, not a safety violation — flag it, do not block.
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory
+- **Scope**: pr
+-->
 
 <!-- Uncomment if using spec-first development:
 
@@ -390,6 +422,7 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 <!-- Runtime invocation data: observability/affordance-invocations.json -->
 
 ### gh-cli
+<!-- affordance-example -->
 
 - **Mode**: cli
 - **Identity**: runtime-resolved
@@ -404,6 +437,7 @@ Run /governance-audit quarterly to keep governance constraints fresh.
   relying on this entry.
 
 ### honeycomb-mcp
+<!-- affordance-example -->
 
 - **Mode**: central-mcp (api.honeycomb.io)
 - **Identity**: service-account (HONEYCOMB_API_KEY shared across team)
@@ -414,6 +448,7 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 - **Last reviewed**: 2026-04-26
 
 ### shell-write-to-tmp
+<!-- affordance-example -->
 
 - **Mode**: cli
 - **Identity**: current-user (the human running the Claude Code session)
@@ -424,6 +459,7 @@ Run /governance-audit quarterly to keep governance constraints fresh.
   promote to a tracked artefact
 
 ### sync-to-global-cache-hook
+<!-- affordance-example -->
 
 - **Mode**: hook
 - **Trigger**: Stop
