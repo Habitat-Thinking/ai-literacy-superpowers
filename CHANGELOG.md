@@ -2,6 +2,25 @@
 
 ## 0.53.3 — 2026-06-16
 
+### compound learning: promote three dispositioned findings (#339, #347, #348)
+
+Curation pass landing three choice-cartographer findings that the human had
+already dispositioned `promoted`, turning recurring lessons into standing
+guardrails (no plugin version bump — convention files only).
+
+- **#339** → `CLAUDE.md` Marketplace Versioning: a cross-PR coordination rule
+  for `marketplace.json`'s `plugin_version` (owned by `ai-literacy-superpowers`
+  PRs; non-owning PRs take main's value verbatim). Specs can now reference the
+  convention instead of restating the merge-time rule per spec.
+- **#347** → `AGENTS.md` ARCH_DECISIONS: "schema evolution routes by fact
+  granularity" — per-element facts use a per-element field with a string
+  prefix; model-level facts earn an additive wrapper field; audit entries keep
+  a single writer.
+- **#348** → `AGENTS.md` ARCH_DECISIONS: "dispatcher-first error contracts for
+  agent output" — structured output for programmatic consumers must spec a
+  single-line, pattern-matchable refusal shape emitted instead of the success
+  block, with no silent fallback (third-occurrence promotion).
+
 ### auto-enforcer: record deterministic results without source interpolation (#424)
 
 The `Run deterministic constraints` step in `templates/ci-auto-enforcer.yml`

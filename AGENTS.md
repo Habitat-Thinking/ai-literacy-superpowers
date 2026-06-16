@@ -417,6 +417,66 @@
   `docs/superpowers/specs/2026-06-14-reservoir-warden-design.md`
   (Approach, FR-011); builds on the line-201 advisory-hook decision.
 
+- Decision: **schema evolution routes by fact granularity** — where a new
+  fact lives on a schema surface is decided by whether the fact varies per
+  element or applies to the whole record, not by idiom symmetry. Three
+  sub-rules: (1) **Per-element facts** (vary across elements in a collection)
+  reuse the existing per-element field with a string-prefix convention (e.g.
+  `Q<N> (question-name):` and `CC<N> (question-name):` on
+  `challenge_notes[]`) — no schema touch. (2) **Model-level / wrapper facts**
+  (apply to the whole record, do not vary per element) are added as an
+  additive optional field on the wrapper (e.g. `cross_check_status` on
+  `LegibilityModel`) — a schema touch is justified. (3) **Single-writer
+  invariant** — every audit-trail entry has exactly one author and one
+  source; a side-effect on a sibling record is recorded as a reference from
+  the writer, never duplicated as a second entry on the sibling. Reason:
+  recording a model-level fact at per-element granularity is N records for a
+  1-record fact and collapses under prefix-matching; recording a per-element
+  fact on the wrapper makes it ambiguous which element owns it; the
+  single-writer rule keeps audit trails attributable. The symmetry of a
+  sibling-sentinel idiom *feels* right because the symmetry is visible — the
+  granularity rule is invisible until a consumer surfaces it, so route by
+  granularity, not by idiom. Two instances: dl-s2a (PR #336, v0.2.0) split
+  the schema into `LegibilityElement` (per-element) + `LegibilityModel`
+  (wrapper) — implicit application; dl-s3 (v0.4.0) added `cross_check_status`
+  to `LegibilityModel` as an additive wrapper field, dropped the per-element
+  CC-skipped sentinel (a model-level fact pulled up to the wrapper), and kept
+  a subject-only audit trail — explicit application. Source: spec
+  `docs/superpowers/specs/2026-05-29-dl-s3-cross-check-mechanism-design.md`
+  (§3.3 worked example); `docs/superpowers/stories/dl-s3-cross-check-mechanism-design.md`
+  stories #1, #3, #4; schema template
+  `diagnostic-legibility/templates/legibility-element.md`. Promoted per #347.
+
+- Decision: **agents producing structured output for programmatic consumers
+  use dispatcher-first error contracts** — no silent fallback on unrecognised
+  input. An agent whose output is consumed by an orchestrator, a downstream
+  command, or `/diagnose` must spec **both** a success shape and a structured
+  refusal shape. The refusal shape is a **single line**, pattern-matchable,
+  prefixed with the agent name and the literal `refusal:` (e.g.
+  `diagnostic-legibility refusal: <reason>.`), and is emitted **instead of**
+  the success-shape YAML/JSON block — never alongside it. Programmatic
+  dispatchers route by "no success block + presence of the refusal prefix";
+  humans read the refusal line in the markdown response and act. Reason: a
+  forgiving fallback (e.g. silently defaulting an unrecognised `mode:` marker
+  to `mode: full` with a prose warning) silently corrupts dispatcher intent
+  and is invisible to pattern-matching; a structured refusal fails loud and
+  machine-legibly. Three occurrences drove the promotion: choice-cartographer
+  O7 (PR #341 lineage) chose a structured `cartograph_pending_count: N` field
+  over prose narration of pending stories; dl-s3 spec-mode O6 refused on an
+  unrecognised `mode:` value rather than falling back; dl-s3 spec-mode O7's
+  unified precondition-violation table emits valid YAML only in the
+  asymmetric case (via the model-level `cross_check_status` field) and
+  refuses structurally everywhere else. **Code-mode diaboli check:** any new
+  agent emitting structured output must have BOTH a success-shape and a
+  refusal-shape spec'd — a read-only check at the code gate. This sharpens
+  the human-gate refusal mention in the agent-emit/dispatcher-persist/
+  human-disposes entry above (the trust boundary) into an explicit *output
+  contract* for machine consumers. Source:
+  `docs/superpowers/stories/dl-s3-cross-check-mechanism-design.md` story #6;
+  dl-s3 spec §3.6/§3.7; precedents
+  `docs/superpowers/objections/dl-s2b-challenge-protocol-design.md` and
+  `docs/superpowers/objections/choice-cartographer.md` (O7). Promoted per #348.
+
 ## TEST_STRATEGY
 
 <!-- How tests are structured in this project. Helps agents write consistent
