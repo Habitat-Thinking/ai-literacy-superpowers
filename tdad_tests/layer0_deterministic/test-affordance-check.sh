@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-set -euo pipefail
 # shellcheck disable=SC2016
-# The single-quoted HARNESS.md fixtures below contain literal markdown
-# backticks (e.g. `Bash(foo *)`) and must NOT be expanded — that is the whole
-# point of the affordance Permission field. SC2016 is suppressed file-wide.
-#
+# (SC2016 suppressed file-wide: the single-quoted HARNESS.md fixtures below
+# contain literal markdown backticks — e.g. `Bash(foo *)` — that must NOT be
+# expanded; that is the whole point of the affordance Permission field. A
+# file-level directive must precede the first command, hence its position
+# above `set`.)
+set -euo pipefail
 # Layer 0 test for harness-affordance-check.sh (affordance chained constraints,
 # steps 4+5). The check takes a project-dir argument and reads only project
 # settings under it, so every scenario runs against a hermetic fixture dir.
