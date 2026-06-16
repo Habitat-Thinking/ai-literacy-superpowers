@@ -2,6 +2,17 @@
 
 ## 0.53.3 — 2026-06-16
 
+### docs: exploration findings for microsoft/AI-Engineering-Coach (#340)
+
+Investigation-only findings doc at
+`docs/superpowers/explorations/2026-06-16-ai-engineering-coach-findings.md`
+mapping the MS project's concepts to our surfaces. Key framing: MS coaches
+from *behavioural* session-log evidence, we assess from *habitat* artifacts —
+so most features have a mature analog here and the additive ideas are the
+behavioural ones. Recommends five follow-ups (R1 behavioural lens, privacy-
+gated; R2 mine their rule taxonomy; R3 agentic-readiness checklist; R4
+skill-finder angle; R5 decline gamification) and flags MIT attribution rules.
+
 ### compound learning: promote three dispositioned findings (#339, #347, #348)
 
 Curation pass landing three choice-cartographer findings that the human had
