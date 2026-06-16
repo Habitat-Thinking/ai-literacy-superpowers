@@ -44,6 +44,7 @@ def extract_block(marker):
 PARSER_SRC = extract_block("PYEOF")
 COMMENT_SRC = extract_block("COMMENTEOF")
 AGENT_SRC = extract_block("AGENTEOF")
+DET_SRC = extract_block("DETEOF")
 
 
 # --- #325 + #324: the constraint parser ---------------------------------
@@ -127,6 +128,41 @@ def test_parser_constraints_as_final_section():
                       if l.startswith("AGENT_CONSTRAINTS="))
         if [c["name"] for c in agents] != ["Only constraint"]:
             fail(f"final-section constraint mis-parsed: {agents}")
+
+
+# --- #424: deterministic record passes tool stdout via argv -------------
+def test_deterministic_record_handles_quote_chars():
+    # Tool stdout with Python quote characters and shell-like text must be
+    # recorded verbatim, not interpolated into the script body where it
+    # would corrupt the source and SyntaxError the whole step.
+    nasty = "err: stray ''' and \" and \"\"\" and $(whoami) and ' here"
+    with tempfile.TemporaryDirectory() as d:
+        rf = os.path.join(d, "r.json")
+        open(rf, "w").write("[]")
+        r = subprocess.run([sys.executable, "-c", DET_SRC, rf, "My Tool", "FAIL", nasty],
+                           capture_output=True, text=True)
+        if r.returncode != 0:
+            fail(f"deterministic record block errored on quote-heavy output: {r.stderr}")
+        recs = json.load(open(rf))
+        if len(recs) != 1:
+            fail(f"expected 1 record, got {len(recs)}")
+        if recs[0]["name"] != "My Tool":
+            fail(f"name mangled: {recs[0]['name']!r}")
+        if "stray" not in recs[0]["findings"]:
+            fail(f"findings lost: {recs[0]['findings']!r}")
+        if "$(whoami)" not in recs[0]["findings"]:
+            fail("shell-like text not preserved verbatim (would mean expansion)")
+
+
+def test_deterministic_record_pass_has_no_findings():
+    with tempfile.TemporaryDirectory() as d:
+        rf = os.path.join(d, "r.json")
+        open(rf, "w").write("[]")
+        subprocess.run([sys.executable, "-c", DET_SRC, rf, "T", "PASS", "noisy '''output"],
+                       check=True, capture_output=True)
+        recs = json.load(open(rf))
+        if recs[0]["findings"] != "--":
+            fail(f"PASS should record '--' findings, got {recs[0]['findings']!r}")
 
 
 # --- #323: comment-mode honoured via argv -------------------------------

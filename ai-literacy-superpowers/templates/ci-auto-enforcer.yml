@@ -188,18 +188,23 @@ jobs:
               echo "$OUTPUT"
             fi
 
-            # Append result to JSON file
-            python3 -c "
+            # Append result to JSON file. Values arrive via argv *after* the
+            # source is parsed (single-quoted heredoc → no shell expansion),
+            # so a tool whose stdout contains Python quote characters can
+            # never corrupt the script body the way `python3 -c "...$OUTPUT"`
+            # interpolation did (#424).
+            python3 - "$RESULTS_FILE" "$name" "$STATUS" "$OUTPUT" <<'DETEOF'
           import json, sys
-          results = json.load(open('$RESULTS_FILE'))
+          results_file, name, status, output = sys.argv[1:5]
+          results = json.load(open(results_file))
           results.append({
-              'name': '''$name''',
-              'type': 'deterministic',
-              'status': '$STATUS',
-              'findings': '''$OUTPUT'''.strip()[:500] if '$STATUS' == 'FAIL' else '--'
+              "name": name,
+              "type": "deterministic",
+              "status": status,
+              "findings": output.strip()[:500] if status == "FAIL" else "--",
           })
-          json.dump(results, open('$RESULTS_FILE', 'w'))
-          "
+          json.dump(results, open(results_file, "w"))
+          DETEOF
             echo "::endgroup::"
           done
 

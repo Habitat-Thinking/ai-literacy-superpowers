@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.53.3 — 2026-06-16
+
+### auto-enforcer: record deterministic results without source interpolation (#424)
+
+The `Run deterministic constraints` step in `templates/ci-auto-enforcer.yml`
+built a `python3 -c "…"` body by shell-interpolating each tool's stdout into
+a triple-quoted Python literal. Any tool that printed `'''` (or other quote
+characters) terminated the literal early and raised a `SyntaxError`, failing
+the whole step — so a tool that **passed** could still break the run, and the
+interpolation was a latent injection vector.
+
+- The step now uses the same safe heredoc-argv pattern as the agent and
+  comment steps: a single-quoted heredoc (no shell expansion) with the
+  results file, name, status, and tool output passed via `sys.argv` *after*
+  the source is parsed, so no character in tool output can corrupt the script.
+- Layer 0 coverage added: tool stdout containing `'''`, `"`, `"""`, and
+  shell-like `$(…)` text is recorded verbatim; a PASS result records `--`.
+  Verified to SyntaxError against the pre-fix interpolation form (RED→GREEN).
+
 ## 0.53.2 — 2026-06-15
 
 ### auto-enforcer: four PR-enforcement bug fixes (#322, #323, #324, #325)
