@@ -110,10 +110,15 @@ every governance field; the command only transcribes their answers, so
    - `Trigger` present **iff** `Mode: hook`;
    - **permission existence** — check whether the `Permission` pattern
      appears in any of `.claude/settings.json`,
-     `.claude/settings.local.json`, or `~/.claude/settings.json`. If it does
-     not, **warn** (do not block): "Permission `<pattern>` is not in any
-     settings allowlist — the affordance may precede its grant, or the
-     pattern may be mistyped."
+     `.claude/settings.local.json`, or `~/.claude/settings.json`. If a
+     settings layer is absent or unreadable in this environment (sandboxed
+     sessions, CI), skip it but **say so**, so a clean "absent" is not
+     confused with "could not check". If the pattern is found, pass
+     silently. If it is not found in any *readable* layer, **warn** (do not
+     block), naming which layers were checked: "Permission `<pattern>` not
+     found in <layers checked> — the affordance may precede its grant, the
+     pattern may be mistyped, or the user layer (`~/.claude/settings.json`)
+     was not readable here."
 
 7. **Write into `HARNESS.md` `## Affordances`** (idempotent):
    - If an entry already exists whose `Permission` field string-equals the
@@ -121,9 +126,12 @@ every governance field; the command only transcribes their answers, so
      its heading unless the user renamed it. Never append a second entry for
      the same permission pattern.
    - Otherwise append a new `### <name>` entry.
-   - If the `## Affordances` section does not exist, create it **after
-     `## Garbage Collection` and before `## Status`** (matching the
-     template's section order).
+   - If the `## Affordances` section does not exist, create it
+     **immediately before `## Observability`** (i.e. directly after the
+     `## Garbage Collection` section), matching the template's section
+     order. Do not place it just above `## Status` — `## Observability` and
+     `## Read-side filtering` sit between Affordances and Status in the
+     template.
 
 8. **Validation checkpoint.** Re-read the entry just written and verify it
    against the field schema (required fields present, `Trigger`/`Mode`

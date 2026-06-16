@@ -167,14 +167,17 @@ corresponding section (`## Context`, `## Constraints`,
 generated content from user responses. For unselected features, preserve
 the existing section content verbatim — do not modify it. If the
 **Affordances** feature is newly selected on a project that lacks the
-section, insert `## Affordances` from the template **after
-`## Garbage Collection` and before `## Status`** (matching the template's
-section order) without touching the other sections.
+section, insert `## Affordances` from the template **immediately before
+`## Observability`** (i.e. directly after the `## Garbage Collection`
+section), matching the template's section order, without touching the other
+sections.
 
-Section boundaries are defined by the `##` headings in the template:
-`## Context`, `## Constraints`, `## Garbage Collection`, `## Affordances`,
-`## Status`. Each section runs from its `##` heading to the next `##`
-heading or end of file.
+Section boundaries are defined by **every** `##` heading in the template, in
+order: `## Context`, `## Constraints`, `## Garbage Collection`,
+`## Affordances`, `## Observability`, `## Read-side filtering`, `## Status`.
+Each section runs from its `##` heading to the **next** `##` heading or end
+of file — so the section after `## Affordances` is `## Observability`, not
+`## Status`.
 
 **Template version marker (both first run and re-run):**
 
@@ -193,8 +196,10 @@ verify its structure against `templates/HARNESS.md`.
 
 **Structural checks:**
 
-1. All 4 top-level sections present: `## Context`,
+1. The 4 mandatory top-level sections present: `## Context`,
    `## Constraints`, `## Garbage Collection`, `## Observability`
+   (`## Affordances` is optional — see check 6 — and `## Read-side
+   filtering` and `## Status` are validated by checks 3-4)
 2. Context section has `### Stack` and `### Conventions`
    subsections (either with content or the placeholder marker)
 3. Observability section has `### Operating cadence`,
@@ -207,9 +212,9 @@ verify its structure against `templates/HARNESS.md`.
    current plugin version
 6. **Affordances (optional):** `## Affordances` is only required when the
    Affordances feature was selected. If selected, the section is present
-   (with example entries or the placeholder marker) and sits after
-   `## Garbage Collection`. If not selected, its absence is **not** a
-   failure.
+   (with example entries or the placeholder marker) and sits **between
+   `## Garbage Collection` and `## Observability`** (its template position).
+   If not selected, its absence is **not** a failure.
 
 If any check fails, fix HARNESS.md in place:
 

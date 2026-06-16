@@ -18,7 +18,12 @@ ambiguity flagged in `Notes` (or declared `Identity: runtime-resolved`).
 
 This makes affordance identity a stable string — the `Permission` pattern —
 which is what `/harness-affordance add` keys idempotency on (not the heading
-name, which you may rename freely).
+name, which you may rename freely). It follows that each entry carries
+**exactly one permission pattern** in its `Permission` field: a tool that
+needs two patterns (e.g. `Bash(echo *)` *and* `Bash(touch *)`) is two
+affordances, not one entry with a comma-joined value — otherwise the
+string-equality idempotency match would never fire and `add` would append
+duplicates.
 
 ## Fields
 

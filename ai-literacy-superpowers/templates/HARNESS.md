@@ -10,7 +10,7 @@
 
      Inspired by Birgitta Boeckeler's "Harness Engineering":
      https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->
-<!-- template-version: 0.29.0 -->
+<!-- template-version: 0.54.0 -->
 
 ## Context
 
@@ -367,8 +367,8 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 
 <!-- Each entry declares one tool the agent can invoke. Identity is
      the load-bearing governance question — whose credentials authorise
-     the action. Audit Trail's honest answer "none" is itself useful
-     governance signal.
+     the action. The Audit trail field's honest answer "none" is itself
+     useful governance signal.
 
      Runtime invocation data (which agent invoked which tool, when, how
      often) lives in observability/affordance-invocations.json and is
