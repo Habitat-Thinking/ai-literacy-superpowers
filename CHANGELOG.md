@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.56.0 — 2026-06-16
+
+### affordances: review subcommand + staleness GC rule (#202)
+
+Sequencing step 6 of the harness-affordances epic — the per-affordance
+staleness loop.
+
+- **`/harness-affordance review <name>`** — interactive re-validation that
+  bumps `Last reviewed` to today **only if all three checks pass** (Identity,
+  Audit trail, Permission), each with an explicit `yes / no / needs-edit`
+  prompt. A bump after any edit requires re-answering all three; a failing
+  check leaves the date and records a single idempotent `[review-gap: <check>]`
+  Notes line. Inline edits follow the same human-dictates/command-transcribes
+  discipline as `add`.
+- **`scripts/harness-affordance-staleness.sh`** — a deterministic, report-only
+  scanner that flags non-example affordances (hooks **included**) whose
+  `Last reviewed` is older than the threshold, or undated. UTC-normalised age
+  (`--today` makes it hermetic). Threshold precedence: `--max-age-days` flag >
+  a human-owned `<!-- affordance-review-threshold-days: N -->` marker the
+  scanner reads from HARNESS.md > default 180.
+- **Weekly GC**: a `gc.yml` step runs the scanner, prints findings to the step
+  summary, and emits a `::warning::` when any exist (self-skips with no
+  `## Affordances` section) — so the rule genuinely runs on the cron, not only
+  via `/harness-gc`. A matching template GC rule (commented opt-in) covers the
+  on-demand agent path.
+- **Layer 0 tests** over the scanner (stale/fresh/undated, hook inclusion,
+  example skip, threshold override, marker read, UTC determinism).
+- Spec-mode `/diaboli` raised 10 objections (3 high), all adjudicated before
+  implementation — the load-bearing fix wired the rule into `gc.yml` (a
+  template GC rule alone is never run by the hardcoded cron) and made the
+  scanner read the threshold from HARNESS.md rather than only a CLI flag.
+
 ## 0.55.0 — 2026-06-16
 
 ### affordances: chained constraints — declaration-vs-enforcement loop (#201)

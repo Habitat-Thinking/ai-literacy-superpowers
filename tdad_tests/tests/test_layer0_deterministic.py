@@ -50,6 +50,7 @@ BASH_TEST_SCRIPTS = [
     "test-auto-enforcer",
     "test-affordances-template",
     "test-affordance-check",
+    "test-affordance-staleness",
 ]
 
 
