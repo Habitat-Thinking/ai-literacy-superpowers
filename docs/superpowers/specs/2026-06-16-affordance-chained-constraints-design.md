@@ -6,7 +6,9 @@
 (Chained Constraints; O5, O8, O9 dispositions)
 **Builds on**: step 3 (`2026-06-16-affordances-section-and-add-design.md`, PR #433)
 **Driving issue**: #201
-**Status**: design — awaiting spec-mode `/diaboli` and user review
+**Status**: design — spec-mode `/diaboli` reviewed, all 12 dispositions
+adjudicated 2026-06-16 (see Adjudication; enforcement model user-confirmed);
+ready for implementation
 
 ## Problem
 
@@ -184,6 +186,68 @@ present, so it is also safe if a project wires it into `pr`/CI.
 - **FR5** Step 3's example block gains the machine-readable examples
   sentinel that the gate keys on.
 - **FR6** Layer 0 tests cover the seven acceptance scenarios.
+
+## Adjudication (post-diaboli, 2026-06-16)
+
+Spec-mode `/diaboli` raised twelve objections (1 critical, 4 high; record:
+`docs/superpowers/objections/affordance-chained-constraints-design.md`). All
+adjudicated — every objection **amend**. The binding refinements below
+supersede the original wording where they conflict, and drive
+implementation. The enforcement model (A2/A6) was confirmed by the user.
+
+- **A1 (O1, critical) — the blocking direction skips `Mode: hook`
+  affordances.** A hook's `Permission` field is a `hooks.<Trigger>`
+  registration, not a `.permissions.allow[]` pattern, so it has no allowlist
+  counterpart. Hooks are out of the affordance-without-permission relation
+  entirely (both directions ignore them). This removes the
+  false-fire-on-every-hook bug.
+- **A2/A6/A9 (O2/O6/O9) — blocking ships `Scope: pr`; honest self-gating.**
+  The blocking constraint runs in CI (the strict loop). It enforces strictly
+  for projects that **commit** their allowlist (`.claude/settings.json`); for
+  projects that only use the gitignored `.claude/settings.local.json`, the
+  check self-gates to `unverified` in CI (it cannot see an allowlist) and
+  still runs locally. The spec documents these enforcement points explicitly
+  rather than implying universal CI blocking. The advisory direction is also
+  `Scope: pr` and always exits 0 (a CI warning).
+- **A3/A4/A7/A8 (O3/O4/O7/O8) — per-entry example markers replace the section
+  sentinel.** Each template example entry carries a machine-readable
+  `<!-- affordance-example -->` marker on the line after its `### ` heading.
+  Both directions **skip** marked entries. The gate is then simply: enforce
+  on the **non-example** entries. There is no sentinel to forget to delete
+  (removing O3's silent-never-opened gate), leftover examples never enforce
+  against fabricated permissions (O4), and the "present but empty" placeholder
+  branch is dropped (O8). This PR adds the markers to the step-3 examples
+  (delivered via `/harness-upgrade`); a project still on the pre-marker
+  template gets correct "delete these examples" feedback and re-runs upgrade.
+- **A5 (O5) — the check reads PROJECT settings only**
+  (`.claude/settings.json`, `.claude/settings.local.json`), matching the
+  discovery scanner's source set and restoring per-repo determinism. The
+  user layer (`~/.claude/settings.json`) is read by step-3's interactive
+  `add`, not by this deterministic CI check.
+- **A10 (O10) — parse failures are a distinct diagnostic, not a FAIL.** A
+  `Permission` field that does not parse to a single allowlist-shaped pattern
+  (multi-pattern or free text) is reported as a `DIAGNOSTIC:` line advising
+  the human to split the entry. The blocking exit-1 is reserved for a
+  well-formed pattern with no matching allowlist entry — a genuine gap.
+- **A11 (O11) — hermetic tests via `project-dir`.** The check takes a
+  project-directory argument and reads only the project settings under it, so
+  Layer 0 tests point it at fixture directories with synthetic
+  `.claude/settings.json` + `HARNESS.md`. No user-layer read; fully
+  reproducible.
+- **A12 (O12) — allowlist is the de-duplicated union** of `.permissions.allow[]`
+  across the readable project settings files; a pattern in either satisfies
+  an affordance.
+
+### The two-condition gate (final form)
+
+The check is **`unverified`** (exit 0, no finding) unless **both**:
+
+1. the `## Affordances` section exists and has at least one **non-example**
+   entry (an entry without the `<!-- affordance-example -->` marker); and
+2. at least one project settings file with a `.permissions.allow` array is
+   readable.
+
+Otherwise it exits 0 with `skipped (unverified): <reason>`.
 
 ## Risks and mitigations
 
