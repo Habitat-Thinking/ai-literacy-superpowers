@@ -96,21 +96,36 @@ the entries.
 
 ## Promote entries to HARNESS.md
 
-For each draft entry you want to keep:
+Use the guided `add` subcommand — it seeds from the newest discovery
+draft, prompts only for the governance fields, dates the entry, validates
+it, and writes it into `HARNESS.md`:
 
-1. **Fill in `Identity`** — whose credentials does this tool run
-   under? Use one of: `user-sso`, `service-account`, `current-user`,
-   `runtime-resolved`, `none`. See the
-   [affordances design spec](../../../superpowers/specs/2026-04-26-harness-affordances-design.md)
-   for the full definitions.
-2. **Fill in `Audit trail`** — where would you find a record of what
-   the agent did? `none` is encouraged when there genuinely is no
-   audit trail; the visibility is the point.
-3. **Set `Last reviewed`** to today's date.
-4. **Copy the entry** into `HARNESS.md` under `## Affordances`.
+```text
+/harness-affordance add gh-cli
+```
 
-In a future release `/harness-affordance add <name>` will guide
-this annotation interactively. For now it is hand-edited.
+`add` walks you through:
+
+1. **`Identity`** — whose credentials does this tool run under? One of
+   `user-sso`, `service-account`, `current-user`, `runtime-resolved`,
+   `none` (the command explains each; for `runtime-resolved` it asks for
+   the resolution chain).
+2. **`Audit trail`** — where would you find a record of what the agent
+   did? `none` is encouraged when there genuinely is no audit trail; the
+   visibility is the point.
+3. **`Last reviewed`** is set to today automatically.
+
+It then validates required fields and the `Mode`/`Trigger` pairing, warns
+(without blocking) if the permission pattern is not in any settings
+allowlist, and writes the entry — creating the `## Affordances` section if
+absent. Idempotency keys on the **permission pattern**, so re-running `add`
+for the same permission edits the existing entry in place rather than
+duplicating it, even if you give it a different heading name.
+
+You can still hand-edit `HARNESS.md` directly if you prefer; `add` is the
+guided path. See the
+[affordance schema reference](../reference/affordance-schema.md) for the
+field-by-field definitions.
 
 ## Disambiguation
 
@@ -135,14 +150,18 @@ changed.
 
 ## What the scanner does NOT do
 
-- It never writes to `HARNESS.md`. Promotion is always a human
-  action.
-- It does not read `~/.claude/settings.json` (user-level settings
-  are out of scope for project-level governance).
-- It does not infer `Identity`, `Audit trail`, or `Last reviewed` —
-  these are governance judgments that humans must make.
-- It does not ship `add` or `review` subcommands — those land in
-  later sequencing steps of the affordances design.
+- The **scanner** never writes to `HARNESS.md`. Promotion is a human
+  action — done through the guided `/harness-affordance add` (which only
+  transcribes the governance fields you dictate) or by hand.
+- The **scanner** does not read `~/.claude/settings.json` (user-level
+  settings are out of scope for project-level discovery). Note that
+  `/harness-affordance add`'s permission-existence check *does* consult
+  user-level settings, so a user-level MCP grant does not trigger a
+  spurious warning when you promote it.
+- The scanner does not infer `Identity`, `Audit trail`, or `Last
+  reviewed` — these are governance judgments that humans must make.
+- The `review` subcommand (re-validation + the staleness GC rule) lands
+  in a later sequencing step of the affordances design.
 
 ## Related
 

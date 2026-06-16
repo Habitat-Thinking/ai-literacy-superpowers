@@ -10,7 +10,7 @@
 
      Inspired by Birgitta Boeckeler's "Harness Engineering":
      https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->
-<!-- template-version: 0.29.0 -->
+<!-- template-version: 0.54.0 -->
 
 ## Context
 
@@ -361,6 +361,79 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 - **Tool**: npx libyear (or ecosystem equivalent)
 - **Auto-fix**: false
 -->
+---
+
+## Affordances
+
+<!-- Each entry declares one tool the agent can invoke. Identity is
+     the load-bearing governance question — whose credentials authorise
+     the action. The Audit trail field's honest answer "none" is itself
+     useful governance signal.
+
+     Runtime invocation data (which agent invoked which tool, when, how
+     often) lives in observability/affordance-invocations.json and is
+     referenced — not inlined — here. HARNESS.md remains entirely
+     human-authored: the /harness-affordance add command only transcribes
+     governance fields the human dictates.
+
+     The discovery scanner (run via /harness-affordance discover) produces
+     a draft inventory from existing config. Promote entries with
+     /harness-affordance add <name> (or by hand), filling in the
+     governance-only fields (Identity, Audit trail, Last reviewed).
+
+     One affordance per permission pattern. Bash(gh *) is one affordance;
+     Bash(gh pr *) is a separate, narrower one. Field schema and value
+     definitions: docs/reference/affordance-schema.md.
+
+     Delete the example entries below once real entries are added. -->
+
+<!-- Runtime invocation data: observability/affordance-invocations.json -->
+
+### gh-cli
+
+- **Mode**: cli
+- **Identity**: runtime-resolved
+- **Audit trail**: github-audit (org audit log, 90-day retention,
+  admin-only access) — assumes credentials resolve to a real GitHub
+  identity; if `$GITHUB_TOKEN` resolves to a service account the audit
+  trail will record that account, not the user
+- **Permission**: `Bash(gh *)` (allowlist in `.claude/settings.local.json`)
+- **Last reviewed**: 2026-04-26
+- **Notes**: `gh` resolves credentials in this order: `$GITHUB_TOKEN` →
+  keychain (`gh auth login`) → fail. Confirm which path is active before
+  relying on this entry.
+
+### honeycomb-mcp
+
+- **Mode**: central-mcp (api.honeycomb.io)
+- **Identity**: service-account (HONEYCOMB_API_KEY shared across team)
+- **Audit trail**: honeycomb-query-log (per-team, 30-day retention,
+  team-admin access)
+- **Permission**: `mcp__honeycomb__*` (allowlist in user
+  `~/.claude/settings.json`)
+- **Last reviewed**: 2026-04-26
+
+### shell-write-to-tmp
+
+- **Mode**: cli
+- **Identity**: current-user (the human running the Claude Code session)
+- **Audit trail**: none
+- **Permission**: `Bash(echo *)` (allowlist)
+- **Last reviewed**: 2026-04-26
+- **Notes**: ephemeral session-local writes; if persistence is required,
+  promote to a tracked artefact
+
+### sync-to-global-cache-hook
+
+- **Mode**: hook
+- **Trigger**: Stop
+- **Identity**: current-user
+- **Audit trail**: none (hook stderr, lost at session end)
+- **Permission**: `hooks.Stop` entry in `.claude/settings.local.json`
+  invoking `ai-literacy-superpowers/scripts/sync-to-global-cache.sh`
+- **Last reviewed**: 2026-04-26
+- **Notes**: invokes `rsync` under the current user after every session
+
 ---
 
 ## Observability

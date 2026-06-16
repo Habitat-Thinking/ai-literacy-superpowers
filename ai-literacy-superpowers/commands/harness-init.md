@@ -42,7 +42,7 @@ it."
 
 ### 3. Select Features
 
-Present a feature selection menu. The five selectable areas are:
+Present a feature selection menu. The six selectable areas are:
 
 | Feature | What it configures | Default (first run) |
 | --- | --- | --- |
@@ -51,8 +51,12 @@ Present a feature selection menu. The five selectable areas are:
 | Garbage collection | Periodic entropy checks | on |
 | CI configuration | GitHub Actions workflow + auto-enforcer | on |
 | Observability | README badge + status section | on |
+| Affordances | Declared-tool inventory (`## Affordances` section) | off |
 
-**First run** (no HARNESS.md exists): all features default to on.
+**First run** (no HARNESS.md exists): all features default to on **except
+Affordances, which is opt-in (default off)** — most projects adopt it later
+via `/harness-affordance discover` once they have a populated permissions
+allowlist to scan. The user can turn it on here.
 
 **Re-run** (HARNESS.md exists): detect which sections are already
 configured by checking for the placeholder marker
@@ -147,20 +151,33 @@ the section body with the placeholder marker:
 <!-- Not yet configured. Run /harness-init and select this feature to set up. -->
 ```
 
+**Affordances** is opt-in: if **unselected** (the default), replace the
+`## Affordances` section body with the placeholder marker like any other
+unselected feature. If **selected**, keep the section's example entries and
+schema comments in place and tell the user to run
+`/harness-affordance discover` to populate it from their real config.
+
 Write the result to `HARNESS.md` at the project root.
 
 **Re-run** (HARNESS.md exists):
 
 Read the existing `HARNESS.md`. For each selected feature, replace the
 corresponding section (`## Context`, `## Constraints`,
-`## Garbage Collection`, or `## Status`) with freshly generated content
-from user responses. For unselected features, preserve the existing
-section content verbatim — do not modify it.
+`## Garbage Collection`, `## Affordances`, or `## Status`) with freshly
+generated content from user responses. For unselected features, preserve
+the existing section content verbatim — do not modify it. If the
+**Affordances** feature is newly selected on a project that lacks the
+section, insert `## Affordances` from the template **immediately before
+`## Observability`** (i.e. directly after the `## Garbage Collection`
+section), matching the template's section order, without touching the other
+sections.
 
-Section boundaries are defined by the `##` headings in the template:
-`## Context`, `## Constraints`, `## Garbage Collection`, `## Status`.
-Each section runs from its `##` heading to the next `##` heading or
-end of file.
+Section boundaries are defined by **every** `##` heading in the template, in
+order: `## Context`, `## Constraints`, `## Garbage Collection`,
+`## Affordances`, `## Observability`, `## Read-side filtering`, `## Status`.
+Each section runs from its `##` heading to the **next** `##` heading or end
+of file — so the section after `## Affordances` is `## Observability`, not
+`## Status`.
 
 **Template version marker (both first run and re-run):**
 
@@ -179,8 +196,10 @@ verify its structure against `templates/HARNESS.md`.
 
 **Structural checks:**
 
-1. All 4 top-level sections present: `## Context`,
+1. The 4 mandatory top-level sections present: `## Context`,
    `## Constraints`, `## Garbage Collection`, `## Observability`
+   (`## Affordances` is optional — see check 6 — and `## Read-side
+   filtering` and `## Status` are validated by checks 3-4)
 2. Context section has `### Stack` and `### Conventions`
    subsections (either with content or the placeholder marker)
 3. Observability section has `### Operating cadence`,
@@ -191,6 +210,11 @@ verify its structure against `templates/HARNESS.md`.
 5. Template version marker comment present:
    `<!-- template-version: X.Y.Z -->` where X.Y.Z matches the
    current plugin version
+6. **Affordances (optional):** `## Affordances` is only required when the
+   Affordances feature was selected. If selected, the section is present
+   (with example entries or the placeholder marker) and sits **between
+   `## Garbage Collection` and `## Observability`** (its template position).
+   If not selected, its absence is **not** a failure.
 
 If any check fails, fix HARNESS.md in place:
 

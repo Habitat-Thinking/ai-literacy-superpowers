@@ -39,6 +39,14 @@ Count GC rules by status:
 - Active (deterministic or agent enforcement)
 - Inactive (no enforcement configured)
 
+### 4a. Count Affordances
+
+If a `## Affordances` section exists, count its declared affordances by
+counting `### ` headings within the section (each heading is one
+affordance, per the one-affordance-per-permission-pattern rule). Ignore the
+section's HTML comments. If the section is absent, skip this — affordances
+are an opt-in feature.
+
 ### 5. Present Summary
 
 ```text
@@ -54,6 +62,9 @@ Last audit: YYYY-MM-DD (N days ago)
 ### Garbage Collection: N/M active
 - Auto-fix enabled: X rules
 - Report-only: Y rules
+
+### Affordances: N declared
+[Omit this whole line when there is no ## Affordances section]
 
 ### Drift: [none detected / warning]
 [Details if drift was detected in last audit]
