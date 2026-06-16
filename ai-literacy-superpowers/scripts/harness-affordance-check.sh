@@ -12,14 +12,13 @@ set -euo pipefail
 #                         always exits 0.
 #
 # Matching is STRING EQUALITY on the permission pattern (one affordance per
-# pattern). hook-mode affordances are skipped (their Permission is a
+# pattern). Hook-mode affordances are skipped (their Permission is a
 # hooks.<Trigger> registration, not an allowlist pattern). Example entries
-# carrying <!-- affordance-example --> are skipped.
+# carrying the <!-- affordance-example --> marker are skipped.
 #
 # Reads PROJECT settings only (.claude/settings.json, .claude/settings.local.json)
-# for determinism; the user layer is not read here. The check is UNVERIFIED
-# (exit 0, no finding) unless both: a non-example affordance exists, and a
-# readable allowlist exists.
+# for determinism. The check is UNVERIFIED (exit 0, no finding) unless both: a
+# real (non-example) affordance exists, and a readable, valid allowlist exists.
 #
 # Usage: harness-affordance-check.sh [--direction=blocking|advisory] [project-dir]
 
@@ -53,89 +52,97 @@ SECTION=$(awk '
 ' "$HARNESS")
 [ -n "$SECTION" ] || unverified "no ## Affordances section in $HARNESS"
 
-# Emit one TSV row per real (non-example, non-hook) affordance:
-#   OK<TAB>name<TAB>pattern        — a well-formed single pattern
-#   DIAG<TAB>name<TAB>reason       — Permission could not be parsed cleanly
-# Example-marked and hook-mode entries are dropped entirely.
+# Parse entries into TSV rows:
+#   OK<TAB>name<TAB>pattern   — one well-formed permission pattern
+#   DIAG<TAB>name<TAB>reason  — Permission could not be parsed to one pattern
+#   DECL<TAB>pattern          — every permission-shaped token declared (incl.
+#                               multi-pattern entries), used by the advisory set
+# Example-marked and hook entries are dropped entirely. A token is
+# "permission-shaped" if it looks like Word(...), mcp__..., or hooks.... —
+# annotation paths like `.claude/settings.local.json` are ignored.
 PARSED=$(printf '%s\n' "$SECTION" | awk '
-  function flush() {
-    if (name == "" || is_example || mode == "hook") { return }
-    if (perm_raw == "") { printf "DIAG\t%s\tno Permission field\n", name; return }
-    # The pattern is the first backticked token; anything before the first
-    # " (" parenthetical that carries a comma signals multiple patterns.
-    head = perm_raw
-    p = index(head, " (")
-    if (p > 0) head = substr(head, 1, p - 1)
-    if (index(head, ",") > 0) {
+  function is_pattern(t) { return (t ~ /^[A-Za-z_]+\(/ || t ~ /^mcp__/ || t ~ /^hooks\./) }
+  function flush(   i, n, tmp, tok, is_hook) {
+    if (name == "" || is_example) return
+    n = 0; delete pats
+    tmp = perm_raw
+    while (match(tmp, /`[^`]+`/)) {
+      tok = substr(tmp, RSTART + 1, RLENGTH - 2)
+      tmp = substr(tmp, RSTART + RLENGTH)
+      if (is_pattern(tok)) { n++; pats[n] = tok }
+    }
+    is_hook = (mode == "hook")
+    for (i = 1; i <= n; i++) if (pats[i] ~ /^hooks\./) is_hook = 1
+    if (is_hook) return
+    if (n == 0) { printf "DIAG\t%s\tPermission has no recognisable pattern\n", name; return }
+    if (n > 1) {
       printf "DIAG\t%s\tmultiple permission patterns in one field (split into separate affordances)\n", name
+      for (i = 1; i <= n; i++) printf "DECL\t%s\n", pats[i]
       return
     }
-    if (match(perm_raw, /`[^`]+`/)) {
-      pat = substr(perm_raw, RSTART + 1, RLENGTH - 2)
-      printf "OK\t%s\t%s\n", name, pat
-    } else {
-      printf "DIAG\t%s\tPermission has no `pattern` token\n", name
-    }
+    printf "OK\t%s\t%s\n", name, pats[1]
+    printf "DECL\t%s\n", pats[1]
   }
-  /^### / { flush(); name = $0; sub(/^### +/, "", name); sub(/[[:space:]]+$/, "", name); is_example=0; mode=""; perm_raw="" ; next }
-  /affordance-example/ { is_example=1 }
-  /^- \*\*Mode\*\*:/ { m=$0; sub(/^- \*\*Mode\*\*:[[:space:]]*/, "", m); split(m, a, " "); mode=a[1] }
-  /^- \*\*Permission\*\*:/ { perm_raw=$0; sub(/^- \*\*Permission\*\*:[[:space:]]*/, "", perm_raw) }
+  /^### / { flush(); name = $0; sub(/^### +/, "", name); sub(/[[:space:]]+$/, "", name); is_example = 0; mode = ""; perm_raw = "" ; next }
+  /<!--[^>]*affordance-example[^>]*-->/ { is_example = 1 }
+  /^- \*\*Mode\*\*:/ { m = $0; sub(/^- \*\*Mode\*\*:[[:space:]]*/, "", m); split(m, a, " "); mode = a[1] }
+  /^- \*\*Permission\*\*:/ { perm_raw = $0; sub(/^- \*\*Permission\*\*:[[:space:]]*/, "", perm_raw) }
   END { flush() }
 ')
 
-# A real affordance exists?
-if ! printf '%s\n' "$PARSED" | grep -q '^OK\|^DIAG'; then
+# A real affordance exists? (any OK or DIAG row — POSIX grep, no GNU \|)
+if ! printf '%s\n' "$PARSED" | grep -qE '^(OK|DIAG)	'; then
   unverified "no real affordances declared (only examples, or section empty)"
 fi
 
-# Build the allowlist: union of .permissions.allow[] across readable project
-# settings files, de-duplicated, C-sorted.
+# Build the allowlist: union of .permissions.allow[] across readable, VALID
+# project settings files, de-duplicated, C-sorted. An invalid settings file
+# goes unverified rather than silently dropping its grants.
 ALLOW_FILES=()
 for f in "$PROJECT_DIR/.claude/settings.json" "$PROJECT_DIR/.claude/settings.local.json"; do
-  [ -f "$f" ] && ALLOW_FILES+=("$f")
+  if [ -f "$f" ]; then
+    jq empty "$f" >/dev/null 2>&1 || unverified "settings file $f is not valid JSON"
+    ALLOW_FILES+=("$f")
+  fi
 done
 [ "${#ALLOW_FILES[@]}" -gt 0 ] || unverified "no readable project settings allowlist (.claude/settings*.json)"
 
 ALLOWLIST=$(jq -r '.permissions.allow[]?' "${ALLOW_FILES[@]}" 2>/dev/null | LC_ALL=C sort -u)
 
-contains_pattern() {
-  printf '%s\n' "$ALLOWLIST" | grep -qxF "$1"
-}
-
-failed=0
+in_allowlist() { printf '%s\n' "$ALLOWLIST" | grep -qxF "$1"; }
 
 if [ "$DIRECTION" = "blocking" ]; then
-  # Surface parse diagnostics first (non-blocking), then real gaps (blocking).
+  diags=""
+  fails=""
   while IFS=$'\t' read -r kind name extra; do
-    [ -z "$kind" ] && continue
-    if [ "$kind" = "DIAG" ]; then
-      echo "DIAGNOSTIC: affordance '$name' — $extra"
-    fi
+    case "$kind" in
+      DIAG) diags+="DIAGNOSTIC: affordance '$name' — $extra"$'\n' ;;
+      OK)
+        if ! in_allowlist "$extra"; then
+          fails+="FAIL: affordance '$name' declares Permission $extra with no matching allowlist entry"$'\n'
+        fi
+        ;;
+    esac
   done <<< "$PARSED"
-  while IFS=$'\t' read -r kind name pat; do
-    [ "$kind" = "OK" ] || continue
-    if ! contains_pattern "$pat"; then
-      echo "FAIL: affordance '$name' declares Permission $pat with no matching allowlist entry"
-      failed=1
-    fi
-  done <<< "$PARSED"
-  if [ "$failed" -eq 0 ]; then
-    echo "OK: every declared affordance has a matching permission."
+  # Deterministic order regardless of HARNESS.md entry order.
+  [ -n "$diags" ] && printf '%s' "$diags" | LC_ALL=C sort
+  if [ -n "$fails" ]; then
+    printf '%s' "$fails" | LC_ALL=C sort
+    exit 1
   fi
-  exit "$failed"
+  echo "OK: every declared affordance has a matching permission."
+  exit 0
 else
   # advisory: allowlist patterns with no declared affordance. Never fails.
-  declared=$(printf '%s\n' "$PARSED" | awk -F '\t' '$1=="OK"{print $3}' | LC_ALL=C sort -u)
-  count=0
+  declared=$(printf '%s\n' "$PARSED" | awk -F '\t' '$1=="DECL"{print $2}' | LC_ALL=C sort -u)
+  findings=""
   while IFS= read -r pat; do
     [ -z "$pat" ] && continue
-    if ! printf '%s\n' "$declared" | grep -qxF "$pat"; then
-      echo "ADVISORY: permission $pat has no declared affordance"
-      count=$((count + 1))
-    fi
+    printf '%s\n' "$declared" | grep -qxF "$pat" || findings+="ADVISORY: permission $pat has no declared affordance"$'\n'
   done <<< "$ALLOWLIST"
-  if [ "$count" -eq 0 ]; then
+  if [ -n "$findings" ]; then
+    printf '%s' "$findings" | LC_ALL=C sort
+  else
     echo "OK: every permission has a declared affordance."
   fi
   exit 0

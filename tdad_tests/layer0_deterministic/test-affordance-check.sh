@@ -133,4 +133,69 @@ run "$d" blocking
 [ "$RC" -eq 0 ] || fail "union: .local grant should satisfy the affordance (got $RC: $OUT)"
 rm -rf "$d"
 
+# O1: a real entry whose Notes mention "affordance-example" (without the
+# comment marker) must NOT be skipped — it still enforces.
+d=$(mkproj '# H
+## Affordances
+### real-tool
+- **Mode**: cli
+- **Permission**: `Bash(foo *)` (allowlist)
+- **Notes**: see the affordance-example section of the docs
+## Status' '{"permissions":{"allow":["Bash(other *)"]}}')
+run "$d" blocking
+[ "$RC" -eq 1 ] || fail "O1: entry mentioning affordance-example in Notes must still enforce (got $RC: $OUT)"
+rm -rf "$d"
+
+# O2: a DIAGNOSTIC (multi-pattern) entry's permissions must NOT be reported as
+# ungoverned by the advisory direction.
+d=$(mkproj '# H
+## Affordances
+### multi
+- **Mode**: cli
+- **Permission**: `Bash(a *)`, `Bash(b *)` (allowlist)
+## Status' '{"permissions":{"allow":["Bash(a *)","Bash(b *)"]}}')
+run "$d" advisory
+echo "$OUT" | grep -q "ADVISORY" && fail "O2: governed multi-pattern permissions must not be flagged ungoverned: $OUT"
+rm -rf "$d"
+
+# O3: space-joined two patterns -> DIAGNOSTIC (not silently one OK).
+d=$(mkproj '# H
+## Affordances
+### space-joined
+- **Mode**: cli
+- **Permission**: `Bash(a *)` `Bash(b *)` (allowlist)
+### good
+- **Mode**: cli
+- **Permission**: `Bash(ok *)` (allowlist)
+## Status' '{"permissions":{"allow":["Bash(ok *)"]}}')
+run "$d" blocking
+echo "$OUT" | grep -q "DIAGNOSTIC: affordance 'space-joined'" || fail "O3: space-joined patterns should diagnose: $OUT"
+[ "$RC" -eq 0 ] || fail "O3: diagnostic must not block when no real gap (got $RC: $OUT)"
+rm -rf "$d"
+
+# O5: malformed settings JSON -> unverified (not a false FAIL).
+d=$(mktemp -d); mkdir -p "$d/.claude"
+printf '%s\n' "$REAL" > "$d/HARNESS.md"
+printf '{ this is not json' > "$d/.claude/settings.json"
+run "$d" blocking
+[ "$RC" -eq 0 ] || fail "O5: malformed JSON should go unverified, not FAIL (got $RC: $OUT)"
+echo "$OUT" | grep -q "not valid JSON" || fail "O5: should name the invalid settings file: $OUT"
+rm -rf "$d"
+
+# O7: a hook entry with NO Mode line is still skipped (its Permission is a
+# hooks.* registration).
+d=$(mkproj '# H
+## Affordances
+### modeless-hook
+- **Trigger**: Stop
+- **Permission**: `hooks.Stop` entry in `.claude/settings.local.json`
+### my-tool
+- **Mode**: cli
+- **Permission**: `Bash(foo *)` (allowlist)
+## Status' '{"permissions":{"allow":["Bash(foo *)"]}}')
+run "$d" blocking
+[ "$RC" -eq 0 ] || fail "O7: hook with no Mode line must be skipped (got $RC: $OUT)"
+echo "$OUT" | grep -q "modeless-hook" && fail "O7: modeless hook must not be a finding: $OUT"
+rm -rf "$d"
+
 echo "All affordance-check tests passed."
