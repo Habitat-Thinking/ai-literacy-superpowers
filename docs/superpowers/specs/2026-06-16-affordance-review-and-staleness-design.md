@@ -7,7 +7,8 @@
 **Builds on**: step 3 (`add`, the `Last reviewed` field) and steps 4+5 (the
 deterministic check pattern)
 **Driving issue**: #202
-**Status**: design — awaiting spec-mode `/diaboli` and user review
+**Status**: design — spec-mode `/diaboli` reviewed, all 10 dispositions
+adjudicated 2026-06-16 (see Adjudication); ready for implementation
 
 ## Problem
 
@@ -150,6 +151,57 @@ mechanical edit.
   staleness rule.
 - **FR5** Layer 0 tests cover the staleness scenarios against hermetic
   fixtures (via `--today` and `project-dir`).
+
+## Adjudication (post-diaboli, 2026-06-16)
+
+Spec-mode `/diaboli` raised ten objections (3 high; record:
+`docs/superpowers/objections/affordance-review-and-staleness-design.md`). All
+adjudicated — every objection **amend**. The binding refinements below
+supersede the original wording where they conflict and drive implementation.
+
+- **A1/A8 (O1/O8) — wire the rule into the weekly cron.** `gc.yml` runs a
+  hardcoded step list and never reads HARNESS.md `Tool` lines, so a template
+  GC rule alone runs only via the on-demand `harness-gc` agent. This step
+  **adds a report-only step to `.github/workflows/gc.yml`** that runs the
+  staleness scanner, prints its output to the workflow step summary, and
+  emits a `::warning::` when findings exist (it self-skips when there is no
+  `## Affordances` section). The template GC rule stays for the agent path.
+  Both consumers are named.
+- **A2/A10 (O2/O10) — the scanner READS the threshold from HARNESS.md.**
+  Precedence: `--max-age-days` flag > a human-owned HARNESS.md marker
+  `<!-- affordance-review-threshold-days: N -->` > default **180**. The
+  marker ships in the human-authored `## Affordances` section header (not the
+  template-managed GC rule `Tool` line), so a tuned value is a genuine
+  HARNESS.md setting the scanner resolves, and `/harness-upgrade` does not
+  clobber it.
+- **A3 (O3) — bounded, idempotent gap Notes.** A failing `review` check
+  writes a **single** gap line per check, keyed by a stable prefix
+  `[review-gap: <check>]`, updating it in place rather than appending; a
+  passing review **removes** that check's gap line. Notes growth is bounded
+  and resolved gaps are cleaned up.
+- **A4 (O4) — a bump requires re-answering all three checks.** After any
+  inline edit, the date bumps only if the human re-answers **all three**
+  checks `yes` — no single-field shortcut. The date attests to a full
+  re-validation or it is not bumped.
+- **A5/A9 (O5/O9) — reuse only the section extractor.** The scanner reuses
+  only the `## Affordances` section-extraction `awk` from
+  `harness-affordance-check.sh`, **not** its entry classifier. It classifies
+  entries solely by the `<!-- affordance-example -->` marker (skip
+  example-marked; keep everything else, **including hooks**) and reads
+  `Last reviewed`. It never inspects `Permission` for hook shape.
+- **A6 (O6) — UTC-normalised age.** "Today" is derived via `date -u` and
+  `Last reviewed` is interpreted as a UTC date, so the day-count is
+  machine-independent regardless of the runner's timezone.
+- **A7 (O7) — transcription-only edits.** `review`'s inline edits follow the
+  same discipline as `add`: the human dictates the new value for any edited
+  field; the command only transcribes. `Last reviewed` attests to a human
+  re-validation, never a model edit.
+
+### Added acceptance scenario
+
+10. **Workflow surfaces findings** — the `gc.yml` staleness step prints stale
+    / undated entries to the step summary and warns when any exist; it
+    self-skips (no warning) when there is no `## Affordances` section.
 
 ## Risks and mitigations
 
