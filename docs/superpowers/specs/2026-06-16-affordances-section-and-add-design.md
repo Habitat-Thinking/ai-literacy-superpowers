@@ -4,7 +4,8 @@
 **Author**: Russ Miles + assistant
 **Parent design**: `docs/superpowers/specs/2026-04-26-harness-affordances-design.md`
 **Driving issue**: #200 (sequencing step 3 of the harness-affordances epic)
-**Status**: design — awaiting spec-mode `/diaboli` and user review
+**Status**: design — spec-mode `/diaboli` reviewed, all 12 dispositions
+adjudicated 2026-06-16 (see Adjudication section); ready for implementation
 
 ## Problem
 
@@ -137,6 +138,65 @@ pairing, date format), fixing deviations in place.
 - **FR4** `harness-status` counts affordance entries.
 - **FR5** Docs: explanation + reference pages, and the existing how-to
   updated for `add`.
+
+## Adjudication (post-diaboli, 2026-06-16)
+
+Spec-mode `/diaboli` raised twelve objections (record:
+`docs/superpowers/objections/affordances-section-and-add-design.md`). All
+adjudicated; the binding refinements below supersede the looser wording
+above where they conflict, and drive implementation.
+
+- **A1 (O1) — idempotency keys on the Permission pattern, not the heading
+  name.** `add` matches/edits the existing `## Affordances` entry whose
+  `Permission` field string-equals the new entry's pattern (the parent
+  spec's "one affordance per permission pattern" identity). The `### <name>`
+  heading is the human's label and may be renamed freely without creating a
+  duplicate. This dissolves the scanner-suffix instability (`gh-cli-2` vs
+  `gh-cli-3`) and the wrapper-hook rename burden (A10).
+- **A2/A6 (O2/O6) — `add` checks three settings files for the permission:**
+  `.claude/settings.json`, `.claude/settings.local.json`, and user-level
+  `~/.claude/settings.json`. Reading the user layer (where MCP grants
+  commonly live) is what keeps warn-not-block honest — it removes the
+  false-positive warnings that would otherwise erode the safety signal the
+  step-4 blocking constraint depends on. Behaviour stays **warn, not block**
+  (an affordance may legitimately precede its grant; this step does not own
+  the blocking constraint).
+- **A3 (O3) — `harness-init` integration is concrete:** add a sixth
+  selectable feature row, **Affordances (default off / opt-in)**, additive on
+  re-run; it carries its own placeholder marker like every other section; and
+  step-8 validation treats `## Affordances` as **optional** (validated only
+  when selected), so existing four-section projects still pass.
+- **A4 (O4) — `harness-status` live-counts** `### ` headings under
+  `## Affordances` at status time (no new persisted Status field) and adds an
+  `Affordances: N declared` line, omitted when the section is absent.
+- **A5 (O5) — the Layer 0 test covers the template only.** It validates the
+  static example block's field schema and Mode/Trigger pairing. It does
+  **not** test `add`'s write logic (model-mediated) — that is covered by the
+  `add` validation checkpoint and the manual acceptance scenarios. The Risks
+  section's earlier wording is corrected accordingly.
+- **A7 (O7) — drop the forward `/harness-constrain` suggestion.** `add` ends
+  after the write + validation checkpoint. The constraint-chaining suggestion
+  returns in step 4, when the constraints that consume it exist.
+- **A8 (O8) — seed from the newest draft.** `add` seeds from the lexically
+  last `.claude/affordance-discovery-*.md` (names are date-stamped), matching
+  a draft entry by Permission; if none exists or none matches, prompt for
+  everything.
+- **A9 (O9) — schema-lock claim narrowed.** The scanner output matches only
+  the machine-derivable subset (`Mode`/`Permission`); `Identity`/`Audit
+  trail`/`Last reviewed` arrive as `TODO` placeholders the human fills. The
+  `add` validation checkpoint guards that the placeholder→filled transform
+  leaves no residual `TODO` in a required field.
+- **A11 (O11) — direct write, human-authored in spirit (user-confirmed).**
+  `add` writes the entry into `HARNESS.md` directly. This is consistent with
+  the parent's "100% human-authored" invariant *in spirit*: the human invokes
+  `add` and dictates every governance field; the command only transcribes
+  their answers — no autonomous agent authorship. The emit-for-paste
+  alternative (as `discover` uses) was considered and declined for UX parity
+  with `/harness-constrain`.
+- **A12 (O12) — insertion point fixed.** When `## Affordances` is absent,
+  `add` inserts it **after `## Garbage Collection`, before `## Status`**,
+  matching the template's section order so init's heading-to-heading boundary
+  logic stays stable.
 
 ## Risks and mitigations
 
