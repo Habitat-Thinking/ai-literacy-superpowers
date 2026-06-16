@@ -102,6 +102,23 @@ After every plugin version bump, update `plugin_version` in
 version. This is the common case — plugin code changes, listing
 contract stays the same.
 
+**Cross-PR coordination on `plugin_version`:**
+
+`plugin_version` is shared mutable state across every PR that touches
+`marketplace.json` — including PRs that do **not** bump
+`ai-literacy-superpowers` (e.g. a sister-plugin bump). Ownership is
+split so concurrent PRs don't clobber each other:
+
+- The top-level `plugin_version` is **owned by `ai-literacy-superpowers`
+  PRs**. A PR that does not bump that plugin must not change it.
+- Each `plugins[].version` entry is **owned by its own plugin's PRs**.
+
+If a rebase or merge surfaces a conflict on `plugin_version` from a
+non-`ai-literacy-superpowers` PR, take **main's value verbatim** — that
+PR only owns its own `plugins[]` entry bump, not the top-level pointer.
+Specs may reference this convention instead of restating the merge-time
+rule per spec.
+
 **When to bump `version` (listing version):**
 
 Bump when the listing contract itself changes:
