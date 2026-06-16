@@ -42,7 +42,7 @@ it."
 
 ### 3. Select Features
 
-Present a feature selection menu. The five selectable areas are:
+Present a feature selection menu. The six selectable areas are:
 
 | Feature | What it configures | Default (first run) |
 | --- | --- | --- |
@@ -51,8 +51,12 @@ Present a feature selection menu. The five selectable areas are:
 | Garbage collection | Periodic entropy checks | on |
 | CI configuration | GitHub Actions workflow + auto-enforcer | on |
 | Observability | README badge + status section | on |
+| Affordances | Declared-tool inventory (`## Affordances` section) | off |
 
-**First run** (no HARNESS.md exists): all features default to on.
+**First run** (no HARNESS.md exists): all features default to on **except
+Affordances, which is opt-in (default off)** — most projects adopt it later
+via `/harness-affordance discover` once they have a populated permissions
+allowlist to scan. The user can turn it on here.
 
 **Re-run** (HARNESS.md exists): detect which sections are already
 configured by checking for the placeholder marker
@@ -147,20 +151,30 @@ the section body with the placeholder marker:
 <!-- Not yet configured. Run /harness-init and select this feature to set up. -->
 ```
 
+**Affordances** is opt-in: if **unselected** (the default), replace the
+`## Affordances` section body with the placeholder marker like any other
+unselected feature. If **selected**, keep the section's example entries and
+schema comments in place and tell the user to run
+`/harness-affordance discover` to populate it from their real config.
+
 Write the result to `HARNESS.md` at the project root.
 
 **Re-run** (HARNESS.md exists):
 
 Read the existing `HARNESS.md`. For each selected feature, replace the
 corresponding section (`## Context`, `## Constraints`,
-`## Garbage Collection`, or `## Status`) with freshly generated content
-from user responses. For unselected features, preserve the existing
-section content verbatim — do not modify it.
+`## Garbage Collection`, `## Affordances`, or `## Status`) with freshly
+generated content from user responses. For unselected features, preserve
+the existing section content verbatim — do not modify it. If the
+**Affordances** feature is newly selected on a project that lacks the
+section, insert `## Affordances` from the template **after
+`## Garbage Collection` and before `## Status`** (matching the template's
+section order) without touching the other sections.
 
 Section boundaries are defined by the `##` headings in the template:
-`## Context`, `## Constraints`, `## Garbage Collection`, `## Status`.
-Each section runs from its `##` heading to the next `##` heading or
-end of file.
+`## Context`, `## Constraints`, `## Garbage Collection`, `## Affordances`,
+`## Status`. Each section runs from its `##` heading to the next `##`
+heading or end of file.
 
 **Template version marker (both first run and re-run):**
 
@@ -191,6 +205,11 @@ verify its structure against `templates/HARNESS.md`.
 5. Template version marker comment present:
    `<!-- template-version: X.Y.Z -->` where X.Y.Z matches the
    current plugin version
+6. **Affordances (optional):** `## Affordances` is only required when the
+   Affordances feature was selected. If selected, the section is present
+   (with example entries or the placeholder marker) and sits after
+   `## Garbage Collection`. If not selected, its absence is **not** a
+   failure.
 
 If any check fails, fix HARNESS.md in place:
 

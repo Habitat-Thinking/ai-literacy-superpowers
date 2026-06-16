@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.54.0 — 2026-06-16
+
+### affordances: HARNESS.md section + guided `/harness-affordance add` (#200)
+
+Sequencing step 3 of the harness-affordances epic makes the discovery
+scanner's inventory a first-class part of the harness.
+
+- **`templates/HARNESS.md` `## Affordances` section** — a top-level section
+  (after Garbage Collection, before Status) carrying the field schema in
+  comments, a reference to `observability/affordance-invocations.json`, and
+  four worked example entries (cli, central-mcp, current-user cli, hook).
+- **`/harness-affordance add <name>`** — replaces the stub with a guided
+  flow: seed from the newest discovery draft (matched by permission pattern),
+  prompt for the governance fields (Identity with five-value framing, Audit
+  trail with "none is fine" guidance), auto-date `Last reviewed`, validate
+  (required fields, Mode/Trigger pairing, permission existence across project
+  **and** user settings — warn, not block), and write idempotently. Re-runs
+  edit in place keyed on the **permission pattern**, not the heading name, so
+  a rename never duplicates an entry.
+- **`/harness-init`** gains Affordances as a sixth, opt-in (default off)
+  feature; **`/harness-status`** counts declared affordances.
+- **Docs** — new explanation (the contractor scenario, identity as the
+  load-bearing field, the source-of-truth split) and reference (field-by-
+  field schema) pages; the discover how-to updated for `add`.
+- **Tests** — a Layer 0 test validates the template's example entries against
+  the schema (required fields, Mode/Trigger pairing, date format).
+- Spec-mode `/diaboli` raised 12 objections (3 high); all adjudicated before
+  implementation (idempotency keys on permission pattern; `add` reads user
+  settings; concrete init integration; direct-write confirmed).
+
 ## 0.53.3 — 2026-06-16
 
 ### docs: exploration findings for microsoft/AI-Engineering-Coach (#340)
