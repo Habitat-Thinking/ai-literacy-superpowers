@@ -1,5 +1,5 @@
 {
-  "description": "Harness engineering hooks: constraint gate (PreToolUse) warns on violations; drift check, snapshot staleness, reflection prompt, framework-change prompt, rotating GC check, curation nudge, governance drift check, and reservoir check (Stop) close all feedback loops at session end; template currency check (SessionStart) nudges on plugin upgrade",
+  "description": "Harness engineering hooks: constraint gate (PreToolUse) warns on violations; affordance invocation recorder (PostToolUse) logs Bash/MCP tool calls to gitignored observability; drift check, snapshot staleness, reflection prompt, framework-change prompt, rotating GC check, curation nudge, governance drift check, and reservoir check (Stop) close all feedback loops at session end; template currency check (SessionStart) nudges on plugin upgrade",
   "hooks": {
     "PreToolUse": [
       {
@@ -14,6 +14,18 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/markdownlint-check.sh",
             "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/affordance-invocation-recorder.sh",
+            "timeout": 10
           }
         ]
       }

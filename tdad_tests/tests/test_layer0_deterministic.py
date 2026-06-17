@@ -51,6 +51,8 @@ BASH_TEST_SCRIPTS = [
     "test-affordances-template",
     "test-affordance-check",
     "test-affordance-staleness",
+    "test-affordance-recorder",
+    "test-affordance-invocations",
 ]
 
 
