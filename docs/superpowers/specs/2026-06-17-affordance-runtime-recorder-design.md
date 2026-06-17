@@ -8,7 +8,9 @@ HARNESS.md)
 **Builds on**: step 3 (the `## Affordances` section) and the deterministic
 analyzer pattern from steps 4-6
 **Driving issue**: #203
-**Status**: design — awaiting spec-mode `/diaboli` and user review
+**Status**: design — spec-mode `/diaboli` reviewed, all 12 dispositions
+adjudicated 2026-06-17 (see Adjudication); the three design forks were
+user-confirmed before spec; ready for implementation
 
 ## Problem
 
@@ -142,6 +144,60 @@ Both exit 0 always (report-only); findings go to stdout, `LC_ALL=C`-sorted.
   and the analyzer's freshness/dead-inventory/matching scenarios.
 - **FR6** Docs: a reference page for the tuple format and an explanation/how-to
   update.
+
+## Adjudication (post-diaboli, 2026-06-17)
+
+Spec-mode `/diaboli` raised twelve objections (6 high; record:
+`docs/superpowers/objections/affordance-runtime-recorder-design.md`). All
+adjudicated — every objection **amend**. None re-opened the three
+user-confirmed forks; they refine robustness/correctness within them. The
+binding refinements below supersede the wording above where they conflict.
+
+- **A1/A12 (O1/O12) — keep the `.json` filename.** The file stays
+  `observability/affordance-invocations.json` (the established O3 reference in
+  HARNESS.md, the parent spec, and the docs) with **NDJSON content** (one JSON
+  object per line). This spec supersedes the parent's step-7 *hook surface*
+  wording (PostToolUse, user-confirmed) while keeping the filename, so the
+  human-facing section-header pointer and the freshness exemplar stay valid.
+- **A2/A4 (O2/O4) — sanitise the Bash `program` token.** Strip leading
+  `KEY=VALUE` env-var prefixes, take the program word, **`basename`** it (a
+  path → just the script name), and record it **only if** it matches
+  `^[A-Za-z0-9._-]+$`; otherwise record `program:null`. The recorder never
+  writes a raw path, an env assignment, or pipeline/subshell syntax — the
+  no-secrets guarantee is enforced by this normalisation, with acceptance
+  scenarios for the env-prefix and path-form cases.
+- **A3 (O3) — conservative, program-coarse Bash matching.** Dead-inventory
+  matching is exact for MCP/named tools; for Bash it is program-granular and
+  **conservative** — an observed program marks **every** Bash affordance
+  sharing that program as observed (a false-alive, never a false-dead). The
+  output states that Bash matching does not distinguish narrow from broad
+  grants. This is a documented limitation of the minimal-tuple privacy choice.
+- **A5 (O5) — honest local-observability framing.** Because the data file is
+  gitignored (user-confirmed), the recorder and its checks are **per-machine
+  local observability, not a CI governance control**. Stated in the value
+  proposition. A `gc.yml` step is deliberately **not** added (it would always
+  self-skip with no file); the checks run via the on-demand `harness-gc` agent
+  and the commented opt-in GC rules. A future committed-aggregate step could
+  add a team/CI view.
+- **A6/A9 (O6/O9) — recorder uses grep/sed, no jq.** The recorder extracts
+  fields with grep/sed + `printf` (matching `markdownlint-check.sh`), removing
+  the jq silent-no-op trap; per-call cost is one extraction + one short append.
+  The **analyzer** (a script, not a hook) may use jq but prints a clear
+  `jq not installed` line rather than silently flagging everything.
+- **A7 (O7) — value is dead-inventory, invoker is a bonus.** The feature's
+  value is "did this declared affordance fire?", which does not depend on
+  `invoker`. `invoker` is recorded best-effort; the spec no longer presents
+  "which agent invoked it" as the headline.
+- **A8 (O8) — atomic small tuple + tolerant analyzer.** The tuple is kept well
+  under 512 bytes (PIPE_BUF) so a single `O_APPEND` write is atomic on POSIX;
+  the analyzer skips **any** unparseable line, not just the trailing one.
+- **A10 (O10) — bounded file.** The recorder self-trims: when the file exceeds
+  a line cap (5000), it retains the last N lines, bounding size while keeping
+  far more than the 30-day dead-inventory window on a normal machine.
+- **A11 (O11) — exclude hooks from dead-inventory.** A PostToolUse recorder
+  cannot observe hook firings, so `Mode: hook` affordances are **excluded**
+  from dead-inventory (never mis-flagged as dead), consistent with
+  steps-4+5 excluding hooks from the permission relation.
 
 ## Risks and mitigations
 
