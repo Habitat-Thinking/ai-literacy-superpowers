@@ -315,6 +315,22 @@
 - **Tool**: `.github/workflows/tdad-tests-fast.yml`
 - **Scope**: pr
 
+### Layer 0 bash tests run on macOS and Linux
+
+- **Rule**: The Layer 0 deterministic bash tests must pass on **both** a
+  macOS (BSD coreutils) and an Ubuntu (GNU coreutils) CI runner. The plugin's
+  deterministic check scripts use `grep`, `date`, `sort`, and `stat`, which
+  diverge between BSD and GNU — and the bugs are masked on a macOS dev machine
+  (the Claude Code harness even aliases `grep` to `ugrep`, so a GNU-only
+  `grep '\|'` passes locally while bare BSD grep treats it as a literal). A
+  single-runner suite cannot catch this class; only a cross-OS matrix can.
+  Declared `unverified` until `tdad-tests-fast.yml` adds a `macos-latest` leg
+  to its runner matrix (the current implementation runs on Ubuntu only).
+- **Enforcement**: unverified
+- **Tool**: `.github/workflows/tdad-tests-fast.yml` (add `macos-latest` to the
+  runner matrix)
+- **Scope**: pr
+
 ### New plugin components must ship with a TDAD scenario
 
 - **Rule**: When a PR adds a new file matching one of
