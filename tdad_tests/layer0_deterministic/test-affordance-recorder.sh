@@ -69,4 +69,34 @@ len=$(wc -c < "$(logfile "$d")" | tr -d ' ')
 [ "$len" -lt 512 ] || fail "tuple line should be < 512 bytes (got $len)"
 rm -rf "$d"
 
+# --- adversarial privacy cases (O2) ---
+
+# Escaped quote before the program: must never leak, program collapses to null.
+d=$(newproj)
+printf '%s\n' '{"session_id":"s1","tool_name":"Bash","tool_input":{"command":"\"secretword\" run --token abc"}}' | rec "$d"
+if [ -s "$(logfile "$d")" ]; then
+  grep -q 'secretword\|--token\|abc' "$(logfile "$d")" && fail "escaped-quote command must not leak: $(cat "$(logfile "$d")")"
+  grep -q '"program":null' "$(logfile "$d")" || fail "escaped-quote command should record program null"
+fi
+rm -rf "$d"
+
+# Hostile session_id carrying JSON metacharacters: must be sanitised to unknown.
+d=$(newproj)
+printf '%s\n' '{"session_id":"s\"},{\"x\":\"y","tool_name":"Bash","tool_input":{"command":"git status"}}' | rec "$d"
+grep -q '"session":"unknown"' "$(logfile "$d")" || fail "hostile session_id must sanitise to unknown: $(cat "$(logfile "$d")")"
+rm -rf "$d"
+
+# Every emitted line must be valid JSON (privacy + consumability contract).
+if command -v jq >/dev/null 2>&1; then
+  d=$(newproj)
+  for cmd in 'gh pr list' 'GH_TOKEN=ghp_x gh x' '/a/b/c.sh --flag' '( echo ) | tee f' '"q" run'; do
+    printf '{"session_id":"s1","tool_name":"Bash","tool_input":{"command":"%s"}}\n' "$cmd" | rec "$d"
+  done
+  printf '{"session_id":"s1","tool_name":"mcp__h__q","tool_input":{}}\n' | rec "$d"
+  while IFS= read -r line; do
+    printf '%s' "$line" | jq -e . >/dev/null 2>&1 || fail "emitted a non-JSON line: $line"
+  done < "$(logfile "$d")"
+  rm -rf "$d"
+fi
+
 echo "All affordance-recorder tests passed."

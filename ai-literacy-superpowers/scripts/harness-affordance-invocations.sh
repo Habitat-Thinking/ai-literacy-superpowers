@@ -139,13 +139,20 @@ while IFS=$'\t' read -r name pat; do
   observed=0
   case "$pat" in
     Bash\(*)
-      # program = first token inside Bash( ... )
+      # program = first token inside Bash( ... ), basename'd to mirror the
+      # recorder (so a path-qualified declared pattern matches its invocation).
       prog=$(printf '%s' "$pat" | sed -E 's/^Bash\(//; s/[[:space:]].*$//; s/\)$//')
+      prog=$(basename -- "$prog" 2>/dev/null || printf '%s' "$prog")
       printf '%s\n' "$OBS_PROGRAMS" | grep -qxF "$prog" && observed=1
       ;;
     mcp__*\*)
+      # Glob prefix match (no regex escaping needed): mcp__server__* matches
+      # any observed tool starting with mcp__server__.
       prefix="${pat%\*}"
-      printf '%s\n' "$OBS_TOOLS" | grep -qE "^$(printf '%s' "$prefix" | sed 's/[].[^$*\/]/\\&/g')" && observed=1
+      while IFS= read -r t; do
+        [ -n "$t" ] || continue
+        case "$t" in "$prefix"*) observed=1; break ;; esac
+      done <<< "$OBS_TOOLS"
       ;;
     *)
       printf '%s\n' "$OBS_TOOLS" | grep -qxF "$pat" && observed=1

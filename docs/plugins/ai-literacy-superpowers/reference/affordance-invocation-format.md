@@ -52,6 +52,16 @@ user identity**. The `program` field is the program *name* only:
 - `( echo hi ) | tee x` → `"program": null` (shell syntax is not a program
   name).
 
+**Accuracy note (fail-safe):** because the recorder extracts the program with
+grep/sed (no jq, to avoid a silent-no-op dependency), a command whose first
+token is preceded by a quoted segment (`"my tool" run`) or a quoted env value
+with a space (`FOO="a b" gh …`) records `"program": null` rather than the
+program. This **never leaks** (it errs to `null`), but it can cause the
+dead-inventory check to mark a genuinely-used Bash affordance as `DEAD`. Real
+programs are bare tokens (`gh`, `git`, `npx`), so this is uncommon; combined
+with the conservative, program-coarse Bash matching it means dead-inventory is
+a *report-only local advisory*, not an authoritative signal, for Bash.
+
 ## Consuming the file
 
 The analyzer `scripts/harness-affordance-invocations.sh` reads it:

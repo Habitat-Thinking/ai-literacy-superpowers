@@ -68,11 +68,20 @@ record() {
   printf '{"tool":"%s","program":%s,"invoker":"%s","session":"%s","ts":"%s"}\n' \
     "$tool" "$prog" "$invoker" "$session" "$ts" >> "$file"
 
-  # Bound the file (gitignored, per-machine) — keep well over the 30-day window.
-  local n
-  n=$(wc -l < "$file" 2>/dev/null | tr -d ' ' || printf '0')
-  if [ "${n:-0}" -gt "$MAX_LINES" ]; then
-    tail -n "$MAX_LINES" "$file" > "$file.tmp" 2>/dev/null && mv "$file.tmp" "$file"
+  # Bound the file (gitignored, per-machine). Gate the trim on an O(1) byte-size
+  # check so the common path is a single append + one stat; only when the file
+  # exceeds the byte cap do we tail+rewrite. The tail goes into a UNIQUE tmp so
+  # concurrent trims cannot clobber each other's tmp or read a half-written one.
+  local bytes cap tmp
+  cap=2000000  # ~2 MB — well over the 30-day dead-inventory window
+  bytes=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || printf '0')
+  if [ "${bytes:-0}" -gt "$cap" ]; then
+    tmp="$file.$$.${RANDOM:-0}.tmp"
+    if tail -n "$MAX_LINES" "$file" > "$tmp" 2>/dev/null; then
+      mv "$tmp" "$file" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+    else
+      rm -f "$tmp" 2>/dev/null
+    fi
   fi
 }
 
