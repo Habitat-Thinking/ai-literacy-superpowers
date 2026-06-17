@@ -10,7 +10,7 @@
 
      Inspired by Birgitta Boeckeler's "Harness Engineering":
      https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->
-<!-- template-version: 0.56.0 -->
+<!-- template-version: 0.57.0 -->
 
 ## Context
 
@@ -410,6 +410,30 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 - **Enforcement**: deterministic
 - **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-staleness.sh
 - **Auto-fix**: false (the fix is a human running /harness-affordance review <name>)
+
+### Affordance recorder freshness (LOCAL — per-machine only)
+
+- **What it checks**: Whether the gitignored
+  observability/affordance-invocations.json exists and its newest invocation
+  is within the threshold (default 7 days) — a proxy for whether the
+  PostToolUse recorder hook is operating. The invocation file is gitignored
+  and per-machine, so this is LOCAL observability (runs via /harness-gc on
+  your machine), not a CI control.
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-invocations.sh --check=freshness
+- **Auto-fix**: false
+
+### Affordance dead inventory (LOCAL — per-machine only)
+
+- **What it checks**: Each declared, non-example, non-hook affordance that has
+  had no observed invocation in the last 30 days (per your local recorder).
+  Bash matching is program-coarse and conservative. LOCAL only (gitignored
+  data).
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-invocations.sh --check=dead-inventory
+- **Auto-fix**: false
 -->
 ---
 

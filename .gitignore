@@ -4,6 +4,12 @@
 # Discovery scanner output — per-session drafts that are reviewed and
 # (if approved) copied into HARNESS.md by hand. Never committed.
 .claude/affordance-discovery-*.md
+
+# Affordance runtime invocation log — per-machine, append-only NDJSON written
+# by the PostToolUse recorder hook. Gitignored to dissolve the cross-machine
+# merge problem; it answers "did MY sessions invoke this?" locally.
+observability/affordance-invocations.json
+
 _site/
 site/
 

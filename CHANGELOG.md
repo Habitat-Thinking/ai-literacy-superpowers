@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.57.0 — 2026-06-17
+
+### affordances: runtime invocation recorder + dead-inventory analyzer (#203)
+
+Sequencing step 7 — the affordance section's runtime backbone.
+
+- **`hooks/scripts/affordance-invocation-recorder.sh`** — a PostToolUse hook
+  (registered in `hooks.json`) appending one minimal NDJSON tuple per `Bash` /
+  `mcp__*` call to the gitignored `observability/affordance-invocations.json`.
+  Built-in file tools are not recorded. **Privacy is enforced, not just
+  declared**: the Bash `program` field strips env-var prefixes (`GH_TOKEN=…
+  gh` → `gh`), `basename`s paths (`/a/b/deploy.sh` → `deploy.sh`), and accepts
+  only a clean `^[A-Za-z0-9._-]+$` shape — no arguments, paths, secrets, or
+  user identity. Uses grep/sed (no jq), never blocks, self-trims to 5000 lines.
+- **`scripts/harness-affordance-invocations.sh`** — a report-only analyzer:
+  `--check=freshness` (is the recorder operating?) and `--check=dead-inventory`
+  (each declared, non-example, **non-hook** affordance observed within N days?).
+  Bash matching is program-coarse and **conservative** (an observed program
+  marks every Bash affordance sharing it as observed — a false-alive, never a
+  false-dead); MCP/named matching is exact. Hermetic via `--today`; tolerates
+  any malformed NDJSON line.
+- **Local, per-machine.** The data file is gitignored (the user-confirmed
+  answer to cross-machine merge), so the two GC rules and the checks are
+  **local observability via `/harness-gc`, not CI governance** — stated
+  honestly. A reference page documents the stable tuple format.
+- Spec-mode `/diaboli` raised 12 objections (6 high), all adjudicated before
+  implementation: keep the `.json` filename (the existing reference), sanitise
+  the Bash program token so the no-secrets guarantee is real, recorder uses
+  grep/sed (no jq silent-no-op trap), exclude hooks from dead-inventory, and
+  frame the gitignored consequence honestly.
+
 ## 0.56.0 — 2026-06-16
 
 ### affordances: review subcommand + staleness GC rule (#202)
