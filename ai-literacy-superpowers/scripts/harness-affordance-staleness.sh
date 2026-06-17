@@ -37,21 +37,6 @@ for cand in "$PROJECT_DIR/HARNESS.md" "$PROJECT_DIR/.claude/HARNESS.md"; do
 done
 [ -n "$HARNESS" ] || { echo "No HARNESS.md under $PROJECT_DIR — nothing to check."; exit 0; }
 
-# Threshold: flag > HARNESS.md marker > default 180.
-MAX_AGE=180
-marker=$(grep -oE 'affordance-review-threshold-days:[[:space:]]*[0-9]+' "$HARNESS" 2>/dev/null | grep -oE '[0-9]+' | head -1 || true)
-[ -n "$marker" ] && MAX_AGE="$marker"
-[ -n "$MAX_AGE_FLAG" ] && MAX_AGE="$MAX_AGE_FLAG"
-
-# UTC epoch (midnight) for a YYYY-MM-DD string; empty on parse failure.
-date_to_epoch() {
-  date -u -j -f '%Y-%m-%d' "$1" '+%s' 2>/dev/null || date -u -d "$1" '+%s' 2>/dev/null || true
-}
-
-TODAY="${TODAY_OVERRIDE:-$(date -u '+%Y-%m-%d')}"
-TODAY_EPOCH=$(date_to_epoch "$TODAY")
-[ -n "$TODAY_EPOCH" ] || { echo "Could not parse today's date ($TODAY)." >&2; exit 0; }
-
 # Extract the ## Affordances section body (heading to next ## heading).
 SECTION=$(awk '
   /^## Affordances[[:space:]]*$/ { inside=1; next }
@@ -60,6 +45,37 @@ SECTION=$(awk '
 ' "$HARNESS")
 [ -n "$SECTION" ] || { echo "No ## Affordances section in $HARNESS — nothing to check."; exit 0; }
 
+# Threshold: flag > HARNESS.md marker > default 180. The marker is read from
+# the ## Affordances section only (its designated home), never the whole file.
+MAX_AGE=180
+marker=$(printf '%s\n' "$SECTION" | grep -oE 'affordance-review-threshold-days:[[:space:]]*[0-9]+' 2>/dev/null | grep -oE '[0-9]+' | head -1 || true)
+[ -n "$marker" ] && MAX_AGE="$marker"
+[ -n "$MAX_AGE_FLAG" ] && MAX_AGE="$MAX_AGE_FLAG"
+
+# UTC-midnight epoch for a YYYY-MM-DD string; empty on parse failure OR when the
+# parsed epoch does not round-trip back to the exact input (rejects
+# calendar-impossible dates like 2026-02-30 identically on BSD and GNU). The
+# explicit 00:00:00 pins midnight UTC on both date implementations — BSD
+# `date -u -j -f '%Y-%m-%d'` alone fills the time-of-day from localtime-now.
+date_to_epoch() {
+  local epoch
+  epoch=$(date -u -j -f '%Y-%m-%d %H:%M:%S' "$1 00:00:00" '+%s' 2>/dev/null \
+        || date -u -d "$1 00:00:00 UTC" '+%s' 2>/dev/null || true)
+  [ -n "$epoch" ] || return 0
+  # Round-trip: the epoch must reformat to the same calendar date.
+  local back
+  back=$(date -u -j -f '%s' "$epoch" '+%Y-%m-%d' 2>/dev/null \
+       || date -u -d "@$epoch" '+%Y-%m-%d' 2>/dev/null || true)
+  [ "$back" = "$1" ] && printf '%s' "$epoch"
+  # Always succeed: failure is signalled by empty output, never a non-zero
+  # exit (which would abort the caller's `x=$(date_to_epoch ...)` under set -e).
+  return 0
+}
+
+TODAY="${TODAY_OVERRIDE:-$(date -u '+%Y-%m-%d')}"
+TODAY_EPOCH=$(date_to_epoch "$TODAY")
+[ -n "$TODAY_EPOCH" ] || { echo "Could not parse today's date ($TODAY)." >&2; exit 0; }
+
 # Emit one row per non-example entry: name<TAB>last_reviewed (date may be empty).
 # Classification is by the example marker only — hooks are included.
 ENTRIES=$(printf '%s\n' "$SECTION" | awk '
@@ -67,7 +83,7 @@ ENTRIES=$(printf '%s\n' "$SECTION" | awk '
     if (name != "" && !is_example) printf "%s\t%s\n", name, last
   }
   /^### / { flush(); name=$0; sub(/^### +/,"",name); sub(/[[:space:]]+$/,"",name); is_example=0; last=""; next }
-  /<!--[^>]*affordance-example[^>]*-->/ { is_example=1 }
+  /^[[:space:]]*<!--[[:space:]]*affordance-example[[:space:]]*-->[[:space:]]*$/ { is_example=1 }
   /^- \*\*Last reviewed\*\*:/ { last=$0; sub(/^- \*\*Last reviewed\*\*:[[:space:]]*/,"",last); sub(/[[:space:]].*$/,"",last) }
   END { flush() }
 ')
@@ -86,7 +102,9 @@ while IFS=$'\t' read -r name last; do
     continue
   fi
   age_days=$(( (TODAY_EPOCH - reviewed_epoch) / 86400 ))
-  if [ "$age_days" -gt "$MAX_AGE" ]; then
+  if [ "$age_days" -lt 0 ]; then
+    findings+="FUTURE: affordance '$name' Last reviewed $last is in the future — not a credible review date"$'\n'
+  elif [ "$age_days" -gt "$MAX_AGE" ]; then
     findings+="STALE: affordance '$name' last reviewed $last ($age_days days ago; threshold $MAX_AGE)"$'\n'
   fi
 done <<< "$ENTRIES"

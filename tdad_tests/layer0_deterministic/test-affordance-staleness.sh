@@ -61,19 +61,80 @@ run --today=2026-06-16 "$d"
 echo "$OUT" | grep -q "OK: all affordances reviewed within 180 days" || fail "all-fresh should report OK: $OUT"
 rm -rf "$d"
 
-# HARNESS.md marker threshold is read; the flag overrides it.
+# HARNESS.md marker threshold (read from INSIDE the ## Affordances section) is
+# applied; the flag overrides it.
 d=$(mkproj '# H
-<!-- affordance-review-threshold-days: 30 -->
 ## Affordances
+<!-- affordance-review-threshold-days: 30 -->
 ### t
 - **Mode**: cli
 - **Last reviewed**: 2026-05-01
 ## Status')
 run --today=2026-06-16 "$d"
-echo "$OUT" | grep -q "threshold 30" || fail "scanner should read the HARNESS.md marker threshold (30): $OUT"
+echo "$OUT" | grep -q "threshold 30" || fail "scanner should read the in-section marker threshold (30): $OUT"
 echo "$OUT" | grep -q "STALE: affordance 't'" || fail "46d entry should be stale at marker threshold 30: $OUT"
 run --today=2026-06-16 --max-age-days=180 "$d"
 echo "$OUT" | grep -q "OK:" || fail "flag (180) should override the marker (30): $OUT"
+rm -rf "$d"
+
+# O1: a competing marker OUTSIDE the ## Affordances section must NOT win.
+d=$(mkproj '# H
+<!-- affordance-review-threshold-days: 999 -->
+## Affordances
+<!-- affordance-review-threshold-days: 30 -->
+### t
+- **Mode**: cli
+- **Last reviewed**: 2026-05-01
+## Status')
+run --today=2026-06-16 "$d"
+echo "$OUT" | grep -q "threshold 30" || fail "O1: the in-section marker (30) must win over an earlier out-of-section one (999): $OUT"
+rm -rf "$d"
+
+# O2: UTC machine-independence — the same fixture yields the same verdict
+# under wildly different timezones.
+d=$(mkproj '# H
+## Affordances
+### t
+- **Mode**: cli
+- **Last reviewed**: 2026-01-01
+## Status')
+a=$(TZ=Pacific/Kiritimati "$S" --today=2026-06-16 "$d")
+b=$(TZ=Pacific/Pago_Pago "$S" --today=2026-06-16 "$d")
+[ "$a" = "$b" ] || fail "O2: verdict must be timezone-independent (got '$a' vs '$b')"
+rm -rf "$d"
+
+# O3: a future Last reviewed date is FUTURE, not silently fresh.
+d=$(mkproj '# H
+## Affordances
+### futuristic
+- **Mode**: cli
+- **Last reviewed**: 2099-01-01
+## Status')
+run --today=2026-06-16 "$d"
+echo "$OUT" | grep -q "FUTURE: affordance 'futuristic'" || fail "O3: future date should be flagged FUTURE: $OUT"
+rm -rf "$d"
+
+# O4: a calendar-impossible date is UNDATED on any platform (not rolled over).
+d=$(mkproj '# H
+## Affordances
+### bad-date
+- **Mode**: cli
+- **Last reviewed**: 2026-02-30
+## Status')
+run --today=2026-06-16 "$d"
+echo "$OUT" | grep -q "UNDATED: affordance 'bad-date'" || fail "O4: impossible date should be UNDATED: $OUT"
+rm -rf "$d"
+
+# O6: a Notes line quoting the example marker must NOT skip a real entry.
+d=$(mkproj '# H
+## Affordances
+### real
+- **Mode**: cli
+- **Last reviewed**: 2020-01-01
+- **Notes**: this is not an <!-- affordance-example --> entry
+## Status')
+run --today=2026-06-16 "$d"
+echo "$OUT" | grep -q "STALE: affordance 'real'" || fail "O6: a real entry mentioning the marker in Notes must still be scanned: $OUT"
 rm -rf "$d"
 
 # No ## Affordances section -> graceful, exit 0.
