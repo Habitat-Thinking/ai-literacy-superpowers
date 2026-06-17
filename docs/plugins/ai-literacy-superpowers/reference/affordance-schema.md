@@ -95,10 +95,17 @@ may legitimately precede its grant.
 ### `Last reviewed`
 
 `YYYY-MM-DD`. Set to today automatically on `add` (a genuine first review)
-and bumped thereafter only by `/harness-affordance review` (a later
-sequencing step) after three re-validation checks — Identity, Audit Trail,
-and Permission — pass. Editing other fields does **not** bump it, so the
-staleness GC rule (also a later step) stays meaningful.
+and bumped thereafter only by `/harness-affordance review <name>` after its
+three re-validation checks — Identity, Audit trail, and Permission — all
+pass. A failing check leaves the date and records a single
+`[review-gap: <check>]` Notes line instead. Editing other fields does **not**
+bump the date, so the **`Affordance review staleness`** GC rule
+(`scripts/harness-affordance-staleness.sh`) stays meaningful: it flags any
+affordance whose `Last reviewed` is older than the configured threshold
+(default 180 days; tune it via the `affordance-review-threshold-days` marker
+in the `## Affordances` section header) or has no valid date. Hook entries
+are included (their Identity/Audit trail can go stale too); example entries
+are skipped. The rule is report-only — the fix is running `review`.
 
 ## Matching algorithm
 

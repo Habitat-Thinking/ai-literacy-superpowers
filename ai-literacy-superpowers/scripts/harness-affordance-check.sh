@@ -84,7 +84,7 @@ PARSED=$(printf '%s\n' "$SECTION" | awk '
     printf "DECL\t%s\n", pats[1]
   }
   /^### / { flush(); name = $0; sub(/^### +/, "", name); sub(/[[:space:]]+$/, "", name); is_example = 0; mode = ""; perm_raw = "" ; next }
-  /<!--[^>]*affordance-example[^>]*-->/ { is_example = 1 }
+  /^[[:space:]]*<!--[[:space:]]*affordance-example[[:space:]]*-->[[:space:]]*$/ { is_example = 1 }
   /^- \*\*Mode\*\*:/ { m = $0; sub(/^- \*\*Mode\*\*:[[:space:]]*/, "", m); split(m, a, " "); mode = a[1] }
   /^- \*\*Permission\*\*:/ { perm_raw = $0; sub(/^- \*\*Permission\*\*:[[:space:]]*/, "", perm_raw) }
   END { flush() }

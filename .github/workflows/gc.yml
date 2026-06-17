@@ -219,6 +219,30 @@ jobs:
             echo "No promoted entries to archive this week"
           fi
 
+      - name: "GC: Affordance review staleness"
+        run: |
+          if [ ! -x ai-literacy-superpowers/scripts/harness-affordance-staleness.sh ]; then
+            echo "harness-affordance-staleness.sh missing or not executable — skipping"
+            exit 0
+          fi
+          # Report-only: the scanner self-skips when there is no ## Affordances
+          # section and always exits 0. Surface findings in the step summary and
+          # as a warning so a stale/undated entry reaches a reader on the cron.
+          out=$(bash ai-literacy-superpowers/scripts/harness-affordance-staleness.sh 2>&1 || true)
+          echo "$out"
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "### Affordance review staleness"
+              echo ""
+              echo '```'
+              echo "$out"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if echo "$out" | grep -qE '^(STALE|UNDATED|FUTURE):'; then
+            echo "::warning::Affordance review staleness: some affordances are overdue for review or have a bad date — run /harness-affordance review <name>"
+          fi
+
       - name: Summary
         if: always()
         run: echo "GC run complete. See HARNESS.md for rule details."

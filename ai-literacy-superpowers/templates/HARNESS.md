@@ -10,7 +10,7 @@
 
      Inspired by Birgitta Boeckeler's "Harness Engineering":
      https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->
-<!-- template-version: 0.55.0 -->
+<!-- template-version: 0.56.0 -->
 
 ## Context
 
@@ -393,6 +393,24 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 - **Tool**: npx libyear (or ecosystem equivalent)
 - **Auto-fix**: false
 -->
+
+<!-- Uncomment if using the Affordances feature (sequencing step 6). The
+     scanner is report-only and self-skips when there is no populated
+     ## Affordances section, so it is safe to leave active. Tune the
+     threshold via the `affordance-review-threshold-days` marker in the
+     ## Affordances section header (the scanner reads it; the --max-age-days
+     flag below overrides it).
+
+### Affordance review staleness
+
+- **What it checks**: Whether any affordance in the ## Affordances section has
+  a `Last reviewed` date older than the configured threshold (default 180
+  days / ~6 months), or no valid date at all
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-staleness.sh
+- **Auto-fix**: false (the fix is a human running /harness-affordance review <name>)
+-->
 ---
 
 ## Affordances
@@ -420,6 +438,11 @@ Run /governance-audit quarterly to keep governance constraints fresh.
      Delete the example entries below once real entries are added. -->
 
 <!-- Runtime invocation data: observability/affordance-invocations.json -->
+
+<!-- affordance-review-threshold-days: 180 -->
+<!-- ^ Tune the review-staleness threshold here (the staleness GC rule reads
+     this value). This line is human-owned and survives /harness-upgrade. -->
+
 
 ### gh-cli
 <!-- affordance-example -->

@@ -1,6 +1,6 @@
 ---
 name: harness-affordance
-description: Manage the project's affordance inventory — declared tools the agent can invoke, the identity each tool runs under, and the audit trail each tool produces. Subcommands - discover (scan config to produce a draft inventory), add (promote a draft into HARNESS.md with governance metadata), review (planned). See docs/superpowers/specs/2026-04-26-harness-affordances-design.md for the design.
+description: Manage the project's affordance inventory — declared tools the agent can invoke, the identity each tool runs under, and the audit trail each tool produces. Subcommands - discover (scan config to produce a draft inventory), add (promote a draft into HARNESS.md with governance metadata), review (re-validate one affordance and bump its Last reviewed date if all three checks pass). See docs/superpowers/specs/2026-04-26-harness-affordances-design.md for the design.
 ---
 
 # /harness-affordance \<subcommand\> [args...]
@@ -142,16 +142,53 @@ Report the entry written and its location. (Constraint-chaining — suggesting
 a `/harness-constrain` that references this affordance — arrives in
 sequencing step 4, once the chained constraints that consume it exist.)
 
-### `review` *(not yet implemented)*
+### `review <name>`
 
-Planned for sequencing step 6. Will walk through the three
-re-validation checks (Identity, Audit trail, Permission) and bump
-`Last reviewed` if all pass.
+Interactive re-validation of one affordance. Bumps its `Last reviewed` date
+to today **only if all three checks pass**, so the date attests to a genuine
+human re-validation rather than a `git log` mtime. Like `add`, any field the
+human chooses to edit is **dictated by the human and transcribed by the
+command** — the command never authors governance content.
 
-If invoked today, tell the user: "`/harness-affordance review` is
-not yet implemented (sequencing step 6 of the affordances design).
-For now, hand-edit `Last reviewed` after manually re-validating
-the three checks listed in the design spec."
+Match `<name>` to a `### <name>` heading under `## Affordances` (if no match,
+say so and list the headings). Then walk the three checks, each with an
+explicit `still correct? yes / no / needs-edit` prompt — **no implicit
+"everything looks fine" passing**:
+
+1. **Identity check.** Show the entry's `Identity`. For `runtime-resolved`,
+   ask specifically whether the resolution chain in `Notes` still holds; for
+   fixed identities, whether the named credential still exists and belongs to
+   the named principal.
+2. **Audit trail check.** Show the `Audit trail`. The endpoint still exists,
+   retention matches what is stated, access scope holds. For `none`, confirm
+   no audit log has been added since the last review.
+3. **Permission check.** Show the `Permission`. Confirm the pattern is still
+   present in a settings allowlist (`.claude/settings.json`,
+   `.claude/settings.local.json`, or `~/.claude/settings.json`).
+
+**Disposition:**
+
+- **All three `yes`** → bump `Last reviewed` to today, and **remove any
+  `[review-gap: <check>]` Notes lines** for checks that now pass.
+- **Any `needs-edit`** → open that field for inline edit (the human dictates
+  the new value; you transcribe it). An edit alone does **not** bump the
+  date: a bump after any edit requires the human to re-answer **all three**
+  checks `yes` — do not shortcut to a single-field confirmation.
+- **Any `no`** the human cannot resolve in-session → leave `Last reviewed`
+  **unchanged** and record the gap as a single Notes line per failing check,
+  prefixed `[review-gap: <check>]` (Identity / Audit trail / Permission).
+  **Update that line in place** if one already exists for the check rather
+  than appending a duplicate, so the staleness rule keeps firing without the
+  Notes section growing unbounded. Editing `Notes` or `Constraint references`
+  never bumps the date on its own.
+
+Validation checkpoint: re-read the entry; confirm `Last reviewed` is a
+`YYYY-MM-DD` date and was bumped **iff** all three checks passed this session.
+
+(Staleness is surfaced separately by the `Affordance review staleness` GC
+rule — `scripts/harness-affordance-staleness.sh` — which flags entries whose
+`Last reviewed` is older than the configured threshold. `review` is the fix
+for what that rule reports.)
 
 ## Routing
 
