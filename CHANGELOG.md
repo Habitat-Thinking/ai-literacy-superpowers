@@ -2,6 +2,16 @@
 
 ## 0.57.0 — 2026-06-17
 
+### harness: declare a cross-OS Layer 0 constraint (reflection follow-up)
+
+Reflection from the affordances epic surfaced a recurring BSD-vs-GNU shell
+portability trap in deterministic check scripts (`grep '\|'` is BSD-literal and
+masked locally by the harness's `grep`→`ugrep` alias; `date -u -j -f` does not
+pin UTC midnight on BSD). Declared a new `unverified` HARNESS.md constraint —
+**Layer 0 bash tests run on macOS and Linux** — whose promotion to
+`deterministic` is adding a `macos-latest` leg to the TDAD fast-suite matrix.
+(Repo HARNESS.md only — no plugin change.)
+
 ### affordances: runtime invocation recorder + dead-inventory analyzer (#203)
 
 Sequencing step 7 — the affordance section's runtime backbone.
