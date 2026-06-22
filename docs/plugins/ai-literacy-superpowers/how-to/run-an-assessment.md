@@ -142,3 +142,16 @@ Add this to your `CLAUDE.md` operating cadence:
 
 - Quarterly: run `/assess` to re-assess AI literacy level
 ```
+
+---
+
+## Large repositories: deep-research mode
+
+On a repository above the deep-research threshold (file count `> 300`,
+configurable via the optional `fan-out-threshold` field in `HARNESS.md`) and on
+the Claude Code runtime, the assessor elects a **workflow mode**: it adapts
+`deep-assessment.workflow.js` to fan out by area, verify each finding in a
+separate agent, and synthesise a cited report — robust against the agentic
+laziness that truncates long single-context scans. The output stays the same
+timestamped `assessments/YYYY-MM-DD-assessment.md`. Where the workflow runtime is
+absent, the assessor falls back to its single-context scan and never errors.

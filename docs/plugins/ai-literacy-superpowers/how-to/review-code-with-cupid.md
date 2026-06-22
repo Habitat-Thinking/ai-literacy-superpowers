@@ -131,3 +131,15 @@ After completing these steps you have:
 - A prioritised list of improvement opportunities
 - A concrete action for each weak property
 - Optionally, a documented CUPID Status in the README for tracking over time
+
+## Separate-context review for non-trivial diffs
+
+On the Claude Code runtime, the `code-reviewer` agent elects a separate-context
+**workflow mode** for non-trivial diffs (default `> 2` files changed,
+configurable via the HARNESS.md `fan-out-threshold` field): it adapts
+`adversarial-review.workflow.js` so the reviewer judges
+the diff in a context distinct from the implementer's, with one dedicated
+verifier per CUPID property and `advocatus-diaboli` as the rubric-bearing
+adversary. This defeats self-preferential bias. Tiny diffs keep the cheap
+single-context review; where the workflow runtime is absent the reviewer falls
+back to single-context and never errors.

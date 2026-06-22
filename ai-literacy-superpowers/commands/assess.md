@@ -244,3 +244,14 @@ Present a summary to the user:
 - Workflow changes accepted vs rejected
 - Top 3 recommendations for longer-term work
 - Link to the full assessment document
+
+## Large-repository workflow path (Claude Code only)
+
+On a repository above the deep-research threshold — **file count `> 300`**
+— the dispatched `assessor` elects its **workflow mode**: a deep-research
+dynamic workflow that fans out by area and adversarially verifies each
+finding before synthesis (see the assessor agent doc). This path requires
+the **Claude Code** runtime; on Copilot CLI or wherever the workflow
+runtime is absent, the assessor **falls back** to its single-context scan
+and the assessment proceeds unchanged. The output location and format are
+identical on either path.

@@ -124,3 +124,40 @@ findings.
 - You do not fix the issues yourself.
 - You do not approve a merge — that is integration-agent's responsibility.
 - You do not invent findings to justify another review cycle.
+
+## Workflow mode (separate-context adversarial review, Claude Code only)
+
+For non-trivial reviews, run the review as a **dynamic workflow** so the
+reviewing agent operates in a **context window** distinct from the
+**implementer's** — the separation is what defeats self-preferential bias
+(an agent is reluctant to fault output from the same context that produced
+it).
+
+**Trigger.** Workflow mode engages only for **non-trivial** reviews —
+default **`> 2 files`** changed — so tiny diffs keep the cheap
+single-context review and do not summon a panel of subagents. The trigger
+is **configurable per project** via the optional `fan-out-threshold` field
+in `HARNESS.md` (the same knob the rest of the dynamic-workflows epic
+uses).
+
+**Shape.** Adapt the shipped `adversarial-review.workflow.js` template
+(under the `dynamic-workflows` skill — **adapt** it, never run it
+verbatim): each **CUPID** property and each **literate**-programming
+property is checked by its own **dedicated verifier** in a fresh context,
+with `Advocatus Diaboli` as the rubric-bearing adversary. Per-property
+findings are **synthesis**ed into one prioritised report — never
+**collapse**d into a single thumbs-up that hides the per-property detail.
+
+**Guardrail.** Review cycles still respect **MAX_REVIEW_CYCLES**=**3**.
+Workflow mode changes how a single review is performed, not how many
+review rounds the pipeline permits.
+
+**Runtime scope — Claude Code only.** Workflow mode requires the **Claude
+Code** runtime; dynamic workflows are not transferable to Copilot CLI or
+other coding agents. Where the runtime is absent, the reviewer
+**falls back** to its single-context review and **never errors**.
+
+**Boundary (INV-1).** Review is **propose**-only / **read-only**: it
+reports findings and never writes a **durable artefact** (HARNESS.md,
+AGENTS.md, CLAUDE.md, MODEL_ROUTING.md). The reviewer's tool set carries
+no Write or Edit.

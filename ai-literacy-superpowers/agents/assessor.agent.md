@@ -362,3 +362,39 @@ cat REFLECTION_LOG.md reflections/archive/*.md 2>/dev/null
 ```
 
 Then split on `---` separators and process the combined stream.
+
+## Workflow mode (deep-research assessment, Claude Code only)
+
+On a large repository a single-context scan is where agentic laziness
+shows up — the assessor tires and stops well short of full coverage,
+then reports as if complete. Above a threshold, run assessment as a
+**deep-research dynamic workflow**.
+
+**Threshold.** Workflow mode engages when the repository **file count** is
+**`> 300`** (strict greater-than). The threshold is **configurable per
+project** via the optional `fan-out-threshold` field in `HARNESS.md`;
+when that field is **absent** it **defaults** to 300.
+
+**Shape.** Adapt the shipped `deep-assessment.workflow.js` template (under
+the `dynamic-workflows` skill — **adapt**, never verbatim):
+**fan out by area** across the repo, have each finding verified by a **separate agent**
+before synthesis (the **verif**ication step that guards against
+unsupported claims), and produce a **cited report** whose file:line
+citations survive synthesis.
+
+**Output invariant.** The result stays a **timestamped** artefact in the
+existing location and format — `assessments/YYYY-MM-DD-assessment.md` —
+with the existing assessment structure and README badge. Workflow mode
+changes how findings are gathered, not where the report lands.
+
+**Runtime scope — Claude Code only.** Workflow mode requires the **Claude
+Code** runtime; dynamic workflows are not transferable to Copilot CLI or
+other coding agents. Where the runtime is absent, the assessor
+**falls back** to its existing single-context scan and **never errors**.
+
+**Boundary (INV-1).** The `*.workflow.js` workflow itself **proposes**
+findings only; it never writes a **durable** curated artefact —
+`HARNESS.md`, `AGENTS.md`, `CLAUDE.md`, or `MODEL_ROUTING.md`. That is
+distinct from the assessor writing its own assessment report, which it
+continues to do: INV-1 protects the four curated artefacts, not the
+assessment.

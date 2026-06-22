@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.61.0 — 2026-06-22
+
+### dynamic-workflows: adversarial review + deep-research workflows (S4, #441)
+
+Reuses the proven S3 pattern across the four agents most exposed to
+self-preferential bias and agentic laziness.
+
+- **`code-reviewer` gains separate-context adversarial review** (D5): for
+  non-trivial diffs (default `> 2 files`, configurable via the HARNESS.md
+  `fan-out-threshold` field) it adapts `adversarial-review.workflow.js` so the
+  reviewer works in a context window distinct from the implementer's, each
+  CUPID + literate property checked by a dedicated verifier and findings
+  synthesised, not collapsed. `MAX_REVIEW_CYCLES=3` still holds.
+  **`advocatus-diaboli`** declares its role as the rubric-bearing adversary,
+  read-only trust boundary unchanged.
+- **`assessor` and `harness-auditor` gain deep-research mode** (D7): above a
+  repo file-count threshold (`> 300`, configurable via the HARNESS.md field)
+  they adapt `deep-assessment.workflow.js` to fan out by area, verify each
+  finding in a separate agent, and synthesise a cited report. The auditor adds
+  a **self-preference guard** — at least one verifier is adversarial to the
+  framework's own assumptions, so it cannot grade its own homework. Output stays
+  a timestamped artefact in the existing location/format.
+- All four are Claude-Code-only with a non-erroring single-context fallback;
+  INV-1 precision preserved (the ephemeral workflow proposes; the assessor/
+  auditor still write their own report artefacts, which are not the four durable
+  curated files). `commands/assess.md` and `commands/harness-audit.md` document
+  the large-repo workflow path. Deterministic structural checks
+  (`test_s4_adversarial_deepresearch_structural.py`) gate the declared contract.
+
 ## 0.60.0 — 2026-06-22
 
 ### dynamic-workflows: harness-enforcer fan-out mode (S3, #440)
