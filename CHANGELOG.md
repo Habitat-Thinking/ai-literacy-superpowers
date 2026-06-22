@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.59.0 — 2026-06-22
+
+### dynamic-workflows: template library + INV-1/INV-2 firewall (S2, #439)
+
+The runnable substrate for the epic, plus the deterministic teeth that keep it
+governed.
+
+- **Four workflow templates** under `skills/dynamic-workflows/workflows/` —
+  `enforcer-fanout`, `adversarial-review`, `reflection-mining`, and
+  `deep-assessment`. Each is a template to **adapt, never run verbatim**, with a
+  literate preamble naming its pattern, token budget, per-role model tiers, the
+  INV-1 boundary it respects, and the Claude-Code-only runtime scope. A
+  `workflows/package.json` (`type: module`) lets the `export const meta` +
+  top-level-await DSL parse as the runtime expects.
+- **INV-1/INV-2 firewall** (`scripts/inv-firewall.sh`) — one POSIX-portable
+  matcher, invoked two ways: a PR-time gate
+  (`.github/workflows/dynamic-workflows-firewall.yml`) and a Layer-0
+  deterministic test with red/green fixtures. INV-1 strips comments then fails on
+  any durable filename (`HARNESS.md` / `AGENTS.md` / `CLAUDE.md` /
+  `MODEL_ROUTING.md`) appearing in executable code — so a literate preamble that
+  merely *names* one passes, but a write fails. INV-2 fails if a declared
+  `@untrusted-reader` agent's `@tools` names a high-privilege tool (write, edit,
+  bash, commit, push). A consequence templates respect: durable artefacts are
+  reached only through harness indirection, never spelled in code.
+- **`SKILL.md`** flips the template library from "forthcoming (S2)" to shipped,
+  referencing all four templates by resolving relative path; the how-to guide
+  names them. The S1 markdownlint scenario that forbade template links is
+  reconciled to assert the links now resolve.
+
 ## 0.58.1 — 2026-06-22
 
 ### dynamic-workflows: state the Claude-Code-only runtime scope in the skill

@@ -1,0 +1,73 @@
+# Dynamic-workflows INV-1/INV-2 firewall.
+#
+# The deterministic teeth of the dynamic-workflows governance invariants
+# (umbrella spec §5.1/§5.2, slice S2). A workflow template is ephemeral and
+# generated; the durable artefacts (HARNESS.md, AGENTS.md, CLAUDE.md,
+# MODEL_ROUTING.md) are human-curated. This gate fails the PR if any shipped
+# template:
+#   - INV-1: writes a durable artefact directly in executable code, or
+#   - INV-2: grants a declared @untrusted-reader agent a high-privilege tool.
+#
+# It invokes the SAME matcher (ai-literacy-superpowers/scripts/inv-firewall.sh)
+# that the Layer-0 deterministic test exercises against red/green fixtures, so
+# the gate and the unit test enforce exactly one rule. The matcher uses only
+# POSIX awk + grep -E, so it runs identically here and on a developer's macOS.
+
+name: Dynamic-workflows firewall
+
+on:
+  pull_request:
+    paths:
+      - 'ai-literacy-superpowers/skills/dynamic-workflows/workflows/**'
+      - 'ai-literacy-superpowers/scripts/inv-firewall.sh'
+      - '.github/workflows/dynamic-workflows-firewall.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  firewall:
+    name: INV-1/INV-2 firewall on workflow templates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Run the INV-1/INV-2 firewall over shipped templates
+        run: |
+          set -euo pipefail
+
+          MATCHER=ai-literacy-superpowers/scripts/inv-firewall.sh
+          WF_DIR=ai-literacy-superpowers/skills/dynamic-workflows/workflows
+
+          chmod +x "$MATCHER"
+
+          # Collect the shipped templates (the package.json marker is not a
+          # template and is skipped).
+          shopt -s nullglob
+          templates=("$WF_DIR"/*.workflow.js)
+          if [ "${#templates[@]}" -eq 0 ]; then
+            echo "No workflow templates found under $WF_DIR — nothing to check."
+            exit 0
+          fi
+
+          rc=0
+
+          if ! "$MATCHER" --check=inv1 "${templates[@]}"; then
+            echo "::error::INV-1 firewall: a workflow template writes a durable artefact directly."
+            echo "Workflows propose; they never write HARNESS.md / AGENTS.md / CLAUDE.md / MODEL_ROUTING.md."
+            echo "Reach durable artefacts through harness indirection, and route findings through the human-curation gate."
+            rc=1
+          fi
+
+          if ! "$MATCHER" --check=inv2 "${templates[@]}"; then
+            echo "::error::INV-2 firewall: an @untrusted-reader agent is granted a high-privilege tool."
+            echo "Quarantine untrusted-content readers; have a separate trusted agent act on the vetted output."
+            rc=1
+          fi
+
+          if [ "$rc" -ne 0 ]; then
+            exit 1
+          fi
+
+          echo "Dynamic-workflows firewall passed: all templates respect INV-1 and INV-2."
