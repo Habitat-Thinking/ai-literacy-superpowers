@@ -2,6 +2,17 @@
 
 ## 0.57.0 — 2026-06-17
 
+### planning: dynamic-workflows-alignment epic spec + carpaccio slicing (#438–#444)
+
+Saved the Dynamic Workflows Alignment design (D1–D9) as the umbrella spec
+(`docs/superpowers/specs/2026-06-22-dynamic-workflows-alignment-design.md`) and
+sliced it into seven independently-shippable pieces via carpaccio rather than
+landing it as one big change. Recorded human dispositions (all accepted) and
+resolved three of four open questions (D3 threshold = 8; D4 routes opt-in for
+v1; D6 staging = new `REFLECTION_STAGING.md`); Copilot degradation deferred to
+the S7 build. Filed issues #438–#444, one per slice, in §6 dependency order.
+Docs/planning only — no plugin change.
+
 ### harness: declare a cross-OS Layer 0 constraint (reflection follow-up)
 
 Reflection from the affordances epic surfaced a recurring BSD-vs-GNU shell
