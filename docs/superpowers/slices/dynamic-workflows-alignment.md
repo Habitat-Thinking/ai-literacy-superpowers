@@ -11,70 +11,70 @@ slices:
     scope: "Ship the dynamic-workflows skill (SKILL.md + patterns/when-not-to-use/governance references) and the compute-discipline election rubric, including the MODEL_ROUTING.md workflow-election + token-budget section. Establishes the shared conceptual model and the rule that workflows are elected, not reflexive."
     decision_focus: "What is the durable/ephemeral boundary the rest of the alignment references, and what rubric and token-budget convention govern when a workflow is elected versus the static pipeline?"
     lens_used: decision-boundary
-    disposition: pending
-    disposition_rationale: null
-    file_as_issue: pending
-    issue_url: null
+    disposition: accept
+    disposition_rationale: "Accepted (Russ, 2026-06-22). Build first per §6 — foundation everything references."
+    file_as_issue: yes
+    issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/438
     merged_into: null
   - id: S2
     title: "Template library + INV-1/INV-2 firewall (D2 + §5.1)"
     scope: "Ship the four *.workflow.js templates via the skill, each with a literate preamble, plus the deterministic CI/GC grep rule that fails if any template writes directly to durable artefacts (HARNESS.md, AGENTS.md, CLAUDE.md, MODEL_ROUTING.md) and the INV-2 lint that withholds high-privilege tools from untrusted-content readers."
     decision_focus: "How is the INV-1 firewall mechanised deterministically — what exactly does the grep rule match as a 'direct write to a durable artefact', and how is INV-2 made lint-checkable on templates?"
     lens_used: decision-boundary
-    disposition: pending
-    disposition_rationale: null
-    file_as_issue: pending
-    issue_url: null
+    disposition: accept
+    disposition_rationale: "Accepted (Russ, 2026-06-22). Firewall (§5.1 grep + INV-2 lint) ships atomically with the templates — non-negotiable per §7 governance-erosion risk."
+    file_as_issue: yes
+    issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/439
     merged_into: null
   - id: S3
     title: "harness-enforcer fan-out upgrade (D3)"
     scope: "Add workflow mode to harness-enforcer: one verifier subagent per HARNESS.md rule plus a skeptic persona, with a synthesis barrier that waits for all N and a deterministic count-equality check (no silent drop). Document the fan-out slot in verification-slots SKILL.md."
     decision_focus: "What is the constraint-count threshold (open question 1, default 8) at which the enforcer switches to fan-out mode, confirmed or tuned per project?"
     lens_used: independence
-    disposition: pending
-    disposition_rationale: null
-    file_as_issue: pending
-    issue_url: null
+    disposition: accept
+    disposition_rationale: "Accepted (Russ, 2026-06-22). Open Q1 resolved: threshold = 8 (spec default), configurable per project. Highest-leverage slice — land early."
+    file_as_issue: yes
+    issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/440
     merged_into: null
   - id: S4
     title: "Adversarial verification for code-reviewer + deep-research assessor/auditor (D5 + D7)"
     scope: "Add workflow mode to code-reviewer (separate context window, Advocatus Diaboli as rubric-bearing adversary, per-CUPID-property verifiers) and to assessor + harness-auditor (fan-out-by-area, adversarial self-preference guard, cited report into the existing timestamped artefact). Both reuse the adversarial-verification pattern proven by D3."
     decision_focus: "Should the same adversarial-verification shape (separate-context review, dedicated per-property/per-area verifiers) be applied uniformly across the self-preference-exposed agents, or specialised per agent?"
     lens_used: acceptance-criterion
-    disposition: pending
-    disposition_rationale: null
-    file_as_issue: pending
-    issue_url: null
+    disposition: accept
+    disposition_rationale: "Accepted (Russ, 2026-06-22). Reuse the adversarial-verification shape uniformly across the self-preference-exposed agents; specialise only where an agent demands it."
+    file_as_issue: yes
+    issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/441
     merged_into: null
   - id: S5
     title: "orchestrator classify-and-act routing (D4)"
     scope: "Add a classification step before the existing pipeline: ordinary coding keeps the static default; design/naming routes to tournament; debugging routes to root-cause investigation; large backlogs route to triage-at-scale under INV-2 quarantine. Surface the chosen route in superpowers-status. GATE and MAX_REVIEW_CYCLES=3 GUARDRAIL hold on every route."
     decision_focus: "Should the tournament / root-cause / triage routes be on by default, or behind an explicit opt-in flag for the first release (open question 2)?"
     lens_used: independence
-    disposition: pending
-    disposition_rationale: null
-    file_as_issue: pending
-    issue_url: null
+    disposition: accept
+    disposition_rationale: "Accepted (Russ, 2026-06-22). Open Q2 resolved: routes are OPT-IN behind an explicit flag for the first release; static pipeline remains the sole default. Guards the §7 over-orchestration risk."
+    file_as_issue: yes
+    issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/442
     merged_into: null
   - id: S6
     title: "Reflection-mining curation workflow (D6)"
     scope: "Add an optional --mine mode to reflect that clusters REFLECTION_LOG.md entries with parallel agents, adversarially pre-filters candidates, and emits a vetted shortlist to a staging artefact — never to AGENTS.md (INV-1). Note in integration-agent that mining augments, never replaces, human curation."
     decision_focus: "Where should the staging artefact live (open question 3) — a new REFLECTION_STAGING.md or a section appended to the existing log? Either satisfies INV-1; the choice is ergonomic."
     lens_used: decision-boundary
-    disposition: pending
-    disposition_rationale: null
-    file_as_issue: pending
-    issue_url: null
+    disposition: accept
+    disposition_rationale: "Accepted (Russ, 2026-06-22). Open Q3 resolved: staging artefact is a new REFLECTION_STAGING.md (clean separation from the append-only log)."
+    file_as_issue: yes
+    issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/443
     merged_into: null
   - id: S7
     title: "Documentation, hooks, badge + Copilot degradation (D9 + §5.5)"
     scope: "Add the README Dynamic Workflows section, bump the skill-count badge 19→20, add the CHANGELOG entry, add the optional advisory Stop hook (warn, never block), add the CLAUDE.md pointer, and document the Copilot CLI degradation path. Finalises the alignment."
     decision_focus: "What is the Copilot CLI degradation contract (open question 4) — guidance-only fallback where the workflow runtime is absent, or omit the skill there entirely? — and is the advisory Stop hook shipped at all?"
     lens_used: independence
-    disposition: pending
-    disposition_rationale: null
-    file_as_issue: pending
-    issue_url: null
+    disposition: accept
+    disposition_rationale: "Accepted (Russ, 2026-06-22). Open Q4 (Copilot degradation) intentionally left open — decide during S7 build, as it shapes only the docs/fallback it ships."
+    file_as_issue: yes
+    issue_url: https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/444
     merged_into: null
 ---
 

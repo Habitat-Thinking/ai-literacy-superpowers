@@ -313,13 +313,14 @@ makes them pass, `code-reviewer` (ideally already in its D5 adversarial mode) re
 - *Governance erosion.* INV-1 is the firewall protecting the team's curated theory of the system
   (Naur) from ephemeral churn. The CI grep rule in §5.1 is its teeth — do not ship without it.
 
-**Open questions for Russ to decide before build.**
-1. Constraint-count threshold for D3 fan-out: default 8 — confirm or tune per project.
-2. Should D4's tournament/root-cause routes be on by default, or behind an explicit opt-in flag for the
-   first release?
-3. Where should D6's *staging* artefact live — a new `REFLECTION_STAGING.md`, or a section appended to
-   the existing log? (Either satisfies INV-1; the choice is ergonomic.)
-4. Copilot CLI degradation (§5.5): guidance-only fallback, or omit the skill there entirely?
+**Open questions — dispositions (Russ, 2026-06-22).**
+1. Constraint-count threshold for D3 fan-out: **8 (spec default)**, configurable per project. *(Resolved.)*
+2. D4's tournament/root-cause/triage routes: **opt-in behind an explicit flag for the first release.**
+   The static pipeline remains the sole default. *(Resolved.)*
+3. D6's *staging* artefact: **a new `REFLECTION_STAGING.md`** (clean separation from the append-only
+   log). *(Resolved.)*
+4. Copilot CLI degradation (§5.5): **still open** — to be decided during the S7 build, since it shapes
+   only the documentation and fallback it ships.
 
 ---
 
