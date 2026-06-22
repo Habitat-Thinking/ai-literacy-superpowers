@@ -75,4 +75,24 @@ echo "$OUT" | grep -qi "bash" || fail "INV-2 violation message must name the off
 run inv2 "$FIX/inv2-clean.workflow.js"
 [ "$RC" -eq 0 ] || fail "INV-2 must PASS when the untrusted reader is withheld every high-privilege tool (got exit $RC): $OUT"
 
+# --- Regression guards (S2 adversarial review) -------------------------------
+# Bypasses the first matcher missed. Each must now FLAG.
+
+# INV-1: a durable filename split across string concatenation.
+run inv1 "$FIX/inv1-concat.workflow.js"
+[ "$RC" -ne 0 ] || fail "INV-1 must FLAG a durable filename split by concatenation (\"AGENTS\" + \".md\"): $OUT"
+echo "$OUT" | grep -q "AGENTS.md" || fail "INV-1 concat message must name the durable artefact: $OUT"
+
+# INV-2: a high-privilege tool named with different casing.
+run inv2 "$FIX/inv2-uppercase.workflow.js"
+[ "$RC" -ne 0 ] || fail "INV-2 must FLAG a high-privilege tool regardless of casing (Bash): $OUT"
+
+# INV-2: a high-privilege tool on a continuation line of a wrapped @tools list.
+run inv2 "$FIX/inv2-multiline.workflow.js"
+[ "$RC" -ne 0 ] || fail "INV-2 must FLAG a high-privilege tool on a multi-line @tools list: $OUT"
+
+# INV-2: @tools declared before the @untrusted-reader flag (order independence).
+run inv2 "$FIX/inv2-order.workflow.js"
+[ "$RC" -ne 0 ] || fail "INV-2 must FLAG regardless of marker order within an agent block: $OUT"
+
 echo "All INV-1/INV-2 firewall tests passed."

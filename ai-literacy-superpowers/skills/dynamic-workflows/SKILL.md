@@ -131,5 +131,6 @@ running.
 
 Every template honours both invariants: it proposes, it never writes a
 durable artefact (INV-1), and any untrusted-content reader is quarantined
-from high-privilege tools (INV-2). The deterministic firewall in
-`scripts/inv-firewall.sh` enforces both on every template at PR time.
+from high-privilege tools (INV-2). The deterministic firewall at the plugin
+root (`ai-literacy-superpowers/scripts/inv-firewall.sh`) enforces both on
+every template at PR time.

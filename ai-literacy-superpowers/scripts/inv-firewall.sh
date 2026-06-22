@@ -13,20 +13,24 @@
 # stated for agents in the skill's governance.md; this script is what makes
 # them fail CI rather than merely advise.
 #
-# Design decisions (spec §7, human-approved at the S2 GATE):
-#   - INV-1 = layered "Option C". Strip comments first, then fail on ANY of the
-#     four durable filenames appearing in executable (non-comment) code —
-#     whether or not the specific write call is recognised. This kills the
-#     false positive (a literate preamble that merely *names* AGENTS.md passes)
-#     and the false negative (a write expressed an unenumerated way), and is
-#     robust to runtime-API drift. The consequence templates must respect:
-#     durable artefacts are reached only through harness-provided indirection,
-#     never by spelling the filename in code.
+# Design decisions (spec §7, human-approved at the S2 GATE; hardened after the
+# S2 adversarial review closed three bypasses):
+#   - INV-1 = layered "Option C". Strip comments first, then fail if any durable
+#     STEM (HARNESS, AGENTS, CLAUDE, MODEL_ROUTING) survives into executable
+#     code as a whole word — independent of the `.md` suffix. Matching the stem
+#     rather than the full filename defeats name-splitting ("AGENTS" + ".md",
+#     `${dir}/AGENTS.md`, ["AGENTS",".md"].join("")), and `grep -w` keeps
+#     SCREAMING_SNAKE variables (MODEL_ROUTING_TABLE) safe. A literate preamble
+#     that merely *names* a durable artefact passes (it is stripped first). The
+#     consequence templates must respect: durable artefacts are reached only
+#     through harness-provided indirection, never spelled in code.
 #   - INV-2 = declared markers "Option I1". A template annotates an
 #     untrusted-content reader with `// @untrusted-reader: true` and declares
 #     its `// @tools: [...]`; the lint fails if that set names a high-privilege
-#     tool (write, edit, bash, commit, push). Passes vacuously when no
-#     untrusted reader is declared.
+#     tool (write, edit, bash, commit, push, fetch, webfetch). The check is
+#     case-insensitive, accumulates a multi-line `@tools` list, and is
+#     independent of the order of the three markers within an agent block.
+#     Passes vacuously when no untrusted reader is declared.
 #
 # Portability: POSIX awk + grep -E only (no gawk/GNU extensions, no `grep -P`,
 # no BSD-only date) so the Layer-0 test runs identically on macOS and Linux.
@@ -84,8 +88,16 @@ check_inv1() {
   for f in "${FILES[@]}"; do
     code=$(strip_comments "$f")
     for name in HARNESS AGENTS CLAUDE MODEL_ROUTING; do
-      if printf '%s\n' "$code" | grep -qE "${name}\.md"; then
-        echo "INV-1 VIOLATION: $f writes the durable artefact ${name}.md in executable code — workflows may never write durable artefacts directly (INV-1)."
+      # Match the durable STEM as a whole word in executable code, independent
+      # of the `.md` suffix. This is what makes Option C robust against a
+      # filename split to dodge the matcher — "AGENTS" + ".md",
+      # `${dir}/AGENTS.md`, ["AGENTS", ".md"].join("") all still contain the
+      # bare stem token. The stems never appear legitimately in template code:
+      # every real mention is in a literate preamble and already stripped, so a
+      # stem surviving into executable code is itself the smell. `grep -w` keeps
+      # SCREAMING_SNAKE variables safe (MODEL_ROUTING_TABLE is a different word).
+      if printf '%s\n' "$code" | grep -qwE "$name"; then
+        echo "INV-1 VIOLATION: $f references the durable artefact ${name}.md in executable code — workflows may never read or write durable artefacts directly; reach them through harness indirection (INV-1)."
         rc=1
       fi
     done
@@ -97,23 +109,44 @@ check_inv2() {
   local rc=0 f
   for f in "${FILES[@]}"; do
     if ! awk -v file="$f" '
-      /@workflow-agent:/                     { untrusted = 0 }
-      /@untrusted-reader:[ \t]*true/         { untrusted = 1 }
-      /@untrusted-reader:[ \t]*false/        { untrusted = 0 }
-      /@tools:/ {
-        if (untrusted == 1) {
-          lb = index($0, "["); rb = index($0, "]")
-          if (lb > 0 && rb > lb) {
-            inner = substr($0, lb + 1, rb - lb - 1)
-            m = split(inner, arr, /[, ]+/)
-            for (k = 1; k <= m; k++) {
-              t = arr[k]; gsub(/[^a-zA-Z]/, "", t)
-              if (t == "write" || t == "edit" || t == "bash" || t == "commit" || t == "push") {
-                printf("INV-2 VIOLATION: %s — an @untrusted-reader agent is granted the high-privilege tool: %s. Quarantine it; act via a separate trusted agent (INV-2).\n", file, t)
-                bad = 1
-              }
+      # High-privilege tool comparison is case-insensitive (Bash == bash) and
+      # the @tools list is accumulated across continuation lines, so neither
+      # casing nor line-wrapping can smuggle a tool past the check. The network
+      # tools (fetch/webfetch) honour governance.md s "no network mutation".
+      function check_tools(s,   lb, rb, inner, m, arr, k, t) {
+        lb = index(s, "["); rb = index(s, "]")
+        if (lb > 0 && rb > lb) {
+          inner = substr(s, lb + 1, rb - lb - 1)
+          m = split(inner, arr, /[, ]+/)
+          for (k = 1; k <= m; k++) {
+            t = arr[k]; gsub(/[^a-zA-Z]/, "", t); t = tolower(t)
+            if (t == "write" || t == "edit" || t == "bash" || t == "commit" || t == "push" || t == "fetch" || t == "webfetch") {
+              printf("INV-2 VIOLATION: %s — an @untrusted-reader agent is granted the high-privilege tool: %s. Quarantine it; act via a separate trusted agent (INV-2).\n", file, t)
+              bad = 1
             }
           }
+        }
+      }
+      function reset() { untrusted = 0; toolsseen = 0; toolsbuf = ""; collecting = 0 }
+      BEGIN { reset() }
+      # A new agent block resets state. Order of the three markers within a
+      # block does not matter: an @tools seen before the reader flag is buffered
+      # and re-checked when the flag arrives.
+      /@workflow-agent:/              { reset() }
+      /@untrusted-reader:[ \t]*true/  { untrusted = 1; if (toolsseen == 1) check_tools(toolsbuf) }
+      /@untrusted-reader:[ \t]*false/ { untrusted = 0 }
+      {
+        if (collecting == 1) {
+          toolsbuf = toolsbuf " " $0
+          if (index($0, "]") > 0) { collecting = 0; toolsseen = 1; if (untrusted == 1) check_tools(toolsbuf) }
+          next
+        }
+      }
+      /@tools:/ {
+        if (index($0, "[") > 0 && index($0, "]") > 0) {
+          toolsbuf = $0; toolsseen = 1; if (untrusted == 1) check_tools(toolsbuf)
+        } else if (index($0, "[") > 0) {
+          collecting = 1; toolsbuf = $0
         }
       }
       END { if (bad == 1) exit 1 }
