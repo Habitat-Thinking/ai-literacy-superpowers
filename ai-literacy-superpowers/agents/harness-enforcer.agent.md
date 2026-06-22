@@ -252,8 +252,9 @@ skill — adapt it, never run it verbatim) to:
    **all N** verifiers to return before producing the report.
 
 **Count-equality guarantee (no silent drop).** When the enforcer reports
-**"all constraints checked"** in workflow mode, the count of verifier
-results MUST equal the count of enforceable constraints. The synthesis
+**"all constraints checked"** in workflow mode, the count of
+**verifier results** MUST **equal** the count of enforceable constraints.
+The synthesis
 barrier is what makes this true: the report cannot form until every
 verifier has returned, so **no** enforceable constraint is **silently
 dropped**. A missing verifier is a reported error, not a silent pass.

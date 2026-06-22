@@ -94,11 +94,12 @@ class TestS3WorkflowModeDeclared:
         self, plugin_path: Path
     ) -> None:
         section = _agent_workflow_section(plugin_path)
-        assert "harness.md" in section and (
-            "configur" in section
+        assert "harness.md" in section and "configur" in section and (
+            "fan-out-threshold" in section
         ), (
             "Workflow-mode section must state the threshold is "
-            "configurable per project via an optional HARNESS.md field "
+            "configurable per project via the optional HARNESS.md "
+            "`fan-out-threshold` field, named explicitly "
             "(AC-5 / FR-2, §6 decision M1)."
         )
 
@@ -178,11 +179,14 @@ class TestS3WorkflowModeDeclared:
         self, plugin_path: Path
     ) -> None:
         section = _agent_workflow_section(plugin_path)
-        assert "all constraints checked" in section, (
+        assert "all constraints checked" in section and (
+            "verifier results" in section
+        ) and "equal" in section, (
             "Workflow-mode section must declare the count-equality "
             "guarantee in checkable language: when it reports 'all "
-            "constraints checked', verifier results == enforceable count "
-            "(AC-3 / FR-5)."
+            "constraints checked', the count of verifier results must "
+            "equal the enforceable count (AC-3 / FR-5) — assert the "
+            "equality clause, not just the trigger phrase."
         )
 
     def test_declares_unverified_excluded_from_count(
