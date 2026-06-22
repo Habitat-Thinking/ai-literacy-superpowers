@@ -95,4 +95,12 @@ run inv2 "$FIX/inv2-multiline.workflow.js"
 run inv2 "$FIX/inv2-order.workflow.js"
 [ "$RC" -ne 0 ] || fail "INV-2 must FLAG regardless of marker order within an agent block: $OUT"
 
+# INV-2: uppercased marker keywords must not escape the lint.
+run inv2 "$FIX/inv2-uppercase-markers.workflow.js"
+[ "$RC" -ne 0 ] || fail "INV-2 must FLAG when the marker keywords themselves are uppercased: $OUT"
+
+# INV-2: an unterminated @tools list for an untrusted reader fails closed.
+run inv2 "$FIX/inv2-unterminated.workflow.js"
+[ "$RC" -ne 0 ] || fail "INV-2 must FLAG (fail closed) an unterminated @tools list for an untrusted reader: $OUT"
+
 echo "All INV-1/INV-2 firewall tests passed."

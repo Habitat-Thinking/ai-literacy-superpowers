@@ -28,9 +28,19 @@
 #     untrusted-content reader with `// @untrusted-reader: true` and declares
 #     its `// @tools: [...]`; the lint fails if that set names a high-privilege
 #     tool (write, edit, bash, commit, push, fetch, webfetch). The check is
-#     case-insensitive, accumulates a multi-line `@tools` list, and is
-#     independent of the order of the three markers within an agent block.
-#     Passes vacuously when no untrusted reader is declared.
+#     case-insensitive (markers and values), accumulates a multi-line `@tools`
+#     list, fails closed on an unterminated list, and is independent of the
+#     order of the three markers within an agent block. Passes vacuously when no
+#     untrusted reader is declared.
+#
+# Known limit (by design). This is a deterministic backstop to a human PR
+# review, not a sandbox against a hostile author. A durable filename split
+# mid-stem ("AGEN" + "TS.md"), constructed from char codes, or written in a
+# casing that never forms the uppercase stem token defeats static stem matching
+# — closing that needs taint analysis well beyond a grep gate. The real control
+# is the discipline the templates model (durable artefacts reached only through
+# harness indirection); the firewall catches the natural mistakes, and a human
+# reviewer reads the same PR.
 #
 # Portability: POSIX awk + grep -E only (no gawk/GNU extensions, no `grep -P`,
 # no BSD-only date) so the Layer-0 test runs identically on macOS and Linux.
@@ -129,12 +139,15 @@ check_inv2() {
       }
       function reset() { untrusted = 0; toolsseen = 0; toolsbuf = ""; collecting = 0 }
       BEGIN { reset() }
-      # A new agent block resets state. Order of the three markers within a
-      # block does not matter: an @tools seen before the reader flag is buffered
-      # and re-checked when the flag arrives.
-      /@workflow-agent:/              { reset() }
-      /@untrusted-reader:[ \t]*true/  { untrusted = 1; if (toolsseen == 1) check_tools(toolsbuf) }
-      /@untrusted-reader:[ \t]*false/ { untrusted = 0 }
+      # Marker detection is case-insensitive (via U = toupper) so uppercasing the
+      # marker keywords cannot escape the lint, just as uppercasing a tool value
+      # cannot. A new agent block resets state; order of the three markers within
+      # a block does not matter — an @tools seen before the reader flag is
+      # buffered and re-checked when the flag arrives.
+      { U = toupper($0) }
+      U ~ /@WORKFLOW-AGENT:/                { reset() }
+      U ~ /@UNTRUSTED-READER:[ \t]*TRUE/    { untrusted = 1; if (toolsseen == 1) check_tools(toolsbuf) }
+      U ~ /@UNTRUSTED-READER:[ \t]*FALSE/   { untrusted = 0 }
       {
         if (collecting == 1) {
           toolsbuf = toolsbuf " " $0
@@ -142,14 +155,22 @@ check_inv2() {
           next
         }
       }
-      /@tools:/ {
+      U ~ /@TOOLS:/ {
         if (index($0, "[") > 0 && index($0, "]") > 0) {
           toolsbuf = $0; toolsseen = 1; if (untrusted == 1) check_tools(toolsbuf)
         } else if (index($0, "[") > 0) {
           collecting = 1; toolsbuf = $0
         }
       }
-      END { if (bad == 1) exit 1 }
+      # Fail closed: an untrusted reader whose @tools list never terminates
+      # cannot be verified, so it is a violation rather than a silent pass.
+      END {
+        if (collecting == 1 && untrusted == 1) {
+          printf("INV-2 VIOLATION: %s — an @untrusted-reader agent declares an unterminated @tools list; its privileges cannot be verified. Declare the tools on a closed list (INV-2).\n", file)
+          bad = 1
+        }
+        if (bad == 1) exit 1
+      }
     ' "$f"; then
       rc=1
     fi
