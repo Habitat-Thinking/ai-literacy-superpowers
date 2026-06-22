@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 #
 # inv-firewall.sh — the deterministic teeth of the dynamic-workflows
 # governance invariants (INV-1 and INV-2). One matcher, invoked two ways:
@@ -49,8 +50,6 @@
 #   inv-firewall.sh --check=inv1 <file...>
 #   inv-firewall.sh --check=inv2 <file...>
 # Exit 0 = clean; non-zero = at least one violation (message on stdout).
-
-set -euo pipefail
 
 CHECK=""
 FILES=()
