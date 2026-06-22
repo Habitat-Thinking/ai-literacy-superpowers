@@ -172,3 +172,38 @@ For audits that require historical claims (e.g., "verify the harness
 status reflects the full reflection history"), explicitly opt in to
 reading both `REFLECTION_LOG.md` AND `reflections/archive/*.md`. State
 in your response which read mode you used and why.
+
+## Workflow mode (deep-research audit, Claude Code only)
+
+On a large project, auditing the whole harness in one context invites both
+agentic laziness and a subtler failure: the auditor grading its own
+framework's homework. Above a threshold, run the audit as a **deep-research
+dynamic workflow**.
+
+**Threshold.** Workflow mode engages when the repository **file count** is
+**`> 300`** (strict greater-than), **configurable per project** via the
+optional `fan-out-threshold` field in `HARNESS.md`; when **absent** it
+**defaults** to 300.
+
+**Shape.** Adapt the shipped `deep-assessment.workflow.js` template (under
+the `dynamic-workflows` skill — **adapt**, never verbatim): **fan out by
+area** across the harness surfaces, have each finding verified by a
+**separate agent** before synthesis (**verif**ication before a claim is
+reported), and produce a **cited report**.
+
+**Self-preference guard.** At least one verifier must be **adversarial**
+to the **framework**'s own **assumption**s — explicitly tasked with
+arguing that a declared enforcement does NOT hold, or that a constraint is
+theatre. The auditor must not grade its own homework; a dissenting
+verifier in a separate context is the structural guard against it.
+
+**Output invariant.** The result stays a **timestamped** report in the
+existing location and format: the deep-research workflow proposes findings,
+and the auditor then applies its existing, sanctioned **HARNESS.md
+Status** section and README **badge** updates exactly as it does today.
+Workflow mode changes how the audit is gathered, not what it writes.
+
+**Runtime scope — Claude Code only.** Workflow mode requires the **Claude
+Code** runtime; dynamic workflows are not transferable to Copilot CLI or
+other coding agents. Where the runtime is absent the auditor **falls back**
+to its existing single-context audit and **never errors**.

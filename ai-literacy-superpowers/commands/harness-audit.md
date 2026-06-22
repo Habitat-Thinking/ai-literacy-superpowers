@@ -72,3 +72,15 @@ covering:
 
 If Path 1 is undeclared but `Promoted` lines exist in the active log,
 flag as drift — promotions are happening but archival isn't.
+
+## Large-repository workflow path (Claude Code only)
+
+On a repository above the deep-research threshold — **file count `> 300`**
+— the `harness-auditor` elects its **workflow mode**: a deep-research
+dynamic workflow that fans out by area, verifies each finding in a
+separate context, and includes a verifier adversarial to the framework's
+own assumptions (the self-audit guard; see the harness-auditor agent
+doc). This path requires the **Claude Code** runtime; where the workflow
+runtime is absent the auditor **falls back** to its single-context audit
+and the report proceeds unchanged. The HARNESS.md Status section and badge
+updates are identical on either path.

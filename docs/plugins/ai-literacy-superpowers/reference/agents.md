@@ -122,6 +122,11 @@ failure implication belong in the choice-cartographer's record (see
 below). The two agents form a complete partition of findings worth
 surfacing about a spec.
 
+In the `code-reviewer`'s separate-context workflow mode it also serves as
+the **rubric-bearing adversary** — evaluating the implementation against
+the CUPID + literate rubric, one property per verifier — with its
+read-only trust boundary unchanged.
+
 ### choice-cartographer
 
 - **Tools**: Read, Glob, Grep
@@ -209,6 +214,12 @@ Programming. Returns either PASS or a prioritised list of findings.
 Does not modify any files. Its output either unblocks integration
 or drives another revision cycle.
 
+For non-trivial diffs (default `> 2` files, configurable) on the Claude
+Code runtime, it elects a separate-context **workflow mode** (adapting
+`adversarial-review.workflow.js`) so the reviewer judges the diff in a
+context distinct from the implementer's — one verifier per CUPID/literate
+property, with `advocatus-diaboli` as the rubric-bearing adversary.
+
 ### integration-agent
 
 - **Tools**: Read, Write, Edit, Bash
@@ -257,6 +268,13 @@ what the project actually has. Detects drift in both directions:
 rules declared but not enforced, and enforcement present but not
 declared. Updates the Status section of `HARNESS.md` with audit
 results.
+
+Above a repo file-count threshold (`> 300`, configurable) on the Claude
+Code runtime, it elects a deep-research **workflow mode** (adapting
+`deep-assessment.workflow.js`): fan out by area, verify each finding in a
+separate agent, and include a verifier adversarial to the framework's own
+assumptions — the self-preference guard so the auditor cannot grade its
+own homework. The Status-section and badge output is unchanged.
 
 ### harness-enforcer
 
@@ -313,6 +331,13 @@ reflections, conventions, CI integration), asks clarifying
 questions where evidence is ambiguous, and produces a timestamped
 assessment document with a level determination. Updates the README
 with a literacy level badge.
+
+Above a repo file-count threshold (`> 300`, configurable) on the Claude
+Code runtime, it elects a deep-research **workflow mode** (adapting
+`deep-assessment.workflow.js`): fan out by area, verify each finding in a
+separate agent, and synthesise a cited report — robust against the
+agentic laziness that truncates long single-context scans. The timestamped
+assessment output and badge are unchanged.
 
 ---
 
