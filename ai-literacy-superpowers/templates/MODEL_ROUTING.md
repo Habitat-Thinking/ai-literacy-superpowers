@@ -57,3 +57,56 @@ Override the routing table when:
 
 Do not override silently — record the reason in the context object so the
 orchestrator can learn from it.
+
+## Workflow election
+
+A *dynamic workflow* (a self-authored, ephemeral multi-agent harness; see
+the `dynamic-workflows` skill) spends more tokens than a single agent and
+is elected deliberately, never reflexively. Elect a workflow only when the
+task is **long-running, massively parallel, highly structured, or
+adversarial**; if none apply, use the static pipeline. Routing decisions
+for an elected workflow live here.
+
+### Token-budget convention
+
+Every elected workflow declares an explicit **per-workflow token cap**
+before it runs — for example, *"use 10k tokens"* — so its compute is
+bounded and observable. A workflow that approaches its cap stops and
+reports rather than silently overspending. The cap is part of electing the
+workflow, not an afterthought: state it in the workflow's preamble
+alongside the pattern it uses.
+
+Suggested starting caps by workflow shape (adjust from observed usage):
+
+| Workflow shape | Per-workflow cap (tokens) | Rationale |
+| --- | --- | --- |
+| Enforcer fan-out (one verifier per rule) | 10 000 | Each verifier is small and focused |
+| Adversarial review (separate-context refute) | 12 000 | Per-property verifiers plus synthesis |
+| Deep assessment / audit (fan-out by area) | 20 000 | Breadth across the repo, then a cited report |
+| Reflection mining (generate-and-filter) | 8 000 | Cluster, filter, shortlist — proposal only |
+
+These are illustrative starting defaults, not fixed values: the slice that
+ships a given workflow's behavioural mode may supersede its cap from observed
+usage, exactly as the fan-out *threshold* value is owned by the slice that
+ships fan-out mode rather than fixed here.
+
+### Model-routing classifier
+
+For workflows whose subagents do not all need the same tier, front the
+workflow with a **model-routing-classifier**: a cheap classifier agent
+that researches the task's complexity, then routes each subagent role to
+the right tier.
+
+- **Haiku** — high-volume, mechanical, well-structured subagents (a single
+  constraint check, a single-file read).
+- **Sonnet** — the default working tier for most subagents.
+- **Opus** — the hardest reasoning roles (synthesis, adversarial judging,
+  ambiguous design calls).
+
+Routing down a tier is a cost win only when output quality holds; record
+any tier exception in the context object so the orchestrator can learn
+from it, exactly as for the static routing table above.
+
+> **Governance.** A workflow elected here proposes; it never writes this
+> file or any other durable artefact directly (INV-1). `MODEL_ROUTING.md`
+> changes are human-curated.
