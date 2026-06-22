@@ -273,6 +273,13 @@ constraint from `HARNESS.md`, either executes a deterministic tool
 review. Output format is identical in both cases, so CI can treat
 all constraint results uniformly.
 
+Above a configurable threshold (default 8 enforceable constraints), the
+enforcer escalates to **workflow mode** (Claude Code runtime only):
+it adapts the `enforcer-fanout.workflow.js` template to spawn one verifier
+subagent per rule plus a skeptic persona, reconciled at a synthesis
+barrier that guarantees no constraint is silently dropped. Below the
+threshold the single-context path runs unchanged.
+
 ### harness-gc
 
 - **Tools**: Read, Write, Edit, Glob, Grep, Bash

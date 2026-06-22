@@ -74,6 +74,30 @@ reviews that comments explain reasoning rather than restating signatures
 
 Use `deterministic + agent` in the enforcement field and list both tools.
 
+## The Fan-out Slot
+
+The **fan-out slot** is a first-class agent-backed verification slot for
+large harnesses (Claude Code runtime only). Instead of one context
+checking every constraint — where the enforcer tends to tire and report
+"all constraints checked" after checking only some — the fan-out slot
+spawns **one verifier subagent per rule**, each with a single constraint
+and a clean context window, then passes every candidate violation through
+a **skeptic** persona that tries to refute it before it reaches the
+report.
+
+A **synthesis barrier** waits for all N verifiers to return and reconciles
+their results into the same uniform contract every slot produces:
+**pass/fail with `{file, line, message}` findings**. Because the report
+cannot form until every verifier has returned, the count of results
+equals the count of enforceable constraints — no rule is silently
+dropped. The slot is read-only and propose-only (INV-1): it reports
+findings and never writes a durable artefact.
+
+The `harness-enforcer` agent elects this slot automatically when the
+enforceable-constraint count exceeds its threshold (default 8); below it,
+the single-context path is used unchanged. The slot adapts the shipped
+`enforcer-fanout.workflow.js` template from the `dynamic-workflows` skill.
+
 ## Additional Resources
 
 ### Reference Files

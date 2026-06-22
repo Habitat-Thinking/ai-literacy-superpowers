@@ -60,3 +60,7 @@ jobs:
       - name: Run Layer 1 (structural)
         working-directory: tdad_tests
         run: pytest tests/test_layer1_structural.py -v
+
+      - name: Run Layer 1 (dynamic-workflows S3 enforcer fan-out)
+        working-directory: tdad_tests
+        run: pytest tests/test_s3_enforcer_fanout_structural.py -v
