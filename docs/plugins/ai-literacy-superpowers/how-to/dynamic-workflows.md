@@ -12,6 +12,11 @@ decide *whether* a task warrants a workflow and *which* pattern fits.
 > *templates* arrive in a follow-up slice (S2). Until then, use this guide
 > and the skill to reason about workflows; there is no end-to-end runbook
 > to walk through yet.
+>
+> **Runtime scope — Claude Code only.** Dynamic workflows are a Claude Code
+> runtime capability and are **not transferable** to GitHub Copilot CLI or
+> other coding agents. On a tree without the workflow runtime this skill is
+> guidance only — readable knowledge, but no workflow can be spawned.
 
 ---
 

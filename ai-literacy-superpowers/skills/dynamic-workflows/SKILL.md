@@ -25,6 +25,25 @@ questions before any workflow is authored:
 3. **How** does the plugin's governance constrain it? — see
    [`references/governance.md`](references/governance.md).
 
+## Runtime scope — Claude Code only
+
+Dynamic workflows are a **Claude Code runtime capability** and are **not
+transferable** to GitHub Copilot CLI or any other coding agent — those
+trees have no workflow runtime. This plugin ships to both the Claude Code
+and Copilot CLI trees, so this skill is **knowledge everywhere, runtime
+only on Claude Code**:
+
+- **On Claude Code:** workflows can be authored and spawned; the patterns,
+  election rubric, and templates are executable.
+- **On Copilot CLI or any other agent:** there is no workflow runtime, so
+  this skill is **guidance only** — the patterns and governance below are
+  still worth reading, but no workflow can be spawned. An agent on such a
+  tree must fall back to its existing static behaviour; it must never error
+  or pretend to fan out.
+
+Read the rest of this skill as a reasoning model that applies everywhere;
+act on it as a runtime only where Claude Code provides one.
+
 ## Static harness vs. dynamic workflow
 
 The plugin is, by default, a **static harness**: a fixed pipeline

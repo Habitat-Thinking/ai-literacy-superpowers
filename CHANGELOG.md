@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.58.1 — 2026-06-22
+
+### dynamic-workflows: state the Claude-Code-only runtime scope in the skill
+
+- **`skills/dynamic-workflows/SKILL.md`** gains a "Runtime scope — Claude Code
+  only" section: dynamic workflows are a Claude Code runtime capability, **not
+  transferable** to GitHub Copilot CLI or other coding agents. The skill is
+  knowledge everywhere, runtime only on Claude Code; on a tree without the
+  workflow runtime it is guidance only — readable, but no workflow can be
+  spawned, and an agent there falls back to its static behaviour rather than
+  erroring. Brought forward from S7 so the boundary is clear in the artefact
+  agents actually read; the precise Copilot degradation *contract* (guidance-only
+  vs omit) remains S7's open question.
+- The `dynamic-workflows` how-to guide carries the same runtime-scope note.
+
 ## 0.58.0 — 2026-06-22
 
 ### dynamic-workflows: foundational skill + election discipline (S1, #438)
