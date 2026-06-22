@@ -214,8 +214,9 @@ Programming. Returns either PASS or a prioritised list of findings.
 Does not modify any files. Its output either unblocks integration
 or drives another revision cycle.
 
-For non-trivial diffs (default `> 2` files, configurable) on the Claude
-Code runtime, it elects a separate-context **workflow mode** (adapting
+For non-trivial diffs (default `> 2` files, configurable via the HARNESS.md
+`fan-out-threshold` field) on the Claude Code runtime, it elects a
+separate-context **workflow mode** (adapting
 `adversarial-review.workflow.js`) so the reviewer judges the diff in a
 context distinct from the implementer's — one verifier per CUPID/literate
 property, with `advocatus-diaboli` as the rubric-bearing adversary.

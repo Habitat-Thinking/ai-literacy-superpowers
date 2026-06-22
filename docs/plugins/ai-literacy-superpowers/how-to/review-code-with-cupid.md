@@ -136,7 +136,8 @@ After completing these steps you have:
 
 On the Claude Code runtime, the `code-reviewer` agent elects a separate-context
 **workflow mode** for non-trivial diffs (default `> 2` files changed,
-configurable): it adapts `adversarial-review.workflow.js` so the reviewer judges
+configurable via the HARNESS.md `fan-out-threshold` field): it adapts
+`adversarial-review.workflow.js` so the reviewer judges
 the diff in a context distinct from the implementer's, with one dedicated
 verifier per CUPID property and `advocatus-diaboli` as the rubric-bearing
 adversary. This defeats self-preferential bias. Tiny diffs keep the cheap
