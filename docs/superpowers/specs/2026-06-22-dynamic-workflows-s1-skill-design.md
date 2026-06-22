@@ -292,18 +292,18 @@ grep -rn 'v0\.57\.0\|0\.57\.0' README.md .claude-plugin/marketplace.json \
 - **`lint-markdown`** — SKILL.md, the three references, and MODEL_ROUTING.md must
   pass markdownlint (AC-2). The PreToolUse hook catches violations at edit time.
 
-### 6.3 Skill-count badge — deliberate deferral to S7
+### 6.3 Skill-count badge — pulled into S1 at the GATE
 
 The README badge currently reads `Skills-35` (line 9) and the plugin-table cell
 reads "**35 skills**" (line 31). Landing this skill makes the true count **36**.
 
-**This is intentionally deferred to S7 (#444), not corrected in S1.** The
-slicing record assigns the badge/count update to S7 (D9). Confirmed against the
-live repo: the `Skills-35` badge is **not** grep-enforced by any CI workflow
-(no skill-count check exists in `.github/workflows/`), so leaving it stale does
-**not** redden CI. Recording the deferral here so a reviewer does not read the
-stale `35` as an S1 oversight. S7 will reconcile the badge and table to the
-filesystem count when the full epic lands.
+**GATE decision (Russ, 2026-06-22): pulled into S1, not deferred to S7.** The
+spec originally recommended deferring the badge/count update to S7 (D9) because
+it is not grep-enforced by any CI workflow (no skill-count check exists in
+`.github/workflows/`). At the plan-approval GATE the human chose to keep the
+badge honest per-slice, so S1 updates the `Skills-36` badge (line 9) and the
+"**36 skills**" plugin-table cell (line 31) in the same change that adds the
+skill. S7 no longer owns the skill-count reconciliation.
 
 ### 6.4 Docs-impact note (CLAUDE.md "Docs Site Review")
 
@@ -311,16 +311,16 @@ filesystem count when the full epic lands.
   `reference/skills.md` — see §6.2. Place it in a sensible category (a new
   "Dynamic Workflows" subsection or under "Harness Core"); the gate only checks
   the heading exists.
-- **How-to (judgement call — recommend deferring to S7).** A how-to guide under
+- **How-to (pulled into S1 at the GATE).** A how-to guide under
   `docs/plugins/ai-literacy-superpowers/how-to/` is *warranted in principle* for
-  a new skill, but a "how to use dynamic workflows" guide is not actionable until
-  the template library (S2) and the behavioural workflow modes (S3–S6) exist —
-  S1 ships *reading material*, not a runnable workflow a guide could walk a user
-  through. **Recommendation:** defer the how-to guide to S7 (alongside the README
-  "Dynamic Workflows" section and badge), where the full substrate exists to
-  document end-to-end. The reference entry (gated, required now) plus the SKILL.md
-  itself are sufficient for S1. *(Surface this to the human at the GATE as an
-  explicit decision, not a silent omission.)*
+  a new skill. The spec originally recommended deferring it to S7 because a
+  full "how to run a workflow" walkthrough is not actionable until the template
+  library (S2) and behavioural modes (S3–S6) exist. **GATE decision (Russ,
+  2026-06-22): pull it into S1.** S1 ships `docs/plugins/ai-literacy-superpowers/how-to/dynamic-workflows.md`
+  as an **orientation guide** to the skill's conceptual model and election
+  rubric (reading material), explicitly noting that runnable workflow templates
+  arrive in S2 — not an end-to-end runbook. The guide names the `dynamic-workflows`
+  skill and points at its references.
 - **Explanation / tutorials.** None required for S1 — no existing explanation
   page references behaviour S1 changes (this is net-new).
 

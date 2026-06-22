@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.58.0 — 2026-06-22
+
+### dynamic-workflows: foundational skill + election discipline (S1, #438)
+
+First slice of the Dynamic Workflows Alignment epic — the conceptual model the
+rest of the epic references.
+
+- **New `dynamic-workflows` skill** (`ai-literacy-superpowers/skills/dynamic-workflows/`):
+  `SKILL.md` plus `references/{patterns,when-not-to-use,governance}.md`. Knowledge
+  agents read, not a script they run — sibling to `harness-engineering` and
+  `context-engineering`. Names the six composable patterns (classify-and-act,
+  fan-out-and-synthesize, adversarial verification, generate-and-filter,
+  tournament, loop-until-done), each with a worked micro-example.
+- **Compute-discipline election rubric** (`references/when-not-to-use.md`): the
+  four-question test — long-running, massively parallel, highly structured, or
+  adversarial — with the default "if none apply, use the static pipeline", so
+  workflows are elected, not reflexive. Advisory guidance, not a CI gate.
+- **Governance invariants** (`references/governance.md`): INV-1 (ephemeral
+  proposes, durable curates — workflows never write `HARNESS.md` / `AGENTS.md` /
+  `CLAUDE.md` / `MODEL_ROUTING.md` directly) and INV-2 (quarantine
+  untrusted-content readers from high-privilege tools), restated for agents.
+- **`templates/MODEL_ROUTING.md`** gains a *workflow election* section: a
+  per-workflow token-budget convention and a model-routing-classifier idea
+  (Haiku/Sonnet/Opus tiering).
+- **Docs**: new how-to guide and `### dynamic-workflows` reference entry; skill
+  count reconciled to 36 (badge, plugin table, tree). Workflow *templates* and
+  the INV-1 CI firewall are deferred to S2 (#439); SKILL.md only forward-references
+  them.
+
 ## 0.57.0 — 2026-06-17
 
 ### planning: dynamic-workflows-alignment epic spec + carpaccio slicing (#438–#444)

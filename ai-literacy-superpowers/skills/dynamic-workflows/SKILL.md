@@ -1,0 +1,102 @@
+---
+name: dynamic-workflows
+description: This skill should be used when an agent is deciding whether to author a dynamic workflow — a self-authored, ephemeral multi-agent harness — for a task. Use when the user asks about "dynamic workflows", "multi-agent harness", "fan-out", "subagents in parallel", "adversarial verification", "the ultracode trigger", "should I use a workflow", or when a task looks long-running, massively parallel, highly structured, or adversarial. Names the six composable patterns, the election rubric for when NOT to spend the extra compute, and the two governance invariants (INV-1 ephemeral-proposes, INV-2 quarantine).
+---
+
+# Dynamic Workflows
+
+A **dynamic workflow** is a self-authored, ephemeral multi-agent harness:
+a small program an agent writes for one task, runs once, and discards. It
+spawns subagents, gives each its own clean context window and model tier,
+optionally isolates them in worktrees, and coordinates their results. The
+capability and its patterns originate from Anthropic's "A harness for
+every task: dynamic workflows in Claude Code" (Shihipar & Bidasaria,
+2026); the runtime is triggered by the word `ultracode`.
+
+This skill is **knowledge agents read, not a script they run** — a
+sibling of [`harness-engineering`](../harness-engineering/SKILL.md) and
+[`context-engineering`](../context-engineering/SKILL.md). It answers three
+questions before any workflow is authored:
+
+1. **When** is a workflow warranted? — see
+   [`references/when-not-to-use.md`](references/when-not-to-use.md).
+2. **Which** pattern fits? — see
+   [`references/patterns.md`](references/patterns.md).
+3. **How** does the plugin's governance constrain it? — see
+   [`references/governance.md`](references/governance.md).
+
+## Static harness vs. dynamic workflow
+
+The plugin is, by default, a **static harness**: a fixed pipeline
+(`spec-writer → GATE → tdd-agent → implementer → code-reviewer →
+GUARDRAIL → integration-agent`) that must work for every task and
+therefore tends toward the generic. A static harness is the right tool
+for ordinary coding work, and it stays the default.
+
+A dynamic workflow is the opposite: generated per task, disposable, and
+able to hand each subagent a clean context window. That shape defeats
+three failure modes the static pipeline is exposed to when one context
+does too much:
+
+| Failure mode | What it looks like |
+| --- | --- |
+| **Agentic laziness** | Declaring a multi-part job done after partial progress (35 of 50 constraints checked) |
+| **Self-preferential bias** | An agent preferring its own output when asked to verify or judge it |
+| **Goal drift** | Losing fidelity to the original objective across turns, worsened by lossy compaction |
+
+Dynamic workflows are a **new execution substrate beneath the existing
+agents** — they do not replace them, and they do not weaken governance.
+
+## The six composable patterns
+
+Authored workflows compose six patterns. Each is worked through with a
+concrete micro-example in [`references/patterns.md`](references/patterns.md);
+in brief:
+
+- **classify-and-act** — route a task by type before doing it.
+- **fan-out-and-synthesize** — split work across parallel subagents, then
+  merge at a synthesis barrier.
+- **adversarial verification** — a separate agent tries to refute a result
+  before it is accepted.
+- **generate-and-filter** — over-generate candidates, then prune.
+- **tournament** — score independent attempts against a rubric, keep the
+  winner.
+- **loop-until-done** — iterate until a measurable completion test passes.
+
+## Elect deliberately — the discipline
+
+Workflows cost more tokens and suit complex, high-value tasks. Most
+coding tasks do not need a panel of reviewers. Before authoring one, run
+the four-question rubric in
+[`references/when-not-to-use.md`](references/when-not-to-use.md): is the
+task **long-running, massively parallel, highly structured, or
+adversarial**? If none apply, use the static pipeline. A workflow should
+be *elected*, never reflexive — over-orchestration is treated as a
+regression.
+
+Token budgets and model-tier routing for elected workflows live in the
+project's `MODEL_ROUTING.md` (the *workflow election* section).
+
+## The two governing invariants
+
+Both are stated in full, for agents, in
+[`references/governance.md`](references/governance.md):
+
+- **INV-1 — Ephemeral proposes, durable curates.** A workflow is
+  ephemeral; `HARNESS.md`, `AGENTS.md`, `CLAUDE.md`, and `MODEL_ROUTING.md`
+  are durable and human-curated. A workflow may **propose** changes to
+  them but may **never write them directly**. Discoveries flow through
+  `REFLECTION_LOG.md → human curates → AGENTS.md`.
+- **INV-2 — Quarantine.** Any workflow agent that reads untrusted or
+  public content (web pages, external issues, third-party PRs) is withheld
+  high-privilege tools. Acting on such information is done only by
+  separate, trusted agents in the same workflow.
+
+## The workflow template library (forthcoming — S2)
+
+A library of opinionated, habitat-aligned workflow *templates* (adapted
+per task, never run verbatim) ships with this skill in a follow-up slice
+(S2). When present, the templates will live under `workflows/` in this
+skill folder and be referenced from here. **Until S2 lands, this skill is
+reading material only** — there are no runnable templates to invoke yet,
+and nothing in this skill depends on one existing.

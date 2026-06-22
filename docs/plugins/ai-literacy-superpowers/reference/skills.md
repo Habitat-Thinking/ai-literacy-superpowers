@@ -3,7 +3,7 @@ title: Skills
 ---
 # Skills
 
-The plugin ships 35 skills. Each skill is a focused unit of domain knowledge that Claude can invoke during a session. They are grouped below by category.
+The plugin ships 36 skills. Each skill is a focused unit of domain knowledge that Claude can invoke during a session. They are grouped below by category.
 
 ---
 
@@ -16,6 +16,10 @@ The conceptual foundation of the harness framework. Covers what a harness is, wh
 ### context-engineering
 
 Writing enforceable conventions for the Context section of HARNESS.md. Covers how to express rules that Claude will honour consistently rather than treat as advisory suggestions.
+
+### dynamic-workflows
+
+The conceptual model for self-authored, ephemeral multi-agent harnesses (dynamic workflows). Covers the six composable patterns (classify-and-act, fan-out-and-synthesize, adversarial verification, generate-and-filter, tournament, loop-until-done), the four-question election rubric for when *not* to spend the extra compute, and the two governance invariants — INV-1 (ephemeral proposes, durable curates) and INV-2 (quarantine untrusted-content readers). Knowledge agents read before electing a workflow; the runnable template library ships separately.
 
 ### constraint-design
 
