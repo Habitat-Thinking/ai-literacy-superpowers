@@ -211,3 +211,69 @@ falsifiability test and three-frame translation method.
 - Report findings with exact file paths and line numbers
 - If a deterministic tool is not installed, report the constraint as
   failed with "tool not found" as the finding
+
+## Workflow mode (large harnesses, Claude Code only)
+
+When the number of enforceable constraints in scope **exceeds a
+threshold (default 8)**, single-context enforcement becomes the place
+where the enforcer's signature failure shows up: it tires and reports
+"all constraints checked" after actually checking only some. Above the
+threshold, escalate to **workflow mode** — a dynamic workflow that fans
+the work out so the lazy stop is structurally impossible.
+
+**Threshold and configurability.** The default threshold is **8**. It is
+**configurable per project** via an optional `fan-out-threshold` field in
+`HARNESS.md`; when that field is **absent**, the threshold **defaults**
+to 8. The trigger is strict: workflow mode engages only when the
+enforceable-constraint count is **greater than** the threshold
+(`count > threshold`) — a harness of exactly the threshold size stays on
+the **single-context** path.
+
+**Enforceable count.** "Enforceable" means constraints whose enforcement
+is `deterministic`, `agent`, or `deterministic + agent`. `unverified`
+constraints are **excluded** from the count (they are skipped, not
+checked), so they neither trigger fan-out nor inflate the verifier total.
+
+**Below the threshold.** At or below the threshold, behave exactly as
+today: the existing **single-context** verification process runs, **no
+workflow** is authored and **no extra compute** is spent. Workflow mode
+is an escalation for large harnesses, never the default.
+
+**Fan-out shape.** In workflow mode, **adapt** the shipped
+`enforcer-fanout.workflow.js` template (under the `dynamic-workflows`
+skill — adapt it, never run it verbatim) to:
+
+1. Spawn **one verifier subagent per rule** — each verifier gets a single
+   constraint and its own clean context window.
+2. Pass every candidate violation through a **skeptic** persona that
+   tries to refute it, suppressing false positives before they reach the
+   report.
+3. Reconcile all results at a **synthesis barrier** that waits for
+   **all N** verifiers to return before producing the report.
+
+**Count-equality guarantee (no silent drop).** When the enforcer reports
+**"all constraints checked"** in workflow mode, the count of
+**verifier results** MUST **equal** the count of enforceable constraints.
+The synthesis
+barrier is what makes this true: the report cannot form until every
+verifier has returned, so **no** enforceable constraint is **silently
+dropped**. A missing verifier is a reported error, not a silent pass.
+
+**Skeptic observation.** The skeptic's effect on the false-positive rate
+is observational, not a metric the harness verifies. The **first run** of
+workflow mode on a project records a short note in **REFLECTION_LOG.md**
+describing the false-positive reduction observed versus single-context
+enforcement, as raw material for human curation — an observation captured
+for humans, never promised as an automated guarantee.
+
+**Runtime scope — Claude Code only.** Workflow mode requires the **Claude
+Code** runtime; dynamic workflows are not transferable to Copilot CLI or
+other coding agents. Where the workflow runtime is absent, the enforcer
+**falls back** to its single-context behaviour and **never errors** — it
+simply checks constraints the way it always has.
+
+**Boundary (INV-1).** Workflow mode is **read-only** / propose-only: it
+reads HARNESS.md and the code and reports findings. It **never writes** a
+**durable artefact** (HARNESS.md, AGENTS.md, CLAUDE.md, MODEL_ROUTING.md)
+— the enforcer's tool set carries no Write or Edit, and discoveries flow
+to humans through REFLECTION_LOG.md, never straight into curated memory.

@@ -72,7 +72,11 @@ The skill ships four templates under `skills/dynamic-workflows/workflows/`.
 Copy the closest one and adapt its prompts, model tiers, and token budget:
 
 - `enforcer-fanout.workflow.js` — one verifier per harness constraint,
-  skeptic-filtered (fan-out + adversarial verification).
+  skeptic-filtered (fan-out + adversarial verification). The
+  `harness-enforcer` agent already elects this template automatically when a
+  project's enforceable-constraint count exceeds its threshold (default 8),
+  so you rarely adapt this one by hand — it is the plugin dogfooding the
+  pattern.
 - `adversarial-review.workflow.js` — review in a context distinct from the
   implementer's, one verifier per CUPID/literate property.
 - `reflection-mining.workflow.js` — cluster reflections, vet candidates,

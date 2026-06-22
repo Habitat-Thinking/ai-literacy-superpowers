@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.60.0 — 2026-06-22
+
+### dynamic-workflows: harness-enforcer fan-out mode (S3, #440)
+
+The highest-leverage slice of the epic — defeats the enforcer's "35 of 50
+constraints checked" lazy stop.
+
+- **`harness-enforcer` gains a "Workflow mode" section**: when the enforceable-
+  constraint count exceeds a threshold (**default 8, configurable per project
+  via an optional `fan-out-threshold` field in HARNESS.md**; strict `>`
+  trigger), the enforcer adapts `enforcer-fanout.workflow.js` to spawn **one
+  verifier subagent per rule** plus a **skeptic** persona, reconciled at a
+  **synthesis barrier** that waits for all N. At or below the threshold the
+  single-context path runs unchanged — no workflow, no extra compute.
+- **Count-equality guarantee (no silent drop)**: when it reports "all
+  constraints checked", verifier results equal the enforceable count (`unverified`
+  excluded). The first run records the skeptic's false-positive-reduction
+  observation in REFLECTION_LOG.md for human curation — an observation, never a
+  CI-verified metric.
+- **`verification-slots` SKILL.md** documents the **fan-out slot** as a
+  first-class agent-backed slot (one verifier per rule + skeptic + synthesis
+  barrier) producing the same pass/fail + `{file, line, message}` contract.
+- Workflow mode requires the Claude Code runtime; where it is absent the
+  enforcer falls back to single-context behaviour and never errors. Read-only /
+  propose-only — never writes a durable artefact (INV-1).
+- Deterministic structural checks (`test_s3_enforcer_fanout_structural.py`) gate
+  the declared workflow-mode contract in CI.
+
 ## 0.59.0 — 2026-06-22
 
 ### dynamic-workflows: template library + INV-1/INV-2 firewall (S2, #439)
