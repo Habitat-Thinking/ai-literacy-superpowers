@@ -53,6 +53,10 @@ BASH_TEST_SCRIPTS = [
     "test-affordance-staleness",
     "test-affordance-recorder",
     "test-affordance-invocations",
+    # dynamic-workflows S2 — INV-1/INV-2 firewall matcher + template substrate.
+    # RED until S2 ships the matcher script and the four templates.
+    "test-inv1-firewall",
+    "test-workflow-templates",
 ]
 
 
