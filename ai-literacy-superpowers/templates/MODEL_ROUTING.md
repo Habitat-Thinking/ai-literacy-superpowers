@@ -85,6 +85,11 @@ Suggested starting caps by workflow shape (adjust from observed usage):
 | Deep assessment / audit (fan-out by area) | 20 000 | Breadth across the repo, then a cited report |
 | Reflection mining (generate-and-filter) | 8 000 | Cluster, filter, shortlist — proposal only |
 
+These are illustrative starting defaults, not fixed values: the slice that
+ships a given workflow's behavioural mode may supersede its cap from observed
+usage, exactly as the fan-out *threshold* value is owned by the slice that
+ships fan-out mode rather than fixed here.
+
 ### Model-routing classifier
 
 For workflows whose subagents do not all need the same tier, front the
