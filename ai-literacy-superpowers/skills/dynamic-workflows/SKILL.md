@@ -111,11 +111,26 @@ Both are stated in full, for agents, in
   high-privilege tools. Acting on such information is done only by
   separate, trusted agents in the same workflow.
 
-## The workflow template library (forthcoming — S2)
+## The workflow template library
 
-A library of opinionated, habitat-aligned workflow *templates* (adapted
-per task, never run verbatim) ships with this skill in a follow-up slice
-(S2). When present, the templates will live under `workflows/` in this
-skill folder and be referenced from here. **Until S2 lands, this skill is
-reading material only** — there are no runnable templates to invoke yet,
-and nothing in this skill depends on one existing.
+A library of opinionated, habitat-aligned workflow *templates* ships with
+this skill under [`workflows/`](workflows/). They are **templates to adapt
+per task, never scripts to run verbatim** — each carries a literate
+preamble stating its pattern, its token budget and per-role model tiers,
+and the INV-1 boundary it respects. Adapt the prompts, model tiers, and
+budgets to your task, and confirm the runtime primitives against the live
+[workflow documentation](https://code.claude.com/docs/en/workflows) before
+running.
+
+| Template | Pattern | Use it for |
+| --- | --- | --- |
+| [`workflows/enforcer-fanout.workflow.js`](workflows/enforcer-fanout.workflow.js) | fan-out-and-synthesize + adversarial verification | One verifier subagent per harness constraint, skeptic-filtered — defeats the "35 of 50 checked" lazy stop |
+| [`workflows/adversarial-review.workflow.js`](workflows/adversarial-review.workflow.js) | adversarial verification | Review in a context distinct from the implementer's — one verifier per CUPID/literate property |
+| [`workflows/reflection-mining.workflow.js`](workflows/reflection-mining.workflow.js) | generate-and-filter + adversarial verification | Cluster reflections, vet candidates, shortlist promotions for a human (never writes durable memory) |
+| [`workflows/deep-assessment.workflow.js`](workflows/deep-assessment.workflow.js) | fan-out-and-synthesize + adversarial verification | Long repo scans (assessment/audit) — fan out by area, verify each finding, synthesise a cited report |
+
+Every template honours both invariants: it proposes, it never writes a
+durable artefact (INV-1), and any untrusted-content reader is quarantined
+from high-privilege tools (INV-2). The deterministic firewall at the plugin
+root (`ai-literacy-superpowers/scripts/inv-firewall.sh`) enforces both on
+every template at PR time.

@@ -1,0 +1,5 @@
+{
+  "type": "module",
+  "private": true,
+  "description": "Marks the dynamic-workflows templates as ES modules so their `export const meta` + top-level await parse as the Claude Code workflow runtime expects. These are templates to adapt, not a runnable package — there are no dependencies and nothing is installed."
+}

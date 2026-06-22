@@ -7,11 +7,11 @@ Orientation guide to the `dynamic-workflows` skill — the conceptual model
 for self-authored, ephemeral multi-agent harnesses. This guide helps you
 decide *whether* a task warrants a workflow and *which* pattern fits.
 
-> **Scope note.** This first release ships **reading material**, not a
-> runnable workflow you can invoke. The opinionated, adaptable workflow
-> *templates* arrive in a follow-up slice (S2). Until then, use this guide
-> and the skill to reason about workflows; there is no end-to-end runbook
-> to walk through yet.
+> **Scope note.** The skill ships four opinionated workflow **templates** (see
+> below) plus the knowledge to reason about them. Templates are starting points
+> to **adapt per task**, not scripts to run verbatim — confirm the runtime
+> primitives against the [live workflow docs](https://code.claude.com/docs/en/workflows)
+> before running.
 >
 > **Runtime scope — Claude Code only.** Dynamic workflows are a Claude Code
 > runtime capability and are **not transferable** to GitHub Copilot CLI or
@@ -66,7 +66,29 @@ compose several.
 
 ---
 
-## 4. Respect the invariants
+## 4. Start from a template
+
+The skill ships four templates under `skills/dynamic-workflows/workflows/`.
+Copy the closest one and adapt its prompts, model tiers, and token budget:
+
+- `enforcer-fanout.workflow.js` — one verifier per harness constraint,
+  skeptic-filtered (fan-out + adversarial verification).
+- `adversarial-review.workflow.js` — review in a context distinct from the
+  implementer's, one verifier per CUPID/literate property.
+- `reflection-mining.workflow.js` — cluster reflections, vet candidates,
+  shortlist promotions for a human (never writes durable memory).
+- `deep-assessment.workflow.js` — fan out a long repo scan by area, verify
+  each finding, synthesise a cited report.
+
+Each template's literate preamble states its pattern, budget, per-role model
+tiers, and the INV-1 boundary it respects. The deterministic firewall
+(`scripts/inv-firewall.sh`) checks every template against INV-1/INV-2 at PR
+time, so keep durable artefacts out of executable code and quarantine any
+untrusted-content reader.
+
+---
+
+## 5. Respect the invariants
 
 Two non-negotiable rules bind every workflow:
 
@@ -80,7 +102,7 @@ Two non-negotiable rules bind every workflow:
 
 ---
 
-## 5. Set a budget
+## 6. Set a budget
 
 Elected workflows declare an explicit per-workflow token cap and model
 tiering up front — see the *workflow election* section of your project's
