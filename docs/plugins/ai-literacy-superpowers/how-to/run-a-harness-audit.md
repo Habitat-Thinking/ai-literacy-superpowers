@@ -133,3 +133,14 @@ For a multi-period trend view across all stored snapshots:
 
 Use `--trends` at the start of quarterly reviews to see whether constraint coverage
 and enforcement ratios have improved or declined over time.
+
+## Large repositories: deep-research mode
+
+On a repository above the deep-research threshold (file count `> 300`,
+configurable via the optional `fan-out-threshold` field in `HARNESS.md`) and on
+the Claude Code runtime, the `harness-auditor` elects a **workflow mode**: it
+adapts `deep-assessment.workflow.js` to fan out by area and verify each finding
+in a separate agent — including a verifier adversarial to the framework's own
+assumptions, so the auditor cannot grade its own homework. The HARNESS.md Status
+section and README badge output are unchanged. Where the workflow runtime is
+absent, the auditor falls back to its single-context audit and never errors.
