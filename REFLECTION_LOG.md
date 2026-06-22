@@ -795,3 +795,19 @@
   - Model tiers used: claude-opus-4-8[1m] for the main driving/design loop throughout; advocatus-diaboli subagents (spec- and code-mode) dispatched per affordance step. Main-loop-dominant; exact split unknown.
   - Pipeline stages completed: not an orchestrator run — manual per-step spec-first: spec (commit 1) → spec-mode diaboli → user-adjudicated forks → implement → code-mode diaboli → adjudicate/harden → version+CHANGELOG → PR → CI → merge.
   - Agent delegation: partial — diaboli subagents dispatched per step; spec-writing, implementation, integration driven by hand.
+
+---
+
+- **Date**: 2026-06-22
+- **Agent**: integration-agent
+- **Task**: Integrate slice S1 of the Dynamic Workflows Alignment epic — the foundational dynamic-workflows skill plus a MODEL_ROUTING workflow-election section, how-to guide, reference entry, and skill-count reconciliation to 36.
+- **Surprise**: None on the CI path — every check (markdownlint x2, version-check, spec-first ordering + redaction markers, TDAD layers 0+1, tdad-scenario-check, reference-parity, docs-index, build-check, PR-constraints) passed first try, exactly as the context predicted. The notable observation is upstream discipline: the spec was correctly the first commit so spec-first needed no exemption label, the version triplet (five CI-enforced locations) was already bumped 0.57.0→0.58.0 with the CHANGELOG using the `## X.Y.Z — date` form rather than a date-only heading, and the new component carried both a reference entry and a TDAD scenario — so the three parity/scenario/version gates that most often bounce a PR were all green by construction.
+- **Proposal**: none — the practices that made this clean (spec-as-first-commit, full version triplet pre-bumped, reference+scenario shipped with the component) are already codified in CLAUDE.md/AGENTS.md; this run is confirmation they hold.
+- **Improvement**: Forward-referencing deferred S2 artifacts (workflow templates, the INV-1 CI firewall) from SKILL.md kept the slice shippable without dangling reference-parity failures — worth keeping as the default slicing pattern for multi-slice epics: a slice may name future-slice artifacts only as forward references, never as live links the parity check would resolve.
+- **Signal**: none
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: short single-PR integration run (2026-06-22); 1 merged PR (#446).
+  - Model tiers used: integration-agent only (no subagents dispatched).
+  - Pipeline stages completed: integration only — push → PR (Closes #438) → CI watch → squash-merge + branch delete → issue-close verification → main sync → reflection. Spec, failing-tests, green-impl, and code-review (PASS) were completed by earlier agents before hand-off.
+  - Agent delegation: none — straight-line integration, no dispatch.
