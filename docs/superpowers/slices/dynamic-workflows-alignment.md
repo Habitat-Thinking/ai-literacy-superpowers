@@ -88,6 +88,28 @@ share a decision or an acceptance criterion rather than emitted one
 slice per D-number. The ordering follows the §6 dependency sequence
 and honours the highest-leverage / smallest-blast-radius signal on D3.
 
+## Runtime scope — Claude Code only (read before any slice)
+
+**Dynamic workflows are a Claude Code runtime capability** (the
+self-authored multi-agent harness substrate, trigger word `ultracode`).
+The runtime is **not** present in GitHub Copilot CLI or any other coding
+agent, and it is **not transferable** to them. This boundary applies to
+**every slice in this record**, not only the documentation slice:
+
+- **Where the runtime exists (Claude Code):** the workflow *modes* and
+  *templates* the slices add are executable.
+- **Where it does not (Copilot CLI, other agents):** the `dynamic-workflows`
+  skill and every workflow-mode section degrade to **guidance only** — the
+  knowledge (patterns, election rubric, INV-1/INV-2) is still readable, but
+  no workflow can be spawned. A workflow-mode agent on such a tree must fall
+  back to its existing static behaviour, never error or pretend to fan out.
+
+Each per-slice spec (S2–S7) must restate this boundary explicitly: any
+workflow-mode behaviour it adds is Claude-Code-gated, with a guidance-only
+fallback elsewhere. The precise Copilot degradation *contract* (guidance-only
+vs omit) is open-question 4 and is dispositioned in **S7**, but the
+Claude-Code-only nature itself is settled and binds all slices now.
+
 ## S1 — Foundational skill + election discipline (D1 + D8) — decision-boundary
 
 **Context.** D1 establishes the shared conceptual model (the six

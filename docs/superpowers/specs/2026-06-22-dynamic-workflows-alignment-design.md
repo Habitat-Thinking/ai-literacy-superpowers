@@ -14,6 +14,17 @@
 > <https://code.claude.com/docs/en/workflows> before writing any template, and treat the
 > signatures there as authoritative over any pseudocode here. This spec governs *what* to build
 > and *how it must behave*, not the runtime API surface.
+>
+> **Runtime scope — Claude Code only (read first).** Dynamic workflows are a **Claude Code**
+> runtime capability and are **not transferable** to GitHub Copilot CLI or any other coding agent
+> — those trees have no workflow runtime. This plugin ships to both the Claude Code and Copilot CLI
+> trees, so every deliverable below is **Claude-Code-gated**: where the runtime exists the workflow
+> modes and templates execute; where it does not, the `dynamic-workflows` skill and every
+> workflow-mode section **degrade to guidance only** (the knowledge stays readable; no workflow is
+> spawned; workflow-mode agents fall back to their existing static behaviour and never error). This
+> is a settled, cross-cutting constraint (see §5.5) — the *precise* Copilot degradation contract
+> (guidance-only vs omit) is open-question 4, dispositioned in S7, but the Claude-Code-only nature
+> itself binds all slices now.
 
 ---
 
@@ -278,8 +289,14 @@ a panel of reviewers. Encode the discipline so the plugin reaches for workflows 
 3. The static pipeline remains the **default** for ordinary coding tasks; workflows are opt-in by
    classification or by explicit trigger.
 4. All three enforcement loops still hold: advisory hooks warn, CI blocks, scheduled GC/audit reports.
-5. The plugin works identically from the Claude Code and Copilot CLI trees where the runtime supports it;
-   where Copilot lacks the workflow runtime, the skill degrades to guidance only (document this clearly).
+5. *(Runtime scope — Claude Code only.)* Dynamic workflows are a Claude Code runtime feature and are
+   **not transferable** to Copilot CLI or other coding agents. The plugin works identically across the
+   Claude Code and Copilot CLI trees only **where the runtime supports workflows** (Claude Code); where
+   Copilot or another agent lacks the workflow runtime, the `dynamic-workflows` skill and every
+   workflow-mode section **degrade to guidance only** — knowledge stays readable, no workflow is
+   spawned, and workflow-mode agents fall back to their existing static behaviour rather than error.
+   Every per-slice spec (S1–S7) must restate this Claude-Code-gated boundary for the behaviour it adds;
+   the precise degradation contract (guidance-only vs omit the skill) is open-question 4, resolved in S7.
 
 ---
 

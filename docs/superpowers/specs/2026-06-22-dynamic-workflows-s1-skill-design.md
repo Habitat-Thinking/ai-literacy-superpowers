@@ -18,6 +18,16 @@
 > runtime function names for spawning subagents are **not** reproduced; consult
 > <https://code.claude.com/docs/en/workflows> as authoritative when S2 writes
 > templates.
+>
+> **Runtime scope — Claude Code only.** Dynamic workflows are a Claude Code
+> runtime capability, **not transferable** to Copilot CLI or other coding
+> agents. This skill ships to both trees: the knowledge it carries (patterns,
+> election rubric, INV-1/INV-2) is readable everywhere, but a workflow can only
+> be *spawned* on Claude Code. On a tree without the runtime the skill is
+> guidance only. This boundary is settled and binds the skill; foregrounding it
+> in the shipped `SKILL.md` is recommended (a small patch may pull it forward
+> from S7, which owns the precise Copilot degradation *contract* —
+> open-question 4). See the umbrella spec's runtime-scope note and §5.5.
 
 ---
 
