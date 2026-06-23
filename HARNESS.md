@@ -10,7 +10,7 @@
 
      Inspired by Birgitta Boeckeler's "Harness Engineering":
      https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->
-<!-- template-version: 0.40.0 -->
+<!-- template-version: 0.64.0 -->
 
 ## Context
 
@@ -456,6 +456,38 @@
   those references)
 - **Scope**: pr
 
+<!-- Uncomment if using the Affordances feature (the chained-constraint
+     pair from the harness-affordances design, steps 4-5). The check
+     self-gates to "unverified" (passes, no-op) until the project has at
+     least one real (non-example) affordance AND a readable project
+     permissions allowlist, so it is safe to leave active. Matching is
+     string equality on the permission pattern; hook-mode affordances are
+     skipped. The Tool path assumes the plugin is vendored at
+     `ai-literacy-superpowers/` (as in this repo) — adjust it to your
+     plugin install location otherwise.
+
+### Affordances have matching permissions
+
+- **Rule**: Every non-example, non-hook affordance declared in the
+  `## Affordances` section must have a `Permission` pattern that appears
+  verbatim (string equality) in the permissions allowlist
+  (`.claude/settings.json` or `.claude/settings.local.json`). An affordance
+  without a matching permission is a tool the agent has declared but cannot
+  invoke — a safety gap.
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=blocking
+- **Scope**: pr
+
+### Permissions have declared affordances
+
+- **Rule**: Every entry in the permissions allowlist should have a matching
+  affordance in the `## Affordances` section. An ungoverned permission is
+  paperwork debt, not a safety violation — flag it, do not block.
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory
+- **Scope**: pr
+-->
+
 <!-- Uncomment if using spec-first development:
 
 ### Spec conformance
@@ -749,6 +781,48 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 - **Auto-fix**: false
 -->
 
+<!-- Uncomment if using the Affordances feature (sequencing step 6). The
+     scanner is report-only and self-skips when there is no populated
+     ## Affordances section, so it is safe to leave active. Tune the
+     threshold via the `affordance-review-threshold-days` marker in the
+     ## Affordances section header (the scanner reads it; the --max-age-days
+     flag below overrides it).
+
+### Affordance review staleness
+
+- **What it checks**: Whether any affordance in the ## Affordances section has
+  a `Last reviewed` date older than the configured threshold (default 180
+  days / ~6 months), or no valid date at all
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-staleness.sh
+- **Auto-fix**: false (the fix is a human running /harness-affordance review <name>)
+
+### Affordance recorder freshness (LOCAL — per-machine only)
+
+- **What it checks**: Whether the gitignored
+  observability/affordance-invocations.json exists and its newest invocation
+  is within the threshold (default 7 days) — a proxy for whether the
+  PostToolUse recorder hook is operating. The invocation file is gitignored
+  and per-machine, so this is LOCAL observability (runs via /harness-gc on
+  your machine), not a CI control.
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-invocations.sh --check=freshness
+- **Auto-fix**: false
+
+### Affordance dead inventory (LOCAL — per-machine only)
+
+- **What it checks**: Each declared, non-example, non-hook affordance that has
+  had no observed invocation in the last 30 days (per your local recorder).
+  Bash matching is program-coarse and conservative. LOCAL only (gitignored
+  data).
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-invocations.sh --check=dead-inventory
+- **Auto-fix**: false
+-->
+
 ### Docs-site strict-build sweep
 
 - **What it checks**: Whether `mkdocs build --strict` currently succeeds
@@ -769,6 +843,88 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 - **Enforcement**: deterministic
 - **Tool**: `mkdocs build --strict --quiet --site-dir /tmp/mkdocs-gc-check 2>&1 >/dev/null; rc=$?; rm -rf /tmp/mkdocs-gc-check; exit $rc`
 - **Auto-fix**: false
+
+---
+
+## Affordances
+
+<!-- Each entry declares one tool the agent can invoke. Identity is
+     the load-bearing governance question — whose credentials authorise
+     the action. The Audit trail field's honest answer "none" is itself
+     useful governance signal.
+
+     Runtime invocation data (which agent invoked which tool, when, how
+     often) lives in observability/affordance-invocations.json and is
+     referenced — not inlined — here. HARNESS.md remains entirely
+     human-authored: the /harness-affordance add command only transcribes
+     governance fields the human dictates.
+
+     The discovery scanner (run via /harness-affordance discover) produces
+     a draft inventory from existing config. Promote entries with
+     /harness-affordance add <name> (or by hand), filling in the
+     governance-only fields (Identity, Audit trail, Last reviewed).
+
+     One affordance per permission pattern. Bash(gh *) is one affordance;
+     Bash(gh pr *) is a separate, narrower one. Field schema and value
+     definitions: docs/reference/affordance-schema.md.
+
+     Delete the example entries below once real entries are added. -->
+
+<!-- Runtime invocation data: observability/affordance-invocations.json -->
+
+<!-- affordance-review-threshold-days: 180 -->
+<!-- ^ Tune the review-staleness threshold here (the staleness GC rule reads
+     this value). This line is human-owned and survives /harness-upgrade. -->
+
+
+### gh-cli
+<!-- affordance-example -->
+
+- **Mode**: cli
+- **Identity**: runtime-resolved
+- **Audit trail**: github-audit (org audit log, 90-day retention,
+  admin-only access) — assumes credentials resolve to a real GitHub
+  identity; if `$GITHUB_TOKEN` resolves to a service account the audit
+  trail will record that account, not the user
+- **Permission**: `Bash(gh *)` (allowlist in `.claude/settings.local.json`)
+- **Last reviewed**: 2026-04-26
+- **Notes**: `gh` resolves credentials in this order: `$GITHUB_TOKEN` →
+  keychain (`gh auth login`) → fail. Confirm which path is active before
+  relying on this entry.
+
+### honeycomb-mcp
+<!-- affordance-example -->
+
+- **Mode**: central-mcp (api.honeycomb.io)
+- **Identity**: service-account (HONEYCOMB_API_KEY shared across team)
+- **Audit trail**: honeycomb-query-log (per-team, 30-day retention,
+  team-admin access)
+- **Permission**: `mcp__honeycomb__*` (allowlist in user
+  `~/.claude/settings.json`)
+- **Last reviewed**: 2026-04-26
+
+### shell-write-to-tmp
+<!-- affordance-example -->
+
+- **Mode**: cli
+- **Identity**: current-user (the human running the Claude Code session)
+- **Audit trail**: none
+- **Permission**: `Bash(echo *)` (allowlist)
+- **Last reviewed**: 2026-04-26
+- **Notes**: ephemeral session-local writes; if persistence is required,
+  promote to a tracked artefact
+
+### sync-to-global-cache-hook
+<!-- affordance-example -->
+
+- **Mode**: hook
+- **Trigger**: Stop
+- **Identity**: current-user
+- **Audit trail**: none (hook stderr, lost at session end)
+- **Permission**: `hooks.Stop` entry in `.claude/settings.local.json`
+  invoking `ai-literacy-superpowers/scripts/sync-to-global-cache.sh`
+- **Last reviewed**: 2026-04-26
+- **Notes**: invokes `rsync` under the current user after every session
 
 ---
 
@@ -824,6 +980,45 @@ audits, assessor evidence-extraction) opt in explicitly to read the full
 active log plus archive. See the spec
 `docs/superpowers/specs/2026-04-30-reflection-log-archival-design.md` for
 the per-reader policy table.
+
+Project-level overrides go in the GC-rule declarations above; agents
+honour the values declared here when reading.
+
+---
+
+<!-- ## Cognitive reservoir  (OPTIONAL — to opt in, remove this `<!--` line and the closing `-->` below)
+
+Advisory watch on the human verifier the harness cannot verify. Opt in
+by uncommenting this block so the `## Cognitive reservoir` heading
+becomes active — the reservoir-check Stop hook and the /reservoir agent
+only run when the heading is uncommented.
+
+NOT a Constraint. This is advisory-only: it never gates CI, never blocks
+a commit/merge/session, and never records a claim about your cognitive
+state to disk (you edit this block yourself). Do not promote it into a
+blocking gate — that would defeat its purpose and overclaim a precision
+the proxies cannot support.
+
+The proxies, the observed/inferred/asked confidence discipline, the
+default thresholds, and the contested-vs-robust scientific grounding
+(it does NOT assert ego depletion or the hungry-judges figure) all live
+in `skills/cognitive-reservoir/SKILL.md`.
+
+Thresholds are disjunctive — any one crossing fires a single session-end
+advisory. Tune to taste; a cluster of advisories you routinely ignore is
+a signal to raise a threshold, not to distrust the honesty rule.
+
+- window_hours: 8       # how far back the proxies look
+- span_minutes: 180     # continuous session span (min) before the span proxy fires
+- decision_volume: 8    # approval-like events (commits/merges) in the window
+- context_switches: 4   # distinct work streams touched in the window
+- chronotype:           # optional: early | late | intermediate. Only when
+                        #   declared is the late-hour circadian band labelled
+                        #   (optimal / dip / suboptimal); otherwise the hour is
+                        #   reported as asked/unverified.
+
+Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
+-->
 
 ---
 
