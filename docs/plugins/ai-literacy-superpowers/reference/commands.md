@@ -137,15 +137,19 @@ does not re-prompt until the next plugin update.
 
 - **Skills read**: none
 - **Agents dispatched**: none
-- **Subcommands**: `discover` (implemented), `add` and `review`
-  (planned)
+- **Subcommands**: `discover`, `add <name>`, `review <name>` (all
+  implemented)
 
 Manage the project's affordance inventory — the declared tools the
 agent can invoke, with the identity each tool runs under, the audit
 trail each tool produces, and the permission allowlist that
 authorises it. See the
 [harness-affordances design spec](../../../superpowers/specs/2026-04-26-harness-affordances-design.md)
-for the full schema.
+for the full schema, the
+[affordance schema reference](affordance-schema.md) for the
+field-by-field definitions, and
+[Maintain Your Affordance Inventory](../how-to/maintain-affordance-inventory.md)
+for the end-to-end lifecycle.
 
 `/harness-affordance discover` reads `.claude/settings.json`,
 `.claude/settings.local.json`, and `.mcp.json`, and writes a draft
@@ -160,14 +164,39 @@ existing permission. See
 [Discover Affordances](../how-to/discover-affordances.md) for the
 full how-to.
 
-`/harness-affordance add <name>` (planned, sequencing step 3 of the
-affordances design) will guide annotation of a draft entry —
-prompts for Identity, Audit trail, optional Notes, then appends the
-completed entry to `HARNESS.md`.
+`/harness-affordance add <name>` promotes one draft entry into the
+`## Affordances` section of `HARNESS.md`. Use it after `discover` (or
+when declaring a new tool by hand). It seeds from the newest discovery
+draft when one matches the permission, then prompts only for the
+governance fields the human must decide — `Identity` (one of
+`user-sso`, `service-account`, `current-user`, `runtime-resolved`,
+`none`), `Audit trail` (where a record of the action would be found;
+`none` is a valid, useful answer), and optional `Constraint references`
+and `Notes`. It sets `Last reviewed` to today (an `add` is a genuine
+first review), validates the required fields and the `Mode`/`Trigger`
+pairing, and **warns without blocking** if the permission pattern is
+absent from every readable settings allowlist. Idempotency keys on the
+**permission pattern**, not the heading: re-running `add` for the same
+pattern edits the existing entry in place rather than appending a
+duplicate, even under a different name. The command only transcribes
+the human's answers, so `HARNESS.md` stays human-authored in spirit.
 
-`/harness-affordance review <name>` (planned, sequencing step 6)
-will walk through the three re-validation checks (Identity, Audit
-trail, Permission) and bump `Last reviewed` if all pass.
+`/harness-affordance review <name>` re-validates one existing
+affordance and bumps its `Last reviewed` date to today **only if all
+three checks pass** — so the date attests to a real human
+re-validation, not a file mtime. It walks the three checks, each with
+an explicit `yes / no / needs-edit` prompt: **Identity** (the named
+credential still exists and belongs to the named principal; for
+`runtime-resolved`, the resolution chain in `Notes` still holds),
+**Audit trail** (the endpoint still exists with the stated retention
+and access scope), and **Permission** (the pattern is still present in
+a settings allowlist). If all three pass, the date bumps and any
+`[review-gap: …]` Notes lines are cleared. A `needs-edit` opens the
+field for an inline edit but does **not** bump the date on its own — a
+bump after any edit requires re-answering all three checks. An
+unresolved `no` leaves the date unchanged and records a single
+`[review-gap: <check>]` Notes line for the failing check. Use `review`
+to clear what the **Affordance review staleness** GC rule reports.
 
 ---
 

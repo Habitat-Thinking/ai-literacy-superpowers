@@ -119,6 +119,44 @@ This is a learning-driven GC rule. Most GC rules scan code for entropy. This rul
 
 ---
 
+## Affordance GC Rules
+
+The harness template also ships three GC rules that fight entropy in the affordance inventory — the `## Affordances` section of `HARNESS.md` that declares each tool the agent can invoke, its identity, and its audit trail (see [Harness Affordances](harness-affordances.md) for the concept). Unlike the built-ins above, these three rules ship **commented out** in the template's Garbage Collection section: they are opt-in, activated by uncommenting the block once a project has a populated affordances inventory. Each is report-only — the fix is always a human action, never an auto-fix.
+
+Two of the three rely on **local, per-machine** observability data (`observability/affordance-invocations.json`, written by a `PostToolUse` recorder hook). That file is gitignored, so those two rules describe what each developer can run on their own machine via `/harness-gc`; they are **not** CI gates. The first rule is deterministic against committed content and runs anywhere.
+
+### Affordance review staleness
+
+- **What it checks**: Whether any affordance in the `## Affordances` section has a `Last reviewed` date older than the configured threshold, or no valid date at all.
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: `harness-affordance-staleness.sh`
+- **Auto-fix**: false
+
+Governance judgments rot. A credential rotates, an audit endpoint is decommissioned, a permission pattern is removed — and the affordance entry keeps asserting the old answer until someone re-checks it. This rule flags entries whose `Last reviewed` date has aged past the threshold (default 180 days / ~6 months, tunable via the `affordance-review-threshold-days` marker in the `## Affordances` section header). Because `Last reviewed` is bumped **only** by `/harness-affordance review` after all three of its re-validation checks pass — not by editing other fields and not by a `git` mtime — the date is a trustworthy attestation, and this rule stays meaningful. The fix it reports is a human running `/harness-affordance review <name>`. This rule reads committed content, so it works the same on any machine and in CI.
+
+### Affordance recorder freshness (LOCAL — per-machine only)
+
+- **What it checks**: Whether the gitignored `observability/affordance-invocations.json` exists and its newest invocation is within the threshold (default 7 days) — a proxy for whether the `PostToolUse` recorder hook is actually operating.
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: `harness-affordance-invocations.sh --check=freshness`
+- **Auto-fix**: false
+
+This is a meta-check on the recorder itself: if the invocation log has gone stale, the local observability the next rule depends on is no longer being collected. Because the invocation file is gitignored and machine-specific, this is **local observability** a developer runs via `/harness-gc` on their own machine, not a control enforced in CI.
+
+### Affordance dead inventory (LOCAL — per-machine only)
+
+- **What it checks**: Each declared, non-example, non-hook affordance that has had no observed invocation in the last 30 days, according to the local recorder. Bash program matching is coarse and deliberately conservative.
+- **Frequency**: weekly
+- **Enforcement**: deterministic
+- **Tool**: `harness-affordance-invocations.sh --check=dead-inventory`
+- **Auto-fix**: false
+
+An affordance the agent never actually invokes is a candidate for retirement: a grant and a governance burden carried for a tool no longer in use. This rule surfaces those candidates so a human can decide whether to keep, narrow, or remove the entry and its permission. Like recorder freshness, it reads gitignored per-machine data, so it is **local observability** rather than a CI gate.
+
+---
+
 ## Cadence Matching
 
 Different types of entropy operate at different speeds. Matching inspection frequency to entropy rate is a design decision that affects both signal quality and noise levels.
