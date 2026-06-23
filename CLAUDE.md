@@ -188,6 +188,16 @@ When adding a new command that writes structured markdown, add a
 validation step following this pattern. Reference the format spec
 rather than inlining field definitions.
 
+## Dynamic Workflows
+
+When a task looks **long-running**, massively parallel, highly structured,
+or **adversarial**, consult the `dynamic-workflows` skill _before_ reaching
+for a workflow — it carries the six patterns, the when-not-to-use election
+rubric, and the INV-1/INV-2 invariants. Workflows are opt-in: the static
+pipeline stays the default, and a workflow must never write a durable
+curated artefact directly (INV-1). Dynamic workflows are Claude-Code-only;
+elsewhere the skill is guidance.
+
 ## Docs Site Review
 
 The `docs/` directory is the project's documentation site, organised

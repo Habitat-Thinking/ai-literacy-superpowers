@@ -74,3 +74,21 @@ something worth keeping does both: the untrusted reader stays low-privilege
 to `REFLECTION_LOG.md` or a staging file for a human to curate (INV-1) —
 never straight into `HARNESS.md`, `AGENTS.md`, `CLAUDE.md`, or
 `MODEL_ROUTING.md`.
+
+## Runtime scope and the Copilot contract
+
+Dynamic workflows are a **Claude Code** runtime capability. This plugin
+**ships the `dynamic-workflows` skill to both trees** — Claude Code and
+**Copilot** CLI — and the skill is **never omitted** on either. The
+behaviour degrades by runtime, not by deletion:
+
+- **On Claude Code:** the workflows execute; the patterns, election rubric,
+  and templates are runnable.
+- **On Copilot CLI (or any agent without the workflow runtime):** the skill
+  is **guidance** only — readable knowledge — and every workflow-mode falls
+  back to its existing static behaviour. It never errors and it is never
+  omitted; the knowledge (patterns, election rubric, INV-1/INV-2) is worth
+  reading even where no workflow can be spawned.
+
+This is the resolved degradation contract (Option A): **ship to both
+trees**, guidance-only where the runtime is absent.

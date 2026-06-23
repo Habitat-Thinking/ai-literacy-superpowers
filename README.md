@@ -3,7 +3,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.4.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.63.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.64.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
 [![diagnostic-legibility](https://img.shields.io/badge/diagnostic--legibility-v0.11.0-4682B4?style=flat-square)](diagnostic-legibility/)
 [![Skills](https://img.shields.io/badge/Skills-36-2E8B57?style=flat-square)](#skills-36)
@@ -28,7 +28,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.63.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **36 skills, 16 agents, 28 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.64.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **36 skills, 16 agents, 28 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 | **`diagnostic-legibility`** | v0.11.0 | Hosts agents accountable for maintaining human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. The `ConceptualPipelineMap` template adds a standalone, presentation-agnostic flow-perspective data model; the agent's `scope-resolution` mode answers "what does my task touch?"; its `pipeline` mode traces control flow within that bound and cross-checks all three collections; the `/pipeline-map "<task>"` command renders the task-scoped map as a self-contained HTML flowchart (pinned, SHA-verified Mermaid inlined; no CDN); and `--predict-change` adds an opt-in change-site prediction (which stages the task will modify and where it will insert new ones), disclosed as a prediction, never a directive. | [docs](docs/plugins/diagnostic-legibility/index.md) |
 
@@ -554,6 +554,23 @@ orchestrator
 The spec objection adjudication gate raises premise-level challenges before any tests or code exist — the cheapest moment to change course. The plan approval gate catches bad plans before they become bad code. The loop guardrail prevents unbounded reviewer cycles. The code objection adjudication gate surfaces threat-model, failure-mode, and operational concerns visible in the implementation before merge.
 
 The plugin ships the orchestrator, spec-writer, tdd-agent, code-reviewer, and integration-agent. Language-specific implementers are not included — each project creates its own based on the stack. See [How to Extend](#how-to-extend) for instructions.
+
+---
+
+## Dynamic Workflows
+
+Beneath the static agent pipeline sits an **ephemeral execution substrate**: *dynamic workflows* — self-authored, single-task multi-agent harnesses an agent writes, runs once, and discards. Each subagent gets a clean context window and its own model tier, which is what defeats the three failure modes a single long context is prone to: **agentic laziness** (declaring a multi-part job done after partial progress), **self-preferential bias** (an agent judging its own output), and **goal drift**. The conceptual model lives in the [`dynamic-workflows`](ai-literacy-superpowers/skills/dynamic-workflows/SKILL.md) skill and the [how-to guide](docs/plugins/ai-literacy-superpowers/how-to/dynamic-workflows.md).
+
+**Six composable patterns** — classify-and-act, **fan-out**-and-synthesize, **adversarial** verification, generate-and-filter, **tournament**, and loop-until-done — are the building blocks. The plugin dogfoods them: the `harness-enforcer` fans out one verifier per constraint; `code-reviewer` reviews in a separate context; `assessor`/`harness-auditor` run deep-research scans; `/reflect --mine` mines the reflection log; and the `orchestrator` can route a task to a tournament, root-cause, or triage workflow.
+
+**Elect deliberately.** Workflows cost more tokens and suit long-running, massively parallel, highly structured, or adversarial tasks — so they are **opt-in**, never reflexive. The four-question [when-not-to-use](ai-literacy-superpowers/skills/dynamic-workflows/references/when-not-to-use.md) rubric keeps the **static pipeline the default**; reaching for a workflow on a routine task is treated as over-orchestration.
+
+**Two governing invariants** protect the curated harness from ephemeral churn:
+
+- **INV-1 — ephemeral proposes, durable curates.** A workflow may *propose* changes but **never writes** the durable, human-curated artefacts (`HARNESS.md`, `AGENTS.md`, `CLAUDE.md`, `MODEL_ROUTING.md`) directly; discoveries flow through `REFLECTION_LOG.md → human curates → AGENTS.md`. A deterministic CI firewall (`ai-literacy-superpowers/scripts/inv-firewall.sh`) enforces this on every shipped template.
+- **INV-2 — quarantine.** A workflow agent that reads untrusted or public content is withheld high-privilege tools; only separate trusted agents act on what it found.
+
+**Runtime scope — Claude Code only.** Dynamic workflows are a **Claude Code** runtime capability and are **not transferable** to other coding agents. The plugin ships the skill to both the Claude Code and **Copilot** CLI trees: where the workflow runtime is present, the modes execute; where it is absent (Copilot CLI or any other agent), the skill is **guidance** only — readable knowledge with each workflow-mode degrading to its static fallback — never omitted and never erroring.
 
 ---
 
