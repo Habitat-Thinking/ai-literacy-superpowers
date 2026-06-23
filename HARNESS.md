@@ -1025,7 +1025,7 @@ Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
 
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
-Last audit: 2026-06-01
-Constraints enforced: 25/26
+Last audit: 2026-06-23
+Constraints enforced: 26/28
 Garbage collection active: 19/19
-Drift detected: yes (ONBOARDING.md stale vs the new marketplace-docs-coverage constraint — run /harness-onboarding; convention files + Status block synced via /harness-sync 2026-06-01)
+Drift detected: yes (ONBOARDING.md + convention files (.cursor/rules, .github/copilot-instructions.md, .windsurf/rules) last synced 2026-06-01, now stale vs the 2026-06-23 template-v0.64.0 upgrade — run /harness-sync then /harness-onboarding. Template currency now in sync at 0.64.0. Affordances section holds example entries only (no project config found); affordance constraints + GC rules remain commented-out and excluded from totals.)
