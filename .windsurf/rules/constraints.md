@@ -210,3 +210,10 @@
 - **Enforcement**: deterministic
 - **Tool**: `bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory`
 - **Scope**: pr
+
+## Convention parity
+
+- **Rule**: Every active constraint heading in HARNESS.md's `## Constraints` section must appear verbatim in all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`). These files are generated from HARNESS.md by `/convention-sync` and can drift by whole constraints (content drift, not a stale mtime). This PR-time gate complements the weekly "Convention file sync" GC rule.
+- **Enforcement**: deterministic
+- **Tool**: `python3 scripts/check-convention-parity.py` (CI: `.github/workflows/convention-parity-check.yml`)
+- **Scope**: pr
