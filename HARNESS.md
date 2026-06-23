@@ -456,16 +456,6 @@
   those references)
 - **Scope**: pr
 
-<!-- Uncomment if using the Affordances feature (the chained-constraint
-     pair from the harness-affordances design, steps 4-5). The check
-     self-gates to "unverified" (passes, no-op) until the project has at
-     least one real (non-example) affordance AND a readable project
-     permissions allowlist, so it is safe to leave active. Matching is
-     string equality on the permission pattern; hook-mode affordances are
-     skipped. The Tool path assumes the plugin is vendored at
-     `ai-literacy-superpowers/` (as in this repo) — adjust it to your
-     plugin install location otherwise.
-
 ### Affordances have matching permissions
 
 - **Rule**: Every non-example, non-hook affordance declared in the
@@ -486,7 +476,6 @@
 - **Enforcement**: deterministic
 - **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory
 - **Scope**: pr
--->
 
 <!-- Uncomment if using spec-first development:
 
@@ -1029,6 +1018,6 @@ Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-06-23
-Constraints enforced: 26/28
+Constraints enforced: 28/30
 Garbage collection active: 19/19
-Drift detected: yes (ONBOARDING.md + convention files (.cursor/rules, .github/copilot-instructions.md, .windsurf/rules) last synced 2026-06-01, now stale vs the 2026-06-23 template-v0.64.0 upgrade — run /harness-sync then /harness-onboarding. Template currency now in sync at 0.64.0. Affordances section holds example entries only (no project config found); affordance constraints + GC rules remain commented-out and excluded from totals.)
+Drift detected: no (convention files + ONBOARDING.md synced to template-v0.64.0 on 2026-06-23; template currency in sync at 0.64.0. The two affordance↔permission constraints are now active — gh-cli is a real affordance with a matching Bash(gh *) grant in committed .claude/settings.json, both check directions pass. Affordance GC rules remain commented-out and excluded from totals.)
