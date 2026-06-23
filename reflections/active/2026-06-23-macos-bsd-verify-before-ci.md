@@ -1,0 +1,13 @@
+- **Date**: 2026-06-23
+- **Agent**: Claude Code (Opus 4.8, harness-maintenance session)
+- **Task**: Added a `macos-latest` Layer 0 CI leg to `tdad-tests-fast.yml` and promoted the "Layer 0 bash tests run on macOS and Linux" constraint from unverified to deterministic.
+- **Surprise**: The Claude Code session aliases `grep` to `ugrep`, which masks BSD-vs-GNU bugs in interactive use — but pytest dispatches the Layer 0 bash scripts via `subprocess` → a **non-interactive** bash that does NOT inherit the alias and uses the real `/usr/bin/grep` (BSD grep 2.6.0-FreeBSD on macOS). So running the Layer 0 suite locally on a Mac is a *faithful* BSD test despite the session alias — all 11 tests passed under real BSD grep, giving confidence to add the CI leg before pushing. Verified with `bash -c 'type grep; grep --version'` showing the real binary.
+- **Proposal**: AGENTS.md (ARCH_DECISIONS / TEST_STRATEGY) — to verify BSD-portability of deterministic bash before promoting a cross-OS constraint or adding a macOS CI leg, run the suite locally via pytest (its subprocess spawn bypasses the session's grep→ugrep alias); confirm the real tool with `bash -c 'grep --version'`. Also: when an existing CI check name may be required-status-protected, prefer adding a **dedicated** OS job over converting the job to a matrix — a matrix renames the check (GitHub appends the matrix value) and can strand PRs whose branch protection requires the old name.
+- **Improvement**: none beyond the proposal — the local-pre-verify + dedicated-job approach worked cleanly and the macOS check passed first try in CI.
+- **Signal**: workflow
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: multi-hour (9 PRs, #460–#468)
+  - Model tiers used: capable (Opus 4.8) throughout
+  - Pipeline stages completed: manual (no orchestrator)
+  - Agent delegation: partial

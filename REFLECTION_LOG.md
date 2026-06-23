@@ -815,6 +815,22 @@
 ---
 
 - **Date**: 2026-06-23
+- **Agent**: Claude Code (Opus 4.8, harness-maintenance session)
+- **Task**: Ran /harness-upgrade to template v0.64.0, then /harness-sync to bring the convention files current — and discovered the sync was a content fix, not a date refresh.
+- **Surprise**: The Cursor/Copilot/Windsurf convention files had silently fallen behind HARNESS.md by **two whole constraints** ("Layer 0 bash tests run on macOS and Linux" and "Objection records use the canonical taxonomy") since the 2026-06-01 sync — genuine *content* drift, not just a stale mtime. The weekly "Convention file sync" GC rule (agent-enforced, no auto-fix) had not been run, so nothing surfaced the gap until a manual /harness-audit caught it. There is no PR-time deterministic gate that fails when a convention file is missing an active constraint; drift can accumulate silently across many PRs.
+- **Proposal**: AGENTS.md — when syncing convention files, verify every active HARNESS.md constraint heading is present in all three files (a content check), rather than regenerating and trusting the file mtime. Treat convention-file currency as a parity invariant, not a freshness one.
+- **Improvement**: A deterministic PR-time parity check (every active HARNESS.md constraint appears in all three convention files) would catch this the moment it happens, complementing the weekly agent GC rule that only runs on cadence.
+- **Signal**: failure
+- **Constraint**: Convention parity — every active HARNESS.md constraint heading must appear in `.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, and `.windsurf/rules/constraints.md` (deterministic, pr scope). Accepted; drafted in a follow-up PR.
+- **Session metadata**:
+  - Duration: multi-hour (9 PRs, #460–#468)
+  - Model tiers used: capable (Opus 4.8) throughout, including subagents
+  - Pipeline stages completed: manual (no orchestrator) — dispatched harness-auditor + general-purpose subagents for audit, onboarding, and snapshot generation
+  - Agent delegation: partial
+
+---
+
+- **Date**: 2026-06-23
 - **Agent**: claude-opus-4-8[1m] (main conversation as orchestrator; spec-writer / tdd-agent / code-reviewer / integration-agent + carpaccio subagents per slice)
 - **Task**: Drove the entire **Dynamic Workflows Alignment epic** (D1–D9) from a single umbrella spec to completion — carpaccio-sliced it into 7 issues (#438–#444) and ran each slice through the full spec-first pipeline (spec → human GATE → red tests → implement → adversarial code-review → integrate) to merge. Shipped v0.58.0 → v0.64.0: the `dynamic-workflows` skill + 4 templates + INV-1/INV-2 firewall, workflow modes on harness-enforcer / code-reviewer / advocatus-diaboli / assessor / harness-auditor / orchestrator, `/reflect --mine`, and the docs/Copilot-contract finale. Also foregrounded the Claude-Code-only runtime scope across all surfaces (#448, #449) and filed follow-ups #452 (CI structural-gating) and #456 (video library).
 - **Surprise**: The single most-recurring failure across the epic was not conceptual — it was a **markdown line-wrap vs. substring-assertion mismatch**. Structural content tests assert that an agent/command doc *declares* a guarantee by grepping for a phrase; when the implementer (me) wrapped a bolded two-word phrase across a line (`**falls\nback**`, `**all\nN**`, `verifier\nresults`, `fan out by\narea`), the lowercased section contained `falls\nback`, which does not contain the substring `falls back`, so a correct implementation went RED for a purely cosmetic reason. This bit S3 (×2), S4 (×2), S5 (×1), S6, and S7 — every behavioural slice. The fix that finally killed it: the tdd-agent adopted **wrap-safe co-occurrence by default** — assert two independent `in` checks (`"falls" … "back"` → instead assert `"fall" / "fallback"` family, or split `claude` + `code`) rather than one joined substring, reserving single-substring assertions for genuinely unwrappable tokens (filenames, `--mine`, `INV-1`, `orchestrator-routing`). A close second: the adversarial code-review on S2's firewall found **three exploitable INV bypasses past a green test suite** (concatenated filename, tool casing, multi-line `@tools`) — green tests prove only the cases you imagined.
@@ -827,3 +843,19 @@
   - Model tiers used: claude-opus-4-8[1m] for the main orchestration loop and every pipeline subagent (spec-writer, tdd-agent, code-reviewer ×7+, integration-agent ×7, carpaccio)
   - Pipeline stages completed: per slice — carpaccio (epic, once) → spec-writer → human GATE (every slice surfaced its real decisions: thresholds, routing default, staging location, Copilot contract) → tdd-agent (red) → implement → code-reviewer (adversarial; re-review on S2) → integration-agent (PR/CI/merge). 7 feature PRs (#446, #450, #453, #454, #455, #457, #458) + planning/clarity/reflection PRs, all merged green.
   - Agent delegation: high — every pipeline stage delegated to its specialised subagent; main loop drove the GATE adjudication, version plumbing, and review-finding fixes.
+
+---
+
+- **Date**: 2026-06-23
+- **Agent**: Claude Code (Opus 4.8, harness-maintenance session)
+- **Task**: Added a `macos-latest` Layer 0 CI leg to `tdad-tests-fast.yml` and promoted the "Layer 0 bash tests run on macOS and Linux" constraint from unverified to deterministic.
+- **Surprise**: The Claude Code session aliases `grep` to `ugrep`, which masks BSD-vs-GNU bugs in interactive use — but pytest dispatches the Layer 0 bash scripts via `subprocess` → a **non-interactive** bash that does NOT inherit the alias and uses the real `/usr/bin/grep` (BSD grep 2.6.0-FreeBSD on macOS). So running the Layer 0 suite locally on a Mac is a *faithful* BSD test despite the session alias — all 11 tests passed under real BSD grep, giving confidence to add the CI leg before pushing. Verified with `bash -c 'type grep; grep --version'` showing the real binary.
+- **Proposal**: AGENTS.md (ARCH_DECISIONS / TEST_STRATEGY) — to verify BSD-portability of deterministic bash before promoting a cross-OS constraint or adding a macOS CI leg, run the suite locally via pytest (its subprocess spawn bypasses the session's grep→ugrep alias); confirm the real tool with `bash -c 'grep --version'`. Also: when an existing CI check name may be required-status-protected, prefer adding a **dedicated** OS job over converting the job to a matrix — a matrix renames the check (GitHub appends the matrix value) and can strand PRs whose branch protection requires the old name.
+- **Improvement**: none beyond the proposal — the local-pre-verify + dedicated-job approach worked cleanly and the macOS check passed first try in CI.
+- **Signal**: workflow
+- **Constraint**: none
+- **Session metadata**:
+  - Duration: multi-hour (9 PRs, #460–#468)
+  - Model tiers used: capable (Opus 4.8) throughout
+  - Pipeline stages completed: manual (no orchestrator)
+  - Agent delegation: partial

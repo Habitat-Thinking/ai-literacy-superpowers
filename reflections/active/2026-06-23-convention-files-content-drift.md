@@ -1,0 +1,13 @@
+- **Date**: 2026-06-23
+- **Agent**: Claude Code (Opus 4.8, harness-maintenance session)
+- **Task**: Ran /harness-upgrade to template v0.64.0, then /harness-sync to bring the convention files current — and discovered the sync was a content fix, not a date refresh.
+- **Surprise**: The Cursor/Copilot/Windsurf convention files had silently fallen behind HARNESS.md by **two whole constraints** ("Layer 0 bash tests run on macOS and Linux" and "Objection records use the canonical taxonomy") since the 2026-06-01 sync — genuine *content* drift, not just a stale mtime. The weekly "Convention file sync" GC rule (agent-enforced, no auto-fix) had not been run, so nothing surfaced the gap until a manual /harness-audit caught it. There is no PR-time deterministic gate that fails when a convention file is missing an active constraint; drift can accumulate silently across many PRs.
+- **Proposal**: AGENTS.md — when syncing convention files, verify every active HARNESS.md constraint heading is present in all three files (a content check), rather than regenerating and trusting the file mtime. Treat convention-file currency as a parity invariant, not a freshness one.
+- **Improvement**: A deterministic PR-time parity check (every active HARNESS.md constraint appears in all three convention files) would catch this the moment it happens, complementing the weekly agent GC rule that only runs on cadence.
+- **Signal**: failure
+- **Constraint**: Convention parity — every active HARNESS.md constraint heading must appear in `.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, and `.windsurf/rules/constraints.md` (deterministic, pr scope). Accepted; drafted in a follow-up PR.
+- **Session metadata**:
+  - Duration: multi-hour (9 PRs, #460–#468)
+  - Model tiers used: capable (Opus 4.8) throughout, including subagents
+  - Pipeline stages completed: manual (no orchestrator) — dispatched harness-auditor + general-purpose subagents for audit, onboarding, and snapshot generation
+  - Agent delegation: partial
