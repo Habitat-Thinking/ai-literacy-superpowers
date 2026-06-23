@@ -125,7 +125,7 @@ Layer 0 (deterministic bash plumbing tests) and Layer 1 (structural tests for pl
 
 ### Layer 0 bash tests run on macOS and Linux
 
-The Layer 0 deterministic bash tests must pass on both a macOS (BSD coreutils) and an Ubuntu (GNU coreutils) CI runner — the plugin's deterministic check scripts use `grep`, `date`, `sort`, and `stat`, which diverge between BSD and GNU and are masked on a macOS dev machine. Declared unverified until `tdad-tests-fast.yml` adds a `macos-latest` leg to its runner matrix (currently Ubuntu-only). Enforcement: unverified (`.github/workflows/tdad-tests-fast.yml`). Scope: pr.
+The Layer 0 deterministic bash tests must pass on both a macOS (BSD coreutils) and an Ubuntu (GNU coreutils) CI runner — the plugin's deterministic check scripts use `grep`, `date`, `sort`, and `stat`, which diverge between BSD and GNU and are masked on a macOS dev machine. Enforcement: deterministic (`.github/workflows/tdad-tests-fast.yml` — the `layer0-macos` job runs Layer 0 on macOS, the `fast-suite` job on Ubuntu). Scope: pr.
 
 ### New plugin components must ship with a TDAD scenario
 
