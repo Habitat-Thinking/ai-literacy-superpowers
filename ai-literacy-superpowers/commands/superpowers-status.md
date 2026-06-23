@@ -54,6 +54,22 @@ Check that the agent team is present and consistent:
 Report any agents that are present in `.claude/agents/` but not referenced
 in MODEL_ROUTING.md (potential routing gap).
 
+### Section 3a: Workflow routing
+
+Surface the orchestrator's task-routing posture (the opt-in classify-and-act
+routing):
+
+- **Posture.** Read the optional `orchestrator-routing` field in HARNESS.md.
+  Report `routing: enabled` when it is set to `enabled`, otherwise
+  `routing: opt-in, off by default` (the conservative default when the field is
+  absent). This is descriptive only — off-by-default is the intended posture, not
+  a warning.
+- **Last route taken.** When a durable trace of the most recent orchestrator run
+  exists, report which of the four routes it selected — `static`, `tournament`,
+  `root-cause`, or `triage`. When no such trace exists (the dashboard is a file
+  snapshot, not a live event stream), report the last route as `unavailable`
+  rather than inventing one.
+
 ### Section 4: Compound learning
 
 Evaluate the state of AGENTS.md:

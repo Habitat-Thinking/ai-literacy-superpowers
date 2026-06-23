@@ -242,6 +242,9 @@ Literacy habitat and reports status per section:
 - **Agent team** — agent definitions and availability
 - **Compound learning** — reflection entries and curation state
 - **Model routing** — routing table and cost data
+- **Workflow routing** — orchestrator routing posture (opt-in / off by
+  default vs enabled) and the last route taken when traceable, else
+  unavailable
 - **CI status** — workflow presence and recent run health
 
 Each section reports **OK**, **WARNING**, or **MISSING**.

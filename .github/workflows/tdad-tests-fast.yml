@@ -68,3 +68,7 @@ jobs:
       - name: Run Layer 1 (dynamic-workflows S4 adversarial review + deep research)
         working-directory: tdad_tests
         run: pytest tests/test_s4_adversarial_deepresearch_structural.py -v
+
+      - name: Run Layer 1 (dynamic-workflows S5 orchestrator routing)
+        working-directory: tdad_tests
+        run: pytest tests/test_s5_orchestrator_routing_structural.py -v
