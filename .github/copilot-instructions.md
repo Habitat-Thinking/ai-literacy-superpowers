@@ -154,3 +154,11 @@ When creating a PR with `gh pr create` that requires a label (`chore`, `fix`, `c
 ### Docs propagation when shipping new commands
 
 When a PR adds a new command, skill, or agent in `ai-literacy-superpowers/` that consolidates or replaces existing functionality, the same PR must update every reference in `docs/plugins/<plugin>/` to the commands or skills the new one composes or replaces. A `See also` callout pattern is insufficient when the new artefact is meant to be the canonical entry point — the older pages must explicitly frame the existing artefacts as primitives or alternatives, not as first-class equivalents. Effective from 2026-05-07. Enforcement: agent (harness-enforcer). Scope: pr.
+
+### Affordances have matching permissions
+
+Every non-example, non-hook affordance declared in the `## Affordances` section must have a `Permission` pattern that appears verbatim (string equality) in the permissions allowlist (`.claude/settings.json` or `.claude/settings.local.json`). An affordance without a matching permission is a tool the agent has declared but cannot invoke — a safety gap. Enforcement: deterministic (`bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=blocking`). Scope: pr.
+
+### Permissions have declared affordances
+
+Every entry in the permissions allowlist should have a matching affordance in the `## Affordances` section. An ungoverned permission is paperwork debt, not a safety violation — flag it, do not block. Enforcement: deterministic (`bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory`). Scope: pr.

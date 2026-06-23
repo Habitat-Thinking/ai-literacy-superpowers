@@ -196,3 +196,17 @@
 - **Enforcement**: agent
 - **Tool**: harness-enforcer
 - **Scope**: pr
+
+## Affordances have matching permissions
+
+- **Rule**: Every non-example, non-hook affordance declared in the `## Affordances` section must have a `Permission` pattern that appears verbatim (string equality) in the permissions allowlist (`.claude/settings.json` or `.claude/settings.local.json`). An affordance without a matching permission is a tool the agent has declared but cannot invoke — a safety gap.
+- **Enforcement**: deterministic
+- **Tool**: `bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=blocking`
+- **Scope**: pr
+
+## Permissions have declared affordances
+
+- **Rule**: Every entry in the permissions allowlist should have a matching affordance in the `## Affordances` section. An ungoverned permission is paperwork debt, not a safety violation — flag it, do not block.
+- **Enforcement**: deterministic
+- **Tool**: `bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory`
+- **Scope**: pr
