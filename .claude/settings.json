@@ -3,5 +3,17 @@
     "allow": [
       "Bash(gh *)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/ai-literacy-superpowers/hooks/scripts/reservoir-check.sh\""
+          }
+        ]
+      }
+    ]
   }
 }

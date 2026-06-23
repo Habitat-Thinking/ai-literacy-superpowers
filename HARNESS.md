@@ -992,12 +992,11 @@ honour the values declared here when reading.
 
 ---
 
-<!-- ## Cognitive reservoir  (OPTIONAL — to opt in, remove this `<!--` line and the closing `-->` below)
+## Cognitive reservoir
 
-Advisory watch on the human verifier the harness cannot verify. Opt in
-by uncommenting this block so the `## Cognitive reservoir` heading
-becomes active — the reservoir-check Stop hook and the /reservoir agent
-only run when the heading is uncommented.
+Advisory watch on the human verifier the harness cannot verify — **active**.
+The reservoir-check Stop hook and the `/reservoir` agent read the
+thresholds declared below.
 
 NOT a Constraint. This is advisory-only: it never gates CI, never blocks
 a commit/merge/session, and never records a claim about your cognitive
@@ -1012,19 +1011,26 @@ in `skills/cognitive-reservoir/SKILL.md`.
 
 Thresholds are disjunctive — any one crossing fires a single session-end
 advisory. Tune to taste; a cluster of advisories you routinely ignore is
-a signal to raise a threshold, not to distrust the honesty rule.
+a signal to raise a threshold, not to distrust the honesty rule. Keep
+each value on its own clean `key: value` line — the Stop hook's parser
+reads everything after the colon, so a trailing inline `# comment` would
+corrupt the value (and silently degrade a tuned number back to default).
 
-- window_hours: 8       # how far back the proxies look
-- span_minutes: 180     # continuous session span (min) before the span proxy fires
-- decision_volume: 8    # approval-like events (commits/merges) in the window
-- context_switches: 4   # distinct work streams touched in the window
-- chronotype:           # optional: early | late | intermediate. Only when
-                        #   declared is the late-hour circadian band labelled
-                        #   (optimal / dip / suboptimal); otherwise the hour is
-                        #   reported as asked/unverified.
+- window_hours: 8
+- span_minutes: 180
+- decision_volume: 8
+- context_switches: 4
+- chronotype: intermediate
+
+Field notes (kept out of the value lines on purpose): `window_hours` is
+how far back the proxies look; `span_minutes` is continuous session span
+before the span proxy fires; `decision_volume` is approval-like events
+(commits/merges) in the window; `context_switches` is distinct work
+streams touched; `chronotype` (`early` | `late` | `intermediate`) labels
+the late-hour circadian band (optimal / dip / suboptimal) — without it
+the hour stays asked/unverified.
 
 Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
--->
 
 ---
 
