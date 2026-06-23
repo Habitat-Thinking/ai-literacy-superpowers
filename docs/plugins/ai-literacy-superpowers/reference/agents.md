@@ -41,6 +41,13 @@ sequence, passing context between them. Reads `CLAUDE.md`,
 The only agent with the Agent tool, which it uses to dispatch
 the other four pipeline agents and, when needed, harness agents.
 
+Before the pipeline it runs a **task-classification** step. By default the
+static pipeline is the sole path; non-static routes (tournament,
+root-cause, triage) are **opt-in** via the optional `orchestrator-routing`
+field in HARNESS.md (off by default) and require the Claude Code runtime,
+falling back to static where it is absent. The Plan Approval GATE and
+`MAX_REVIEW_CYCLES=3` GUARDRAIL hold on every route.
+
 ### carpaccio
 
 - **Tools**: Read, Glob, Grep

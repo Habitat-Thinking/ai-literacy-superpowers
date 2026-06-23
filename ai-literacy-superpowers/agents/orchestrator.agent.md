@@ -52,6 +52,50 @@ repeating it — for example, by dispatching deterministic checks
 earlier in the pipeline, or by briefing subagents about known
 pitfalls.
 
+## Task classification (opt-in routing, Claude Code only)
+
+Before the pipeline runs, classify the task to decide which pipeline serves it.
+This classification is part of your **first action** on every task and selects
+which path runs *before* any pipeline dispatch — it does not add an agent into
+the chain.
+
+**Opt-in flag (default off).** Non-static routing is enabled only when the
+optional **`orchestrator-routing`** field is set to `enabled` in **HARNESS.md**.
+When that field is **absent** or unset, routing is **off** and the classifier is
+a no-op. This is the conservative first-release posture: routing is opt-in, never
+on by default.
+
+**Static is the sole default.** The existing **static pipeline** (`spec-writer →
+GATE → tdd-agent → implementer → code-reviewer → GUARDRAIL → integration-agent`)
+is the **default** and runs unchanged in three cases alike: when the flag is
+**flag off**; for ordinary coding tasks; and for any **ambiguous** classification.
+In all three the classifier selects the static path and spends **no extra compute** —
+treat any drift toward "everything is a workflow" as a regression.
+
+**The four routes.** When routing is enabled, classify by task type and **adapt**
+the relevant `*.workflow.js` template by **relative path** (adapt, never run
+verbatim):
+
+1. **Static route** — ordinary coding tasks take the existing **static pipeline** (the default).
+2. **Tournament route** — design / naming / taste-based tasks route to a tournament scored by a **rubric-bearing judge**.
+3. **Root-cause route** — debugging / flaky-test / incident tasks route to **root-cause** investigation: at least **3** independent **hypotheses** drawn from **disjoint evidence**, each examined by a **verif**ier / **refut**er panel.
+4. **Triage route** — large backlogs route to triage-at-scale under **INV-2 quarantine**: untrusted or public content (external issues, third-party PRs) is read only by **low-privilege** agents, and only separate **trusted** agents act on what they find.
+
+**Gates and guardrails hold on every route.** The **Plan Approval** **gate** and
+the **MAX_REVIEW_CYCLES**=**3** **guardrail** remain in force on **every route** —
+static and non-static alike. No route bypasses, weakens, or multiplies them;
+routing changes which pipeline runs, never the human-cognition gates around it.
+
+**Runtime scope — Claude Code only.** The non-static routes require the **Claude
+Code** runtime. On a tree without it — Copilot CLI or any agent lacking the
+workflow runtime — or whenever the flag is off, the classifier **falls back** to
+the **static pipeline** and **never errors**.
+
+**Boundary (INV-1).** Every route is **propose**-only: any workflow a route spawns
+reports findings and never writes a **durable** curated artefact — **HARNESS.md**,
+**AGENTS.md**, **CLAUDE.md**, or **MODEL_ROUTING.md**. The orchestrator's existing
+tools and the curation gates are unchanged.
+
 ## Pipeline
 
 Run the agents in this order. Steps marked PARALLEL may be dispatched in a single

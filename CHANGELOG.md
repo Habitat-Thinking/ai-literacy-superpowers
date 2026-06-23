@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.62.0 — 2026-06-23
+
+### dynamic-workflows: orchestrator classify-and-act routing (S5, #442)
+
+The largest behavioural slice — deliberately conservative. A classifier front
+runs before the pipeline and routes by task type, but only when explicitly
+opted in.
+
+- **`orchestrator` gains a "Task classification" step** before the pipeline.
+  Non-static routing is **opt-in** via an optional `orchestrator-routing` field
+  in HARNESS.md (**default off**); when off — and for ordinary coding tasks and
+  any ambiguous classification — the existing **static pipeline runs unchanged
+  with no extra compute**. Treat drift toward "everything is a workflow" as a
+  regression.
+- **Four routes** when enabled: static (ordinary coding), tournament
+  (design/naming/taste, rubric-bearing judge), root-cause (debugging/incident,
+  ≥3 hypotheses from disjoint evidence + verifier/refuter panel), and triage
+  (large backlogs under INV-2 quarantine — untrusted content read by
+  low-privilege agents, trusted agents act). Each adapts the relevant
+  `*.workflow.js` template.
+- **The Plan Approval GATE and `MAX_REVIEW_CYCLES=3` GUARDRAIL hold on every
+  route** — routing changes which pipeline runs, never the human-cognition gates.
+  Claude-Code-only with a non-erroring static fallback; every route is
+  propose-only (INV-1).
+- **`/superpowers-status`** surfaces routing posture (opt-in/off-by-default vs
+  enabled) and the last route taken when traceable, else `unavailable`.
+- Deterministic structural checks (`test_s5_orchestrator_routing_structural.py`)
+  gate the declared contract.
+
 ## 0.61.0 — 2026-06-22
 
 ### dynamic-workflows: adversarial review + deep-research workflows (S4, #441)

@@ -90,6 +90,13 @@ tiers, and the INV-1 boundary it respects. The deterministic firewall
 time, so keep durable artefacts out of executable code and quarantine any
 untrusted-content reader.
 
+The `orchestrator` also dogfoods these patterns through opt-in **task
+routing**: enable the optional `orchestrator-routing` field in HARNESS.md and it
+classifies a task to a tournament, root-cause, or triage route (else the static
+pipeline). Routing is off by default — the static pipeline stays the sole
+default for ordinary coding — and the Plan Approval GATE and `MAX_REVIEW_CYCLES`
+guardrail hold on every route.
+
 ---
 
 ## 5. Respect the invariants
