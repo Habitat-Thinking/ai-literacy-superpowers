@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.64.0 — 2026-06-23
+
+### dynamic-workflows: docs, Copilot contract, epic finale (S7, #444)
+
+The final slice of the Dynamic Workflows Alignment epic (D1–D9 now all
+delivered across S1–S7).
+
+- **README gains a "Dynamic Workflows" section** — the new ephemeral substrate,
+  the six patterns, the opt-in election discipline, INV-1/INV-2, and the
+  Claude-Code-only/guidance-everywhere boundary. The `Skills-36` badge is
+  deliberately unchanged (the count was reconciled in S1).
+- **Copilot CLI degradation contract resolved (open question 4 → Option A):** the
+  `dynamic-workflows` skill **ships to both** the Claude Code and Copilot CLI
+  trees and is **never omitted**. Where the workflow runtime is absent it is
+  guidance-only — readable knowledge with each workflow-mode degrading to its
+  static fallback, never erroring. Documented in the README and the skill's
+  `governance.md`. This is documentation of already-shipped behaviour — no agent
+  behaviour changes.
+- **`CLAUDE.md` (root) and `templates/CLAUDE.md`** gain a pointer: when a task
+  looks long-running, massively parallel, highly structured, or adversarial,
+  consult the `dynamic-workflows` skill before reaching for a workflow.
+- The optional advisory `Stop` hook from D9 was **deliberately deferred** (a Stop
+  hook cannot reliably know a task's shape; the election discipline already lives
+  in the skill and the orchestrator's classifier).
+- All four §7 open questions are now resolved: Q1 fan-out threshold = 8 (S3); Q2
+  routing opt-in (S5); Q3 staging = `REFLECTION_STAGING.md` (S6); Q4 Copilot =
+  Option A (here). Deterministic structural checks
+  (`test_s7_docs_hook_copilot_structural.py`) gate the declared contract.
+
 ## 0.63.0 — 2026-06-23
 
 ### dynamic-workflows: reflection-mining curation workflow (S6, #443)

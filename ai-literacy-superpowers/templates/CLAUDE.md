@@ -37,6 +37,15 @@ The five properties in brief:
 4. **Idiomatic** — does it follow the grain of the language and project conventions?
 5. **Domain-based** — do its names come from the problem domain, not the technical implementation?
 
+## Dynamic Workflows
+
+When a task looks **long-running**, massively parallel, highly structured, or
+**adversarial**, consult the `dynamic-workflows` skill before reaching for a
+workflow — it carries the six patterns, the when-not-to-use election rubric, and
+the INV-1/INV-2 invariants. Workflows are opt-in: the static pipeline stays the
+default, and a workflow never writes a durable curated artefact directly (INV-1).
+Dynamic workflows are Claude-Code-only; elsewhere the skill is guidance.
+
 ## Workflow
 
 ### Spec-First Change Discipline
