@@ -123,6 +123,10 @@ When a spec is amended, superseded prose must be marked with a visible blockquot
 
 Layer 0 (deterministic bash plumbing tests) and Layer 1 (structural tests for plugin components and scenario corpus) of the TDAD test suite must pass on every PR that touches plugin code, `tdad_tests/`, `HARNESS.md`, or `AGENTS.md`. Both layers run offline (no API key required) and complete in under ten seconds. Layers 2 (trigger) and 3 (behavioural) are NOT covered by this gate. Enforcement: deterministic (`.github/workflows/tdad-tests-fast.yml`). Scope: pr.
 
+### Layer 0 bash tests run on macOS and Linux
+
+The Layer 0 deterministic bash tests must pass on both a macOS (BSD coreutils) and an Ubuntu (GNU coreutils) CI runner — the plugin's deterministic check scripts use `grep`, `date`, `sort`, and `stat`, which diverge between BSD and GNU and are masked on a macOS dev machine. Declared unverified until `tdad-tests-fast.yml` adds a `macos-latest` leg to its runner matrix (currently Ubuntu-only). Enforcement: unverified (`.github/workflows/tdad-tests-fast.yml`). Scope: pr.
+
 ### New plugin components must ship with a TDAD scenario
 
 When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>/SKILL.md`, `ai-literacy-superpowers/agents/<name>.agent.md`, or `ai-literacy-superpowers/commands/<name>.md`, the same PR must include at least one scenario file at `tdad_tests/scenarios/<type>/<name>/<aspect>.md` whose YAML frontmatter declares `tier` as one of `structural`, `trigger`, or `behavioural`. Files with `tier: finding` do NOT satisfy the constraint. Modifications to existing components are NOT gated. Enforcement: deterministic (`.github/workflows/tdad-scenario-check.yml`). Scope: pr.
@@ -134,6 +138,10 @@ When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>
 ### Every marketplace plugin appears in the docs index pages
 
 Every plugin listed in `.claude-plugin/marketplace.json` `plugins[]` must appear in both marketplace-level docs index pages: the homepage table (`docs/index.md`) and the canonical available-plugins table (`docs/plugins/index.md`). "Appears" means the plugin's landing-page link `<name>/index.md` is present in each file. Marketplace-scoped analogue of the per-plugin reference-page constraint; a whole-repo invariant checked on HEAD. Effective from 2026-06-01. Enforcement: deterministic (`.github/workflows/marketplace-docs-coverage-check.yml`). Scope: pr.
+
+### Objection records use the canonical taxonomy
+
+Every objection record in `docs/superpowers/objections/` must use the canonical advocatus-diaboli taxonomy — categories one of `premise`, `scope`, `implementation`, `risk`, `alternatives`, `specification quality`, and severities one of `critical`, `high`, `medium`, `low` — in both spec and code mode. Records dated on or before the 2026-04-19 taxonomy migration are grandfathered. Enforcement: deterministic (`.github/workflows/objection-taxonomy-check.yml`). Scope: pr.
 
 ### Reflections via PR workflow
 
