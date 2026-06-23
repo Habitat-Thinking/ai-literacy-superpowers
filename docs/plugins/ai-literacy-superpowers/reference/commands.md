@@ -270,6 +270,11 @@ Capture a post-task reflection. Appends a structured entry to
 Classifies the signal type (technique, constraint, tooling, process)
 so that reflections can be filtered and curated later.
 
+An optional `--mine` mode (Claude Code runtime only) clusters the reflection
+corpus, adversarially pre-filters candidate rules, and writes a vetted
+shortlist to a gitignored `REFLECTION_STAGING.md` for a human to promote —
+never to `AGENTS.md` (INV-1). It augments human curation, never replaces it.
+
 ### /cost-capture
 
 - **Skills read**: cost-tracking

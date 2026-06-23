@@ -39,4 +39,10 @@ diagnostic-legibility/assets/cache/
 # regenerated on demand, not committed. Never committed.
 cost-estimates/
 
+# Reflection-mining staging shortlist — a derived, regenerable working draft
+# written by `/reflect --mine`. It holds adversarially-vetted promotion
+# candidates for a human to curate; the durable record is the `Promoted:` line
+# a curator adds, not this file. Regenerated each run, never committed.
+REFLECTION_STAGING.md
+
 .DS_Store
