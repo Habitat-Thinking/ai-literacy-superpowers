@@ -10,7 +10,7 @@
 [![Agents](https://img.shields.io/badge/Agents-16-2E8B57?style=flat-square)](#agents-16)
 [![Commands](https://img.shields.io/badge/Commands-28-2E8B57?style=flat-square)](#commands-28)
 [![Harness](https://img.shields.io/badge/Harness-28%2F30_enforced-4682B4?style=flat-square)](HARNESS.md)
-[![Harness Health](https://img.shields.io/badge/Harness_Health-Healthy-2E8B57?style=flat-square)](observability/snapshots/2026-05-10-snapshot.md)
+[![Harness Health](https://img.shields.io/badge/Harness_Health-Healthy-2E8B57?style=flat-square)](observability/snapshots/)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-D97757?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
 [![Copilot CLI](https://img.shields.io/badge/Copilot_CLI-Plugin-000000?style=flat-square&logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
 [![Agent Harness Enabled](https://img.shields.io/badge/Agent_Harness-Enabled-000000?style=flat-square)](HARNESS.md)
