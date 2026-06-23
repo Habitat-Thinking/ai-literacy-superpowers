@@ -67,9 +67,10 @@ on by default.
 
 **Static is the sole default.** The existing **static pipeline** (`spec-writer →
 GATE → tdd-agent → implementer → code-reviewer → GUARDRAIL → integration-agent`)
-is the **default** and runs unchanged in three cases alike: when the flag is
-**flag off**; for ordinary coding tasks; and for any **ambiguous** classification.
-In all three the classifier selects the static path and spends **no extra compute** —
+is the **default** and runs unchanged in three cases alike — a **flag-off**
+project (routing disabled), ordinary coding tasks, and any **ambiguous**
+classification. In all three the classifier selects the static path and spends
+**no extra compute** —
 treat any drift toward "everything is a workflow" as a regression.
 
 **The four routes.** When routing is enabled, classify by task type and **adapt**
