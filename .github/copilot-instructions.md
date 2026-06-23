@@ -162,3 +162,7 @@ Every non-example, non-hook affordance declared in the `## Affordances` section 
 ### Permissions have declared affordances
 
 Every entry in the permissions allowlist should have a matching affordance in the `## Affordances` section. An ungoverned permission is paperwork debt, not a safety violation — flag it, do not block. Enforcement: deterministic (`bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory`). Scope: pr.
+
+### Convention parity
+
+Every active constraint heading in HARNESS.md's Constraints section must appear verbatim in all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`). These files are generated from HARNESS.md by `/convention-sync` and can drift by whole constraints (content drift, not a stale mtime). This PR-time gate complements the weekly "Convention file sync" GC rule. Enforcement: deterministic (`python3 scripts/check-convention-parity.py`, CI `.github/workflows/convention-parity-check.yml`). Scope: pr.

@@ -1,0 +1,47 @@
+# Convention-parity check for pull requests.
+#
+# The Cursor / Copilot / Windsurf convention files are generated from
+# HARNESS.md by /convention-sync. They can silently fall behind by whole
+# constraints (content drift, not just a stale mtime) — the weekly
+# "Convention file sync" GC rule only runs on cadence, so drift can
+# accumulate across many PRs unnoticed. This deterministic PR-time gate
+# fails when any active HARNESS.md constraint is missing from a convention
+# file. Surfaced by the 2026-06-23 audit (REFLECTION_LOG signal=failure),
+# which found two constraints missing from the convention files since
+# 2026-06-01.
+#
+# It is a whole-repo invariant (checked on HEAD, not a diff) because a
+# constraint can be added to HARNESS.md in one PR while the convention
+# files are updated — or forgotten — in another.
+
+name: Convention Parity Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "HARNESS.md"
+      - ".cursor/rules/constraints.mdc"
+      - ".github/copilot-instructions.md"
+      - ".windsurf/rules/constraints.md"
+      - "scripts/check-convention-parity.py"
+      - ".github/workflows/convention-parity-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check convention files mirror HARNESS.md
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Verify convention files mirror HARNESS.md constraints
+        run: python3 scripts/check-convention-parity.py

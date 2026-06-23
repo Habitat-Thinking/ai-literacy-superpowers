@@ -476,6 +476,22 @@
 - **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory
 - **Scope**: pr
 
+### Convention parity
+
+- **Rule**: Every active constraint heading in HARNESS.md's `## Constraints`
+  section must appear verbatim in all three generated convention files
+  (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`,
+  `.windsurf/rules/constraints.md`). Those files are generated from HARNESS.md
+  by `/convention-sync` and can drift by whole constraints — content drift, not
+  just a stale mtime — without any single PR touching them. This PR-time gate
+  complements the weekly "Convention file sync" GC rule, which only runs on
+  cadence. Surfaced by the 2026-06-23 audit, which found two constraints
+  missing from the convention files since 2026-06-01 (`/reflect` signal=failure).
+- **Enforcement**: deterministic
+- **Tool**: `python3 scripts/check-convention-parity.py`
+  (CI: `.github/workflows/convention-parity-check.yml`)
+- **Scope**: pr
+
 <!-- Uncomment if using spec-first development:
 
 ### Spec conformance
@@ -1017,6 +1033,6 @@ Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-06-23
-Constraints enforced: 29/30
+Constraints enforced: 30/31
 Garbage collection active: 19/19
-Drift detected: no (independently recounted: 30 active constraints — 20 deterministic + 9 agent + 1 unverified; only "Tests must pass" is unverified, by design (no suite). All referenced CI workflows and scripts exist on HEAD. Affordance↔permission constraints active: gh-cli affordance + committed Bash(gh *) grant in .claude/settings.json; harness-affordance-check.sh passes both --direction=blocking and --direction=advisory. "Layer 0 bash tests run on macOS and Linux" is deterministic — tdad-tests-fast.yml carries a layer0-macos job on macos-latest plus the ubuntu-latest fast-suite. Convention files (.cursor/rules, .github/copilot-instructions.md, .windsurf/rules) + ONBOARDING.md synced 2026-06-23, all mirror the 30 constraints incl. the activated affordance + promoted layer0 constraints. Template currency in sync at 0.64.0; latest snapshot 2026-06-23 (current). Reflection log: 52 active fragments, 0 archived, 0 entries older than 180 days (no curation debt); Path 1 (deterministic auto-archive) and Path 2 (agent aged-out review) GC rules declared and operating — Path 1 correctly held 2 Promoted entries whose RHS did not verify. Affordance GC rules remain commented-out by design.)
+Drift detected: no (31 active constraints — 21 deterministic + 9 agent + 1 unverified; only "Tests must pass" is unverified, by design (no suite). New "Convention parity" deterministic constraint (scripts/check-convention-parity.py + convention-parity-check.yml) gates that every active HARNESS.md constraint appears in all three convention files — passing at 31/31. All referenced CI workflows and scripts exist on HEAD. Affordance↔permission constraints active: gh-cli affordance + committed Bash(gh *) grant in .claude/settings.json; harness-affordance-check.sh passes both --direction=blocking and --direction=advisory. "Layer 0 bash tests run on macOS and Linux" is deterministic — tdad-tests-fast.yml carries a layer0-macos job on macos-latest plus the ubuntu-latest fast-suite. Convention files (.cursor/rules, .github/copilot-instructions.md, .windsurf/rules) + ONBOARDING.md synced 2026-06-23, all mirror the 30 constraints incl. the activated affordance + promoted layer0 constraints. Template currency in sync at 0.64.0; latest snapshot 2026-06-23 (current). Reflection log: 52 active fragments, 0 archived, 0 entries older than 180 days (no curation debt); Path 1 (deterministic auto-archive) and Path 2 (agent aged-out review) GC rules declared and operating — Path 1 correctly held 2 Promoted entries whose RHS did not verify. Affordance GC rules remain commented-out by design.)
