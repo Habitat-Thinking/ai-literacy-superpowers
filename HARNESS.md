@@ -876,7 +876,6 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 <!-- ^ Tune the review-staleness threshold here (the staleness GC rule reads
      this value). This line is human-owned and survives /harness-upgrade. -->
 
-
 ### gh-cli
 <!-- affordance-example -->
 
