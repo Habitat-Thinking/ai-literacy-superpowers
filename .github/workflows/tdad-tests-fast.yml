@@ -72,3 +72,7 @@ jobs:
       - name: Run Layer 1 (dynamic-workflows S5 orchestrator routing)
         working-directory: tdad_tests
         run: pytest tests/test_s5_orchestrator_routing_structural.py -v
+
+      - name: Run Layer 1 (dynamic-workflows S6 reflection mining)
+        working-directory: tdad_tests
+        run: pytest tests/test_s6_reflection_mining_structural.py -v
