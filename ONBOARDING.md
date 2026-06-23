@@ -6,17 +6,17 @@
 This is a Claude Code and GitHub Copilot CLI plugin marketplace that
 ships the AI Literacy framework's complete development workflow —
 harness engineering, agent orchestration, literate programming, CUPID
-code review, compound learning, and the three enforcement loops. You
-will be working with markdown skills, bash hook scripts, JSON
-configuration, and YAML CI workflows. There is no compiled application
-code; the plugin's "code" is content that agents and tools read and
-execute. The flagship plugin is `ai-literacy-superpowers` (33 skills,
-14 agents, 26 commands); `model-cards` and `diagnostic-legibility` are
-sister plugins that ship from the same repo, each with its own version
-line and tag convention. The whole project is also self-referential —
-it defines the harness framework, and its own `HARNESS.md` uses that
-framework, so changes to templates do not automatically propagate to
-the project's own root.
+code review, compound learning, dynamic workflows, and the three
+enforcement loops. You will be working with markdown skills, bash hook
+scripts, JSON configuration, and YAML CI workflows. There is no compiled
+application code; the plugin's "code" is content that agents and tools
+read and execute. The flagship plugin is `ai-literacy-superpowers`
+(36 skills, 16 agents, 28 commands); `model-cards` and
+`diagnostic-legibility` are sister plugins that ship from the same repo,
+each with its own version line and tag convention. The whole project is
+also self-referential — it defines the harness framework, and its own
+`HARNESS.md` uses that framework, so changes to templates do not
+automatically propagate to the project's own root.
 
 ---
 
@@ -28,7 +28,8 @@ the project's own root.
   every `.md` file.
 - **Bash** — hook scripts and utility scripts. Every `.sh` file uses
   strict mode (`set -euo pipefail`) and passes both `bash -n` and
-  ShellCheck.
+  ShellCheck. Deterministic check scripts are written POSIX-only so
+  they behave the same under BSD (macOS) and GNU (Linux) coreutils.
 - **JSON** — plugin configuration (`plugin.json`, `marketplace.json`)
   and hook registration.
 - **YAML** — GitHub Actions CI workflows that enforce constraints on
@@ -62,7 +63,9 @@ plugin loader and the assessment tooling read those fields, so a
 missing one breaks discovery.
 
 **Error handling in shell is uniform.** Every hook script opens with
-`set -euo pipefail`. Hooks are advisory only: they warn but never
+`set -euo pipefail` — and it must sit within the first 15 lines (a CI
+check greps `head -15`, so a long literate header goes *below* strict
+mode, never above it). Hooks are advisory only: they warn but never
 block, and they emit JSON `systemMessage` output so Claude Code
 surfaces the note without interrupting your flow. Guard clauses exit
 silently (`exit 0`) when a hook doesn't apply.
@@ -76,7 +79,7 @@ before you started.
 
 ## What's Enforced
 
-The harness declares 26 constraints. Here's what fires, grouped by
+The harness declares 28 constraints. Here's what fires, grouped by
 when you'll meet it.
 
 ### At commit time
@@ -112,13 +115,19 @@ These are the CI gates that block a merge:
 - **PRs have adjudicated objections** — feature PRs carry a spec-mode
   and a code-mode objection record (`/diaboli`) with every disposition
   resolved.
+- **Objection records use the canonical taxonomy** — every objection
+  record uses the canonical advocatus-diaboli categories (`premise`,
+  `scope`, `implementation`, `risk`, `alternatives`, `specification
+  quality`) and severities (`critical`, `high`, `medium`, `low`), in
+  both spec and code mode.
 - **PRs have adjudicated choice stories** — non-exempt PRs carry a
   choice-story record (`/choice-cartograph`) with every story
   dispositioned, or claim an exempt label.
 - **Version consistency / Marketplace plugin version sync / Release
   traceability** — `plugin.json`, the README badge, the CHANGELOG
-  heading, and `marketplace.json`'s `plugin_version` must all agree,
-  and every shipped version needs a matching git tag.
+  heading, and `marketplace.json`'s `plugin_version` and
+  `plugins[].version` must all agree, and every shipped version needs a
+  matching git tag.
 - **Docs site builds in strict mode** — PRs touching `docs/**`,
   `mkdocs.yml`, or `requirements.txt` must pass `mkdocs build
   --strict` (catches broken internal links before they reach main).
@@ -137,6 +146,10 @@ These are the CI gates that block a merge:
   `docs/plugins/index.md`.
 - **TDAD fast-suite passes (Layers 0 + 1)** — the offline plumbing and
   structural tests run green on any PR touching plugin code.
+- **Layer 0 bash tests run on macOS and Linux** — the deterministic
+  bash tests must pass under both BSD and GNU coreutils. Currently
+  *unverified*: declared as a guard but awaiting a `macos-latest` leg
+  on the CI runner matrix.
 - **Output validation checkpoints** — every command that writes
   structured output reads it back and checks it against the format
   spec.
@@ -191,10 +204,28 @@ Lessons the team learned the hard way, so you don't have to.
   command-prompt-sync GC rules exist to catch.
 
 - **Grep `.github/workflows/` before proposing a new CI check.** The
-  project already has a dozen workflows (`harness.yml`,
+  project already has a dozen-plus workflows (`harness.yml`,
   `version-check.yml`, `spec-first-check.yml`, `tdad-tests-fast.yml`,
-  `docs-build-check.yml`, `gc.yml`, and more). Proposing a duplicate
-  wastes a branch cycle.
+  `docs-build-check.yml`, `objection-taxonomy-check.yml`, `gc.yml`, and
+  more). Proposing a duplicate wastes a branch cycle.
+
+- **Watch for BSD-vs-GNU shell traps in deterministic check scripts.**
+  Scripts that pass on a macOS dev machine can fail (or worse, silently
+  self-skip a safety check) on the Linux CI runner. `grep '\|'` is a
+  *literal* under BSD grep — and the Claude Code harness aliases `grep`
+  to `ugrep`, so the bug passes locally; verify with `/usr/bin/grep`.
+  `date -u -j -f '%Y-%m-%d'` does not pin UTC midnight on BSD; `stat
+  -f%z` (BSD) vs `-c%s` (GNU) differ; pin `sort` with `LC_ALL=C`. Write
+  check scripts POSIX-only.
+
+- **When a structural test asserts a doc *declares* a phrase, mind the
+  line wrap.** Layer-1 tests grep for a phrase to confirm a guarantee
+  is present; if you wrap a bolded multi-word phrase across two lines
+  (`**falls\nback**`), the substring check fails even though the
+  content is correct. When authoring, keep the asserted phrase on one
+  line (line length is unlinted here — MD013 is off). When writing the
+  test, assert the words as co-occurring tokens, not one joined
+  substring.
 
 - **MkDocs resolves links from the source file's directory, not from
   `docs/`.** A link like `plugins/foo.md` written in
@@ -237,7 +268,27 @@ build on them rather than relitigate them.
   spec can honour the tool split and still break the invariant by
   writing first and summarising after — so check the ordering, not
   just the tool boundary. In production across `advocatus-diaboli`,
-  `choice-cartographer`, `model-card-researcher`, and `/diagnose`.
+  `choice-cartographer`, `model-card-researcher`, `/diagnose`, and
+  `/cost-estimate`.
+
+- **An agent that derives a judgment a human used to supply carries a
+  disclosure obligation.** When an agent emits a value formerly
+  ground-truth supplied by a human (a derived *prediction*, not an
+  inspected fact), the artefact must disclose four parts: what it
+  included, what it consciously excluded, its confidence, and the
+  failure direction when confidence is below high — never a silent
+  boundary or a single number as fact. The Rule of Three has fired;
+  this is now a confirmed cross-cutting design discipline (the
+  cost-estimation skill's estimate-record is the worked instance).
+
+- **A change to a shared/merged contract gets its own owning slice with
+  its own adversarial pass — a consumer never mutates the contract it
+  consumes.** When a slice needs to change a reference, schema, or
+  format that other slices depend on, carve the change into a dedicated
+  slice that *owns* that artefact and runs its own diaboli pass, rather
+  than mutating it in-place from a consumer slice (which inherits only
+  the consumer's adversarial budget, not the contract's
+  backward-compatibility scrutiny).
 
 - **Human-cognition gates require propose-with-rationale-and-wait, not
   silent adjudication — even in auto-mode.** The diaboli and
@@ -246,6 +297,34 @@ build on them rather than relitigate them.
   becomes documentation-only. The working pattern: surface the record,
   propose dispositions-with-rationale via `AskUserQuestion`, and write
   only after an explicit human choice.
+
+- **Agents producing structured output for programmatic consumers use
+  dispatcher-first error contracts.** No silent fallback on
+  unrecognised input. Such an agent specs *both* a success shape and a
+  single-line, pattern-matchable refusal shape (prefixed with the agent
+  name and the literal `refusal:`), emitted *instead of* the success
+  block — never alongside it. A forgiving fallback silently corrupts
+  dispatcher intent; a structured refusal fails loud and
+  machine-legibly.
+
+- **Schema evolution routes by fact granularity.** Where a new fact
+  lives on a schema surface is decided by whether it varies per element
+  (reuse the per-element field with a string-prefix convention — no
+  schema touch) or applies to the whole record (add an additive
+  optional wrapper field — a schema touch is justified). Every
+  audit-trail entry has exactly one author and one source.
+
+- **The cognitive-reservoir verifier-watch is advisory-only and is NOT
+  a Constraint.** The `cognitive-reservoir` skill, `reservoir-warden`
+  agent, `/reservoir` command, and `reservoir-check` Stop hook watch
+  the *human verifier* — the one actor every other enforcement surface
+  trusts blindly. They count observable proxies (session span, decision
+  volume, context switches, wall-clock hour) and infer risk, but the
+  inputs cannot support a precise measurement of cognitive state. So it
+  lives in its own opt-in HARNESS.md block, never blocks a
+  commit/merge/session, never exits non-zero, and persists no record of
+  the human's state to disk. Promoting it into a CI gate breaks the
+  design.
 
 - **Hook scripts never block, only warn.** This plugin runs across
   diverse projects; a blocking hook could break workflows the authors
@@ -279,8 +358,9 @@ build on them rather than relitigate them.
   suggestion, not a commitment the later slice inherits. Repeatedly
   handing the same concern forward accrues *deferred-concern-accretion
   debt*. When a slice declines an inherited hand-off, either absorb the
-  concern or re-file it as a standalone issue — never leave it implicit
-  in a closed slice's "out of scope" section.
+  concern or re-file it as a standalone issue bound to a *scheduled
+  deliverable* — never leave it implicit in a closed slice's "out of
+  scope" section.
 
 ---
 
@@ -303,6 +383,14 @@ layered behavioural test suite:
   (behavioural)** need an `ANTHROPIC_API_KEY` and per-run cost, so they
   are not part of the PR gate.
 
+When you write a structural test that asserts a doc *declares* a
+guarantee, assert the words as co-occurring tokens rather than one
+joined substring — markdown reflows across lines and a wrapped phrase
+will break a naïve substring check even when the content is correct.
+And when you add a new deterministic security gate (like the INV-1
+firewall), have it adversarially probed — green unit tests prove only
+the cases you imagined.
+
 To run the fast suite locally: from `tdad_tests/`, set up the Python
 virtualenv and run `pytest` against the Layer 0 and Layer 1
 directories. To run the content checks, run markdownlint, ShellCheck,
@@ -323,12 +411,27 @@ others can't:
   catch the slow drift neither hooks nor PR gates see (stale docs,
   manifest drift, cadence creep).
 
-The project also runs on an observability cadence. Health snapshots are
+The harness also declares an **Affordances** inventory — the tools the
+agent is allowed to invoke, the identity each runs under, and the audit
+trail each leaves. Right now the project declares one real affordance
+(`gh-cli`, running under the human's GitHub OAuth identity) alongside
+example entries. Identity is the load-bearing governance question:
+whose credentials authorise the action.
+
+The project runs on an observability cadence. Health snapshots are
 generated **monthly**. The `/harness-audit`, `/assess`, and
 `/cost-capture` activities run **quarterly** (every 90 days), and
 reflection review and promotion runs **monthly**. The quarterly
 activities are meant to run as a single sitting — one working block,
 anchored to the governance audit, not three scattered tasks.
+
+When a task looks long-running, massively parallel, highly structured,
+or adversarial, the `dynamic-workflows` skill carries the patterns for
+spinning up a self-authored ephemeral multi-agent harness. Workflows
+are opt-in (the static pipeline stays the default), Claude-Code-only,
+and governed by two invariants: an ephemeral workflow never writes a
+durable curated artefact directly (INV-1), and untrusted output is
+quarantined (INV-2).
 
 ---
 
@@ -342,16 +445,19 @@ Work through this before you push:
    exemption).
 2. **Spec first, if it's a feature.** For a feature or behaviour
    change, make the first commit a spec-only commit under
-   `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`.
+   `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`. Only files in
+   `docs/superpowers/specs/` may appear in that commit — a plan file
+   under `docs/superpowers/plans/` will trip the gate.
 3. **Run the local checks.** markdownlint on your `.md` files,
    ShellCheck plus `bash -n` on any `.sh` files, and gitleaks across
    the tree. If you touched `docs/**`, also run `mkdocs build
    --strict`.
 4. **Update the CHANGELOG.** Add an entry under the current version
    heading (`## X.Y.Z — YYYY-MM-DD`). If your change touches files
-   inside `ai-literacy-superpowers/`, bump the version in
-   `plugin.json`, the README badge, and the CHANGELOG together (and
-   update `marketplace.json`'s `plugin_version`).
+   inside `ai-literacy-superpowers/`, bump the version in the five
+   CI-checked locations together — `plugin.json`, the README badge, the
+   CHANGELOG heading, and `marketplace.json`'s `plugin_version` and the
+   plugin's `plugins[].version` entry.
 5. **Update the docs.** If you added or changed a skill, agent, or
    command, update its how-to / reference / explanation pages and add a
    TDAD scenario and a reference-page entry in the same PR.
@@ -368,8 +474,8 @@ Work through this before you push:
 
 ## Where to Learn More
 
-- [HARNESS.md](HARNESS.md) — the full constraint, GC, and convention
-  reference
+- [HARNESS.md](HARNESS.md) — the full constraint, GC, affordance, and
+  convention reference
 - [AGENTS.md](AGENTS.md) — accumulated team knowledge, gotchas, and
   architecture decisions
 - [REFLECTION_LOG.md](REFLECTION_LOG.md) — session-by-session learnings
