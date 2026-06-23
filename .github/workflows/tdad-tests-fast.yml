@@ -80,3 +80,29 @@ jobs:
       - name: Run Layer 1 (dynamic-workflows S7 docs + Copilot contract)
         working-directory: tdad_tests
         run: pytest tests/test_s7_docs_hook_copilot_structural.py -v
+
+  # Cross-OS coverage for Layer 0: the deterministic bash scripts use
+  # grep/date/sort/stat, which diverge between BSD (macOS) and GNU
+  # (Ubuntu). A dedicated macOS leg verifies the scripts are portable —
+  # the bugs are masked on a GNU-only runner. Layer 0 only (Layer 1 is
+  # OS-independent structural Python and already runs on Ubuntu above).
+  layer0-macos:
+    name: Layer 0 on macOS (BSD coreutils)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tdad_tests/pyproject.toml
+
+      - name: Install tdad_tests
+        working-directory: tdad_tests
+        run: pip install -e .
+
+      - name: Run Layer 0 (deterministic plumbing) on BSD coreutils
+        working-directory: tdad_tests
+        run: pytest tests/test_layer0_deterministic.py -v

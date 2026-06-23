@@ -323,12 +323,11 @@
   diverge between BSD and GNU — and the bugs are masked on a macOS dev machine
   (the Claude Code harness even aliases `grep` to `ugrep`, so a GNU-only
   `grep '\|'` passes locally while bare BSD grep treats it as a literal). A
-  single-runner suite cannot catch this class; only a cross-OS matrix can.
-  Declared `unverified` until `tdad-tests-fast.yml` adds a `macos-latest` leg
-  to its runner matrix (the current implementation runs on Ubuntu only).
-- **Enforcement**: unverified
-- **Tool**: `.github/workflows/tdad-tests-fast.yml` (add `macos-latest` to the
-  runner matrix)
+  single-runner suite cannot catch this class; only cross-OS coverage can.
+- **Enforcement**: deterministic
+- **Tool**: `.github/workflows/tdad-tests-fast.yml` (the `layer0-macos` job
+  runs Layer 0 on `macos-latest`; the `fast-suite` job runs it on
+  `ubuntu-latest`)
 - **Scope**: pr
 
 ### New plugin components must ship with a TDAD scenario
@@ -1018,6 +1017,6 @@ Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-06-23
-Constraints enforced: 28/30
+Constraints enforced: 29/30
 Garbage collection active: 19/19
-Drift detected: no (convention files + ONBOARDING.md synced to template-v0.64.0 on 2026-06-23; template currency in sync at 0.64.0. The two affordance↔permission constraints are now active — gh-cli is a real affordance with a matching Bash(gh *) grant in committed .claude/settings.json, both check directions pass. Affordance GC rules remain commented-out and excluded from totals.)
+Drift detected: no (convention files + ONBOARDING.md synced to template-v0.64.0 on 2026-06-23; template currency in sync at 0.64.0. Affordance↔permission constraints active (gh-cli affordance + committed Bash(gh *) grant, both directions pass). "Layer 0 bash tests run on macOS and Linux" promoted unverified→deterministic — tdad-tests-fast.yml now runs Layer 0 on a dedicated macos-latest job (verified passing on BSD coreutils). Only "Tests must pass" remains unverified, by design (no suite). Affordance GC rules remain commented-out.)
