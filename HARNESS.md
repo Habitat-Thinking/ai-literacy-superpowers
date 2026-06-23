@@ -884,14 +884,15 @@ Run /governance-audit quarterly to keep governance constraints fresh.
   token scopes `gist`, `read:org`, `repo`, `workflow`)
 - **Audit trail**: github-audit (org audit log, 90-day retention,
   admin-only access)
-- **Permission**: `Bash(gh *)`
+- **Permission**: `Bash(gh *)` (allowlist in `.claude/settings.json`)
 - **Last reviewed**: 2026-06-23
 - **Notes**: On this machine `$GITHUB_TOKEN` is unset, so `gh` resolves to
   the keychain identity above (chain: `$GITHUB_TOKEN` → keychain → fail).
-  No static allowlist currently grants `Bash(gh *)` — it runs via
-  session-level permission, not a declared grant. To formalise (and to
-  satisfy the affordance↔permission constraints once they are
-  uncommented), add `Bash(gh *)` to `.claude/settings.local.json`.
+  The grant is declared in the committed `.claude/settings.json`
+  permissions allowlist (`Bash(gh *)`), so the affordance↔permission
+  constraints will pass in CI once they are uncommented. Committed (not
+  per-machine) because the constraints are deterministic PR-scope checks
+  that can only read tracked files.
 
 ### honeycomb-mcp
 <!-- affordance-example -->
