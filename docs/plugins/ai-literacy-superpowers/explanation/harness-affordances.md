@@ -105,6 +105,8 @@ scattered config.
 
 - [Discover affordances](../how-to/discover-affordances.md) — produce a
   draft inventory and promote entries with `add`.
+- [Maintain your affordance inventory](../how-to/maintain-affordance-inventory.md)
+  — the complete loop: add, review, respond to staleness, retire.
 - [Affordance schema](../reference/affordance-schema.md) — field-by-field
   reference.
 - [Harness Affordances — Design Spec](../../../superpowers/specs/2026-04-26-harness-affordances-design.md)

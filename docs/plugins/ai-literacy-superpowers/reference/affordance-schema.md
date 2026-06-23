@@ -107,6 +107,13 @@ in the `## Affordances` section header) or has no valid date. Hook entries
 are included (their Identity/Audit trail can go stale too); example entries
 are skipped. The rule is report-only — the fix is running `review`.
 
+### `Constraint references`
+
+*Optional.* The constraint heading(s) that depend on this affordance — for
+example a chained constraint that consumes the grant. Human-owned and
+free-form: `add` and `review` only transcribe what you dictate, never infer
+it. Omit the field entirely when no constraint references the entry.
+
 ## Matching algorithm
 
 When a chained constraint compares affordances against permissions,

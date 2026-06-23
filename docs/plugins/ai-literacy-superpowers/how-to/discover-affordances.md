@@ -160,10 +160,15 @@ changed.
   spurious warning when you promote it.
 - The scanner does not infer `Identity`, `Audit trail`, or `Last
   reviewed` — these are governance judgments that humans must make.
-- The `review` subcommand (re-validation + the staleness GC rule) lands
-  in a later sequencing step of the affordances design.
+- Discovery is only the first stage. Once entries are in `HARNESS.md`
+  they need promoting, re-validating, and eventually retiring — see
+  [Maintain Your Affordance Inventory](maintain-affordance-inventory.md)
+  for the complete loop, including the `review` subcommand and the
+  affordance GC rules.
 
 ## Related
 
+- [Maintain Your Affordance Inventory](maintain-affordance-inventory.md) — the full lifecycle after discovery.
+- [Affordance schema reference](../reference/affordance-schema.md) — field-by-field definitions.
 - [Harness Affordances — Design Spec](../../../superpowers/specs/2026-04-26-harness-affordances-design.md)
 - [`/harness-affordance discover` — Implementation Spec](../../../superpowers/specs/2026-04-27-harness-affordance-discover.md)
