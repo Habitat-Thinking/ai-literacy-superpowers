@@ -877,19 +877,21 @@ Run /governance-audit quarterly to keep governance constraints fresh.
      this value). This line is human-owned and survives /harness-upgrade. -->
 
 ### gh-cli
-<!-- affordance-example -->
 
 - **Mode**: cli
-- **Identity**: runtime-resolved
+- **Identity**: user-sso (the human's GitHub OAuth credentials, resolved
+  from the macOS keychain via `gh auth login` — account `russmiles`,
+  token scopes `gist`, `read:org`, `repo`, `workflow`)
 - **Audit trail**: github-audit (org audit log, 90-day retention,
-  admin-only access) — assumes credentials resolve to a real GitHub
-  identity; if `$GITHUB_TOKEN` resolves to a service account the audit
-  trail will record that account, not the user
-- **Permission**: `Bash(gh *)` (allowlist in `.claude/settings.local.json`)
-- **Last reviewed**: 2026-04-26
-- **Notes**: `gh` resolves credentials in this order: `$GITHUB_TOKEN` →
-  keychain (`gh auth login`) → fail. Confirm which path is active before
-  relying on this entry.
+  admin-only access)
+- **Permission**: `Bash(gh *)`
+- **Last reviewed**: 2026-06-23
+- **Notes**: On this machine `$GITHUB_TOKEN` is unset, so `gh` resolves to
+  the keychain identity above (chain: `$GITHUB_TOKEN` → keychain → fail).
+  No static allowlist currently grants `Bash(gh *)` — it runs via
+  session-level permission, not a declared grant. To formalise (and to
+  satisfy the affordance↔permission constraints once they are
+  uncommented), add `Bash(gh *)` to `.claude/settings.local.json`.
 
 ### honeycomb-mcp
 <!-- affordance-example -->
