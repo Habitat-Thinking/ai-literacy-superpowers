@@ -567,7 +567,7 @@ Beneath the static agent pipeline sits an **ephemeral execution substrate**: *dy
 
 **Two governing invariants** protect the curated harness from ephemeral churn:
 
-- **INV-1 — ephemeral proposes, durable curates.** A workflow may *propose* changes but **never writes** the durable, human-curated artefacts (`HARNESS.md`, `AGENTS.md`, `CLAUDE.md`, `MODEL_ROUTING.md`) directly; discoveries flow through `REFLECTION_LOG.md → human curates → AGENTS.md`. A deterministic CI firewall (`scripts/inv-firewall.sh`) enforces this on every shipped template.
+- **INV-1 — ephemeral proposes, durable curates.** A workflow may *propose* changes but **never writes** the durable, human-curated artefacts (`HARNESS.md`, `AGENTS.md`, `CLAUDE.md`, `MODEL_ROUTING.md`) directly; discoveries flow through `REFLECTION_LOG.md → human curates → AGENTS.md`. A deterministic CI firewall (`ai-literacy-superpowers/scripts/inv-firewall.sh`) enforces this on every shipped template.
 - **INV-2 — quarantine.** A workflow agent that reads untrusted or public content is withheld high-privilege tools; only separate trusted agents act on what it found.
 
 **Runtime scope — Claude Code only.** Dynamic workflows are a **Claude Code** runtime capability and are **not transferable** to other coding agents. The plugin ships the skill to both the Claude Code and **Copilot** CLI trees: where the workflow runtime is present, the modes execute; where it is absent (Copilot CLI or any other agent), the skill is **guidance** only — readable knowledge with each workflow-mode degrading to its static fallback — never omitted and never erroring.
