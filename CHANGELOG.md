@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.63.0 — 2026-06-23
+
+### dynamic-workflows: reflection-mining curation workflow (S6, #443)
+
+Raises the *proposal* quality of the compound-learning loop without touching the
+human-curates principle.
+
+- **`/reflect` gains an optional `--mine` mode**: it adapts
+  `reflection-mining.workflow.js` to cluster the reflection corpus, adversarially
+  pre-filter each candidate rule ("would this rule have prevented a real past
+  mistake?"), and emit a vetted **shortlist** of promotion candidates. The
+  default `/reflect` capture behaviour is unchanged.
+- **New `REFLECTION_STAGING.md`** (gitignored, regenerated each run) is the sole
+  write target — each candidate carries the proposed rule, its source reflection
+  fragment(s), and the adversarial verdict/evidence. Mining writes **only** there
+  and **never** to `AGENTS.md` (byte-for-byte unchanged); a **human still
+  promotes** from staging via the existing `Promoted:` flow (INV-1: agents
+  propose, humans curate).
+- **`integration-agent`** notes that mining **augments, never replaces** human
+  curation — the `Promoted:`-line gate stays the only path into AGENTS.md/HARNESS.md.
+- `--mine` requires the Claude Code runtime; without it it degrades to
+  guidance-only and never errors. Deterministic structural checks
+  (`test_s6_reflection_mining_structural.py`) gate the declared contract.
+
 ## 0.62.0 — 2026-06-23
 
 ### dynamic-workflows: orchestrator classify-and-act routing (S5, #442)

@@ -196,3 +196,13 @@ Where `<RHS>` is one of:
 The integration agent does not add Promoted lines automatically — this
 is a curator action. The agent should preserve any existing Promoted
 lines on entries it processes.
+
+## Reflection mining augments curation — it never replaces it
+
+Reflection **mining** (`/reflect --mine`) **augments**, never **replaces**,
+**human** **curation**. Mining proposes a vetted shortlist to the gitignored
+`REFLECTION_STAGING.md`; it never writes `AGENTS.md` or `HARNESS.md`. The human
+`Promoted:`-line gate above remains the **only** path into those curated
+artefacts, **unchanged** by mining — a curator still reads the staging shortlist
+and decides what to promote. Treat a mined candidate as a better-vetted
+proposal, not an approved rule.

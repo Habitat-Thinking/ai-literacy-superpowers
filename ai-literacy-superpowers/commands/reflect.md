@@ -178,6 +178,49 @@ never edit it by hand.
    git commit -m "Add reflection: <one-line summary of the task>"
    ```
 
+## Mining mode (`--mine`)
+
+`/reflect --mine` is an **optional**, **opt-in** mode that mines the accumulated
+reflection corpus for rules worth promoting. The **default** `/reflect`
+**capture** behaviour is **unchanged** — bare `/reflect` still writes one
+fragment under `reflections/active/` and regenerates the log; `--mine` adds a
+second capability, it does not replace the first.
+
+**What it does.** Mining **adapts** the `reflection-mining.workflow.js` template
+(under the `dynamic-workflows` skill — adapt it by **relative path**, never run
+it verbatim) to:
+
+1. **Cluster** the reflection entries by recurring theme with parallel agents.
+2. **Adversarial**ly pre-filter each candidate rule — a skeptic asks
+   "**would this** rule have **prevented** a real past mistake?" and refutes the
+   ones that would not.
+3. Emit a vetted **shortlist** of promotion candidates.
+
+**Where it writes (INV-1 — the load-bearing boundary).** The shortlist is
+written **only** to `REFLECTION_STAGING.md` and **never** to `AGENTS.md` (nor
+`HARNESS.md` / `CLAUDE.md` / `MODEL_ROUTING.md`). `AGENTS.md` stays
+**byte-for-byte** **unchanged** by mining. Mining **proposes**; a **human** still
+**promotes** from staging into `AGENTS.md` / `HARNESS.md` through the existing
+`Promoted:` flow below. This is "agents propose; humans curate" — mining raises
+the quality of what reaches the human, it never bypasses them.
+
+**Staging candidate shape.** Each entry in `REFLECTION_STAGING.md` carries the
+proposed **rule** / insight, the **source** reflection fragment(s) it clusters,
+and the adversarial filter's **verdict** and **evidence**.
+
+**Lifecycle.** `REFLECTION_STAGING.md` is a **staging** / working area for human
+**review** — **not** the **permanent** record and not a durable curated
+artefact. It lives at the repo root, is **gitignored**, and is **regenerated**
+(overwritten) on each `--mine` run; the durable record is the `Promoted:` line a
+human adds, not the staging file.
+
+**Runtime scope — Claude Code only.** `--mine` requires the **Claude Code**
+**runtime**. On a tree without the workflow runtime (Copilot CLI or any other
+agent), `--mine` degrades to **guidance** only and **never errors**: it points at
+the readable `dynamic-workflows` skill knowledge and the manual
+cluster → vet → promote path, as a non-erroring **fallback**. Default capture is
+unaffected everywhere.
+
 ## Promoting an entry (curator action, post-reflection)
 
 When you later promote this reflection's content to `AGENTS.md` or

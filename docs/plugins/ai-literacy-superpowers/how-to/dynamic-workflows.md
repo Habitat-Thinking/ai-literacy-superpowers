@@ -80,7 +80,9 @@ Copy the closest one and adapt its prompts, model tiers, and token budget:
 - `adversarial-review.workflow.js` — review in a context distinct from the
   implementer's, one verifier per CUPID/literate property.
 - `reflection-mining.workflow.js` — cluster reflections, vet candidates,
-  shortlist promotions for a human (never writes durable memory).
+  shortlist promotions for a human (never writes durable memory). The
+  `/reflect --mine` mode dogfoods this: it writes a vetted shortlist to a
+  gitignored `REFLECTION_STAGING.md` for a human to promote, never to AGENTS.md.
 - `deep-assessment.workflow.js` — fan out a long repo scan by area, verify
   each finding, synthesise a cited report.
 
