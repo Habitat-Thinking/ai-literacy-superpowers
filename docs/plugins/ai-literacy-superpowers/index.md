@@ -173,3 +173,4 @@ from first principles to the complete system:
 - [The Harness Tuning Loop](explanation/the-harness-tuning-loop.md) — one surprise traced end to end through reflection, GC, HARNESS.md, AGENTS.md, hooks, and CI
 - [The Harness Lifecycle](explanation/the-harness-lifecycle.md) — one harness traced through six stages over months and years; the temporal axis of harness operation
 - [Governance as Meaning Alignment](explanation/governance-as-meaning-alignment.md) — the three-frame check
+- [A Curated Video Library for Agentic Engineering](explanation/agentic-engineering-videos.md) — authoritative talks mapped to the plugin's capabilities and lineage

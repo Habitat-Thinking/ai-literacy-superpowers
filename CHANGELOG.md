@@ -2,6 +2,18 @@
 
 ## 0.64.0 — 2026-06-23
 
+### Docs: curated agentic-engineering video library (#456)
+
+- **New explanation page** `docs/plugins/ai-literacy-superpowers/explanation/agentic-engineering-videos.md`
+  — a "watch this to understand X" companion that maps authoritative
+  talks (Böckeler, Anthropic, Osmani, North, Adzic, Knuth, Fairbanks,
+  Meadows, Boyd/OODA) onto the plugin's own capabilities and lineage.
+  Grouped by repo theme, each entry cites the capability or foundation
+  it illuminates, carries a start-here → deeper sequence hint, and was
+  link-verified live on 2026-06-24. Includes a suggested viewing path
+  and an honest list of foundations with no verified primary-source
+  video. Linked from the plugin docs index. Docs-only, no version bump.
+
 ### dynamic-workflows: docs, Copilot contract, epic finale (S7, #444)
 
 The final slice of the Dynamic Workflows Alignment epic (D1–D9 now all
