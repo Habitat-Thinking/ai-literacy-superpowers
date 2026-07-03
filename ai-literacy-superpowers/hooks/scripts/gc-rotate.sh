@@ -101,14 +101,24 @@ case $rule_index in
     ;;
   3)
     # Shell scripts strict mode
+    #
+    # Detect any start-of-line `set` that enables errexit/nounset/pipefail,
+    # anywhere in the file. Scanning the whole file (not just head -15)
+    # sees `set` lines that sit below a documented header comment block,
+    # and matching the strict-mode family rather than the exact literal
+    # `set -euo pipefail` accepts deliberate fail-open subsets — e.g.
+    # `set -uo pipefail` (hooks that must not abort mid-run) and `set -u`
+    # (telemetry/CI scripts that must never fail the run). The `[euo]`
+    # anchor still rejects `set -- "$@"` (positional-params reset) and a
+    # script with no strict mode at all is still flagged.
     missing_files=""
     while IFS= read -r -d '' f; do
-      if ! head -15 "$f" | grep -q "set -euo pipefail"; then
+      if ! grep -qE '^[[:space:]]*set -[a-z]*[euo]' "$f"; then
         missing_files="${missing_files}\n- $f"
       fi
     done < <(list_owned_shell_scripts)
     if [ -n "$missing_files" ]; then
-      printf '{"systemMessage": "GC check (strict mode): missing set -euo pipefail in:%s"}' "$missing_files"
+      printf '{"systemMessage": "GC check (strict mode): missing strict mode (set -e/-u/-o pipefail) in:%s"}' "$missing_files"
     fi
     ;;
 esac
