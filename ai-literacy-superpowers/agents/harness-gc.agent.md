@@ -151,13 +151,17 @@ flagging, not full analysis.
 
 ### Path 1 — Auto-archive of promoted entries (weekly, deterministic)
 
-When this rule fires, run:
+When this rule fires, run the bare command (do NOT prefix a path — it
+resolves via the plugin's `bin/` directory, which is on PATH even in
+this subagent context, where `${CLAUDE_PLUGIN_ROOT}` is not set):
 
 ```bash
-bash ai-literacy-superpowers/scripts/archive-promoted-reflections.sh
+archive-promoted-reflections
 ```
 
-The script identifies active fragments (`reflections/active/*.md`) with a
+The command dispatches to the plugin's
+`scripts/archive-promoted-reflections.sh`, which identifies active
+fragments (`reflections/active/*.md`) with a
 `Promoted` line, verifies the right-hand side resolves to actual
 AGENTS.md / HARNESS.md content (or is a closure form), moves verified
 fragments to `reflections/archive/<YYYY>.md`, deletes them, and

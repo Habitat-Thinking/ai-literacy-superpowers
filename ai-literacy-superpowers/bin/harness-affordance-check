@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Bin shim → scripts/harness-affordance-check.sh
+#
+# A plugin's bin/ directory is on PATH in every Claude Code execution
+# context, INCLUDING the harness-gc subagent that runs HARNESS.md
+# GC-rule "Tool:" fields — the one context where ${CLAUDE_PLUGIN_ROOT}
+# is NOT set (it is defined only for hooks). Pointing a Tool: field at
+# a bare command name therefore resolves via PATH regardless of whether
+# the plugin is vendored in-repo or installed in the versioned
+# marketplace cache, and survives plugin upgrades. See issue #475.
+#
+# This shim resolves the plugin root from its own location and execs the
+# real implementation, preserving the caller's working directory (the
+# scripts expect to run from the consumer repo root).
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec bash "$here/../scripts/harness-affordance-check.sh" "$@"

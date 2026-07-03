@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.65.0 — 2026-07-04
+
+### Fix: GC-rule Tool paths resolve in cache installs via bin/ shims (#475)
+
+HARNESS.md GC-rule `Tool:` fields pointed at
+`ai-literacy-superpowers/scripts/<name>.sh`, a path that only exists when
+the plugin is vendored in-repo. In the default (non-vendored) install the
+plugin runs from the versioned marketplace cache, so those rules silently
+failed to resolve — most importantly the **active, deterministic**
+"Reflection log archival of promoted entries" rule, which shipped enabled
+with no caveat.
+
+The root cause: a GC-rule `Tool:` field is executed by the **harness-gc
+subagent**, and `${CLAUDE_PLUGIN_ROOT}` is only defined for hooks — it is
+UNSET in the subagent's Bash context (verified empirically on Claude Code
+2.1.200, in both `--plugin-dir` and real marketplace-cache installs). The
+one thing that IS on PATH in every context, including subagents, is the
+plugin's `bin/` directory.
+
+- **New `ai-literacy-superpowers/bin/` shims** — `archive-promoted-reflections`,
+  `harness-affordance-check`, `harness-affordance-staleness`, and
+  `harness-affordance-invocations`. Each resolves the plugin root from its
+  own location and `exec`s the corresponding `scripts/<name>.sh`,
+  preserving the caller's working directory.
+- **`templates/HARNESS.md`** — the reflection-archival and affordance
+  `Tool:` fields are now **bare commands** (e.g. `archive-promoted-reflections`)
+  that resolve via `bin/` on PATH regardless of vendored-vs-cache install
+  and survive plugin upgrades. Added a Garbage Collection section note
+  explaining the mechanism, and reworded the affordance caveat (no more
+  "adjust to your install location").
+- **`agents/harness-gc.agent.md`** — Path 1 now invokes the bare
+  `archive-promoted-reflections` command with an explanatory note.
+- The `sync-to-global-cache` hook example now shows `${CLAUDE_PLUGIN_ROOT}`
+  (hooks resolve it; GC-rule Tool fields do not).
+
 ## 0.64.0 — 2026-06-23
 
 ### Docs: curated agentic-engineering video library (#456)
