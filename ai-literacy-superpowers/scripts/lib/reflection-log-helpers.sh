@@ -115,7 +115,14 @@ bounded_entries() {
       entry_date=$(extract_field "$entry" "Date")
       entry_epoch=$(date -j -f '%Y-%m-%d' "$entry_date" '+%s' 2>/dev/null \
                     || date -d "$entry_date" '+%s')
-      printf '%s\t%s\n' "$entry_epoch" "$entry" >> "$tmpfile"
+      # Encode the multi-line entry body as a single physical line
+      # (real newlines → literal \n) so each tmpfile record survives the
+      # line-based sort and awk below — which decode it again with
+      # gsub(/\\n/, "\n"). Without this the record spans several lines,
+      # sort shuffles them, and awk sees a tab only on the first line, so
+      # every body reads back empty.
+      local entry_encoded="${entry//$'\n'/\\n}"
+      printf '%s\t%s\n' "$entry_epoch" "$entry_encoded" >> "$tmpfile"
       entry=""
     else
       entry+="${line}"$'\n'

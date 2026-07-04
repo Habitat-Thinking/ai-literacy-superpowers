@@ -161,11 +161,13 @@ Include a Meta section in the audit results:
 
 When reading `REFLECTION_LOG.md` for routine audits, default to the
 bounded read: the more inclusive of the last 50 entries OR entries
-within the last 90 days. Use:
+within the last 90 days. Run the bare command (a plugin `bin/` shim on
+PATH — it sources the reflection-log helper library and calls its
+`bounded_entries` function, resolving whether the plugin is vendored or
+cache-installed):
 
 ```bash
-bash ai-literacy-superpowers/scripts/lib/reflection-log-helpers.sh
-# then call: bounded_entries REFLECTION_LOG.md 50 90
+reflection-log-bounded REFLECTION_LOG.md 50 90
 ```
 
 For audits that require historical claims (e.g., "verify the harness

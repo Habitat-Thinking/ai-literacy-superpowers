@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.64.1 — 2026-07-04
+
+### Fix: harness-auditor bounded read-side filtering (#478)
+
+The harness-auditor's "Read-side filtering policy" told the agent to
+`bash …/scripts/lib/reflection-log-helpers.sh` and then call
+`bounded_entries` — broken two ways: the vendored path does not exist in
+a marketplace-cache install (the #475 class of failure), and
+`reflection-log-helpers.sh` is a *sourced* function library, so running
+it with `bash` in a subshell never defines the function for the caller.
+
+Fixing the invocation surfaced a third, latent defect: `bounded_entries`
+itself returned empty entry bodies. It wrote each multi-line entry into a
+tmpfile with real newlines, so the line-based `sort`/`awk` that follow
+shattered every record — only the first physical line kept its tab, and
+the rest read back blank. The existing tests missed it because they
+counted `---ENTRY---` markers only, never the bodies.
+
+- **`scripts/lib/reflection-log-helpers.sh`** — `bounded_entries` now
+  encodes each entry body as a single physical line (newlines → literal
+  `\n`) before the sort, which the downstream `awk` already decodes.
+  Entry bodies are preserved.
+- **New `bin/reflection-log-bounded` shim** — sources the helper library
+  (resolved from its own location) and calls `bounded_entries` with the
+  caller's arguments, so it works vendored or cache-installed and via
+  PATH as a bare command.
+- **`agents/harness-auditor.agent.md`** — the read-side-filtering
+  instruction now runs `reflection-log-bounded REFLECTION_LOG.md 50 90`.
+- **Test** — added `test_bounded_entries_preserves_entry_bodies`
+  (asserts bodies == markers); it fails against the pre-fix function.
+
 ## 0.64.0 — 2026-06-23
 
 ### Docs: curated agentic-engineering video library (#456)
