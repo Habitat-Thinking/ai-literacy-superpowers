@@ -129,7 +129,9 @@ Do not regenerate the snapshot. Fix the output directly.
 
 ### 8. Update README
 
-Run `${CLAUDE_PLUGIN_ROOT}/scripts/update-health-badge.sh` to update:
+Run the `update-health-badge` command (a plugin `bin/` shim, on PATH; do
+not use a `${CLAUDE_PLUGIN_ROOT}` path — that variable is unset outside
+hooks) to update:
 
 - The health badge colour and text
 - The health icon link target (point to the new snapshot)

@@ -2,38 +2,51 @@
 
 ## 0.65.0 — 2026-07-04
 
-### Fix: GC-rule Tool paths resolve in cache installs via bin/ shims (#475)
+### Fix: plugin-script references resolve in cache installs via bin/ shims (#475)
 
-HARNESS.md GC-rule `Tool:` fields pointed at
-`ai-literacy-superpowers/scripts/<name>.sh`, a path that only exists when
-the plugin is vendored in-repo. In the default (non-vendored) install the
-plugin runs from the versioned marketplace cache, so those rules silently
-failed to resolve — most importantly the **active, deterministic**
-"Reflection log archival of promoted entries" rule, which shipped enabled
-with no caveat.
+Commands, agents, and GC-rule `Tool:` fields referenced plugin scripts by
+path — either `ai-literacy-superpowers/scripts/<name>.sh` (only valid when
+the plugin is vendored in-repo) or `${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh`.
+In the default (non-vendored) install the plugin runs from the versioned
+marketplace cache, and **`${CLAUDE_PLUGIN_ROOT}` is defined only for hooks**
+— it is UNSET in slash-command, main-agent, and subagent Bash contexts
+(verified empirically on Claude Code 2.1.200, in both `--plugin-dir` and
+real marketplace-cache installs). So every such reference silently failed
+to resolve outside a vendored checkout — most importantly the **active,
+deterministic** "Reflection log archival of promoted entries" GC rule,
+which ships enabled with no caveat.
 
-The root cause: a GC-rule `Tool:` field is executed by the **harness-gc
-subagent**, and `${CLAUDE_PLUGIN_ROOT}` is only defined for hooks — it is
-UNSET in the subagent's Bash context (verified empirically on Claude Code
-2.1.200, in both `--plugin-dir` and real marketplace-cache installs). The
-one thing that IS on PATH in every context, including subagents, is the
-plugin's `bin/` directory.
+The one thing that IS on PATH in every context, including the harness-gc
+subagent, is the plugin's `bin/` directory.
 
 - **New `ai-literacy-superpowers/bin/` shims** — `archive-promoted-reflections`,
-  `harness-affordance-check`, `harness-affordance-staleness`, and
-  `harness-affordance-invocations`. Each resolves the plugin root from its
-  own location and `exec`s the corresponding `scripts/<name>.sh`,
-  preserving the caller's working directory.
+  `harness-affordance-check`, `harness-affordance-staleness`,
+  `harness-affordance-invocations`, `harness-affordance-discover`,
+  `update-badge`, `update-health-badge`, and `regenerate-reflection-log`.
+  Each resolves the plugin root from its own location and `exec`s the
+  corresponding `scripts/<name>.sh`, preserving the caller's working
+  directory.
 - **`templates/HARNESS.md`** — the reflection-archival and affordance
   `Tool:` fields are now **bare commands** (e.g. `archive-promoted-reflections`)
   that resolve via `bin/` on PATH regardless of vendored-vs-cache install
   and survive plugin upgrades. Added a Garbage Collection section note
   explaining the mechanism, and reworded the affordance caveat (no more
-  "adjust to your install location").
-- **`agents/harness-gc.agent.md`** — Path 1 now invokes the bare
-  `archive-promoted-reflections` command with an explanatory note.
-- The `sync-to-global-cache` hook example now shows `${CLAUDE_PLUGIN_ROOT}`
-  (hooks resolve it; GC-rule Tool fields do not).
+  "adjust to your install location"). The `sync-to-global-cache` hook
+  example now shows `${CLAUDE_PLUGIN_ROOT}` (hooks resolve it; GC-rule
+  Tool fields do not).
+- **Commands / agents / skills** — badge, discovery, and reflection-log
+  regeneration instructions now invoke the bare `bin/` commands instead of
+  `${CLAUDE_PLUGIN_ROOT}` or vendored paths: `commands/harness-health.md`,
+  `commands/harness-init.md`, `commands/harness-affordance.md`,
+  `commands/reflect.md`, `agents/harness-gc.agent.md`,
+  `agents/harness-auditor.agent.md`, `agents/integration-agent.agent.md`,
+  and `skills/ai-literacy-assessment/SKILL.md`.
+
+Known remaining edge (not addressed here): the read-side-filtering
+instruction in `agents/harness-auditor.agent.md` sources the
+`reflection-log-helpers.sh` function library rather than executing a
+top-level script, so a `bin/` shim does not map to it cleanly — it needs
+its own treatment.
 
 ## 0.64.0 — 2026-06-23
 
