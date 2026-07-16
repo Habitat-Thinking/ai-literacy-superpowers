@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Bin shim → scripts/update-health-badge.sh
+#
+# A plugin's bin/ directory is on PATH in every Claude Code execution
+# context — hooks, slash commands, and subagents — but ${CLAUDE_PLUGIN_ROOT}
+# is defined ONLY for hooks. A command/agent instruction that runs this
+# script therefore cannot rely on ${CLAUDE_PLUGIN_ROOT} or on a vendored
+# path; a bare command name resolves via PATH regardless of whether the
+# plugin is vendored in-repo or installed in the versioned marketplace
+# cache, and survives plugin upgrades. See issue #475.
+#
+# This shim resolves the plugin root from its own location and execs the
+# real implementation, preserving the caller's working directory (the
+# scripts expect to run from the consumer repo root).
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec bash "$here/../scripts/update-health-badge.sh" "$@"

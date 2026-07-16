@@ -157,7 +157,7 @@ Derive a kebab-case slug from the Task (≤6 words) and write the body to
 collisions). Regenerate the aggregate and commit both:
 
 ```bash
-bash ai-literacy-superpowers/scripts/regenerate-reflection-log.sh
+regenerate-reflection-log
 git add reflections/active/ REFLECTION_LOG.md
 git commit -m "Add reflection for: [task summary]"
 ```

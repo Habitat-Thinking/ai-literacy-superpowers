@@ -109,10 +109,11 @@ never edit it by hand.
    If a file with that name already exists (another reflection the same
    day), append a numeric suffix: `<date>-<slug>-2.md`, `-3.md`, etc.
 
-   Then regenerate the aggregate so readers see the new entry:
+   Then regenerate the aggregate so readers see the new entry (bare
+   command — a plugin `bin/` shim on PATH):
 
    ```bash
-   bash ai-literacy-superpowers/scripts/regenerate-reflection-log.sh
+   regenerate-reflection-log
    ```
 
    If that script is not present in the project, regenerate by hand:

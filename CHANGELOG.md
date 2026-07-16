@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.64.2 — 2026-07-04
+## 0.65.1 — 2026-07-16
 
 ### Fix: harness-auditor bounded read-side filtering (#478)
 
@@ -30,6 +30,54 @@ counted `---ENTRY---` markers only, never the bodies.
   instruction now runs `reflection-log-bounded REFLECTION_LOG.md 50 90`.
 - **Test** — added `test_bounded_entries_preserves_entry_bodies`
   (asserts bodies == markers); it fails against the pre-fix function.
+
+## 0.65.0 — 2026-07-04
+
+### Fix: plugin-script references resolve in cache installs via bin/ shims (#475)
+
+Commands, agents, and GC-rule `Tool:` fields referenced plugin scripts by
+path — either `ai-literacy-superpowers/scripts/<name>.sh` (only valid when
+the plugin is vendored in-repo) or `${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh`.
+In the default (non-vendored) install the plugin runs from the versioned
+marketplace cache, and **`${CLAUDE_PLUGIN_ROOT}` is defined only for hooks**
+— it is UNSET in slash-command, main-agent, and subagent Bash contexts
+(verified empirically on Claude Code 2.1.200, in both `--plugin-dir` and
+real marketplace-cache installs). So every such reference silently failed
+to resolve outside a vendored checkout — most importantly the **active,
+deterministic** "Reflection log archival of promoted entries" GC rule,
+which ships enabled with no caveat.
+
+The one thing that IS on PATH in every context, including the harness-gc
+subagent, is the plugin's `bin/` directory.
+
+- **New `ai-literacy-superpowers/bin/` shims** — `archive-promoted-reflections`,
+  `harness-affordance-check`, `harness-affordance-staleness`,
+  `harness-affordance-invocations`, `harness-affordance-discover`,
+  `update-badge`, `update-health-badge`, and `regenerate-reflection-log`.
+  Each resolves the plugin root from its own location and `exec`s the
+  corresponding `scripts/<name>.sh`, preserving the caller's working
+  directory.
+- **`templates/HARNESS.md`** — the reflection-archival and affordance
+  `Tool:` fields are now **bare commands** (e.g. `archive-promoted-reflections`)
+  that resolve via `bin/` on PATH regardless of vendored-vs-cache install
+  and survive plugin upgrades. Added a Garbage Collection section note
+  explaining the mechanism, and reworded the affordance caveat (no more
+  "adjust to your install location"). The `sync-to-global-cache` hook
+  example now shows `${CLAUDE_PLUGIN_ROOT}` (hooks resolve it; GC-rule
+  Tool fields do not).
+- **Commands / agents / skills** — badge, discovery, and reflection-log
+  regeneration instructions now invoke the bare `bin/` commands instead of
+  `${CLAUDE_PLUGIN_ROOT}` or vendored paths: `commands/harness-health.md`,
+  `commands/harness-init.md`, `commands/harness-affordance.md`,
+  `commands/reflect.md`, `agents/harness-gc.agent.md`,
+  `agents/harness-auditor.agent.md`, `agents/integration-agent.agent.md`,
+  and `skills/ai-literacy-assessment/SKILL.md`.
+
+Known remaining edge (not addressed here): the read-side-filtering
+instruction in `agents/harness-auditor.agent.md` sources the
+`reflection-log-helpers.sh` function library rather than executing a
+top-level script, so a `bin/` shim does not map to it cleanly — it needs
+its own treatment.
 
 ## 0.64.1 — 2026-07-03
 

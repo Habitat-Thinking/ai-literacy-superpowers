@@ -277,8 +277,8 @@ first." Then skip to the next step.
 
 If HARNESS.md has content, proceed with badge generation as before:
 
-Add the harness badge to the project's README.md. Use the badge update
-script at `${CLAUDE_PLUGIN_ROOT}/scripts/update-badge.sh` or insert
+Add the harness badge to the project's README.md. Run the `update-badge`
+command (a plugin `bin/` shim, on PATH) or insert
 manually:
 
 ```text

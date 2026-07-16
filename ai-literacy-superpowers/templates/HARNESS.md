@@ -112,9 +112,11 @@
      least one real (non-example) affordance AND a readable project
      permissions allowlist, so it is safe to leave active. Matching is
      string equality on the permission pattern; hook-mode affordances are
-     skipped. The Tool path assumes the plugin is vendored at
-     `ai-literacy-superpowers/` (as in this repo) — adjust it to your
-     plugin install location otherwise.
+     skipped. The Tool field is a bare command
+     (`harness-affordance-check`) that resolves via the plugin's `bin/`
+     directory on PATH, so it works whether the plugin is vendored
+     in-repo or installed in the versioned marketplace cache — no path
+     adjustment needed.
 
 ### Affordances have matching permissions
 
@@ -125,7 +127,7 @@
   without a matching permission is a tool the agent has declared but cannot
   invoke — a safety gap.
 - **Enforcement**: deterministic
-- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=blocking
+- **Tool**: harness-affordance-check --direction=blocking
 - **Scope**: pr
 
 ### Permissions have declared affordances
@@ -134,7 +136,7 @@
   affordance in the `## Affordances` section. An ungoverned permission is
   paperwork debt, not a safety violation — flag it, do not block.
 - **Enforcement**: deterministic
-- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory
+- **Tool**: harness-affordance-check --direction=advisory
 - **Scope**: pr
 -->
 
@@ -173,6 +175,15 @@ Use /governance-constrain for guided authoring of governance constraints.
 
 <!-- Periodic checks that fight entropy — the slow drift that neither
      real-time hooks nor PR gates catch. -->
+
+<!-- Tool fields that name a plugin-shipped deterministic check (e.g.
+     `archive-promoted-reflections`) are BARE COMMANDS, not paths. They
+     resolve via the plugin's bin/ directory, which Claude Code puts on
+     PATH in every execution context — including the harness-gc subagent
+     that runs these rules, where ${CLAUDE_PLUGIN_ROOT} is NOT set. This
+     is what lets a deterministic GC rule run identically whether the
+     plugin is vendored in-repo or installed in the versioned marketplace
+     cache. Do not rewrite these back to script paths. -->
 
 ### Documentation freshness
 
@@ -301,7 +312,7 @@ Use /governance-constrain for guided authoring of governance constraints.
   AGENTS.md or HARNESS.md content, or matches a closure form).
 - **Frequency**: weekly
 - **Enforcement**: deterministic
-- **Tool**: `ai-literacy-superpowers/scripts/archive-promoted-reflections.sh`
+- **Tool**: archive-promoted-reflections
 - **Auto-fix**: true (moves the fragment to `reflections/archive/<YYYY>.md`,
   deletes it, and regenerates the aggregate `REFLECTION_LOG.md`)
 
@@ -408,7 +419,7 @@ Run /governance-audit quarterly to keep governance constraints fresh.
   days / ~6 months), or no valid date at all
 - **Frequency**: weekly
 - **Enforcement**: deterministic
-- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-staleness.sh
+- **Tool**: harness-affordance-staleness
 - **Auto-fix**: false (the fix is a human running /harness-affordance review <name>)
 
 ### Affordance recorder freshness (LOCAL — per-machine only)
@@ -421,7 +432,7 @@ Run /governance-audit quarterly to keep governance constraints fresh.
   your machine), not a CI control.
 - **Frequency**: weekly
 - **Enforcement**: deterministic
-- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-invocations.sh --check=freshness
+- **Tool**: harness-affordance-invocations --check=freshness
 - **Auto-fix**: false
 
 ### Affordance dead inventory (LOCAL — per-machine only)
@@ -432,7 +443,7 @@ Run /governance-audit quarterly to keep governance constraints fresh.
   data).
 - **Frequency**: weekly
 - **Enforcement**: deterministic
-- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-invocations.sh --check=dead-inventory
+- **Tool**: harness-affordance-invocations --check=dead-inventory
 - **Auto-fix**: false
 -->
 ---
@@ -466,7 +477,6 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 <!-- affordance-review-threshold-days: 180 -->
 <!-- ^ Tune the review-staleness threshold here (the staleness GC rule reads
      this value). This line is human-owned and survives /harness-upgrade. -->
-
 
 ### gh-cli
 <!-- affordance-example -->
@@ -513,7 +523,9 @@ Run /governance-audit quarterly to keep governance constraints fresh.
 - **Identity**: current-user
 - **Audit trail**: none (hook stderr, lost at session end)
 - **Permission**: `hooks.Stop` entry in `.claude/settings.local.json`
-  invoking `ai-literacy-superpowers/scripts/sync-to-global-cache.sh`
+  invoking `${CLAUDE_PLUGIN_ROOT}/scripts/sync-to-global-cache.sh`
+  (hooks resolve `${CLAUDE_PLUGIN_ROOT}`; GC-rule Tool fields do not —
+  see the note under Garbage Collection)
 - **Last reviewed**: 2026-04-26
 - **Notes**: invokes `rsync` under the current user after every session
 
