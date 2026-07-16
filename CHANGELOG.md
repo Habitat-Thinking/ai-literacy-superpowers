@@ -47,6 +47,21 @@ instruction in `agents/harness-auditor.agent.md` sources the
 `reflection-log-helpers.sh` function library rather than executing a
 top-level script, so a `bin/` shim does not map to it cleanly — it needs
 its own treatment.
+## 0.64.1 — 2026-07-03
+
+### Fix: gc-rotate strict-mode check false positives (#362)
+
+- **`hooks/scripts/gc-rotate.sh` rule 3 (shell strict mode)** now scans
+  the whole file for any start-of-line `set` that enables
+  errexit/nounset/pipefail, instead of matching the exact literal
+  `set -euo pipefail` in the first 15 lines only. The old check produced
+  false positives on two legitimate patterns: strict-mode lines that sit
+  below a documented header comment block (past line 15), and deliberate
+  fail-open subsets such as `set -uo pipefail` (hooks that must not abort
+  mid-run) and `set -u` (telemetry/CI scripts). The `[euo]` anchor still
+  rejects `set -- "$@"` and still flags scripts with no strict mode at
+  all. (Defect 1 from the issue — whole-tree `*.sh` scan — was already
+  fixed by the `git ls-files` scoping in `list_owned_shell_scripts`.)
 
 ## 0.64.0 — 2026-06-23
 
