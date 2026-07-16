@@ -108,6 +108,19 @@ test_bounded_entries_day_window_clips() {
           | grep -c "^---ENTRY---$" || true)
   assert_eq "$count" "50"
 }
+test_bounded_entries_preserves_entry_bodies() {
+  # Regression (#478): the multi-line entry body must survive the tmpfile
+  # round-trip through sort/awk, not collapse to empty. The count tests
+  # above only assert the number of ---ENTRY--- markers, which stayed
+  # correct even while every body read back blank. Assert every returned
+  # entry still carries its own Date line (bodies == markers).
+  local out markers dates
+  out=$(bounded_entries "$FIXTURES_DIR/reflection-log-many-entries.md" 50 1000)
+  markers=$(printf '%s\n' "$out" | grep -c "^---ENTRY---$" || true)
+  dates=$(printf '%s\n' "$out" | grep -c "^- \*\*Date\*\*:" || true)
+  assert_eq "$markers" "60"
+  assert_eq "$dates" "60"
+}
 
 # --- verify_rhs promotion-target coverage (#319, #320) ---
 # verify_rhs greps targets relative to cwd; a ( cd … ) subshell inherits the
@@ -178,6 +191,7 @@ test_extract_field_signal
 test_resolve_year
 test_bounded_entries_count_is_inclusive_of_max
 test_bounded_entries_day_window_clips
+test_bounded_entries_preserves_entry_bodies
 test_verify_rhs_agents_form
 test_verify_rhs_claude_root_form
 test_verify_rhs_claude_subcomponent_form

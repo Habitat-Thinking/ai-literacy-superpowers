@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Bin shim → sources scripts/lib/reflection-log-helpers.sh and runs its
+# bounded_entries function.
+#
+# Unlike the other bin/ shims (which exec a top-level script),
+# reflection-log-helpers.sh is a FUNCTION LIBRARY meant to be sourced —
+# so it cannot be dispatched with `exec bash <lib>` (that runs it in a
+# subshell that exits without exposing the function). This wrapper sources
+# the library in its own shell and invokes bounded_entries with the
+# caller's arguments.
+#
+# As with every bin/ entry, the plugin's bin/ directory is on PATH in all
+# execution contexts (hooks, commands, subagents), while ${CLAUDE_PLUGIN_ROOT}
+# is set only for hooks — so referencing this as a bare command resolves
+# whether the plugin is vendored in-repo or installed in the versioned
+# marketplace cache. See issues #475 and #478.
+#
+# Usage: reflection-log-bounded <log-path> <max-count> <max-days>
+#   e.g. reflection-log-bounded REFLECTION_LOG.md 50 90
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+source "$here/../scripts/lib/reflection-log-helpers.sh"
+bounded_entries "$@"
