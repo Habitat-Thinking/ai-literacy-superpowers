@@ -47,6 +47,7 @@ instruction in `agents/harness-auditor.agent.md` sources the
 `reflection-log-helpers.sh` function library rather than executing a
 top-level script, so a `bin/` shim does not map to it cleanly — it needs
 its own treatment.
+
 ## 0.64.1 — 2026-07-03
 
 ### Fix: gc-rotate strict-mode check false positives (#362)
