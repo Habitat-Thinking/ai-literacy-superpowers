@@ -208,7 +208,8 @@ Capture a reflection on the assessment itself:
 
 Write this as a per-entry fragment under `reflections/active/` (one
 file per reflection, body only, no leading `---`), then regenerate the
-aggregate with `scripts/regenerate-reflection-log.sh`. Never append to
+aggregate with the `regenerate-reflection-log` command (a plugin `bin/`
+shim on PATH). Never append to
 `REFLECTION_LOG.md` directly — it is a generated view.
 
 ### Phase 7: README Badge

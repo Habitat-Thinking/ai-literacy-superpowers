@@ -37,8 +37,8 @@ server.
    `.claude/settings.local.json`, or `.mcp.json`. If none exist,
    tell the user: "No project config found to scan — nothing to
    discover."
-2. **Invoke the scanner.** Run
-   `bash ${CLAUDE_PLUGIN_ROOT}/scripts/harness-affordance-discover.sh`
+2. **Invoke the scanner.** Run the bare command
+   `harness-affordance-discover` (a plugin `bin/` shim, on PATH)
    from the project root. The script is responsible for reading
    sources, deriving entries, and writing the output file.
 3. **Report.** Print to the user:

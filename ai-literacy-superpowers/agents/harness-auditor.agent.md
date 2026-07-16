@@ -82,8 +82,8 @@ matches what the project actually has.
 
 8. **Update README badge**: If a README.md exists and contains a
    harness badge, update the badge URL to reflect the current
-   enforcement ratio and colour. Use the script at
-   `${CLAUDE_PLUGIN_ROOT}/scripts/update-badge.sh` if available.
+   enforcement ratio and colour. Run the `update-badge` command
+   (a plugin `bin/` shim, on PATH) if available.
 
 9. **Report results**:
 
