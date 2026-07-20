@@ -241,4 +241,7 @@ read read-only-plus-advisory as sufficient. Names the design discipline
 three anti-patterns that eject an agent from the category: scoring the
 human, persisting a record of the human's state, or gating
 automatically. S1 is enforced deterministically by
-`sentinel-integrity-check.sh`. Added in v0.66.0.
+`sentinel-integrity-check.sh`. For the step-by-step authoring
+walkthrough, see the
+[Design a Sentinel Agent](../how-to/design-a-sentinel.md) how-to guide.
+Added in v0.66.0.

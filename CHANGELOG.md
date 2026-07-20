@@ -29,6 +29,17 @@ constraint — no agent renames, no behavioural changes, no new gates.
 - **Docs** — new `explanation/sentinels.md` page; `/superpowers-status`
   now reports sentinel coverage and integrity-constraint state.
 
+### Docs: how to design a sentinel
+
+- Added the [Design a Sentinel Agent](docs/plugins/ai-literacy-superpowers/how-to/design-a-sentinel.md)
+  how-to guide — the task-oriented walkthrough for authoring a new
+  sentinel (confirm the object of care, write the honesty rule first,
+  author the agent, run the integrity check, ship the TDAD scenario and
+  reference entry), completing the Diataxis coverage alongside the
+  existing concept and reference pages. Cross-linked from the Sentinels
+  concept page and the `sentinel-design` reference entry. Docs-only, no
+  plugin version bump.
+
 ## 0.65.1 — 2026-07-16
 
 ### Fix: harness-auditor bounded read-side filtering (#478)
