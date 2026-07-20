@@ -44,7 +44,11 @@ If your candidate fails any one of these, it is not a sentinel — see
 The category turns on *what the agent cares about*, not its trust
 boundary. Ask: does the agent's output describe **what the human can or
 should hold in mind**, or the **state of an artefact** that merely gets
-reported to a human?
+reported to a human? A sentinel exists to hold back the *cognitive* and
+*intent* debt of Storey's
+[triple-debt model](../explanation/sentinels.md#why-the-category-exists-the-debts-ai-moves-upstream)
+— it establishes and protects the human's understanding, judgement, and
+discernment, not the health of the code.
 
 - "You are about to approve a spec whose cost you have not seen" →
   sentinel (guards the decider).
