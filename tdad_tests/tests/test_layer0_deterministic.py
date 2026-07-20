@@ -57,6 +57,9 @@ BASH_TEST_SCRIPTS = [
     # RED until S2 ships the matcher script and the four templates.
     "test-inv1-firewall",
     "test-workflow-templates",
+    # sentinel agent category — the read-only integrity matcher for
+    # role: sentinel agents (§5.4).
+    "test-sentinel-integrity",
 ]
 
 

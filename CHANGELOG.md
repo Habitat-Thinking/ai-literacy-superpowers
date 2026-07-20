@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.66.0 — 2026-07-20
+
+### Feature: the sentinel agent category
+
+Names the sub-family of agents whose object of care is the human's
+understanding and judgement rather than an artefact, the pipeline, or
+the harness. Categorisation, documentation, and one new enforceable
+constraint — no agent renames, no behavioural changes, no new gates.
+
+- **`role: sentinel` frontmatter tag** — added to the five roster agents
+  (`reservoir-warden`, `advocatus-diaboli`, `choice-cartographer`,
+  `carpaccio`, `cost-estimator`). An enum with a single permitted value;
+  absence means "pipeline/harness agent" and changes nothing.
+- **Sentinel integrity constraint** — `sentinel-integrity-check.sh`
+  fails CI if a `role: sentinel` agent is granted Write/Edit (criterion
+  S1), or if any `role:` value falls outside the enum. Runs at PR time
+  (`harness.yml`) and weekly (`gc.yml`), and as a Layer-0 test with
+  red/green fixtures. This makes the category load-bearing, not
+  decorative — mislabel an agent and the build goes red.
+- **`sentinel-design` skill** — documents the three-part signature (S1
+  read-only, S2 advisory-to-human, S3 explicit honesty rule), the
+  near-miss gallery (why code-reviewer and harness-auditor don't
+  qualify), the honesty-rule-before-detection-logic discipline, and the
+  three anti-patterns.
+- **README Sentinels section** — the *Agents (16)* table splits into
+  Sentinels (5) and Pipeline & harness agents (11).
+- **Docs** — new `explanation/sentinels.md` page; `/superpowers-status`
+  now reports sentinel coverage and integrity-constraint state.
+
 ## 0.65.1 — 2026-07-16
 
 ### Fix: harness-auditor bounded read-side filtering (#478)

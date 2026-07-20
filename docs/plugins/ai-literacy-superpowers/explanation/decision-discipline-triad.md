@@ -87,6 +87,8 @@ implementers   Step 3 — make tests green
 
 ## See also
 
+- [Sentinels](sentinels.md) — the wider category the triad belongs to:
+  agents whose object of care is the human's understanding and judgement.
 - `/carpaccio` — manual invocation
 - `/diaboli` — manual invocation
 - `/choice-cartograph` — manual invocation

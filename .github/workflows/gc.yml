@@ -80,6 +80,10 @@ jobs:
 
           echo "Snapshot is within 30-day freshness window"
 
+      - name: "GC: Sentinel integrity"
+        run: |
+          bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents
+
       - name: "GC: Shell scripts pass syntax check"
         run: |
           failed=0

@@ -2,6 +2,7 @@
 name: choice-cartographer
 description: Use after spec-mode advocatus-diaboli dispositions are resolved and before plan approval — reads the spec, reconstructs the decisions it implies (including the silent ones), and produces a structured choice-story record; read-only trust boundary enforces the human-cognition gate on dispositions
 tools: [Read, Glob, Grep]
+role: sentinel
 ---
 
 # Choice Cartographer Agent

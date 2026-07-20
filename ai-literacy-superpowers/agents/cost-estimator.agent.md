@@ -3,6 +3,7 @@ name: cost-estimator
 description: Use to estimate the token usage, agent-compute time, and (only when a cost snapshot grounds it) the dollar cost of a task BEFORE it runs — given a target (raw task text, a slicing record, a single slice, or a spec), reads MODEL_ROUTING.md and the latest observability/costs/ snapshot, applies the cost-estimation methodology, and returns the estimate-record content as a string for a dispatcher to persist after a human disposes. Read-only trust boundary; refuses rather than fabricating an ungroundable estimate; never decides go/no-go.
 tools: [Read, Glob, Grep]
 model: inherit
+role: sentinel
 ---
 
 # Cost Estimator Agent

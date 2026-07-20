@@ -208,3 +208,12 @@ mechanism is the same at every level; what changes is how it is used.
 - **A second nudge.** One advisory, then silence.
 - **Manufactured concern on a quiet session.** Below all thresholds →
   say nothing.
+
+## Related
+
+The `reservoir-warden` is a **sentinel** — an agent whose object of care
+is the human's understanding and judgement, not an artefact. The
+honesty-rule-before-detection-logic discipline described above is the
+model for every sentinel; the `sentinel-design` skill generalises it,
+along with the three-part sentinel signature and the anti-patterns that
+eject an agent from the category.

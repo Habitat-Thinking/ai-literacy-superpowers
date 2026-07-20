@@ -116,3 +116,6 @@ not to take the decision out of human hands.
   carpaccio / diaboli / cartographer agents that protect the human's
   decision budget at the *input* side, complementary to the warden's
   watch on the verifier at the *output* side.
+- [Sentinels](sentinels.md) — the reservoir-warden is one of five
+  sentinels: agents whose object of care is the human's understanding
+  and judgement rather than an artefact.

@@ -223,3 +223,22 @@ or human brainstorming. Not a gate — the forcing functions are the
 deterministic CI workflows shipped in v0.36.0. Pairs with
 advocatus-diaboli (review-time): the skill names the design choices,
 the diaboli challenges them. Added in v0.37.0 (issue #313, PR #314).
+
+### sentinel-design
+
+Authoring guidance for the **sentinel** agent category — agents whose
+object of care is the human's understanding and judgement rather than an
+artefact. Defines the three-part **sentinel signature**: S1 (read-only
+trust boundary — denies Write/Edit, Bash permitted for read-only
+inspection), S2 (advisory output a human disposes, no automated action),
+and S3 (an explicit epistemic honesty rule declaring the status of its
+claims). Documents the **near-miss gallery** — why `code-reviewer` and
+`harness-auditor` satisfy S1 and S2 yet are not sentinels (their object
+of care is the code and the harness, not the human) — so authors do not
+read read-only-plus-advisory as sufficient. Names the design discipline
+(write the honesty rule S3 *before* the detection logic, mirroring the
+`cognitive-reservoir` skill's contested-vs-robust discipline) and the
+three anti-patterns that eject an agent from the category: scoring the
+human, persisting a record of the human's state, or gating
+automatically. S1 is enforced deterministically by
+`sentinel-integrity-check.sh`. Added in v0.66.0.
