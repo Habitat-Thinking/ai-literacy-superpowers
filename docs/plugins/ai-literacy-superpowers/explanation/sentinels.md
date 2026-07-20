@@ -92,7 +92,9 @@ Avoid the three anti-patterns — an agent that **scores the human**,
 **persists a record of the human's state**, or **gates automatically**
 has left the category, whatever its `role:` tag says.
 
-The full authoring guidance lives in the `sentinel-design` skill.
+The full authoring guidance lives in the `sentinel-design` skill, and
+the step-by-step walkthrough is the
+[Design a Sentinel Agent](../how-to/design-a-sentinel.md) how-to guide.
 
 ## What this is not
 
