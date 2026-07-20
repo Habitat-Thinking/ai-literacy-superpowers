@@ -32,6 +32,10 @@ the filesystem.
 
 - States the **definition** of a sentinel: an agent whose primary purpose is to
   protect and support the understanding and judgement of the human.
+- **Grounds the category in Storey's triple-debt model**: names technical,
+  cognitive, and intent debt, and frames sentinels as the pattern that services
+  the human side of that ledger by establishing and protecting the human's
+  understanding, judgement, and **discernment**.
 - Defines all three signature criteria: **S1** (read-only trust boundary —
   denies Write/Edit, Bash permitted for read-only inspection), **S2** (advisory
   output a human disposes, no automated action), and **S3** (explicit epistemic

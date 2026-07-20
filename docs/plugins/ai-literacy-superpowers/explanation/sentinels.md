@@ -21,6 +21,66 @@ The category emerged organically before it was named. The
 the shape. Naming it lets the next one be built deliberately, and lets
 the shape be enforced rather than merely hoped for.
 
+## Why the category exists: the debts AI moves upstream
+
+Margaret-Anne Storey's **triple-debt model** gives the sentinel category
+its reason to exist.[^storey] Storey argues that generative AI generates
+code faster than a team can comprehend it, and that this shifts *where*
+the most significant risk to software health lives. Three debts interact:
+
+- **Technical debt** lives in the **code** — the quality shortcuts in the
+  codebase itself. This is the debt the plugin's pipeline and harness
+  agents already fight (TDD, CUPID review, garbage collection).
+- **Cognitive debt** lives in the **people** — "the erosion of shared
+  understanding across a team", leaving increasingly inadequate mental
+  models for reasoning about and safely changing the system.
+- **Intent debt** lives in the **artefacts** — the absence or erosion of
+  the explicit rationale, goals, and constraints that both humans and
+  agents need in order to evolve the system safely.
+
+Storey's claim is that in AI-assisted development, cognitive and intent
+debt may matter *more* than technical debt — and neither is paid down by
+making the code cleaner. They are paid down by protecting the human's
+grip on the system. **Sentinels are the agent pattern that services the
+human side of that ledger.** A sentinel does not touch the code; it works
+to establish and protect the human's **understanding, judgement, and
+discernment** so that cognitive and intent debt do not silently accrue as
+the AI produces output faster than a person can absorb it.
+
+### Three edges of one commitment
+
+*Understanding, judgement,* and *discernment* are not three separate
+goals — they are three edges of the same commitment to keep the human in
+genuine command of an AI-accelerated workflow. Each maps to a debt a
+sentinel holds back:
+
+| Edge | What it protects | Debt it holds back | Sentinels |
+| --- | --- | --- | --- |
+| **Understanding** | The human's shared mental model of what the system does and why | Cognitive debt | `carpaccio` keeps each decision small enough to hold; `choice-cartographer` surfaces the implicit decisions a spec has made |
+| **Judgement** | The quality of the human's *yes* at the gate | Cognitive debt | `reservoir-warden` watches the state of the decider; `advocatus-diaboli` steel-mans the objections before the human commits |
+| **Discernment** | The human's ability to tell a *good* AI output from a *plausible-but-wrong* one | Cognitive + intent debt | `advocatus-diaboli` names what could be wrong; `cost-estimator` refuses an ungroundable estimate rather than fabricating a confident one |
+
+Discernment is the sharpest edge — and the one AI erodes most quietly. A
+plausible spec, a confident estimate, a clean-looking diff all *read* as
+correct; discernment is what lets a human tell the genuinely-sound from
+the merely-fluent. The `advocatus-diaboli` exists to make that
+distinction visible, and the `cost-estimator`'s refusal-over-fabrication
+rule exists so a fluent-but-baseless number never passes for a grounded
+one.
+
+Several sentinels also pay down **intent debt directly**: the
+`choice-cartographer`'s choice-story records and the `advocatus-diaboli`'s
+objection records are *externalised rationale* — exactly the artefacts
+whose absence Storey names as intent debt. A sentinel's advisory output
+is not only consumed by the human at the gate; once written it becomes
+the durable "why" that a later human or agent needs.
+
+[^storey]: Margaret-Anne Storey, *From Technical Debt to Cognitive and
+    Intent Debt: Rethinking Software Health in the Age of AI*, 2026 —
+    [arXiv:2603.22106](https://arxiv.org/abs/2603.22106), with an
+    expanded version in [ACM Queue](https://queue.acm.org/detail.cfm?id=3807966).
+    See also [margaretstorey.com](https://margaretstorey.com/).
+
 ## The sentinel signature
 
 An agent is a sentinel if and only if it satisfies all three criteria.

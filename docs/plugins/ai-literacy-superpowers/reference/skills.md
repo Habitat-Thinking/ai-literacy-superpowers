@@ -228,7 +228,11 @@ the diaboli challenges them. Added in v0.37.0 (issue #313, PR #314).
 
 Authoring guidance for the **sentinel** agent category — agents whose
 object of care is the human's understanding and judgement rather than an
-artefact. Defines the three-part **sentinel signature**: S1 (read-only
+artefact. Grounds the category in Margaret-Anne Storey's triple-debt
+model (technical / cognitive / intent debt): sentinels service the human
+side of the ledger, holding back the cognitive and intent debt AI accrues
+by establishing and protecting the human's understanding, judgement, and
+discernment. Defines the three-part **sentinel signature**: S1 (read-only
 trust boundary — denies Write/Edit, Bash permitted for read-only
 inspection), S2 (advisory output a human disposes, no automated action),
 and S3 (an explicit epistemic honesty rule declaring the status of its

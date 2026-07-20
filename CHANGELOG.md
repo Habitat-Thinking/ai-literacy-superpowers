@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.66.1 — 2026-07-20
+
+### Docs: ground the sentinel category in Storey's triple-debt model
+
+- Grounded the sentinel category in Margaret-Anne Storey's *From
+  Technical Debt to Cognitive and Intent Debt* (2026, arXiv:2603.22106):
+  where the pipeline and harness agents fight **technical** debt in the
+  code, sentinels service the human side of the ledger, holding back the
+  **cognitive** debt (erosion of shared understanding) and **intent**
+  debt (absence of externalised rationale, goals, and constraints) that
+  accrue when AI generates code faster than a team can absorb it.
+- Framed sentinels as the agent pattern that establishes and protects the
+  human's **understanding, judgement, and discernment** — three edges of
+  one commitment, each mapped to a debt and to the sentinels that hold it
+  back. Discernment (telling a sound AI output from a plausible-but-wrong
+  one) is named as the sharpest edge and the one AI erodes most quietly.
+- Added the grounding to `explanation/sentinels.md`, the `sentinel-design`
+  skill, the `design-a-sentinel` how-to, the README Sentinels intro, and
+  the reference entry; kept the crisp one-line definition and layered the
+  triple-debt framing on top. Patch bump — plugin doc-only change.
+
 ## 0.66.0 — 2026-07-20
 
 ### Feature: the sentinel agent category

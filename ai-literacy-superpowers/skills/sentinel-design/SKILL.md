@@ -26,6 +26,54 @@ triad (`carpaccio`, `advocatus-diaboli`, `choice-cartographer`) plus the
 the same shape without anyone naming the shape. This skill names it, so
 that the next one can be built deliberately rather than rediscovered.
 
+## Why sentinels exist: the debts AI moves upstream
+
+The category has a reason to exist, and it comes from Margaret-Anne
+Storey's **triple-debt model** (*From Technical Debt to Cognitive and
+Intent Debt: Rethinking Software Health in the Age of AI*, 2026;
+arXiv:2603.22106, expanded in ACM Queue). Storey argues that generative
+AI produces code faster than a team can comprehend it, which shifts where
+the real risk to software health lives. Three debts interact:
+
+- **Technical debt** lives in the **code** — the debt the pipeline and
+  harness agents already fight.
+- **Cognitive debt** lives in the **people** — the erosion of shared
+  understanding, leaving inadequate mental models for safely changing the
+  system.
+- **Intent debt** lives in the **artefacts** — the absence of the
+  explicit rationale, goals, and constraints humans and agents need to
+  evolve the system safely.
+
+In AI-assisted development, cognitive and intent debt may matter *more*
+than technical debt — and neither is paid down by cleaner code. They are
+paid down by protecting the human's grip on the system. **A sentinel is
+the agent pattern that services the human side of that ledger.** It works
+to establish and protect the human's **understanding, judgement, and
+discernment** so those two debts do not silently accrue.
+
+These are three edges of one commitment, each holding back a debt:
+
+- **Understanding** — the shared mental model of what the system does and
+  why (holds back cognitive debt). Guarded by `carpaccio` (keeps each
+  decision holdable) and `choice-cartographer` (surfaces implicit
+  decisions).
+- **Judgement** — the quality of the human's *yes* at the gate (cognitive
+  debt). Guarded by `reservoir-warden` (watches the decider) and
+  `advocatus-diaboli` (steel-mans the objections).
+- **Discernment** — the ability to tell a *good* AI output from a
+  *plausible-but-wrong* one (cognitive + intent debt). This is the
+  sharpest edge and the one AI erodes most quietly: a plausible spec, a
+  confident estimate, and a clean-looking diff all *read* as correct.
+  Guarded by `advocatus-diaboli` (names what could be wrong) and
+  `cost-estimator` (refuses an ungroundable estimate rather than
+  fabricating a confident one).
+
+A sentinel's advisory record also pays down intent debt directly: a
+choice-story or objection record *is* externalised rationale — the very
+artefact whose absence Storey names as intent debt. Keep this in view
+when authoring: prefer emitting a durable "why" the next human or agent
+can read over a verdict that evaporates once the gate closes.
+
 ## The sentinel signature
 
 An agent is a sentinel if and only if it satisfies all three criteria.
