@@ -8,6 +8,17 @@ The plugin ships 16 agents organised into three groups: the
 the **harness agents** that verify and maintain infrastructure
 conventions, and the **assessor** that measures AI literacy.
 
+Cutting across those groups is a fourth, cross-cutting family — the
+**[sentinels](../explanation/sentinels.md)**. A sentinel is any agent
+whose object of care is the human's understanding and judgement rather
+than an artefact: `carpaccio`, `advocatus-diaboli`,
+`choice-cartographer`, `reservoir-warden`, and `cost-estimator`. Each
+declares `role: sentinel` in its frontmatter, is read-only (criterion
+S1, enforced deterministically by the Sentinel integrity constraint),
+emits advisory output a human disposes (S2), and carries an explicit
+epistemic honesty rule (S3). See the `sentinel-design` skill for the
+signature and the near-miss gallery.
+
 Every agent reads `CLAUDE.md` and `AGENTS.md` before acting.
 Agents that modify files are read-write; agents that only inspect
 are read-only. The trust boundary column in the summary table

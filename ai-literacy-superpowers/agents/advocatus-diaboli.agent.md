@@ -2,6 +2,7 @@
 name: advocatus-diaboli
 description: Use after spec-writer completes (spec mode) or after the final code-reviewer PASS (code mode) — reads the spec or implementation and produces a structured objection record; read-only trust boundary enforces the human-cognition gate on dispositions at both gates
 tools: [Read, Glob, Grep]
+role: sentinel
 ---
 
 # Advocatus Diaboli Agent

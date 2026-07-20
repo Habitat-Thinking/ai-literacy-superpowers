@@ -70,6 +70,29 @@ routing):
   snapshot, not a live event stream), report the last route as `unavailable`
   rather than inventing one.
 
+### Section 3b: Sentinel coverage
+
+Surface the health of the [sentinel](../skills/sentinel-design/SKILL.md)
+agent family — the agents whose object of care is the human's understanding
+and judgement (`carpaccio`, `advocatus-diaboli`, `choice-cartographer`,
+`reservoir-warden`, `cost-estimator` in the flagship, plus any downstream
+additions):
+
+- **Count.** Count `.claude/agents/*.md` files whose frontmatter declares
+  `role: sentinel`. Report `N sentinels active`. A count of zero is **not a
+  warning** — a downstream project may legitimately ship none; report it as
+  descriptive (`0 sentinels active`).
+- **Integrity constraint.** Report the state of the Sentinel integrity
+  constraint. When the plugin's `sentinel-integrity-check.sh` script is
+  available, run it against the agents directory:
+  `bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh <agents-dir>`.
+  Report `integrity constraint green` on exit 0, or `integrity constraint
+  WARNING` naming the offending agent(s) on a non-zero exit. When the script
+  is not available (e.g. a bare-harness install without the plugin cache),
+  report `integrity constraint unavailable` rather than inventing a verdict.
+
+Combined line, e.g. `Sentinels: 5 active, integrity constraint green`.
+
 ### Section 4: Compound learning
 
 Evaluate the state of AGENTS.md:
@@ -278,6 +301,7 @@ AI Literacy Habitat Status
 Habitat files    [OK / WARNING / MISSING]
 Harness          [OK / WARNING / MISSING]
 Agent team       [OK / WARNING / MISSING]
+Sentinels        [N active, integrity constraint green / WARNING / unavailable]
 Compound learning [OK / WARNING / MISSING]
 Model routing    [OK / WARNING / MISSING]
 CI               [OK / WARNING / MISSING]

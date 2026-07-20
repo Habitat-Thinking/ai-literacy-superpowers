@@ -2,6 +2,7 @@
 name: carpaccio
 description: Use when starting any new task via the orchestrator — reads the raw task description, slices it into end-to-end-complete pieces, and produces a structured slicing record; read-only trust boundary enforces the human-cognition gate on dispositions; runs at orchestrator step 0 before spec-writer
 tools: [Read, Glob, Grep]
+role: sentinel
 ---
 
 # Carpaccio Agent

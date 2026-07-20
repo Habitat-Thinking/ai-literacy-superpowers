@@ -64,6 +64,10 @@ jobs:
           sudo apt-get -qq install -y shellcheck
           find . -name "*.sh" -not -path "./.git/*" -exec shellcheck {} +
 
+      - name: "Constraint: Sentinel integrity"
+        run: |
+          bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents
+
       - name: Summary
         if: always()
         run: echo "Harness constraint check complete. See HARNESS.md for constraint details."

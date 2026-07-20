@@ -2,6 +2,7 @@
 name: reservoir-warden
 description: Use on demand via /reservoir to watch the human verifier the harness cannot verify — counts observable proxies (session span, decision volume, context switches, wall-clock hour) over the recent git window, reports each with an observed/inferred/asked flag, and if a threshold is crossed offers the single decide-your-stop-first recommendation; read-only by design, never writes a record of the human's state
 tools: [Read, Glob, Grep, Bash]
+role: sentinel
 ---
 
 # Reservoir Warden Agent

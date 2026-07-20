@@ -166,3 +166,7 @@ Every entry in the permissions allowlist should have a matching affordance in th
 ### Convention parity
 
 Every active constraint heading in HARNESS.md's Constraints section must appear verbatim in all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`). These files are generated from HARNESS.md by `/convention-sync` and can drift by whole constraints (content drift, not a stale mtime). This PR-time gate complements the weekly "Convention file sync" GC rule. Enforcement: deterministic (`python3 scripts/check-convention-parity.py`, CI `.github/workflows/convention-parity-check.yml`). Scope: pr.
+
+### Sentinel integrity
+
+Any agent whose frontmatter declares `role: sentinel` MUST NOT be granted `Write` or `Edit` tools — a sentinel's object of care is the human's understanding and judgement, and criterion S1 of the sentinel signature is a read-only trust boundary (`Bash` is permitted for read-only inspection such as `git log`). The same check also rejects any `role:` value outside the enum `{sentinel}`, so a typo fails loudly rather than silently exempting the agent. Enforcement: deterministic (`bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents`, CI `.github/workflows/harness.yml`; also weekly in `.github/workflows/gc.yml`). Scope: pr.
