@@ -859,3 +859,19 @@
   - Model tiers used: capable (Opus 4.8) throughout
   - Pipeline stages completed: manual (no orchestrator)
   - Agent delegation: partial
+
+---
+
+- **Date**: 2026-07-22
+- **Agent**: Claude Code (Opus 4.8, harness-maintenance session)
+- **Task**: Shipped the sentinel agent category (#482–#484) — a new agent taxonomy with a deterministic integrity constraint, backing skill, Diataxis docs, and a triple-debt conceptual grounding — then the 2026-07-21 health snapshot and its three follow-ups (Status reconcile, this reflection, and the badge-script fix #486).
+- **Surprise**: The **same anti-pattern surfaced twice in one epic** — a harness artefact hard-pinning or re-deriving a value that a source of truth already holds. (1) A structural test pinned the literal `Skills-36` badge to stop an *earlier* PR re-bumping it; adding the legitimate 37th skill turned that guard red for the right change (#482). (2) `update-health-badge.sh` re-derived the health status by keyword-sniffing the snapshot Meta, so the standard line `Trend alerts: none` false-positived on the substring "alert" and flagged Attention on a Healthy snapshot (#486). Both broke because the artefact encoded a *copy/proxy* of the truth instead of reading the truth: the real skill count lives on disk (`skills/*/SKILL.md`), and the real health status is the `- Health: **X**` line the skill already computes. Fix in both cases was to assert against/mirror the source of truth, not a pinned or sniffed proxy.
+- **Proposal**: AGENTS.md (ARCH_DECISIONS / TEST_STRATEGY) — "derive from the source of truth, don't pin or re-derive": when a check or script needs a value the harness already determines (a count on disk, a status a skill writes, a version in plugin.json), read that source rather than hard-coding a literal or re-computing it heuristically. Count-pinning guards (`assert "Skills-36" in readme`) go stale on legitimate additions; re-derivation heuristics (substring-matching Meta prose) invite false positives. Prefer `len(glob("skills/*/SKILL.md"))` and reading the explicit `Health:` line. A guard that pins a literal should carry a comment saying what makes the literal change and why it wasn't derived.
+- **Improvement**: Two process notes. (a) The sentinel spec was a feature with a committed spec, but its open questions were dispositioned inline via AskUserQuestion rather than through formal advocatus-diaboli / choice-cartographer records — consistent with the "concentrate ceremony on contract-bearing slices" pattern, but the snapshot's Diaboli/Cartographer counts show it as a spec-without-record; worth a one-line note in such specs pointing to where the dispositions live. (b) Reflection capture lagged the feature work by ~4 weeks (this entry is the catch-up) — capturing a reflection at epic-merge time, not only at snapshot time, would keep learning flow ahead of the monthly cadence.
+- **Signal**: failure
+- **Constraint**: none (the two fixes are the durable guard; the general pattern is a proposal for AGENTS.md, not a mechanically-enforceable rule)
+- **Session metadata**:
+  - Duration: multi-session (PRs #482–#487, spanning 2026-07-20 → 2026-07-22)
+  - Model tiers used: capable (Opus 4.8) throughout
+  - Pipeline stages completed: manual (no orchestrator); one harness-auditor agent dispatch for the Status reconcile
+  - Agent delegation: partial
