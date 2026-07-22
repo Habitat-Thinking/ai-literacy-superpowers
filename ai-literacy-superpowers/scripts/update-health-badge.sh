@@ -23,32 +23,47 @@ health_status="Healthy"
 health_colour="2E8B57"  # green
 
 if [ -n "$SNAPSHOT_FILE" ] && [ -f "$SNAPSHOT_FILE" ]; then
-  # Check for overdue/stalled/silent/alert signals in Meta section
-  meta_section=$(sed -n '/^## Meta$/,/^## /p' "$SNAPSHOT_FILE" | head -20)
+  # The /harness-health skill already computes the aggregate health status
+  # (its step 5) and writes it as an explicit `- Health: **X**` line in the
+  # Meta section. That line is the source of truth — mirror it, do not
+  # re-derive it. Re-deriving by keyword-sniffing the whole Meta section was
+  # fragile: the standard line "Trend alerts: none" contains the substring
+  # "alert", so the old heuristic flagged Attention on a Healthy snapshot,
+  # and a `head -20` window could miss the Health line entirely once the
+  # Meta section ran past twenty lines.
+  meta_section=$(sed -n '/^## Meta$/,/^## /p' "$SNAPSHOT_FILE")
+  health_line=$(echo "$meta_section" | grep -iE '^- Health:' | head -1)
 
-  attention_signals=0
-  if echo "$meta_section" | grep -qi "overdue"; then
-    attention_signals=$((attention_signals + 1))
-  fi
-  if echo "$meta_section" | grep -qi "stalled"; then
-    attention_signals=$((attention_signals + 1))
-  fi
-  if echo "$meta_section" | grep -qi "silent"; then
-    attention_signals=$((attention_signals + 1))
-  fi
-  if echo "$meta_section" | grep -qiE "alert|declining"; then
-    attention_signals=$((attention_signals + 1))
-  fi
+  case "$health_line" in
+    *[Dd]egraded*) health_status="Degraded";  health_colour="DC143C" ;;  # crimson
+    *[Aa]ttention*) health_status="Attention"; health_colour="DAA520" ;;  # amber
+    *[Hh]ealthy*)  health_status="Healthy";   health_colour="2E8B57" ;;  # green
+    *)
+      # No explicit Health line (older or malformed snapshot) — fall back to
+      # the signal heuristic. Word boundaries keep "alerts" in the standard
+      # "Trend alerts:" label from counting as an "alert" signal.
+      attention_signals=0
+      for signal in overdue stalled silent; do
+        if echo "$meta_section" | grep -qiw "$signal"; then
+          attention_signals=$((attention_signals + 1))
+        fi
+      done
+      if echo "$meta_section" | grep -qiwE 'alert|declining'; then
+        attention_signals=$((attention_signals + 1))
+      fi
+      if [ "$attention_signals" -ge 2 ]; then
+        health_status="Degraded"
+        health_colour="DC143C"
+      elif [ "$attention_signals" -ge 1 ]; then
+        health_status="Attention"
+        health_colour="DAA520"
+      fi
+      ;;
+  esac
 
-  if [ "$attention_signals" -ge 2 ]; then
-    health_status="Degraded"
-    health_colour="DC143C"  # crimson red
-  elif [ "$attention_signals" -ge 1 ]; then
-    health_status="Attention"
-    health_colour="DAA520"  # goldenrod/amber
-  fi
-
-  # Also check enforcement ratio
+  # Safety net: a collapsed enforcement ratio forces Degraded regardless of
+  # what the Health line claims — belt-and-suspenders against a snapshot that
+  # under-reports its own health.
   enforced_line=$(grep -E '^- Constraints:' "$SNAPSHOT_FILE" || echo "")
   if [ -n "$enforced_line" ]; then
     pct=$(echo "$enforced_line" | grep -oE '[0-9]+%' | tr -d '%')
