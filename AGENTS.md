@@ -477,6 +477,29 @@
   `docs/superpowers/objections/dl-s2b-challenge-protocol-design.md` and
   `docs/superpowers/objections/choice-cartographer.md` (O7). Promoted per #348.
 
+- Decision: harness artefacts (checks, scripts, badges, structural tests)
+  **derive from the source of truth — they do not pin a copy of it or
+  re-derive it heuristically.** When an artefact needs a value the harness
+  already determines — a count on disk, a status a skill computes, a version
+  in `plugin.json` — it reads that source rather than hard-coding a literal or
+  re-computing it. Two failures in the 0.66 line proved the anti-pattern's two
+  shapes. **(1) A pinned literal goes stale on a legitimate change:** the S7
+  structural test asserted `Skills-36` to stop a *prior* PR re-bumping the
+  badge, so adding the legitimate 37th skill (`sentinel-design`) turned the
+  guard red for the *right* change (#482); the fix asserts against
+  `len(glob("skills/*/SKILL.md"))`. **(2) A re-derivation heuristic invites
+  false positives:** `update-health-badge.sh` re-derived health by
+  keyword-sniffing the snapshot Meta, so the standard line `Trend alerts: none`
+  matched the substring "alert" and flagged Attention on a Healthy snapshot
+  (#486); the fix reads the explicit `- Health: **X**` line the
+  `/harness-health` skill already computes. Guidance: prefer reading the
+  source; if a literal pin is genuinely unavoidable (no on-disk source exists),
+  the guard must carry a comment stating what makes the literal change and why
+  it was not derived. This applies equally to test guards (assert against
+  reality, not a frozen count) and to scripts that mirror a computed value
+  (mirror the authoritative line, don't sniff prose). Promoted from the
+  2026-07-22 reflection (#488).
+
 ## TEST_STRATEGY
 
 <!-- How tests are structured in this project. Helps agents write consistent
