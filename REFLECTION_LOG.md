@@ -870,6 +870,7 @@
 - **Improvement**: Two process notes. (a) The sentinel spec was a feature with a committed spec, but its open questions were dispositioned inline via AskUserQuestion rather than through formal advocatus-diaboli / choice-cartographer records — consistent with the "concentrate ceremony on contract-bearing slices" pattern, but the snapshot's Diaboli/Cartographer counts show it as a spec-without-record; worth a one-line note in such specs pointing to where the dispositions live. (b) Reflection capture lagged the feature work by ~4 weeks (this entry is the catch-up) — capturing a reflection at epic-merge time, not only at snapshot time, would keep learning flow ahead of the monthly cadence.
 - **Signal**: failure
 - **Constraint**: none (the two fixes are the durable guard; the general pattern is a proposal for AGENTS.md, not a mechanically-enforceable rule)
+- **Promoted**: 2026-07-22 → AGENTS.md ARCH_DECISIONS: "harness artefacts derive from the source of truth — they do not pin a copy of it or re-derive it heuristically (a count on disk, a status a skill computes, a version in plugin.json); pinned literals go stale on legitimate changes (S7 Skills-36 guard, #482) and re-derivation heuristics invite false positives (badge substring 'alert', #486); prefer reading the source, and comment any unavoidable literal pin"
 - **Session metadata**:
   - Duration: multi-session (PRs #482–#487, spanning 2026-07-20 → 2026-07-22)
   - Model tiers used: capable (Opus 4.8) throughout
