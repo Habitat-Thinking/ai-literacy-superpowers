@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.66.2 — 2026-07-22
+
+### Fix: health badge mirrors the authoritative Health line
+
+- `update-health-badge.sh` re-derived the harness health status by
+  keyword-sniffing the snapshot's Meta section, so the standard line
+  `Trend alerts: none` false-positived on the substring "alert" and
+  flagged **Attention** on a genuinely Healthy snapshot; a `head -20`
+  window could also miss the Health line in a longer Meta section. The
+  script now reads the explicit `- Health: **X**` line the
+  `/harness-health` skill already computes (Healthy / Attention /
+  Degraded) as the source of truth, keeping the `<70%` enforcement ratio
+  as a Degraded safety-net override and a word-boundaried keyword
+  heuristic only as a fallback for snapshots with no Health line.
+- Added a Layer-0 regression test (`test-update-health-badge.sh`)
+  covering the `Trend alerts: none` case, all three Health statuses, the
+  enforcement override, a Health line past 20 lines of Meta, and the
+  badge link target.
+
 ## 0.66.1 — 2026-07-20
 
 ### Docs: ground the sentinel category in Storey's triple-debt model

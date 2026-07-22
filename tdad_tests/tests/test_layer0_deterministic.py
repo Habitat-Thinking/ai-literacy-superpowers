@@ -60,6 +60,9 @@ BASH_TEST_SCRIPTS = [
     # sentinel agent category — the read-only integrity matcher for
     # role: sentinel agents (§5.4).
     "test-sentinel-integrity",
+    # harness-health badge writer — mirrors the authoritative Health line
+    # rather than re-deriving it (regression: "Trend alerts: none").
+    "test-update-health-badge",
 ]
 
 
