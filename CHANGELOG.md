@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.67.0 — 2026-08-08
+
+### Cadence Sentinels S1 — the shared substrate
+
+The plumbing the four cadence sentinels (Coda, Mast, WIP Warden, Convener)
+will consume, shipped once so none of them re-derives it. Nothing in this
+slice gates anything.
+
+- **The pact file (`~/.claude/pacts.md`).** A new, user-scoped declaration
+  surface carrying three optional blocks — `Session WIP`, `Budgets`, and a
+  reserved `Sync cadence`. Pacts belong to a person, not a repository: a stop
+  hour and a concurrency limit are properties of the human, so they live
+  outside every work tree and are never committed. `HARNESS.md` remains the
+  repo's declaration surface and is untouched.
+- **`Budgets` carries its governing clause.** *Unspent budget is not a debt.*
+  A block whose clause has been deleted reads as `malformed` and every
+  consumer drops back to observe-only, rather than holding its keeper to a
+  pact whose governing sentence is gone.
+- **A block reader that does not mangle its own vocabulary.**
+  `lib/pact-blocks.sh` splits on the first delimiter and trims at the ends
+  only. The inherited `read_key` is greedy on `:` and strips interior spaces,
+  which turns `hard_stop_hour: 18:30` into `30` — three of seven `Budgets`
+  keys would have parsed to garbage.
+- **The session registry is a lease, not a log.** `SessionStart` writes,
+  `Stop` renews, and only lease expiry retires an entry. `Stop` fires per
+  assistant turn rather than per session, so a delete-on-`Stop` registry would
+  have emptied itself after each session's first response — and the WIP Warden
+  would have reported one live session while four ran.
+- **The honesty flag belongs to the count, not the reader.** `registry_count`
+  is a pure read; pruning happens on the hook rail. A count following a
+  retirement stays `inferred` for every subsequent reader, not just the first.
+- **The registry library is split along the sentinel trust boundary.**
+  Sentinels may source the read surface; the mutation surface is reachable
+  only from hook scripts. The frontmatter check permits `Bash` and names this
+  as its own known limit, so the boundary is preserved by what an agent can
+  reach rather than by what it is trusted not to call.
+- **Records are append-only, and now actually are.** Parking and consultation
+  records carry their state in the filename; a transition writes a new file
+  rather than editing a `status` key in place. `records_open` answers "what is
+  still open" from the names.
+- **Record schemas ship as published reference pages.**
+  `reference/parking-record-format.md` and
+  `reference/consultation-record-format.md`, plus `reference/pacts-format.md`.
+  A schema homed in `docs/superpowers/` would be excluded from the site by
+  `mkdocs.yml` — the one format contract an adopter could not read.
+- **25 Layer-0 scenarios** across `test-pact-blocks.sh`,
+  `test-session-registry.sh`, and `test-record-contracts.sh`.
+
 ## 0.66.2 — 2026-07-22
 
 ### Fix: health badge mirrors the authoritative Health line

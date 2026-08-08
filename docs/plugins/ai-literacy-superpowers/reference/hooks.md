@@ -182,11 +182,33 @@ hungry-judges figure. See the `cognitive-reservoir` skill and the
 [Watching the Verifier](../explanation/watching-the-verifier.md)
 concept page.
 
+### Session registry sweep (command)
+
+- **Event**: Stop
+- **Matcher**: `*`
+- **Type**: command
+- **Script**: `hooks/scripts/session-registry-sweep.sh`
+- **Timeout**: 10s
+
+Renews this session's registry lease, then retires any lease that has
+expired. It **renews — it never deletes this session's entry.** That is
+the load-bearing detail: `Stop` fires each time the main agent finishes
+responding, so a hook that deleted its own entry here would empty the
+registry after the session's first answer, and the WIP Warden would
+report one live session while four ran. Retirement happens only by lease
+expiry, whose length is `stale_after_hours` in the pact file (default
+12). Pruning lives on this rail rather than in any read path, which is
+what keeps `registry_count` a pure read and the honesty flag a property
+of the count rather than of whoever read first. Exits 0 unconditionally.
+See [Pact file format](pacts-format.md).
+
 ---
 
 ## SessionStart Hooks
 
-These hooks fire once when a new Claude Code session begins.
+These hooks fire when a Claude Code session begins — **and also on
+resume, clear, and compact**, so a `SessionStart` hook runs more than
+once in the life of a session and must be idempotent.
 
 ### Template currency check
 
@@ -199,6 +221,22 @@ Compares the `<!-- template-version: X.Y.Z -->` marker in
 version, nudges you to run `/harness-upgrade` to adopt new
 template content. Exits silently if `HARNESS.md` does not exist
 or the marker is absent.
+
+### Session registry start
+
+- **Script**: `hooks/scripts/session-registry-start.sh`
+- **Timeout**: 10s
+
+Writes this session's entry in the machine-global session registry
+(`~/.claude/sessions/`), or renews its heartbeat if one already exists.
+Idempotent by construction, because `SessionStart` re-fires on resume,
+clear, and compact: it never resets `started_at`, since doing so would
+mean a genuinely long-running session never ages out. The session id is
+sanitised before it is used as a path component; a hostile id collapses
+to `unknown`, which is one reason a registry containing `unknown.json`
+reports its count as `inferred`. The registry is local, per-machine,
+outside every work tree, and never committed. Exits 0 unconditionally —
+a registry failure must never surface to a session.
 
 ---
 

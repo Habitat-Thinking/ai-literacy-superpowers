@@ -194,6 +194,40 @@ An agent that does any of these has left the category, whatever its
    pipeline without a person disposing it, S2 is violated and the human
    has been removed from their own decision.
 
+### The boundary of anti-pattern 2: *by* the person versus *about* them
+
+"Persist nothing about the human" is not "persist nothing the human
+appears in". The line runs between two kinds of claim, and a sentinel
+author needs it drawn before they design any record:
+
+- **About the person — forbidden.** Anything the *agent* concluded:
+  inference, telemetry, scoring, an assertion about capacity, attention,
+  or state. "Tired at 21:00" is the canonical violation, and it stays a
+  violation however softly it is worded.
+- **By the person — permitted, and often required.** A declaration the
+  *human* authored: a budget, a stop hour, a disposition, a next action
+  they wrote themselves. A pact that is not durable is not a pact, so
+  refusing to persist these would not protect anyone — it would only make
+  the person's own decisions unenforceable by them.
+
+`## Cognitive reservoir` has always sat on the permitted side: it holds a
+self-declared `chronotype` in a file the human edits, while its own prose
+forbids recording any claim about cognitive state. The pact file
+(`~/.claude/pacts.md`) generalises that shape, and it is why parking
+records and consultation dispositions are legitimate durable artefacts.
+
+Two tests, when a record is in question. **Who authored the claim?** If
+the agent did, it is about the person. **Would the person recognise it as
+something they said?** If not, it is about them.
+
+One corollary for anything a sentinel may *reach*, not merely write: a
+shared library that exposes a mutation function to a sentinel breaches
+this boundary through a channel the frontmatter check cannot see, because
+`Bash` is permitted and the check reads only the declared `tools:` list.
+Split such libraries — a read surface a sentinel may source, a write
+surface only hooks and commands may. The boundary should hold by what an
+agent *can* reach, not by what it is trusted not to call.
+
 ## When you have a candidate
 
 1. Check S1, S2, S3 against the candidate. All three, or it is not a

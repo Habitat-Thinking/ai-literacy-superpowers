@@ -55,13 +55,17 @@ if grep -nE '^[[:space:]]*-[[:space:]]*[a-z_]+[[:space:]]*:.*#' "$TEMPLATE"; the
 fi
 
 # --- B2: mandatory clauses present in the template ---------------------------
-grep -qF 'Unspent budget is not a debt.' "$TEMPLATE" \
+# Matched whitespace-normalised, exactly as the library matches them: the
+# clause's words are the interface, its line breaks are not. A template author
+# may wrap the sentence; they may not reword it.
+flat_template=$(tr '\n' ' ' < "$TEMPLATE" | tr -s '[:space:]' ' ')
+echo "$flat_template" | grep -qF 'Unspent budget is not a debt.' \
   || fail "B2: template Budgets block is missing the literal not-a-debt clause"
-grep -qF 'It counts; it does not assess.' "$TEMPLATE" \
+echo "$flat_template" | grep -qF 'It counts; it does not assess.' \
   || fail "B2: template Session WIP block is missing the gate-on-sessions clause"
 
 # --- B3: Sync cadence carries the reserved marker -----------------------------
-grep -qiF 'Reserved. No sentinel reads this block yet.' "$TEMPLATE" \
+echo "$flat_template" | grep -qiF 'Reserved. No sentinel reads this block yet.' \
   || fail "B3: template Sync cadence block is missing the reserved marker"
 
 # --- B4: no pact file at all — every block absent, note emitted, exit 0 -------
