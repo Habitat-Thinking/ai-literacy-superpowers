@@ -7,48 +7,48 @@ stories:
   - id: 1
     lens: [forces, patterns]
     title: Prose promoted to a required field
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Deliberate and testable; kept. Spec gains a note naming who may reword the clause and the coordinated-migration cost of doing so, so the brittleness is disclosed rather than discovered."
   - id: 2
     lens: [patterns, consequences]
     title: Observe-only is the resting state
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "This is constraint 6 working as intended. The Null Object framing is adopted into the spec: block_absent_note plus block_key's default let consumers run one path, and S2-S5 are told never to branch on absence."
   - id: 3
     lens: [patterns, alternatives]
     title: Sync cadence published before its consumer
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Sync cadence ships, marked reserved in its prose and in the reference page, reusing the placeholder device the spec already invented. An adopter who declares values knows they are inert, so the eventual consumer is not bound by declarations made before its behaviour existed."
   - id: 4
     lens: [forces, consequences]
     title: One keeper per repo, assumed silently
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Resolved structurally rather than by note: pacts move to a user-scoped ~/.claude/pacts.md. A stop hour is a property of the human, not of a repository, and a file with one author and many readers could never answer 'whose pact is this'. The story is dissolved, not carried."
   - id: 5
     lens: [coherence, forces]
     title: A repo's limit against a person's count
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Dissolved by the same move as #4. With pacts user-scoped, limit and count are both person-scoped and the units mismatch disappears; no combination rule is needed because there is only one declaration."
   - id: 6
     lens: [consequences, coherence]
     title: The live harness pinned as fixture
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Largely dissolved by the #4 move -- the live pact file is no longer in the repo, so no deterministic test can pin it. The residue is fixed as proposed: block tests run against fixtures, and no test asserts a value the human is expected to change. Second worked instance of the AGENTS.md:481 pin-a-copy decision."
   - id: 7
     lens: [defaults, consequences]
     title: Twelve untunable hours define liveness
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "stale_after_hours becomes a declarable key in the Session WIP block, default 12. Every other threshold in this harness is human-tunable; a slice premised on the human declaring the pacts should not introduce the first one they cannot. The lease-with-heartbeat-renewal naming is adopted into the spec."
   - id: 8
     lens: [defaults, patterns]
     title: Record schemas homed in directory READMEs
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Schemas move to reference/parking-record-format.md and reference/consultation-record-format.md, matching the repo's three existing format pages and actually reaching the published site. The record-directory READMEs point at them rather than duplicating them, which also removes the two-copies problem the story identifies."
   - id: 9
     lens: [coherence, patterns]
     title: Append-only declared, transitions written in place
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "State moves into the path: a transition writes a new file rather than editing a key. Append-only and the state read then agree, 'what is still parked' stays a glob, and S2's resume path becomes a write -- which fits the Coda's read-only agent and its command-writes dispatcher."
 ---
 
 # Choice stories — Cadence Sentinels S1: Shared Infrastructure
