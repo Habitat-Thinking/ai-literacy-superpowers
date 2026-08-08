@@ -9,85 +9,85 @@ objections:
     severity: critical
     claim: "The registry lifecycle assumes the Stop hook fires once per session, but Stop fires at the end of every assistant turn; a session removes its own entry after its first response and reads as not-live for the rest of its life."
     evidence: "Spec 4.2: 'Stop hook removes this session entry and prunes stale ones... Stop is used rather than SessionEnd because hooks.json already runs nine Stop hooks... gives the pruner the same firing guarantees the reservoir check already relies on.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Heartbeat design adopted: Stop refreshes a heartbeat rather than deleting, and staleness alone retires entries, so correctness no longer depends on unverified Stop firing semantics. SessionStart re-fire refreshes without resetting started_at."
   - id: O2
     category: implementation
     severity: high
     claim: "The registry is project-local, so it counts sessions per repo, not per human; the concurrency the WIP Warden exists to see is cross-repo, and the entry repo field is vestigial under this location."
     evidence: "Spec 4.1: '.claude/sessions/<session-id>.json' with '\"repo\": \"<absolute path to project root>\"', justified by gitignored per-project precedents, and scenario 12 asserting 'git status --porcelain' sees nothing."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Registry moves to machine-global ~/.claude/sessions/. Thrash-switching is a property of the human, not the repo; the limit stays declared per-repo in HARNESS.md while the count is global, which makes the repo field load-bearing."
   - id: O3
     category: alternatives
     severity: high
     claim: "A per-session, timestamped, sanitised session log already exists in this repo (observability/affordance-invocations.json); the spec never weighs deriving the live-session count from it against building a new hook-driven mutable registry."
     evidence: "affordance-invocation-recorder.sh:68 emits '{\"tool\":...,\"session\":\"%s\",\"ts\":\"%s\"}'; spec 4 introduces a new registry, two new hook scripts, a staleness constant, and a pruner without mentioning this existing data source."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "The invocation recorder's PostToolUse matcher is 'Bash|mcp__.*', so a session that only reads and edits files never appears in the log. Deriving the count from it would silently undercount exactly the long-running sessions the WIP Warden exists to notice. Rejection recorded on the record per the objection's own request; the 'asked' fallback remains available to S4 as an honesty option."
   - id: O4
     category: risk
     severity: high
     claim: "registry_count mutates shared state as a side effect of a read, which makes the observed/inferred flag a property of who read first rather than of the count, and leaves concurrent pruning unspecified."
     evidence: "Spec 4.3 table plus scenario 7: 'when registry_count runs, then the stale entry is removed and the count is flagged inferred.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Prune splits from count. Pruning runs on the hook rail only; registry_count becomes a pure read and derives its flag from durable state (a retired-entry marker), not from whether this particular read happened to prune."
   - id: O5
     category: implementation
     severity: high
     claim: "block_key is specified as read_key plus block scoping, but read_key greedy-matches the last colon and strips all whitespace, so every HH:MM and multi-token value the new vocabulary mandates parses to garbage."
     evidence: "reservoir-check.sh:37-41 uses 's/.*[:=][[:space:]]*//' then 'tr -d [:space:]'; spec 3.3 mandates 'hard_stop_hour: <HH:MM local>' and 'focus_blocks: <HH:MM-HH:MM, HH:MM-HH:MM>'; spec 3.7 describes block_key as differing from read_key only in scope."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Spec gains an explicit value grammar per key, and block_key splits on the FIRST delimiter and trims only at the ends. Verified empirically at the gate: the inherited greedy extraction turns 18:30 into 30 and 09:00-12:00, 14:00-17:00 into 00."
   - id: O6
     category: specification quality
     severity: high
     claim: "Component 3 claims its schemas are declared in this slice to make S1 a complete reviewable unit, but no schema is given and no acceptance scenario covers it."
     evidence: "Spec 5: 'Declaring the schemas here rather than in S2 and S5 is deliberate... the substrate is fully specified before anything consumes it'; the only field named anywhere is 'status: resumed', and scenarios 1-12 cover only blocks and the registry."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Both record schemas written out in full in the spec, with acceptance scenarios covering them. The objection's own argument is decisive: without the schemas, S1 is the half-feature it claims not to be."
   - id: O7
     category: premise
     severity: high
     claim: "Constraint 4 (persist nothing about the person) is scoped only to the registry, while 3.5 commits the person's working day into permanent git history via the activated Budgets block."
     evidence: "Spec 2: 'The registry records that a session exists... It records nothing about who is in it'; spec 3.5: 'All three blocks are additionally activated (uncommented, with values) in this repo own root HARNESS.md', where Budgets carries hard_stop_hour, focus_blocks, and sessions_per_day."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Constraint 4 targets inference and telemetry -- claims an agent makes ABOUT the person. A pact the person authored is a statement BY them, and a pact that is not durable is not a pact. The distinction is written into the spec and carried into the sentinel-design skill so S2-S5 inherit it rather than re-deriving it."
   - id: O8
     category: risk
     severity: high
     claim: "Every consuming sentinel is told to source a library whose read path deletes files, which breaches the read-only trust boundary through the exact Bash channel the CI check names as its known limit."
     evidence: "Spec 4.4: 'The SessionStart and Stop scripts and every consuming sentinel source this one file' exposing registry_write, registry_remove, registry_prune; sentinel-integrity-check.sh:21-22 'Bash is permitted' and :30-33 'an agent that reaches a write capability through an undeclared channel is out of scope here.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The library splits along the trust boundary: a read-only surface sentinels may source, and a mutation surface reachable only from hook scripts. Generalises the Note D reasoning the objection correctly identifies as already-found-and-not-applied."
   - id: O9
     category: risk
     severity: medium
     claim: "The session id becomes a filesystem path component with no stated source and no sanitisation rule, in a repo that has already adjudicated hostile session ids once."
     evidence: "Spec 4.1: '.claude/sessions/<session-id>.json'; affordance-invocation-recorder.sh:55 'grep -qE ^[A-Za-z0-9._-]+$ || session=unknown' and tdad_tests/layer0_deterministic/test-affordance-recorder.sh:83-86 'Hostile session_id carrying JSON metacharacters: must be sanitised to unknown.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Session id sanitised with the recorder's existing pattern before use as a path component, with a stated collision rule so two ids sanitising to the same fallback cannot silently corrupt the count."
   - id: O10
     category: scope
     severity: medium
     claim: "The slice adds three HARNESS.md block schemas and two hook entries but does not update the reference pages that document exactly those two surfaces, which are stale the day it ships."
     evidence: "Spec 9 enumerates 'Five CI-checked version locations plus the README plugin-table cell' and nothing else; docs/plugins/ai-literacy-superpowers/reference/harness-md-format.md and reference/hooks.md exist and go unmentioned; CLAUDE.md requires docs changes in the same PR."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "reference/harness-md-format.md and reference/hooks.md added to the rollout checklist, per the CLAUDE.md docs-in-the-same-PR convention."
   - id: O11
     category: specification quality
     severity: medium
     claim: "The vocabulary introduces enforcement tokens with no semantics and no override path, in a slice that claims to gate nothing, which pre-authorises hard enforcement in S4 without the on-the-record override constraint 6 requires."
     evidence: "Spec 3.2: 'enforcement: advisory | strict' with only the advisory default defined; spec 3.3: 'hard_stop_hour', 'notification_policy_after_stop: digest | none'; spec 6: 'No gating. Nothing in this slice blocks, warns, or requires a disposition.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "enforcement: strict gains a one-line semantics and a named override location in S1, so S4 inherits a defined token rather than defining one that is already declared in the wild."
   - id: O12
     category: specification quality
     severity: medium
     claim: "The acceptance scenarios omit the one behaviour that justifies building a second parser (block-scoped key isolation) and leave present-but-malformed block behaviour undefined."
     evidence: "Spec 3.7 justifies block_key because read_key 'searches the entire document, which is safe for its unique keys but not for a vocabulary of three blocks that may share key names'; scenario 11 tests only a single active Budgets block; spec 3.6 defines absent-block behaviour only, while 3.3 asserts 'A Budgets block whose prose has lost the clause is a malformed block.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Two-block fixture added asserting key isolation, which is the property that justifies building block_key at all. Malformed-block behaviour defined explicitly as a third state distinct from absent."
 ---
 
 # Objection record — Cadence Sentinels S1: Shared Infrastructure
