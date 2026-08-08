@@ -322,6 +322,10 @@ consumer lists the other live sessions and says where they are.
 Because the registry lives outside every work tree, no `.gitignore` entry is
 needed and nothing can accidentally commit it.
 
+`$CLAUDE_SESSIONS_DIR` overrides the location, mirroring `$CLAUDE_PACTS_FILE`
+for the pact reader (§3.8). It exists so the deterministic tests need no home
+directory, and it is the only supported way to relocate the registry.
+
 **Session id sanitisation.** The id arrives from the hook's stdin JSON
 (`session_id`) and becomes a filesystem path component, so it is sanitised
 before use with the pattern this repo already adjudicated for the same field
@@ -406,12 +410,24 @@ while a `role: sentinel` agent deleted files.
 
 | File | Exposes | Who may source it |
 | --- | --- | --- |
-| `hooks/scripts/lib/session-registry-read.sh` | `registry_count` (count + flag), `registry_list` | hook scripts **and** sentinels |
+| `hooks/scripts/lib/session-registry-read.sh` | `registry_dir`, `registry_count` (emitting `<n> <flag>`), `registry_list` | hook scripts **and** sentinels |
 | `hooks/scripts/lib/session-registry-write.sh` | `registry_touch`, `registry_prune` | hook scripts **only** |
 
 The read library performs no mutation on any path. This generalises the
 reasoning that keeps the Coda read-only (§8, Note D): the boundary is preserved
 by what the agent *can* reach, not by what it is trusted not to call.
+
+### 4.5 The two hook scripts
+
+| Script | Hook | Behaviour |
+| --- | --- | --- |
+| `hooks/scripts/session-registry-start.sh` | `SessionStart` | write the entry if absent, renew `heartbeat` if present, never reset `started_at` |
+| `hooks/scripts/session-registry-sweep.sh` | `Stop` | renew `heartbeat`, then prune expired leases |
+
+Both read `session_id` from the hook's stdin JSON and sanitise it per §4.1.
+Both exit 0 unconditionally: a registry failure must never surface to, or
+interfere with, a session. Pruning lives on the `Stop` rail rather than in any
+read path, which is what keeps `registry_count` pure (§4.3).
 
 ## 5. Component 3 — Record Directories and Schemas
 
@@ -449,6 +465,12 @@ docs/superpowers/parked/2026-08-09-retry-branch.superseded.md   <- superseded
 "What is still parked" is a glob: every `*.md` that is not itself a transition
 file and is not named by any transition's `supersedes` field. Nothing is ever
 edited, and nothing is ever deleted.
+
+That query is the one S2's resume path depends on, so it ships as code rather
+than as prose: `hooks/scripts/lib/record-paths.sh` exposes
+`records_open <dir>`, listing the records in a directory that are still open.
+Like the block reader it is plumbing, not a consumer — it answers "which
+records are open", never "what should be done about them".
 
 This also fits the Coda's trust boundary: resuming is a *write* by the `/coda`
 command, not an *edit* of an existing record, so the read-only agent never

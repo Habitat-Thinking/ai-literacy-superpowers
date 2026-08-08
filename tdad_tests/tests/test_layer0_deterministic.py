@@ -63,6 +63,13 @@ BASH_TEST_SCRIPTS = [
     # harness-health badge writer — mirrors the authoritative Health line
     # rather than re-deriving it (regression: "Trend alerts: none").
     "test-update-health-badge",
+    # Cadence Sentinels S1 — the shared substrate S2–S5 consume: the pact
+    # block reader, the session registry lease, and the two record contracts.
+    # RED until S1 ships lib/pact-blocks.sh, the two registry libraries and
+    # their hooks, lib/record-paths.sh, and the reference format pages.
+    "test-pact-blocks",
+    "test-session-registry",
+    "test-record-contracts",
 ]
 
 
