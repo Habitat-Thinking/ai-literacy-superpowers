@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+
+# Strict mode, applied only when this file is EXECUTED. `return` succeeds
+# solely inside a sourced context, so the `set` is skipped when a hook script
+# or a sentinel sources us. That matters: `set` mutates the CALLER's shell, and
+# a library whose whole purpose is being safely sourceable must not impose
+# -e/-u/-o pipefail on whatever sourced it. Satisfies the "Shell scripts use
+# strict mode" constraint (HARNESS.md) in the only context where strict mode
+# is meaningful for a library.
+(return 0 2>/dev/null) || set -euo pipefail
 # pact-blocks.sh — the one reader for ~/.claude/pacts.md.
 #
 # Spec: docs/superpowers/specs/2026-08-08-cadence-sentinels-s1-infrastructure-design.md §3
@@ -133,5 +142,7 @@ block_state() {
 # block_absent_note <heading> — the fixed sentence, emitted by the library so
 # every consumer says the same thing rather than inventing its own phrasing.
 block_absent_note() {
+  # shellcheck disable=SC2016  # the backticks are markdown for the reader, not
+  # a shell expansion — single quotes are exactly what we want here.
   printf 'no `%s` block declared — running in observe-only mode' "$1"
 }

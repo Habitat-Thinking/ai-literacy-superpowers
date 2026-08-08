@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+
+# Strict mode, applied only when this file is EXECUTED. `return` succeeds
+# solely inside a sourced context, so the `set` is skipped when a hook script
+# or a sentinel sources us. That matters: `set` mutates the CALLER's shell, and
+# a library whose whole purpose is being safely sourceable must not impose
+# -e/-u/-o pipefail on whatever sourced it. Satisfies the "Shell scripts use
+# strict mode" constraint (HARNESS.md) in the only context where strict mode
+# is meaningful for a library.
+(return 0 2>/dev/null) || set -euo pipefail
 # session-registry-read.sh — the read surface of the session registry.
 #
 # Spec: docs/superpowers/specs/2026-08-08-cadence-sentinels-s1-infrastructure-design.md §4
@@ -38,6 +47,15 @@ registry_dir() {
 # in the pact file rather than compiled in: every other threshold in this
 # harness is human-tunable, and a slice premised on the human declaring their
 # pacts should not introduce the first one they cannot touch.
+#
+# Deliberately reads the value without consulting `block_state`, so a
+# `malformed` Session WIP block still supplies a lease. The Null Object
+# contract is about GATING: a block whose governing clause was deleted must
+# not be used to hold its keeper to anything. Retention is not gating — it is
+# housekeeping on local state, and refusing to garbage-collect would punish
+# the human for a typo. S2's WIP Warden faces the same question for
+# `max_concurrent_sessions`, where the answer is the opposite: that value
+# advises a person, so a malformed block must degrade to observe-only.
 _lease_hours() {
   local v
   v="$(block_key 'Session WIP' 'stale_after_hours' '12')"
@@ -60,9 +78,15 @@ _json_field() {
     | head -1 | sed -E 's/.*"[[:space:]]*:[[:space:]]*"([^"]*)"$/\1/'
 }
 
-# registry_list — one line per live entry: "<id> <repo> <started_at>".
+# registry_list — one line per live entry: "<id>\t<started_at>\t<repo>".
 # This is what makes the `repo` field load-bearing: a consumer showing the
 # human their other live sessions needs to say where each one is.
+#
+# Tab-separated, with `repo` LAST, because `repo` is a filesystem path and
+# paths routinely contain spaces. A space-separated format with the free-form
+# field in the middle would hand every consumer doing the obvious
+# `read -r id started repo` a corrupted timestamp on `/Users/x/My Projects/y`.
+# S2–S5 are the consumers and none exists yet, so this is free to get right now.
 registry_list() {
   local dir entry id repo started
   dir="$(registry_dir)"
@@ -72,7 +96,7 @@ registry_list() {
     id="$(_json_field "$entry" id)"
     repo="$(_json_field "$entry" repo)"
     started="$(_json_field "$entry" started_at)"
-    printf '%s %s %s\n' "$id" "$repo" "$started"
+    printf '%s\t%s\t%s\n' "$id" "$started" "$repo"
   done
 }
 

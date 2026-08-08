@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+
+# Strict mode, applied only when this file is EXECUTED. `return` succeeds
+# solely inside a sourced context, so the `set` is skipped when a hook script
+# or a sentinel sources us. That matters: `set` mutates the CALLER's shell, and
+# a library whose whole purpose is being safely sourceable must not impose
+# -e/-u/-o pipefail on whatever sourced it. Satisfies the "Shell scripts use
+# strict mode" constraint (HARNESS.md) in the only context where strict mode
+# is meaningful for a library.
+(return 0 2>/dev/null) || set -euo pipefail
 # session-registry-write.sh — the mutation surface of the session registry.
 #
 # Spec: docs/superpowers/specs/2026-08-08-cadence-sentinels-s1-infrastructure-design.md §4.2, §4.4
@@ -45,6 +54,30 @@ registry_sanitise_id() {
   printf '%s' "$id"
 }
 
+# _json_escape <string> — escape backslash and double-quote for a JSON string.
+#
+# `repo` is a filesystem path, and a path may legally contain a `"`. Without
+# this, such a path closes the JSON string early and injects arbitrary keys —
+# and because `_json_field` takes the FIRST match, an injected `heartbeat`
+# wins over the real one:
+#
+#     repo='/w/a","heartbeat":"2099-01-01T00:00:00Z'
+#       -> heartbeat reads back as 2099-01-01T00:00:00Z
+#
+# Lease expiry is the ONLY removal path in this design, so that entry becomes
+# immortal: it inflates the WIP count for every sentinel on the machine,
+# permanently, recoverable only by a human deleting the file. That is a worse
+# outcome than the injection case this repo already adjudicated for the
+# sibling `session_id` field, and it is why `repo` gets escaped rather than
+# merely truncated. Backslash must be replaced first, or it would double-escape
+# the quotes added after it.
+_json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  printf '%s' "$s"
+}
+
 # registry_touch <session-id> <repo> — write the entry if absent, renew its
 # heartbeat if present. NEVER resets started_at: SessionStart fires on
 # startup, resume, clear and compact, and a reset started_at would mean a
@@ -64,7 +97,9 @@ registry_touch() {
 
   tmp="$entry.$$.tmp"
   printf '{"id":"%s","repo":"%s","started_at":"%s","heartbeat":"%s"}\n' \
-    "$id" "$repo" "$started" "$now" > "$tmp" 2>/dev/null || return 0
+    "$id" "$(_json_escape "$repo")" "$started" "$now" > "$tmp" 2>/dev/null || return 0
+  # Rename, so a reader never observes a half-written entry. Several sessions
+  # run these hooks against one shared registry directory at the same time.
   mv -f "$tmp" "$entry" 2>/dev/null || return 0
 }
 
@@ -94,6 +129,12 @@ registry_prune() {
       rm -f "$entry" 2>/dev/null && retired=1
     fi
   done
+
+  # A hook killed at its 10s timeout between the write and the rename leaves a
+  # temp behind. It cannot corrupt a count — `*.tmp` matches neither the
+  # `*.json` glob nor the find — but nothing else would ever collect it, and
+  # the pruner is already the janitor on this rail.
+  find "$dir" -maxdepth 1 -name '*.tmp' -mmin +$(( lease * 60 )) -exec rm -f {} + 2>/dev/null || true
 
   [ "$retired" -eq 1 ] && _now_iso > "$dir/.retired" 2>/dev/null
   return 0

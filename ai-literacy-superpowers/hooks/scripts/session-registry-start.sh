@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -uo pipefail
+set -euo pipefail
 # session-registry-start.sh — SessionStart hook: write or renew this session's
 # registry entry.
 #
@@ -19,14 +19,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 input="$(cat 2>/dev/null || true)"
 
+# Every extraction below ends in `|| true`: under set -e + pipefail a grep
+# that matches nothing would abort the script, defeating both the fallback on
+# the next line and this hook's exits-0-unconditionally contract.
+
 session="$(printf '%s' "$input" \
   | grep -oE '"session_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 \
-  | sed -E 's/.*"session_id"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
+  | sed -E 's/.*"session_id"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/' || true)"
 [ -n "$session" ] || session="unknown"
 
 repo="$(printf '%s' "$input" \
   | grep -oE '"cwd"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 \
-  | sed -E 's/.*"cwd"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
+  | sed -E 's/.*"cwd"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/' || true)"
 [ -n "$repo" ] || repo="$PWD"
 
 registry_touch "$session" "$repo" 2>/dev/null || true

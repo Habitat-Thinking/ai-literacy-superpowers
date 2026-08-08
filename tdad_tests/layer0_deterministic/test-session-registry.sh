@@ -123,11 +123,41 @@ after=$(find "$CLAUDE_SESSIONS_DIR" -type f | sort | xargs cksum 2>/dev/null || 
     exit 1
   fi
 ) || exit 1
-# No match is the passing case, so this must not sit in an `&&` chain: under
-# `set -e` a failing grep would abort the script exactly when the test passes.
-if grep -nE '(^|[^[:alnum:]_])(rm|mv)[[:space:]]' "$READ_LIB" | grep -vqE ':[[:space:]]*#'; then
-  fail "R9: the read library must contain no delete/move operation"
-fi
+# The textual guard must walk the TRANSITIVE source closure, not just this one
+# file. session-registry-read.sh sources pact-blocks.sh, and a sentinel that
+# sources the read library reaches everything pact-blocks.sh defines — so a
+# mutation function added there would sit one `.` away from a sentinel while
+# this test still announced "read library inert".
+#
+# The forbidden set is wider than rm/mv for the same reason: truncation and
+# in-place edit destroy just as thoroughly.
+closure_of() {
+  local f="$1" dir sourced
+  printf '%s\n' "$f"
+  dir="$(dirname "$f")"
+  sourced=$(grep -oE '^[[:space:]]*\.[[:space:]]+"\$[A-Z_]+/[a-z-]+\.sh"' "$f" 2>/dev/null \
+            | grep -oE '[a-z-]+\.sh' || true)
+  for s in $sourced; do [ -f "$dir/$s" ] && closure_of "$dir/$s"; done
+}
+
+CLOSURE=$(closure_of "$READ_LIB" | sort -u)
+echo "$CLOSURE" | grep -q "pact-blocks.sh" \
+  || fail "R9: the closure walk found no sourced libraries — it is not actually walking"
+
+for f in $CLOSURE; do
+  # No match is the passing case, so this must not sit in an `&&` chain: under
+  # `set -e` a failing grep would abort exactly when the test passes.
+  if grep -nE '(^|[^[:alnum:]_])(rm|rmdir|mv|cp|tee|mkdir|truncate)[[:space:]]' "$f" \
+     | grep -vqE ':[[:space:]]*#'; then
+    fail "R9: $(basename "$f") is in the read closure and contains a mutation command"
+  fi
+  if grep -nE '(^|[[:space:]])(>|>>)[[:space:]]*"?\$' "$f" | grep -vqE ':[[:space:]]*#'; then
+    fail "R9: $(basename "$f") is in the read closure and redirects to a file"
+  fi
+  if grep -nE 'sed[[:space:]]+-i' "$f" | grep -vqE ':[[:space:]]*#'; then
+    fail "R9: $(basename "$f") is in the read closure and edits in place"
+  fi
+done
 
 # --- R5: expired lease retired, count flagged inferred -----------------------
 age_entry sess-beta 20
@@ -184,6 +214,27 @@ printf '{"session_id":"../../escaped","cwd":"%s"}' "$TMP" | bash "$START_HOOK" >
 [ "$(find "$CLAUDE_SESSIONS_DIR" -maxdepth 1 -name '*.json' | wc -l | tr -d ' ')" \
   = "$(find "$CLAUDE_SESSIONS_DIR" -name '*.json' | wc -l | tr -d ' ')" ] \
   || fail "R10: sanitisation must keep every entry flat inside the registry directory"
+
+# --- R14: a quote-bearing repo path cannot inject JSON -----------------------
+# `repo` defaults to $PWD, and a filesystem path may legally contain a `"`.
+# Unescaped, such a path closes the string early and injects keys — and since
+# _json_field takes the FIRST match, an injected heartbeat wins. Because lease
+# expiry is the only removal path in this design, the entry would then be
+# immortal: it inflates the count for every sentinel on the machine forever,
+# recoverable only by a human deleting the file.
+# shellcheck source=/dev/null
+. "$WRITE_LIB"
+registry_touch "sess-inject" '/w/a","heartbeat":"2099-01-01T00:00:00Z'
+injected="$CLAUDE_SESSIONS_DIR/sess-inject.json"
+[ -f "$injected" ] || fail "R14: the entry must still be written"
+hb=$(_json_field "$injected" heartbeat)
+case "$hb" in
+  2099-*) fail "R14: a quote in repo injected a heartbeat ($hb) — the entry would never expire" ;;
+esac
+age_entry sess-inject 20
+registry_prune
+[ ! -f "$injected" ] \
+  || fail "R14: an entry written from a quote-bearing repo must still be prunable"
 
 # --- R11: an unknown entry flags the count inferred --------------------------
 # One unknown.json may stand for more than one session, so the count is not

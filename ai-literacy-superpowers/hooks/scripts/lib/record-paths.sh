@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+
+# Strict mode, applied only when this file is EXECUTED. `return` succeeds
+# solely inside a sourced context, so the `set` is skipped when a hook script
+# or a sentinel sources us. That matters: `set` mutates the CALLER's shell, and
+# a library whose whole purpose is being safely sourceable must not impose
+# -e/-u/-o pipefail on whatever sourced it. Satisfies the "Shell scripts use
+# strict mode" constraint (HARNESS.md) in the only context where strict mode
+# is meaningful for a library.
+(return 0 2>/dev/null) || set -euo pipefail
 # record-paths.sh — the open-record query for state-in-the-path records.
 #
 # Spec: docs/superpowers/specs/2026-08-08-cadence-sentinels-s1-infrastructure-design.md §5.1
@@ -19,8 +28,9 @@
 
 # records_open <dir> — records in <dir> that are still open, one path per line.
 #
-# A record is open unless it is itself a transition file (`*.resumed.md`,
-# `*.superseded.md`) or some transition names it in `supersedes:`. Both tests
+# A record is open unless it is itself a transition file — `*.resumed.md`,
+# `*.superseded.md`, or `*.resolved.md`, the last being the consultation
+# record's transition — or some transition names it in `supersedes:`. Both tests
 # matter: the first alone would report a superseded predecessor as open, and
 # the second alone would report the transition file itself.
 records_open() {

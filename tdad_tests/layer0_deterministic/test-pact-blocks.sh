@@ -139,4 +139,27 @@ val=$(block_key 'Budgets' 'enforcement' '')
 [ "$val" = "strict" ] \
   || fail "B8: Budgets' enforcement must be 'strict', got '$val' — a whole-file parser returns 'advisory' here"
 
+# --- B10: a clause wrapped across lines still reads as declared --------------
+# Clause matching normalises whitespace, because the clause's WORDS are the
+# interface and its line breaks are not. Every block above whose clause happens
+# to sit on one line matches with or without normalisation, so none of them
+# guards this — B7's Budgets clause is single-line in every fixture.
+#
+# Session WIP's clause wraps mid-sentence in both the shipped template and
+# full.md, which makes it the one case that can fail. Without normalisation it
+# reads `malformed`, which is the exact regression that shipped and was caught
+# by hand on the first run.
+export CLAUDE_PACTS_FILE="$TEMPLATE"
+[ "$(block_state 'Session WIP')" = "declared" ] \
+  || fail "B10: the template's Session WIP clause wraps across lines and must still read as declared"
+
+export CLAUDE_PACTS_FILE="$FIX/full.md"
+[ "$(block_state 'Session WIP')" = "declared" ] \
+  || fail "B10: a wrapped Session WIP clause must read as declared in the full fixture too"
+
+# And the guard must not be so loose that a genuinely missing clause passes.
+export CLAUDE_PACTS_FILE="$FIX/malformed-budgets.md"
+[ "$(block_state 'Budgets')" = "malformed" ] \
+  || fail "B10: normalisation must not make a deleted clause look present"
+
 echo "PASS: pact-block reader — template well-formed, three states honoured, values survive extraction, keys scoped to their block"
