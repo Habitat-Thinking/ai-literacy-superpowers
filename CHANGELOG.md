@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.68.0 — 2026-08-09
+
+### Cadence Sentinels S2 — the Coda
+
+The closing ritual. A session that ends by decision rather than by attrition,
+with every open thread written down and a concrete step to resume from.
+
+- **`/coda`** — survey what landed and what is still live, park each open
+  thread, write the closure summary through `/reflect`, and close. Stoppable at
+  any point by saying so.
+- **`/coda resume <record>`** closes a parked thread by writing a `.resumed.md`
+  transition. Nothing is ever edited or deleted.
+- **The `coda` agent is `role: sentinel` and read-only.** It returns
+  parking-record content; the command persists it after the human confirms.
+- **Parking happens before reflection, and records are committed there.**
+  `/reflect` stages only the reflection paths and, where a *Reflections via PR
+  workflow* constraint is declared, relocates the tree to `main` — so a ritual
+  that reflected first would have published a summary describing records it
+  left behind uncommitted, on a branch it had just left.
+- **Nothing is refused.** `scripts/next-action-hint.sh` asks one more question
+  when it finds no anchor; whatever the human answers is parked, including the
+  same words again. It renders no verdict, so there is no gate.
+- **The anchor grammar carries a decision row** — a question word, a named
+  person, `ask` / `decide` / `choose between` — because the other five kinds
+  are all artefacts of code-shaped work, and much of what gets parked is a
+  spec, a piece of prose, or a decision.
+- **The override lives in the record's prose, in the human's own voice**, not
+  in a frontmatter flag. A flag recording that someone's answer failed a check
+  would be an agent-authored verdict about them, permanent and countable across
+  records. `next_action_flag` stays `asked`, so S2 consumes S1's contract
+  without mutating it.
+- **Thread grouping is proposed and default-accepted.** Deciding that nine
+  modified files are two threads is the judgement that shapes the whole
+  handoff, so it is the human's — but the proposal stands unless they change
+  it, because this step lands after they have decided they are finished.
+- **Parked records surface once, on startup only.** `SessionStart` re-fires on
+  resume, clear and compact; handing a thread back mid-session is the surface
+  this epic exists to reduce. The guard reads the hook's own `source` field and
+  writes no marker file.
+- **`sentinel-design`** gains the Coda to its roster; sentinels 5 → 6.
+- **19 new Layer-0 scenarios** across `test-next-action.sh`,
+  `test-parked-resume.sh`, and the extended `test-record-contracts.sh`.
+
 ## 0.67.0 — 2026-08-08
 
 ### Cadence Sentinels S1 — the shared substrate

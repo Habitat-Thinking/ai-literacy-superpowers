@@ -45,6 +45,17 @@ Generating human-readable onboarding documentation from harness state. Covers th
 
 The shared drift-detection layer that backs both `/harness-audit` (read-only) and `/harness-sync`. Produces a structured drift report covering convention files, ONBOARDING.md, snapshot staleness, template drift, constraint regressions, recurring reflection patterns, and HARNESS.md Status section accuracy.
 
+### coda
+
+The closing ritual: survey, park, closure summary and reflection, close.
+
+Carries the anchor grammar behind the next-action question, the evidence for
+why a *specific* written plan releases an unfinished thread (specificity is the
+active ingredient, not the writing), and the anti-patterns that would turn a
+closing ritual into a gate on the person.
+
+Read it before implementing or changing anything in the Coda's path.
+
 ### cognitive-reservoir
 
 The shared grounding for the reservoir-warden agent and the reservoir-check Stop hook — the framework's watch on the one actor it cannot verify, the human verifier. Defines the four observable proxies (session span, decision volume, context switches, wall-clock hour), the `observed` / `inferred` / `asked` confidence discipline, the disjunctive default thresholds, the one firm principle (decide your stop before the next session begins), the six-level scaling guidance, and the honesty rule that keeps the contested science (ego depletion, the hungry-judges study) separate from the robust basis (vigilance decrement, task-switching cost). Advisory-only; never a fatigue score, never a gate.

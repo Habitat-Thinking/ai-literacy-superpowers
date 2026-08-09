@@ -99,4 +99,61 @@ if echo "$open" | grep -q "2026-08-01-retry-branch.md"; then
   fail "C3: a record named by a transition's supersedes must not be reported as open"
 fi
 
+# --- P1: S2 adds no value to the next_action_flag enum -----------------------
+# The first S2 revision proposed `asked-override`. It was removed at the gate:
+# a flag recording that a human's answer failed a check is an agent-authored
+# verdict about the person, permanent, committed and countable across records.
+# Keeping the enum at one value is what lets S2 consume S1's contract without
+# mutating it, so the consumer-never-mutates rule never engages.
+grep -qF 'asked-override' "$PARKING_REF" \
+  && fail "P1: the parking-record contract must not gain an override enum value — the override lives in the prose body"
+grep -qiE 'next_action_flag.*asked' "$PARKING_REF" \
+  || fail "P1: parking-record-format.md must still document next_action_flag: asked"
+
+# --- P1b: the anchor grammar is published, and framed as a trigger -----------
+# A check whose decisive term lives only in the implementation cannot be argued
+# with, and this one is meant to be.
+for kind in 'A path' 'A code identifier' 'A backticked span' 'A decision'; do
+  grep -qF "$kind" "$PARKING_REF" \
+    || fail "P1b: parking-record-format.md must publish the '$kind' anchor row"
+done
+grep -qiF 'complement is not' "$PARKING_REF" \
+  || fail "P1b: the reference page must frame the table as a trigger whose complement is not 'vague'"
+
+# --- P2: an override record is well-formed and unremarkable ------------------
+# Its frontmatter must be indistinguishable from any other record; the override
+# is prose the human authored and would recognise.
+p2="$FIX/2026-08-09-override-example.md"
+cat > "$p2" <<'EOF'
+---
+session: sess-p2
+repo: /tmp/toy
+created: 2026-08-09
+state: parked
+supersedes: null
+next_action_flag: asked
+---
+
+## Context
+
+A thread whose author was asked twice.
+
+## Next action
+
+continue work
+
+(Asked again for a starting point; confirmed this is enough to go on.)
+EOF
+grep -q 'next_action_flag: asked$' "$p2" \
+  || fail "P2: an override record's flag must be plain 'asked'"
+grep -qF 'Asked again for a starting point' "$p2" \
+  || fail "P2: the override must appear as prose in the body"
+
+# --- P3: an override record is still open ------------------------------------
+# An override changes nothing about the record's state.
+open_now=$(records_open "$FIX" | sort)
+echo "$open_now" | grep -qF "override-example" \
+  || fail "P3: an overridden record must still be reported open"
+rm -f "$p2"
+
 echo "PASS: record contracts — schemas published in reference pages, READMEs point not duplicate, open-record glob honours state-in-the-path"

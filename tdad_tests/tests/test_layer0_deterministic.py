@@ -70,6 +70,10 @@ BASH_TEST_SCRIPTS = [
     "test-pact-blocks",
     "test-session-registry",
     "test-record-contracts",
+    # Cadence Sentinels S2 — the Coda's ritual. RED until S2 ships
+    # scripts/next-action-hint.sh and hooks/scripts/parked-resume-check.sh.
+    "test-next-action",
+    "test-parked-resume",
 ]
 
 
