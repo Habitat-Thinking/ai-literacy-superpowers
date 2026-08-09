@@ -1,11 +1,13 @@
 # Spec: Cadence Sentinels S2 — The Coda
 
-**Status:** Approved (revision 2, post-diaboli)
+**Status:** Approved (revision 3, post-cartographer)
 **Date:** 2026-08-09
 **Issue:** #492
 **Epic:** The Cadence Sentinels (S1–S7, issues #491–#497)
 **Objections:** `docs/superpowers/objections/cadence-sentinels-s2-coda-design.md`
 — 12 objections, 11 accepted, 1 rejected on the record
+**Choice stories:** `docs/superpowers/stories/cadence-sentinels-s2-coda-design.md`
+— 8 stories, all accepted
 **Depends on:** S1 (#491, merged as 0.67.0) — the parking-record contract,
 `records_open`, and the pact file
 **Scope:** `ai-literacy-superpowers` plugin; one new agent, skill, command,
@@ -56,7 +58,13 @@ The same sequence every invocation, no reordering.
 | 3 | **Closure summary + reflection** | the `Closed` field, via `/reflect` |
 | 4 | **Close** | the session ends |
 
-**Why parking comes before reflection.** `/reflect` in this repository is not a
+**Why parking comes before reflection.** The portable reason first, because it
+holds in every repository: the `Closed` field names what was parked, and it can
+only do that if parking has already happened. A closure summary written before
+the parking it describes can assert a count and nothing else.
+
+The local reason makes the order non-negotiable *here*. `/reflect` in this
+repository is not a
 write-a-fragment-and-return operation: `HARNESS.md`'s *Reflections via PR
 workflow* constraint binds every invocation to `git checkout -b`, `gh pr
 create`, `gh pr merge --squash --delete-branch`, and `git pull` on main
@@ -66,10 +74,14 @@ enumerated — and then write parking records from wherever the merge left the
 tree. A closing ritual that rearranges your git state and blocks on CI is the
 most expensive way to stop yet designed.
 
-So parking completes while the tree is still where the human left it, and
-`/reflect` runs last. The reorder pays a second dividend: the `Closed` field is
-written *after* parking and can therefore name what was parked, which it could
-not when reflection came first.
+So parking completes — and is **committed** (§2.2) — while the tree is still
+where the human left it, and `/reflect` runs last.
+
+Downstream adopters who have not declared that constraint get a `/reflect` that
+commits directly to the current branch and moves nobody's tree. The order still
+holds for them, on the first reason. Stating which reason travels matters: a
+paragraph that reads as a workaround for someone else's CI is precisely the kind
+a maintainer reorders believing they are removing dead weight.
 
 **Divergence from the build spec, flagged for the PR.** The build spec fixed
 the sequence as survey → closure summary → reflection → park → close and said
@@ -96,11 +108,31 @@ PRs" because `gh` errored, flagged `observed`, is exactly the laundering of
 inference as observation constraint 3 exists to stop. When `gh` is unavailable
 the Coda says so; it never silently reports an empty result as an observation.
 
+**Flags are ritual-scoped.** They are shown to the human during the survey and
+do not travel into the record — parking records are handoffs, not provenance
+artefacts. Where provenance matters for a particular thread (a survey taken
+while `gh` was unavailable, say), it goes in the record's `## Context` prose,
+where the human can read it. This is stated so S5 inherits an answer: its
+consultation records *do* carry a per-voice `source_flag`, and the difference is
+deliberate rather than an accident of which slice was written first.
+
 **Thread grouping is `asked`, and this is the Coda's central epistemic act.**
 Nine modified files are an observation. That they constitute *two* threads
 rather than one or nine is a judgement — and it is the judgement that decides
-how many parking records exist and what each one says. The Coda proposes a
-grouping and the human confirms or regroups it. It does not decide.
+how many parking records exist and what each one says.
+
+**Propose and default-accept.** The Coda proposes a grouping; it stands unless
+the human changes it. The human can always overrule, which is what makes the
+flag `asked` rather than `inferred` — but the default costs a word rather than a
+partition.
+
+This is the plugin's own premise applied to its own ritual. The
+`reservoir-warden` exists because judgement degrades across a session, and this
+step lands at the moment the human has already decided they are finished.
+Demanding a full manual partition there would put the heaviest synthesis in the
+ritual on whoever is least equipped to do it — and the escape would be cheap and
+silent: group everything as one thread, answer once, and the handoff is worth
+nothing on exactly the sessions where it would have been worth most.
 
 ### 2.2 Park
 
@@ -116,6 +148,24 @@ prompting rule lives.
 every record. The first revision of this spec proposed an `asked-override`
 value; it was removed at the gate (O5), which means S2 consumes S1's contract
 without mutating it and the contract-ownership rule does not engage.
+
+**Records are committed here, at step 2, before `/reflect` runs.** This is not
+tidiness. `/reflect` stages `reflections/active/` and `REFLECTION_LOG.md` and
+nothing else (`commands/reflect.md:160`), then relocates the tree to `main`.
+Without an explicit commit at this step, the ritual would write parking records,
+publish a `Closed` field describing them, and leave the records themselves
+uncommitted in a tree that has just moved — the claim reaching `main` by design
+and the records it names reaching `main` by whatever the human happened to do
+next.
+
+**Retention: permanent and committed, stated rather than assumed.** A handoff
+another person may read is repository content, which is why these records live
+in the tree rather than beside the pact file. Two consequences follow and are
+accepted here rather than solved: the corpus grows as sessions × threads
+forever, and `records_open` iterates the whole directory on every call, so the
+session-start hook's cost tracks lifetime history rather than open work.
+Archival is deliberately not built in this slice — see issue #499. It needs its
+own spec and its own adversarial pass, because S1 owns the contract.
 
 ### 2.3 Closure summary and reflection
 
@@ -168,11 +218,34 @@ clear and compact (S1 §4.2), so an unguarded hook would re-inject the parked
 list mid-session, every compact, for the rest of the day. A hook that prints
 "still parked: implement the retry branch" while the human is deepest in
 something unrelated hands the thread back — which is the surface this epic
-exists to reduce, generated by the mechanism meant to reduce it. The hook writes
-a per-session marker under the S1 registry directory and stays silent if one
-already exists.
+exists to reduce, generated by the mechanism meant to reduce it. The guard keys off **S1's existing registry entry** rather than a new marker
+file: `started_at` is per-session and stable across compacts by design (S1's R2
+asserts exactly that), so the hook can tell a genuinely new session from a
+re-fire without writing anything.
 
-**Closing a record.** `/coda resume <record>` writes a `.resumed.md` transition
+That matters beyond convenience. A new per-session marker file in
+`~/.claude/sessions/` would have been a second file class in a directory another
+slice owns, inheriting its location guarantees without inheriting its retention
+contract — and the registry's only removal path is the lease pruner, which
+retires `*.json` by heartbeat and sweeps `*.tmp`. A marker in neither shape has
+no removal path and accumulates one per session for the life of the machine,
+against a carve-out whose second condition is *bounded* and whose own text warns
+that "a record with no expiry is an archive".
+
+**Closing a record is also asked, not only commanded.** When the ritual runs
+and open records exist, the Coda asks per record whether it is still live — the
+human is already in a closing conversation, so this costs them nothing extra,
+and a "no" writes the transition immediately.
+
+Without that, closure would depend entirely on someone remembering to run a
+command, and the corpus would only ever grow. Note the asymmetry this resolves:
+S1's registry is a *lease*, where forgetting costs nothing because entries
+expire; a parking record is the inverse, open by default until an act of
+bookkeeping closes it. The failure of forgetting is an undercount in one and an
+overcount in the other, and the overcount is the one a human sees at every
+session start.
+
+**Closing a record explicitly.** `/coda resume <record>` writes a `.resumed.md` transition
 naming its predecessor in `supersedes:`, exactly as the S1 contract specifies.
 S2 ships this because S1 assigned it here, and because without it
 `records_open` returns a monotonically growing set: session five surfaces the
@@ -230,10 +303,18 @@ A next action **carries an anchor** when it contains at least one of:
 | A backticked span | anything inside `` ` `` |
 | A scenario or ticket id | a letter-digit token such as `B12`, `R4`, `#492` |
 | A line or section reference | `file:12`, `§3.2`, `line 40` |
+| A decision | a question word, a named person, or `ask` / `decide` / `choose between` |
 
 Nothing else counts. In particular a bare English noun does **not** — `parser`
 is not an anchor, which is what makes `more work on the parser` trigger the
 question while `add the B12 fixture` does not.
+
+**The decision row exists because the other five are all artefacts of
+code-shaped work**, and this plugin's own work is mostly specs, prose, and
+decisions. Without it the table would tax the dominant kind of thread with an
+extra question at every close, from a published rule that reads as the house
+definition of a concrete next step. "Ask Russ whether the reserved block should
+ship at all" is a perfectly good next action and now reads as one.
 
 The first revision also carried a vague-stem rule. It is dropped: any text
 consisting solely of a vague stem already carries no anchor, so the rule fired
@@ -264,6 +345,11 @@ and permanent (O5).
 why. A check whose decisive term exists only in the implementation cannot be
 argued with, and this one is meant to be.
 
+Both copies carry the same framing sentence: **this is a trigger heuristic, and
+its complement is not "vague".** A next action that carries no anchor gets one
+question; it does not get a verdict, and it is not being called imprecise. The
+table says what makes the Coda *stop asking*, not what makes a next action good.
+
 ## 4. Contract Change
 
 One contract owned elsewhere changes: the reflection fragment gains an optional
@@ -274,8 +360,15 @@ field. The parking-record contract is **unchanged** (§2.2).
 Owned by `/reflect` and `scripts/lib/reflection-log-helpers.sh`.
 
 ```text
-- **Closed**: [what landed this session; what was parked, and how many]
+- **Closed**: [what landed this session; the filename of each record parked]
 ```
+
+**Filenames, not a count.** A count asserts that three threads were parked
+without saying which three, and nothing can check it. Naming the records makes
+the claim resolvable against `records_open` and gives a future reader a route
+from a reflection entry to the work it closed. The reflection log is the
+durable, published trace of a session's close; the one cross-artefact claim it
+makes should not be the one nothing can verify.
 
 Optional, and absent from every fragment `/reflect` writes on its own — only the
 Coda's invocation supplies it. The change is additive: `extract_field` resolves
@@ -371,6 +464,10 @@ grammar in §3.3, which the skill and reference page reproduce.
   test_retry.py` exits 0. This is a known false positive, disclosed in §3.2 —
   and it costs nothing, because the check only decides whether to ask.
 - **N6 — empty and whitespace-only trigger the question.**
+- **N8 — a decision anchor is recognised.** `ask Russ whether the reserved
+  block should ship at all` and `decide between the lease and the explicit
+  transition` each exit 0. This is the row that stops the grammar taxing the
+  plugin's own dominant kind of work.
 - **N7 — exit 1 is not a failure.** The script exits 1 without writing to
   stderr and without a non-zero-means-error message, so a caller cannot mistake
   a trigger for a fault.
@@ -399,6 +496,9 @@ grammar in §3.3, which the skill and reference page reproduce.
 - **H6 — a new session surfaces again.** A different session id gets the list.
 - **H7 — exits 0 unconditionally**, including when the parked directory is
   unreadable and when `HOME` is unset.
+- **H8 — no marker file is written.** After the hook runs, the registry
+  directory contains exactly the files it contained before. The guard reads
+  `started_at`; it does not leave residue in a directory S1 owns.
 
 ### 7.4 Ritual — agent-verified, recorded in the skill
 
@@ -412,6 +512,11 @@ grammar in §3.3, which the skill and reference page reproduce.
   stopped, with an explicit statement of what was already written.
 - **A6** — the Coda writes no file itself; every record is persisted by the
   command after the human confirms.
+- **A7** — parking records are committed before `/reflect` is invoked.
+- **A8** — the proposed thread grouping stands when the human says nothing, and
+  changes when they do.
+- **A9** — when open records exist at ritual time, each is asked about, and a
+  "no longer live" answer writes its transition.
 
 ## 8. Migration & Rollout
 
