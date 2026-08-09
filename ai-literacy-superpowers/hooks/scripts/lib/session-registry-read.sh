@@ -60,6 +60,12 @@ _lease_hours() {
   local v
   v="$(block_key 'Session WIP' 'stale_after_hours' '12')"
   case "$v" in ''|*[!0-9]*) v=12 ;; esac
+  # Floor at 1. `0` passes the digit test but means "expire everything
+  # immediately" — including the entry the sweep wrote one line earlier — while
+  # the honesty flag stays quiet, because 0 is not < 0. A human writing 0
+  # almost certainly means "never expire", which is the opposite. Treat it as
+  # the typo it is rather than silently disabling the registry.
+  [ "$v" -lt 1 ] && v=12
   printf '%s' "$v"
 }
 
@@ -73,9 +79,17 @@ _iso_to_epoch() {
 }
 
 # _json_field <file> <key> — a string field's value, or empty.
+#
+# Escape-aware in both directions: the match tolerates escaped quotes inside
+# the value, and the escapes are decoded on the way out. registry_touch
+# escapes `repo` on write, so a read path that stopped at the first quote —
+# escaped or not — would hand a truncated path to registry_list, which is the
+# surface a consumer uses to tell the human where their other sessions are.
 _json_field() {
-  grep -o "\"$2\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" "$1" 2>/dev/null \
-    | head -1 | sed -E 's/.*"[[:space:]]*:[[:space:]]*"([^"]*)"$/\1/'
+  grep -oE "\"$2\"[[:space:]]*:[[:space:]]*\"([^\"\\\\]|\\\\.)*\"" "$1" 2>/dev/null \
+    | head -1 \
+    | sed -E 's/^[^:]*:[[:space:]]*"(.*)"$/\1/' \
+    | sed -e 's/\\"/"/g' -e 's/\\\\/\\/g'
 }
 
 # registry_list — one line per live entry: "<id>\t<started_at>\t<repo>".
@@ -102,26 +116,58 @@ registry_list() {
 
 # registry_count — "<n> <observed|inferred>". Never mutates. Never fails.
 #
+# COUNTS ONLY ENTRIES WHOSE LEASE HAS NOT EXPIRED. Counting files instead was
+# a real defect, found at the code gate and reproduced: nothing removes an
+# entry when a session ends, because by design nothing knows a session ended —
+# the pruner is the only removal path and it runs on the Stop rail. So a
+# morning session, an afternoon session, and a live evening session are three
+# files, all with heartbeats inside a 12-hour lease, and the count returned
+# `3 observed`. Under `max_concurrent_sessions: 2` the WIP Warden would have
+# reported a confident breach on an ordinary working day.
+#
+# Filtering here is a pure read — no file is touched — so it costs nothing at
+# the trust boundary (R8, R9) and leaves the lease lifecycle exactly as the
+# spec gate adjudicated it.
+#
 # The flag derives from durable state, not from this read:
-#   - a retirement marker written by the pruner and still inside the current
-#     lease window means an entry aged out recently, and the pruner cannot
-#     tell a crashed session from a healthy long-running one;
-#   - an `unknown.json` entry means one file may stand for more than one
-#     session, because every hostile id sanitises to the same fallback.
-# Either way the count is inferred, and stays inferred for every subsequent
-# reader (R6).
+#   - an entry excluded because its lease expired but the pruner has not yet
+#     run: the same "crashed, or merely quiet?" uncertainty a retirement
+#     carries, seen a moment earlier;
+#   - a retirement marker still inside the current lease window, meaning an
+#     entry aged out recently;
+#   - an `unknown.json` entry, since every hostile id sanitises to that one
+#     fallback and the file may stand for more than one session.
+# Any of these makes the count inferred, and it stays inferred for every
+# subsequent reader (R6).
 registry_count() {
-  local dir n flag marker lease now marker_epoch
+  local dir n flag marker lease now marker_epoch entry hb hb_epoch
   dir="$(registry_dir)"
   if [ ! -d "$dir" ]; then printf '0 observed\n'; return 0; fi
 
-  n="$(find "$dir" -maxdepth 1 -name '*.json' 2>/dev/null | wc -l | tr -d '[:space:]')"
+  lease="$(_lease_hours)"
+  now="$(date -u +%s)"
+  n=0
   flag="observed"
+
+  for entry in "$dir"/*.json; do
+    [ -e "$entry" ] || continue
+    hb="$(_json_field "$entry" heartbeat)"
+    hb_epoch="$(_iso_to_epoch "$hb")"
+    # An unparseable heartbeat is counted rather than discarded — discarding
+    # would let a corrupt entry quietly shrink the count — but it is not
+    # something we can claim to have observed.
+    if [ "$hb_epoch" -le 0 ]; then
+      n=$((n + 1)); flag="inferred"; continue
+    fi
+    if [ $(( (now - hb_epoch) / 3600 )) -ge "$lease" ]; then
+      flag="inferred"          # expired, awaiting the next sweep
+      continue
+    fi
+    n=$((n + 1))
+  done
 
   marker="$dir/.retired"
   if [ -f "$marker" ]; then
-    lease="$(_lease_hours)"
-    now="$(date -u +%s)"
     marker_epoch="$(_iso_to_epoch "$(head -1 "$marker")")"
     if [ "$marker_epoch" -gt 0 ] && [ $(( (now - marker_epoch) / 3600 )) -lt "$lease" ]; then
       flag="inferred"

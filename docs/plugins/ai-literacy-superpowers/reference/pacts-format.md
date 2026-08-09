@@ -144,3 +144,15 @@ scaffolds a default one at install.
 That is deliberate. Limits a person set for themselves hold; limits that
 arrived as somebody else's default do not. Authorship is the active
 ingredient, so the authoring dialogue proposes nothing — it asks.
+
+## `$CLAUDE_PACTS_FILE`
+
+The reader honours a `$CLAUDE_PACTS_FILE` environment variable in place of
+`~/.claude/pacts.md`. It exists so the deterministic tests need no home
+directory, and it is **not intended for production use**.
+
+Worth knowing it is there, because the whole clear-weather argument turns on
+authorship: a pact holds because its keeper wrote it. Anything that can set an
+environment variable for a session — a direnv file, a project rc, a wrapper
+script — can therefore substitute the pact a sentinel reads, and no sentinel
+can tell. If you use it, use it knowingly.

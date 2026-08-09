@@ -238,6 +238,32 @@ reports its count as `inferred`. The registry is local, per-machine,
 outside every work tree, and never committed. Exits 0 unconditionally —
 a registry failure must never surface to a session.
 
+**What it stores, and for how long.** One small JSON file per session,
+under `~/.claude/sessions/`, holding four fields: the sanitised session
+id, the project directory, when the session started, and when it last
+completed a turn. Nothing else — no prompts, no file contents, no
+assessment of any kind. An entry is retired once it goes
+`stale_after_hours` without a heartbeat (12 by default, declared in your
+pact file), so the registry is bounded rather than an accumulating
+archive.
+
+Under the `sentinel-design` skill's persistence rules this is
+**hook-authored operational state**, a narrow third category alongside
+records a human authored and claims an agent made about them. It is
+permitted only because it is local, bounded, judges nothing, and is
+disclosed here.
+
+**To switch it off**, remove the `session-registry-start.sh` and
+`session-registry-sweep.sh` entries from `hooks/hooks.json`. Everything
+else in the plugin continues to work; the cadence sentinels that read
+the registry will report `no Session WIP block declared — running in
+observe-only mode`.
+
+**`$CLAUDE_SESSIONS_DIR`** overrides the registry location. It exists so
+the deterministic tests need no home directory and is **not intended for
+production use** — pointing it inside a work tree defeats the guarantee
+that nothing can be committed by accident.
+
 ---
 
 ## Configuration

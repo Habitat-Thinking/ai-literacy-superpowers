@@ -162,4 +162,25 @@ export CLAUDE_PACTS_FILE="$FIX/malformed-budgets.md"
 [ "$(block_state 'Budgets')" = "malformed" ] \
   || fail "B10: normalisation must not make a deleted clause look present"
 
+# --- B11: a standalone # comment inside a block does not truncate it --------
+# The pact file is hand-edited, and the shipped guidance warns only against a
+# trailing `#` on a VALUE line — which reads as permission for a comment on its
+# own line. Under the general markdown rule that comment ends the span, taking
+# the mandatory clause with it and flipping a good block to malformed.
+export CLAUDE_PACTS_FILE="$FIX/with-comments.md"
+[ "$(block_state 'Session WIP')" = "declared" ] \
+  || fail "B11: a standalone # comment must not truncate the block into malformed"
+val=$(block_key 'Session WIP' 'stale_after_hours' 'MISSING')
+[ "$val" = "6" ] \
+  || fail "B11: a key below a # comment must still be readable, got '$val'"
+[ "$(block_state 'Budgets')" = "declared" ] \
+  || fail "B11: a sub-heading inside a block must not truncate it"
+val=$(block_key 'Budgets' 'sessions_per_day' 'MISSING')
+[ "$val" = "3" ] || fail "B11: a key below a sub-heading must be readable, got '$val'"
+# The block must still END at the next real block heading — B8 would pass
+# trivially if a span simply ran to end-of-file.
+val=$(block_key 'Session WIP' 'hard_stop_hour' 'NOT-MINE')
+[ "$val" = "NOT-MINE" ] \
+  || fail "B11: Session WIP must not absorb Budgets' keys, got '$val'"
+
 echo "PASS: pact-block reader — template well-formed, three states honoured, values survive extraction, keys scoped to their block"

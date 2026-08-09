@@ -1,6 +1,6 @@
 # Spec: Cadence Sentinels S1 — Shared Infrastructure
 
-**Status:** Approved (revision 3, post-cartographer)
+**Status:** Approved (revision 4, post-code-gate)
 **Date:** 2026-08-08
 **Issue:** #491
 **Epic:** The Cadence Sentinels (S1–S7, issues #491–#497)
@@ -8,6 +8,8 @@
 — 12 objections, 11 accepted, 1 rejected
 **Choice stories:** `docs/superpowers/stories/cadence-sentinels-s1-infrastructure-design.md`
 — 9 stories, all accepted, 3 dissolved structurally
+**Code-gate objections:** `docs/superpowers/objections/cadence-sentinels-s1-infrastructure-design-code.md`
+— 11 objections, 10 accepted, 1 deferred on the record
 **Scope:** the `ai-literacy-superpowers` plugin and two new record directories
 **Explicitly out of scope:** every sentinel that consumes this plumbing. S1
 ships plumbing only and gates nothing.
@@ -186,14 +188,21 @@ The clause is part of the block, not a comment on it. A `Budgets` block whose
 prose has lost the clause is **malformed** — a distinct state from absent,
 defined in §3.7.
 
-**On the clause as an interface.** Because detection is literal-string
-matching, the sentence cannot be reworded, translated, shortened, or reflowed
-across lines in any adopter's file without the block silently ceasing to read
-as declared. That is deliberate — a pact enforced without its governing
-sentence is a pact enforced against a framing nobody agreed to — but it makes
-the wording a published interface. **Only a spec-first change may reword it**,
-and rewording is a coordinated migration across every adopter, not a template
-edit.
+**On the clause as an interface.** The clause's **words** are a published
+interface; its **line breaks are not**. Matching normalises whitespace, so an
+adopter may re-wrap the sentence freely, but rewording, translating, or
+shortening it makes the block cease to read as declared. That is deliberate — a
+pact enforced without its governing sentence is a pact enforced against a
+framing nobody agreed to. **Only a spec-first change may reword it**, and
+rewording is a coordinated migration across every adopter, not a template edit.
+
+*Revision 4 amendment (code gate, O8).* Revision 3 said a **reflowed** clause
+must also cease to read as declared, and called that deliberate. It was
+unshippable: this slice's own template wraps the `Session WIP` clause across
+two lines, so the rule failed against the first file it met. The behaviour is
+now whitespace-normalised and B10 pins it. The spec is amended rather than the
+code, because §3.4 claims authority over this matching rule and was stating one
+the library does not implement — and S2–S5 are authored from §3.
 
 `authored_at` and `authored_via` serve S3's clear-weather rule: budgets that
 hold are budgets their keeper authored deliberately, so the block records how
@@ -323,8 +332,13 @@ Because the registry lives outside every work tree, no `.gitignore` entry is
 needed and nothing can accidentally commit it.
 
 `$CLAUDE_SESSIONS_DIR` overrides the location, mirroring `$CLAUDE_PACTS_FILE`
-for the pact reader (§3.8). It exists so the deterministic tests need no home
-directory, and it is the only supported way to relocate the registry.
+for the pact reader (§3.8). Both exist so the deterministic tests need no home
+directory and are **not intended for production use**; both are documented as
+test-only in the reference pages. The commit-safety claim above holds for the
+default path — an override pointing inside a work tree defeats it, and neither
+reader can tell who set the variable. This matters little in S1, where nothing
+consumes a pact, and a great deal in S3 and S4, where the clear-weather rule
+turns on a pact having been authored by its keeper.
 
 **Session id sanitisation.** The id arrives from the hook's stdin JSON
 (`session_id`) and becomes a filesystem path component, so it is sanitised
@@ -372,12 +386,23 @@ Renewal makes correctness independent of how often `Stop` fires. Once per
 session, once per turn, or fifty times per turn all produce the same result: a
 live session stays fresh, a dead one expires.
 
-**Known limit of the lease, disclosed.** The renewal interval is "whenever the
-agent finishes a turn", which is unbounded above — a session where the human is
-reading, thinking, or waiting on a long tool run emits no heartbeat. Liveness
-here means *recency of a completed turn*, not "a window is open". A human who
-finds the default too short tunes `stale_after_hours`; that is what makes it a
-declared key rather than a constant.
+**Known limits of the lease, disclosed in both directions.**
+
+*False negative.* The renewal interval is "whenever the agent finishes a turn",
+which is unbounded above — a session where the human is reading, thinking, or
+waiting on a long tool run emits no heartbeat. Liveness here means *recency of
+a completed turn*, not "a window is open". A human who finds the default too
+short tunes `stale_after_hours`; that is what makes it a declared key rather
+than a constant.
+
+*False positive (revision 4, code gate O1).* Nothing removes an entry when a
+session **ends**, because nothing knows a session ended. A cleanly-finished
+session therefore remains within its lease, and looks live, until the lease
+expires. Three sequential sessions in one working day are three unexpired
+entries. `registry_count` filters expired entries on read (§4.3), which bounds
+the error at the lease length — it does not eliminate it. **No consumer may
+treat this count as an exact number of open windows.** Where exactness matters,
+constraint 3's `asked` flag is the honest instrument: ask the human.
 
 ### 4.3 The honesty flag
 
@@ -385,9 +410,15 @@ The flag is a property of the count, not of the reader. It derives from durable
 state — a retirement marker written by the pruner, and the presence of an
 `unknown` entry — never from whether *this particular read* pruned something.
 
+`registry_count` **counts only entries whose lease has not expired.** The
+filter is a pure read — no file is touched, so §4.4's trust boundary and the
+purity guarantee are untouched — and retirement remains the pruner's job alone.
+
 | Situation | Flag |
 | --- | --- |
-| No entry retired within the window; no `unknown` entry | `observed` |
+| Every entry within its lease; no retirement in the window; no `unknown` entry | `observed` |
+| An entry excluded because its lease expired but the pruner has not yet run | `inferred` |
+| An entry whose heartbeat is unparseable (counted, not discarded) | `inferred` |
 | One or more entries retired within the window | `inferred` |
 | An `unknown` entry present (§4.1) | `inferred` |
 | No registry directory at all | `observed`, count 0 |

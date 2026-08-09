@@ -45,27 +45,47 @@ pact_file() {
   printf '%s' "${CLAUDE_PACTS_FILE:-$HOME/.claude/pacts.md}"
 }
 
+# _KNOWN_BLOCKS — the block vocabulary. A span ends only at one of these.
+_KNOWN_BLOCKS='Session WIP|Budgets|Sync cadence'
+
 # _block_span <heading> — the lines belonging to a block: from its heading to
-# the next heading of equal-or-higher level, exclusive. Prints nothing when
-# the block or the file is absent.
+# the next KNOWN block heading, exclusive. Prints nothing when the block or the
+# file is absent.
 #
 # Scoping is the whole point of a purpose-built parser. A whole-file lookup
 # returns the first match in document order, so two blocks declaring the same
 # key would both answer with the first one's value (B8).
+#
+# It ends at a known heading rather than at "any heading of equal-or-higher
+# level" because this file is hand-edited. Under the general markdown rule an
+# ordinary standalone comment — `# revisit this in Q4` — parses as a level-1
+# heading, truncates the block, and drops every key below it INCLUDING the
+# mandatory clause, silently flipping a well-formed block to `malformed`. The
+# shipped guidance warns only against a trailing `#` on a value line, which
+# reads as permission for exactly that. Failing safe is not good enough here:
+# the human's symptom is that the pact they wrote stopped being read, with no
+# line telling them which sentence broke it.
+#
+# The trade this accepts: an unrelated `## Section` written BETWEEN two blocks
+# is absorbed into the preceding block's span rather than ending it. That is
+# the containable direction — a stray section would have to declare a key with
+# a name from the same vocabulary to affect anything.
 _block_span() {
   local heading="$1" file
   file="$(pact_file)"
   [ -f "$file" ] || return 0
-  awk -v want="$heading" '
-    # Heading line: capture its level and title.
+  awk -v want="$heading" -v known="$_KNOWN_BLOCKS" '
+    BEGIN { n = split(known, k, "|"); for (i = 1; i <= n; i++) isblock[k[i]] = 1 }
+    # Heading line: capture its title, and act only on the known vocabulary.
     /^#{1,6}[[:space:]]+/ {
       level = 0
       while (substr($0, level + 1, 1) == "#") level++
       title = substr($0, level + 1)
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", title)
 
-      if (inblock && level <= want_level) { exit }   # equal-or-higher ends it
-      if (!inblock && title == want) { inblock = 1; want_level = level; next }
+      if (!(title in isblock)) { if (inblock) print; next }   # a comment, not a block
+      if (inblock) { exit }                                    # next block ends this one
+      if (title == want) { inblock = 1 }
       next
     }
     inblock { print }

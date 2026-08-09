@@ -97,7 +97,7 @@ registry_touch() {
 
   tmp="$entry.$$.tmp"
   printf '{"id":"%s","repo":"%s","started_at":"%s","heartbeat":"%s"}\n' \
-    "$id" "$(_json_escape "$repo")" "$started" "$now" > "$tmp" 2>/dev/null || return 0
+    "$id" "$(_json_escape "$repo")" "$(_json_escape "$started")" "$now" > "$tmp" 2>/dev/null || return 0
   # Rename, so a reader never observes a half-written entry. Several sessions
   # run these hooks against one shared registry directory at the same time.
   mv -f "$tmp" "$entry" 2>/dev/null || return 0

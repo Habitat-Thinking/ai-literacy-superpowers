@@ -220,6 +220,49 @@ Two tests, when a record is in question. **Who authored the claim?** If
 the agent did, it is about the person. **Would the person recognise it as
 something they said?** If not, it is about them.
 
+### The third category: hook-authored operational state
+
+Those two tests are necessary and not sufficient, because they classify one
+legitimate artefact wrongly. A hook that records *that a session exists* —
+its id, when it started, which project it is in — was authored by an agent,
+and no human would recognise the entry as something they said. Both tests say
+"about the person". Yet a concurrency limit cannot be honoured without knowing
+how many sessions are live, and knowing that is not an assessment of anyone.
+
+So there are three categories, not two:
+
+| Category | Example | Rule |
+| --- | --- | --- |
+| **By the person** | a budget, a stop hour, a disposition, a next action | Durable and reviewable. Often required. |
+| **About the person** | inference, telemetry, scoring, a claim about capacity or state | Forbidden, however softly worded. |
+| **Operational state** | the session registry | Permitted **only** under the four conditions below. |
+
+Operational state is permitted only when all four hold. Fail any one and it is
+a record about the person wearing a different hat:
+
+1. **Local and never committed.** It lives outside every work tree and enters
+   no repository's history.
+2. **Bounded.** It expires on a declared schedule rather than accumulating. A
+   record with no expiry is an archive, and an archive of where someone worked
+   is a surveillance artefact whatever it was built for.
+3. **Nothing in it judges.** It records facts about *sessions* — exists,
+   started, last active — never about the person running them. No score, no
+   assessment, no derived state.
+4. **Disclosed and declinable.** What it contains, how long it persists, and
+   how to switch it off are documented where the person will find them.
+
+The session registry (`~/.claude/sessions/`) is the worked example and meets
+all four. It was nearly not disclosed, which is what prompted this section: the
+pact file — the *permitted*, human-authored side of the line — shipped with a
+careful adoption ramp, while the registry was going to be created for every
+user silently. That asymmetry was backwards. The artefact on the contested side
+of a boundary needs *more* disclosure than the one safely inside it, not less.
+
+**When in doubt, this category does not apply.** It is a narrow carve-out for
+plumbing a sentinel needs and cannot infer, not a route around the rule. If you
+are reaching for it to justify storing something you find useful, you are in
+the second category.
+
 One corollary for anything a sentinel may *reach*, not merely write: a
 shared library that exposes a mutation function to a sentinel breaches
 this boundary through a channel the frontmatter check cannot see, because

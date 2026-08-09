@@ -9,78 +9,78 @@ objections:
     severity: critical
     claim: "registry_count counts every entry file with no freshness test, so a session that ended normally is still counted as live for a full lease window, and the count is flagged `observed` — the published semantics is 'live sessions' but the delivered semantics is 'sessions that completed a turn in the last 12 hours'."
     evidence: "session-registry-read.sh registry_count uses `find -name '*.json' | wc -l` with no heartbeat comparison; the only removal path is registry_prune, which runs solely on the Stop rail. reference/pacts-format.md publishes `max_concurrent_sessions` as 'How many live sessions you will accept'. Reproduced: three sequential sessions (7h old, 3h old, live) yield '3 observed'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "registry_count now excludes entries whose heartbeat is past the lease -- a pure read, so R8 and the trust boundary are untouched -- and flags inferred whenever it excluded one, because an expired-unpruned entry is exactly the 'crashed or merely quiet' uncertainty the flag already carries. The false-positive direction of the lease is now disclosed in the spec and the reference page alongside the false-negative direction that was already there. The lease lifecycle itself stands; only the count's filter and flag change."
   - id: O2
     category: risk
     severity: high
     claim: "The two behavioural contracts the spec names for the new hooks — 'Both exit 0 unconditionally' and 'nothing in this slice blocks, warns, or requires a disposition' — are asserted by no test, and the test harness actively discards the evidence for both."
     evidence: "Every hook invocation in test-session-registry.sh is `bash \"$HOOK\" >/dev/null 2>&1 || true`. The redirect discards the stream that would prove no-gating; the `|| true` discards the status that would prove exits-0. Spec 4.5 and 6 both state the contracts explicitly."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Both hooks now assert an empty stdout and exit 0, including with the registry directory unwritable and HOME unset. The property that makes this slice safe was the one property guarded by a redirect."
   - id: O3
     category: risk
     severity: high
     claim: "The registry writes an agent-authored durable record of which project the human was in and when, for every user of the plugin from the moment they upgrade — with no opt-in, no disclosure of contents or retention at the point of writing, and no documented way to decline; and this slice's own newly promoted BY/ABOUT test classifies such a record as about the person."
     evidence: "session-registry-write.sh writes repo (the session cwd) and started_at; hooks.json wires the writer to SessionStart with matcher '*' for every user. skills/sentinel-design/SKILL.md, added in this branch: 'Who authored the claim? If the agent did, it is about the person.' The skill's permitted list names the pact file, parking records and consultation dispositions; the registry is absent. Contrast templates/pacts.md: 'nothing writes this file on your behalf'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "sentinel-design gains a THIRD category: hook-authored operational state, distinct from both a human's own declarations and an agent's claims about them -- bounded, local, never committed, and never read by anything that judges the person. reference/hooks.md gains what the entries contain, how long they persist, and how to disable the hooks. Settling this explicitly is the point: silence would have set the boundary by precedent, which spec section 2 argues is the weakest way to decide a constitutional question."
   - id: O4
     category: risk
     severity: medium
     claim: "A human-declared `stale_after_hours: 0` passes validation and makes registry_prune retire every entry — including the one registry_touch wrote milliseconds earlier on the same Stop — leaving the registry permanently empty while registry_count reports '0 observed'."
     evidence: "_lease_hours validates with `case \"$v\" in ''|*[!0-9]*) v=12 ;; esac`, which accepts 0. registry_prune's `-ge \"$lease\"` is true for a zero-age entry. registry_count's `-lt \"$lease\"` is false for 0 < 0, so the retirement is not disclosed. No lower bound is stated in the spec, the template, or the reference page."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "stale_after_hours is floored at 1 and the floor is documented. A reader who writes 0 means 'never expire', a common convention; the implementation meant 'expire everything immediately', and the honesty flag reported observed while doing it."
   - id: O5
     category: implementation
     severity: medium
     claim: "_block_span treats any line matching '^#{1,6}[[:space:]]+' as a markdown heading, so a standalone '# note to self' line in a human-authored pact file silently truncates the block — dropping every key below it and, with it, the mandatory clause, flipping a well-formed block to malformed."
     evidence: "pact-blocks.sh ends a span when `inblock && level <= want_level`; a '# ' line computes level 1, which is <= 2. The shipped guidance narrows the warning to value lines — 'never as a trailing # comment on a value line' — which reads as permission for a standalone # line. No fixture contains a #-prefixed line inside a block."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The span parser now recognises only the three known block headings as terminators, so an ordinary standalone # comment in a hand-edited pact file no longer truncates a block and silently flips it to malformed. Fixture added."
   - id: O6
     category: implementation
     severity: medium
     claim: "R9's transitive mutation guard is narrower than the guarantee it advertises: its source-closure walker recognises exactly one spelling of source, and its mutation regexes miss several common write forms — so a future library added to the read closure by any other idiom is invisible while the test still prints 'read library inert'."
     evidence: "The walker's grep requires the `.` builtin, an unbraced all-caps variable, a single path segment, and a lowercase-hyphen filename; `source x`, `. \"${DIR}/x.sh\"`, and `json_helpers.sh` all drop out. The mutation patterns miss redirects to literal paths, ln, chmod, install, dd, `exec 3>`, and writes inside an awk program."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The closure walker accepts `source` as well as `.`, braced and unbraced variables, nested path segments, and underscore/digit filenames; the forbidden-operation set gains redirects to literal paths, ln, chmod, install, dd, and exec redirections. The guarantee the record will be read as making now matches what the test covers."
   - id: O7
     category: risk
     severity: medium
     claim: "$CLAUDE_PACTS_FILE and $CLAUDE_SESSIONS_DIR are unauthenticated environment redirects with no origin check, so anything that sets an environment variable for a session can substitute the pact that S3-S5 will hold the human to, and can relocate the registry inside a work tree where it will be committed."
     evidence: "Both resolvers read the variable directly with a `:-` default. Spec 4.1 asserts 'nothing can accidentally commit it', which holds only while the override is unset; R13 tests the default path after an explicit unset. Neither variable is documented in reference/hooks.md or reference/pacts-format.md."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Both overrides documented as test-only in reference/pacts-format.md and reference/hooks.md, and the spec's 'nothing can accidentally commit it' claim is qualified to the default path. Authorship is the clear-weather rule's active ingredient, so a redirect that makes authorship unverifiable has to be visible."
   - id: O8
     category: specification quality
     severity: medium
     claim: "_flatten reverses an explicit, load-bearing sentence of the approved spec — the spec says a reflowed clause ceases to read as declared; the code says it still reads as declared. The reference page was updated to match the code; the spec, which is the document S2-S5 will be written from, was not."
     evidence: "Spec 3.4: 'the sentence cannot be reworded, translated, shortened, or reflowed across lines ... without the block silently ceasing to read as declared. That is deliberate.' pact-blocks.sh applies _flatten to both sides of the clause match. reference/pacts-format.md now says 'you may re-wrap the sentence across lines'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Spec amended to revision 4. The code is right -- the strict rule was unshippable against the slice's own template, whose Session WIP clause wraps -- and the spec claimed authority over the matching rule while stating one the library does not implement. S2-S5 are authored against section 3, so section 3 has to be true."
   - id: O9
     category: risk
     severity: medium
     claim: "The sweep is the tenth hook on the Stop rail and runs a full prune on every assistant turn — parsing the pact file with two awk passes and spawning several processes per registry entry — for every user of the plugin, before any consumer of the registry exists."
     evidence: "hooks.json adds session-registry-sweep.sh as the tenth Stop entry; the script calls registry_prune unconditionally per turn. registry_prune calls _lease_hours (two awk passes over the pact file), then per entry _json_field (grep + sed) and _iso_to_epoch (one or two date execs), then a find. Spec 6: S1 ships no consumer."
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Consciously carried, on the record. The work is a handful of processes against a directory holding single-digit files, comparable to the nine existing Stop hooks. Revisit if it shows up in practice rather than optimising on a hunch; the throttle design is recorded in this objection should it be needed."
   - id: O10
     category: specification quality
     severity: low
     claim: "hooks.json's own description field still enumerates the pre-S1 hook set, so the file's self-description is wrong on the day it ships."
     evidence: "hooks.json line 2 ends with the reservoir check and the template currency check; neither session-registry-sweep.sh nor session-registry-start.sh appears. reference/hooks.md tells the reader the file contains 'A description field summarising the hook set'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "hooks.json description updated to enumerate the two new entries."
   - id: O11
     category: implementation
     severity: low
     claim: "The R14 escaping fix is one-directional: _json_escape is applied to repo on write but started_at is round-tripped from disk unescaped, and _json_field is not escape-aware on read, so a legitimately backslash- or quote-bearing repo path reads back truncated or doubled in registry_list."
     evidence: "registry_touch re-emits `started` (read via _json_field) without escaping while escaping repo. _json_field's `[^\"]*` stops at the first quote, escaped or not. registry_list is the surface that hands the value to a consumer, and spec 4.1 makes the field load-bearing."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "started_at is escaped on the round-trip and _json_field decodes escaped quotes and backslashes, so the pair is closed rather than one half of it."
 ---
 
 # Objection record — Cadence Sentinels S1 (code mode)

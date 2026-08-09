@@ -105,6 +105,35 @@ read -r count flag <<<"$(registry_count)"
 [ "$count" = "2" ] || fail "R4: two live sessions must count 2, got '$count'"
 [ "$flag" = "observed" ] || fail "R4: an unpruned count must be flagged observed, got '$flag'"
 
+# --- R16: an expired-but-unpruned entry is not counted as live ---------------
+# The critical finding from the code gate, reproduced before it was fixed:
+# nothing removes an entry when a session ENDS, because nothing knows a session
+# ended — the pruner is the only removal path and it runs on the Stop rail. So
+# a morning session, an afternoon session and a live evening session were three
+# files inside one 12-hour lease, and the count returned `3 observed`. Under
+# `max_concurrent_sessions: 2` that is a confident breach on an ordinary day.
+#
+# The filter is a pure read (R8 still holds), and the flag goes `inferred`
+# because an expired-unpruned entry carries the same "crashed, or merely
+# quiet?" uncertainty a retirement does — seen a moment earlier.
+# Per-command env rather than a subshell export: a subshell would make every
+# later reference to CLAUDE_SESSIONS_DIR look modified-and-lost to ShellCheck,
+# which is a CI gate here.
+r16="$TMP/r16"
+hook_input "r16-live"  | CLAUDE_SESSIONS_DIR="$r16" bash "$START_HOOK" >/dev/null 2>&1 || true
+hook_input "r16-stale" | CLAUDE_SESSIONS_DIR="$r16" bash "$START_HOOK" >/dev/null 2>&1 || true
+ts_old=$(date -u -v-20H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "20 hours ago" +%Y-%m-%dT%H:%M:%SZ)
+sed -i.bak -E "s#(\"heartbeat\"[[:space:]]*:[[:space:]]*\")[^\"]*#\1${ts_old}#" "$r16/r16-stale.json"
+rm -f "$r16/r16-stale.json.bak"
+
+read -r count flag <<<"$(CLAUDE_SESSIONS_DIR="$r16" registry_count)"
+[ "$count" = "1" ] \
+  || fail "R16: an expired-but-unpruned entry must not be counted as live, got '$count'"
+[ "$flag" = "inferred" ] \
+  || fail "R16: a count that skipped an expired entry must be flagged inferred, got '$flag'"
+# And the file is still there — counting filtered it, it did not delete it.
+[ -f "$r16/r16-stale.json" ] || fail "R16: registry_count must not remove the entry it skipped"
+
 # --- R8: registry_count mutates nothing --------------------------------------
 before=$(find "$CLAUDE_SESSIONS_DIR" -type f | sort | xargs cksum 2>/dev/null || true)
 registry_count >/dev/null
@@ -131,13 +160,19 @@ after=$(find "$CLAUDE_SESSIONS_DIR" -type f | sort | xargs cksum 2>/dev/null || 
 #
 # The forbidden set is wider than rm/mv for the same reason: truncation and
 # in-place edit destroy just as thoroughly.
+# Accepts both spellings of the builtin (`.` and `source`), braced and
+# unbraced variables, nested path segments, and filenames with underscores or
+# digits. A walker that recognised one idiom would silently skip a library
+# added by any other and still print "read library inert".
 closure_of() {
-  local f="$1" dir sourced
+  local f="$1" dir rel
   printf '%s\n' "$f"
   dir="$(dirname "$f")"
-  sourced=$(grep -oE '^[[:space:]]*\.[[:space:]]+"\$[A-Z_]+/[a-z-]+\.sh"' "$f" 2>/dev/null \
-            | grep -oE '[a-z-]+\.sh' || true)
-  for s in $sourced; do [ -f "$dir/$s" ] && closure_of "$dir/$s"; done
+  while IFS= read -r rel; do
+    [ -n "$rel" ] || continue
+    [ -f "$dir/$rel" ] && closure_of "$dir/$rel"
+  done < <(grep -oE '^[[:space:]]*(\.|source)[[:space:]]+"?\$\{?[A-Za-z_][A-Za-z0-9_]*\}?/[A-Za-z0-9_./-]+\.sh"?' "$f" 2>/dev/null \
+           | sed -E 's#.*\}?/##' | sed -E 's/"$//' || true)
 }
 
 CLOSURE=$(closure_of "$READ_LIB" | sort -u)
@@ -147,15 +182,20 @@ echo "$CLOSURE" | grep -q "pact-blocks.sh" \
 for f in $CLOSURE; do
   # No match is the passing case, so this must not sit in an `&&` chain: under
   # `set -e` a failing grep would abort exactly when the test passes.
-  if grep -nE '(^|[^[:alnum:]_])(rm|rmdir|mv|cp|tee|mkdir|truncate)[[:space:]]' "$f" \
+  if grep -nE '(^|[^[:alnum:]_])(rm|rmdir|mv|cp|ln|dd|tee|mkdir|touch|chmod|chown|install|truncate)[[:space:]]' "$f" \
      | grep -vqE ':[[:space:]]*#'; then
     fail "R9: $(basename "$f") is in the read closure and contains a mutation command"
   fi
-  if grep -nE '(^|[[:space:]])(>|>>)[[:space:]]*"?\$' "$f" | grep -vqE ':[[:space:]]*#'; then
+  # Any redirect that creates or appends to a file, whether the target is a
+  # variable or a literal path, plus exec-style descriptor redirection.
+  if grep -nE '(^|[[:space:]])(>|>>)[[:space:]]*[^&[:space:]]' "$f" | grep -vqE ':[[:space:]]*#'; then
     fail "R9: $(basename "$f") is in the read closure and redirects to a file"
   fi
-  if grep -nE 'sed[[:space:]]+-i' "$f" | grep -vqE ':[[:space:]]*#'; then
-    fail "R9: $(basename "$f") is in the read closure and edits in place"
+  if grep -nE 'exec[[:space:]]+[0-9]*>' "$f" | grep -vqE ':[[:space:]]*#'; then
+    fail "R9: $(basename "$f") is in the read closure and opens a write descriptor"
+  fi
+  if grep -nE '(sed[[:space:]]+-i|awk[^|]*[[:space:]]>[[:space:]]*")' "$f" | grep -vqE ':[[:space:]]*#'; then
+    fail "R9: $(basename "$f") is in the read closure and edits or writes in place"
   fi
 done
 
@@ -262,5 +302,46 @@ repo_root="$(cd "$SCRIPT_DIR/../.." && pwd)"
 case "$default_dir" in
   "$repo_root"/*) fail "R13: the default registry must not live inside a work tree ($default_dir)" ;;
 esac
+
+# --- R15: the hooks gate nothing and always exit 0 ---------------------------
+# This slice's headline constitutional promise is that it gates nothing, and
+# the mechanism by which a hook gates something is writing to stdout or exiting
+# non-zero. Every other invocation in this file is `>/dev/null 2>&1 || true`,
+# which is right for the scenarios they test and discards exactly the evidence
+# for these two contracts. Both are silent and exit 0 today; nothing guarded it.
+assert_silent_and_zero() {
+  local label="$1" hook="$2" input="$3" out rc
+  set +e
+  out="$(printf '%s' "$input" | bash "$hook" 2>/dev/null)"
+  rc=$?
+  set -e
+  [ "$rc" -eq 0 ] || fail "R15 ($label): hook must exit 0 unconditionally, got $rc"
+  [ -z "$out" ] || fail "R15 ($label): hook must write nothing to stdout — anything here is a per-turn nudge. Got: $out"
+}
+
+export CLAUDE_SESSIONS_DIR="$TMP/r15"
+assert_silent_and_zero "start, normal"  "$START_HOOK" '{"session_id":"r15","cwd":"/tmp"}'
+assert_silent_and_zero "sweep, normal"  "$SWEEP_HOOK" '{"session_id":"r15","cwd":"/tmp"}'
+assert_silent_and_zero "start, no session_id" "$START_HOOK" '{}'
+assert_silent_and_zero "sweep, empty stdin"   "$SWEEP_HOOK" ''
+assert_silent_and_zero "start, junk stdin"    "$START_HOOK" 'not json at all'
+
+# The paths the exits-0 contract exists for: a registry that cannot be created,
+# and a machine with no HOME.
+blocked="$TMP/blocked"
+: > "$blocked"                     # a FILE where the registry directory must go
+CLAUDE_SESSIONS_DIR="$blocked/sessions" \
+  assert_silent_and_zero "start, unwritable registry" "$START_HOOK" '{"session_id":"r15","cwd":"/tmp"}'
+CLAUDE_SESSIONS_DIR="$blocked/sessions" \
+  assert_silent_and_zero "sweep, unwritable registry" "$SWEEP_HOOK" '{"session_id":"r15","cwd":"/tmp"}'
+
+set +e
+out="$(printf '{"session_id":"r15","cwd":"/tmp"}' | env -u HOME -u CLAUDE_SESSIONS_DIR bash "$START_HOOK" 2>/dev/null)"
+rc=$?
+set -e
+[ "$rc" -eq 0 ] || fail "R15 (start, HOME unset): must exit 0, got $rc"
+[ -z "$out" ] || fail "R15 (start, HOME unset): must stay silent, got: $out"
+
+export CLAUDE_SESSIONS_DIR="$TMP/sessions"
 
 echo "PASS: session registry — lease renewed not deleted, flag durable, read library inert, hostile ids sanitised"
