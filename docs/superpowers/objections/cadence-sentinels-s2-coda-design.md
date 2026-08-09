@@ -9,85 +9,85 @@ objections:
     severity: critical
     claim: "Invoking /reflect as ritual step 3 will, in this repo, create a branch, commit, push, open a PR, merge, and pull main — relocating the working tree away from the branch holding the uncommitted work the survey just enumerated, before any parking record is written."
     evidence: "Spec 2.3 'The Coda invokes the existing /reflect flow'; commands/reflect.md:159-173 'git checkout -b add-reflection-${slug}' ... 'gh pr merge <n> --squash --delete-branch and git pull on main'; HARNESS.md:413 'Reflections via PR workflow ... Applies to all /reflect invocations'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Ritual reordered: survey, park, then closure summary and reflect, then close. Parking completes while the working tree is still where the human left it, and /reflect's PR cycle runs last. This diverges from the build spec's fixed sequence, which placed reflection third — flagged in the PR. The reorder also dissolves O2, since the Closed field is now written after parking and can name what was parked."
   - id: O2
     category: specification quality
     severity: high
     claim: "The Closed field's stated content cannot be known when the field is written: it names what was parked and how many, but parking is step 4 and the fragment is written (and committed) at step 3."
     evidence: "Spec 4.2 '- **Closed**: [what landed this session; what was parked, and how many]'; the ritual table places Reflection at 3 and Park at 4; section 2 defends that order as 'the design'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Dissolved by the O1 reorder rather than fixed in place."
   - id: O3
     category: implementation
     severity: high
     claim: "'Abandons the ritual cleanly — no half-closed session, no partial parking' is unachievable after step 3 or mid-step-4, because /reflect has already committed a fragment and parking records are append-only and never deleted."
     evidence: "Spec 2.5 and A3; reference/parking-record-format.md 'never edited in place and never deleted'; commands/reflect.md step 8 'Commit the new fragment and the regenerated aggregate'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The promise is narrowed to what append-only can deliver. Abandonment before step 2 leaves nothing written and is genuinely clean; after any record exists, the Coda says plainly what has already been written and offers to write a .superseded.md transition for each — which S2 now ships anyway per O9. 'No partial parking' is replaced by 'nothing silently half-done'."
   - id: O4
     category: risk
     severity: high
     claim: "The survey's blanket observed flag is false for at least two enumerated items — merged PRs and an open PR awaiting checks come from the GitHub API, not disk — and the grouping of modified files into 'threads' is itself an inference."
     evidence: "Spec 2.1 'Enumerate, all flagged observed because all of it is read from disk:' followed by 'merged PRs' and 'an open PR awaiting checks'; and 'Nothing here is inferred.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Per-item honesty flags replace the blanket claim. Commits and working-tree state are observed; gh reads are observed when they succeed and inferred when they do not, never silently absent. Thread grouping becomes asked — which files constitute one thread is the human's call, and it is the judgement that determines how many records exist."
   - id: O5
     category: risk
     severity: high
     claim: "next_action_flag: asked-override is an agent-authored verdict about the human's own wording, persisted permanently in a committed repository file, and it fails both sentinel-design tests while being ineligible for the operational-state carve-out."
     evidence: "Spec 4.1 'Both values still mean the next action came from the human. Neither is an inference'; sentinel-design 'Who authored the claim? If the agent did, it is about the person'; the carve-out requires 'Local and never committed' and 'Bounded'; parking records are committed and permanent."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The override moves into the record's prose body as a human-authored line; next_action_flag stays asked always. What persists is then something the human said and would recognise, not a machine verdict aggregating across records. This also removes S2's change to the parking-record contract entirely, so the consumer-never-mutates rule no longer applies to it."
   - id: O6
     category: specification quality
     severity: high
     claim: "Section 3.2's rule is not implementable as a deterministic shell heuristic and rule 1 is subsumed by rule 2, so V1's 'more work on the parser' turns entirely on an anchor definition the spec never gives."
     evidence: "Spec 3.2 'where the remainder is a bare noun phrase' needs a parts-of-speech parser; 'identifier-shaped token' is undefined; any text consisting solely of a vague stem already fails rule 2. V1 requires 'more work on the parser' to fail while V2 requires 'add the B12 fixture for a malformed Sync cadence block' to pass."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The anchor grammar is defined explicitly, the subsumed rule is dropped, and V1/V2 are made jointly satisfiable. Under the O7 disposition the check no longer renders a verdict, so its precision matters less — but a rule stated in the skill and the reference page must still be the rule the code implements."
   - id: O7
     category: implementation
     severity: high
     claim: "The anchor test measures token shape, not plan specificity, so it passes 'continue work in src/' and rejects concrete non-code actions — which is not the property section 3.1's evidence supports."
     evidence: "Spec 3.1 'specificity is the active ingredient'; 3.2 'passes on any next action carrying at least one anchor'; V5 blesses the false-positive path explicitly. A decision-shaped next action such as 'ask Russ whether the reserved block should ship at all' carries no anchor and fails, and the survey generates parking records for exactly such threads."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The heuristic is demoted from judge to reprompt trigger. It decides only whether to ASK; the human always answers, and the answer is always parked. Both error directions then cost one question rather than a wrong verdict, and the systematic false negative on decision-shaped threads stops mattering. Since nothing is refused, there is no gate, and constraint 6's override machinery is not needed."
   - id: O8
     category: implementation
     severity: high
     claim: "The resume hook is specified as firing 'at session start', but SessionStart fires on startup, resume, clear and compact with matcher '*' — so the list of parked threads is re-injected mid-session, re-opening a question S1 settled."
     evidence: "Spec 2.6; S1 section 4.2 'SessionStart fires on startup, resume, clear, and compact'; hooks/hooks.json registers SessionStart with matcher '*'; session-registry-start.sh repeats the warning."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "A once-per-session marker, so a compact or a resume does not re-inject parked threads mid-session. Handing a thread back at the moment the human is deepest in something else is the surface this epic exists to reduce. A firing-frequency scenario is added; H1-H5 tested emptiness and error paths and none tested frequency."
   - id: O9
     category: scope
     severity: high
     claim: "S2 ships no writer for the .resumed.md transition, so every parking record it creates stays open forever, the resume hook's output grows without bound, and H4 tests behaviour whose producer does not exist in this slice."
     evidence: "Spec section 5's file table lists no resume/transition writer; H4 tests a .resumed.md record; S1 section 5.1 states 'That query is the one S2's resume path depends on' and 'resuming is a write by the /coda command'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "S2 ships the resume path. S1 assigned it here explicitly, and without it records_open returns a monotonically growing set and the hook becomes a standing list of stale obligations — which destroys the trust the surfacing exists to build."
   - id: O10
     category: premise
     severity: medium
     claim: "The advertised attack surface exceeds what the mechanism can reach: the only defence against continuation dissolves the moment the human plainly asks to continue, which is the shape the named failure mode takes."
     evidence: "Spec 1 'Attacks: compulsive continuation'; 2.5 'If the human says plainly that they want to keep working, the Coda abandons the ritual cleanly'; 3.3 sets the standard: 'pretending otherwise would be the overclaiming this epic exists to avoid'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The epithet is narrowed to what the mechanism reaches: drift — the 'while we're here' extension nobody deliberately chose — and the cold-start cost of an unrecorded stop. Continuation may become an earnable claim in S3 when the hard stop arrives. The spec's own standard in section 3.3 forbids the overclaim it was making in its first sentence."
   - id: O11
     category: alternatives
     severity: medium
     claim: "The spec does not weigh extending /reflect with a closing mode against adding a fourth surface, even though its own argument against a second reflection path applies with equal force to a second session-closing ritual."
     evidence: "Spec 2.3 'duplicating any of that would create a second reflection path that drifts from the first'; section 5 adds an agent, skill, command, script and hook; 4.2 already extends /reflect's fragment schema. /reflect --mine is the established precedent for adding a mode rather than a command."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "/coda stays its own command. The Coda dispatches a role: sentinel agent that surveys and returns content; /reflect is a command that commits. Different trust boundaries and different objects of care, and a sentinel agent dispatched from a committing command is an odd shape. The rejection is recorded with its reason, and both commands state plainly when to reach for which — which is the drift the objection was actually worried about."
   - id: O12
     category: specification quality
     severity: medium
     claim: "The 'Coda may be offered when the Warden's threshold is crossed' pathway has no implementation surface, and the same section forbids the only edit that would create one."
     evidence: "Spec 6 'No changes to the Reservoir Warden' alongside 'The Coda may be offered when the Warden's threshold is crossed'; the warden agent's output path never mentions /coda; section 8's docs list names no reservoir surface."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Stated plainly as the human's own move, mediated by no artefact. The Warden recommends deciding a stop; what the human does next is theirs. Nothing is wired, nothing is edited, and constraint 5 holds without ambiguity."
 ---
 
 # Objection record — Cadence Sentinels S2: The Coda (spec mode)
