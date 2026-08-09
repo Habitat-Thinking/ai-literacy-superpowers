@@ -6,9 +6,9 @@
 [![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.68.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
 [![diagnostic-legibility](https://img.shields.io/badge/diagnostic--legibility-v0.11.0-4682B4?style=flat-square)](diagnostic-legibility/)
-[![Skills](https://img.shields.io/badge/Skills-37-2E8B57?style=flat-square)](#skills-37)
-[![Agents](https://img.shields.io/badge/Agents-16-2E8B57?style=flat-square)](#agents-16)
-[![Commands](https://img.shields.io/badge/Commands-28-2E8B57?style=flat-square)](#commands-28)
+[![Skills](https://img.shields.io/badge/Skills-38-2E8B57?style=flat-square)](#skills-38)
+[![Agents](https://img.shields.io/badge/Agents-17-2E8B57?style=flat-square)](#agents-17)
+[![Commands](https://img.shields.io/badge/Commands-29-2E8B57?style=flat-square)](#commands-29)
 [![Harness](https://img.shields.io/badge/Harness-31%2F32_enforced-4682B4?style=flat-square)](HARNESS.md)
 [![Harness Health](https://img.shields.io/badge/Harness_Health-Healthy-2E8B57?style=flat-square)](observability/snapshots/2026-07-21-snapshot.md)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-D97757?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
@@ -158,7 +158,7 @@ This plugin works with both Claude Code and GitHub Copilot CLI from the same rep
 
 The remaining sections of this README document the **`ai-literacy-superpowers`** plugin in detail. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md).
 
-### Skills (37)
+### Skills (38)
 
 Code quality, harness engineering, and governance knowledge that agents read when working in your codebase.
 
@@ -199,7 +199,7 @@ Code quality, harness engineering, and governance knowledge that agents read whe
 | cognitive-reservoir | Watches the human verifier the harness cannot verify — four observable proxies, observed/inferred/asked confidence discipline, disjunctive thresholds, the decide-your-stop-first principle, and the honesty rule separating contested science (ego depletion, hungry judges) from the robust basis (vigilance decrement, switching cost); advisory-only, never a fatigue score |
 | sentinel-design | Defines the sentinel agent category — the three-part signature (S1 read-only, S2 advisory-to-human, S3 explicit honesty rule), the near-miss gallery (why code-reviewer and harness-auditor don't qualify), the honesty-rule-before-detection-logic discipline, and the three anti-patterns (scoring the human, persisting human-state records, gating automatically) |
 
-### Agents (16)
+### Agents (17)
 
 A coordinated team that handles the full development lifecycle. It
 splits into two families: **sentinels**, whose object of care is the
@@ -258,7 +258,7 @@ The [decision-discipline triad](docs/plugins/ai-literacy-superpowers/explanation
 | assessor | AI literacy assessment — scans repo, asks questions, applies fixes, recommends workflow changes | Read + Write |
 | governance-auditor | Governance specialist — semantic drift analysis, debt inventory, three-frame alignment | Read + limited Write |
 
-### Commands (28)
+### Commands (29)
 
 | Command | What it does |
 | ------- | ------------ |

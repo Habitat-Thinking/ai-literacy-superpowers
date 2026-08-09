@@ -46,7 +46,11 @@ expect_ask() {
   asks "$1" || fail "$2: expected a question for [$1], got none"
 }
 expect_quiet() {
-  asks "$1" && fail "$2: expected no question for [$1], got one" || true
+  # Written as if/then rather than `A && B || C`: that idiom is not if-then-else
+  # — C runs when A succeeds and B fails — and here B is `fail`, which exits.
+  if asks "$1"; then
+    fail "$2: expected no question for [$1], got one"
+  fi
 }
 
 # --- N1: no anchor triggers the question -------------------------------------
