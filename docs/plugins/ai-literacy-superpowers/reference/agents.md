@@ -12,7 +12,7 @@ Cutting across those groups is a fourth, cross-cutting family — the
 **[sentinels](../explanation/sentinels.md)**. A sentinel is any agent
 whose object of care is the human's understanding and judgement rather
 than an artefact: `carpaccio`, `advocatus-diaboli`,
-`choice-cartographer`, `reservoir-warden`, and `cost-estimator`. Each
+`choice-cartographer`, `reservoir-warden`, `cost-estimator`, and `coda`. Each
 declares `role: sentinel` in its frontmatter, is read-only (criterion
 S1, enforced deterministically by the Sentinel integrity constraint),
 emits advisory output a human disposes (S2), and carries an explicit
@@ -174,6 +174,26 @@ does not block progression. The merge-time HARNESS constraint
 
 This release is spec-mode only. Code-mode behaviour is tracked under
 [issue #209](https://github.com/Habitat-Thinking/ai-literacy-superpowers/issues/209).
+
+### coda
+
+**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only
+
+Closes a session deliberately rather than by attrition. Surveys what landed and
+what is still live, proposes a thread grouping for the human to confirm, and
+returns one draft parking record per thread with a concrete next action.
+
+Holds no `Write`: it returns record content as a string and the `/coda` command
+persists it after the human confirms — the `cost-estimator` precedent, and what
+keeps the Coda inside the sentinel category.
+
+Three things it never does. It never decides that a session should end; the
+human invoked it. It never decides what counts as one thread; that judgement
+determines the whole shape of the handoff and belongs to the person. And it
+never records *why* someone stopped — that a session closed and what was parked
+is the record.
+
+See the `coda` skill and [Closing a session](../how-to/closing-a-session.md).
 
 ### cost-estimator
 
@@ -419,6 +439,7 @@ is a precaution under uncertainty. See the
 | spec-writer | x | x | x | x | x | | | | read-write |
 | advocatus-diaboli | x | | | x | x | | | | read-only |
 | choice-cartographer | x | | | x | x | | | | read-only |
+| coda | x | | | x | x | | | | read-only |
 | cost-estimator | x | | | x | x | | | | read-only |
 | tdd-agent | x | x | x | x | x | x | | | read-write |
 | code-reviewer | x | | | x | x | x | | | read-only |

@@ -109,10 +109,13 @@ build goes red. S2 and S3 are agent-verifiable via the harness-enforcer.
 | `choice-cartographer` | Understanding of implicit decisions | Read-only; choice stories disposed at a soft gate; six-lens map declares what was found vs. inferred |
 | `reservoir-warden` | The decider — the verifier's cognitive reservoir | Read-only (no Write/Edit); single decide-your-stop-first recommendation; observed/inferred/asked flags; persists no record of human state |
 | `cost-estimator` | The decision's inputs — what a choice will cost before it is made | Read-only; human disposes the estimate record; refuses rather than fabricating an ungroundable estimate |
+| `coda` | The ending — that a session stops by decision rather than by attrition | Read-only; returns record content for `/coda` to persist; per-item observed/inferred/asked flags; never refuses a next action and never records why someone stopped |
 
 The narrative: the decision-discipline triad guards *decisions*; the
 `reservoir-warden` guards *the decider*; the `cost-estimator` guards
-*the decision's inputs*.
+*the decision's inputs*; and the `coda` guards *the ending* — that a
+session stops by decision rather than by attrition, and that what was
+left open is written down rather than carried.
 
 ### A second declaration surface: the pact file
 

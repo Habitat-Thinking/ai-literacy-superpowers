@@ -528,6 +528,44 @@ Manage git worktrees for parallel agent isolation. Three modes:
 - **`/worktree clean [name]`** — Remove the named worktree and its
   branch.
 
+### /coda
+
+- **Skills read**: `coda`
+- **Agents dispatched**: `coda` (survey and draft records)
+
+Closes a session deliberately rather than by attrition. Four steps, same order
+every time: **survey** what landed and what is still live, **park** each open
+thread with a concrete next action, write the **closure summary** through
+`/reflect`, and **close**.
+
+`/coda resume <record>` closes a parked thread by writing a `.resumed.md`
+transition naming its predecessor — never by editing or deleting the original.
+
+**`/coda` versus `/reflect`.** `/reflect` writes a learning. `/coda` closes a
+session, and calls `/reflect` as part of doing so. Capturing one surprise and
+carrying on is `/reflect`; stopping is `/coda`.
+
+Two design points worth knowing before you use it:
+
+- **Parking happens before reflection**, and records are committed there.
+  `/reflect` stages only the reflection paths and, where a *Reflections via PR
+  workflow* constraint is declared, relocates the tree to `main` — so a ritual
+  that reflected first would publish a summary describing records it left
+  behind uncommitted.
+- **Nothing is refused.** The next-action check asks one more question when it
+  finds no anchor; whatever you answer is parked, including the same words
+  again. It renders no verdict on your wording.
+
+Stoppable at any point. If you say plainly that you want to keep working, the
+ritual stops and states exactly what has already been written — records are
+append-only, so nothing can be withdrawn. A request for *new work* mid-ritual
+is different: that gets parked, because it is the drift the ritual exists for.
+
+See the `coda` skill, [Closing a session](../how-to/closing-a-session.md), and
+[Parking record format](parking-record-format.md).
+
+---
+
 ### /reservoir
 
 - **Skills read**: `cognitive-reservoir`

@@ -264,6 +264,35 @@ the deterministic tests need no home directory and is **not intended for
 production use** — pointing it inside a work tree defeats the guarantee
 that nothing can be committed by accident.
 
+### Parked resume check
+
+- **Script**: `hooks/scripts/parked-resume-check.sh`
+- **Timeout**: 10s
+
+Surfaces parking records left open by an earlier session — id and next
+action, nothing more — so a thread you parked with a concrete resume step
+comes back to you. A record nobody ever sees again is a diary, not a
+handoff.
+
+**Fires on `startup` only.** `SessionStart` also fires on resume, clear
+and compact, and an unguarded hook would re-inject the parked list into
+the middle of an unrelated working session for the rest of the day. That
+is not merely noisy: a parking record exists to release a thread's pull
+so you can stop holding it, and printing it back at you mid-session hands
+it straight back. An **absent** `source` also stays quiet — unknown
+provenance is exactly where re-injection is possible, so silence is the
+safe reading.
+
+The guard reads the `source` field off the hook's own stdin and **writes
+nothing**. A per-session marker file in `~/.claude/sessions/` would have
+inherited that store's location guarantees without its retention
+contract, and accumulated one file per session for the life of the
+machine.
+
+Records superseded by a `.resumed.md` transition are not surfaced. Exits
+0 unconditionally. `$CLAUDE_PARKED_DIR` overrides the directory and is
+test-only.
+
 ---
 
 ## Configuration

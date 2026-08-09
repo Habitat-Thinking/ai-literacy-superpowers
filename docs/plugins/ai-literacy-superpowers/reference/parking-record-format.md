@@ -98,3 +98,49 @@ does:
 Specificity is the active ingredient, not completeness. A thread parked with a
 concrete next step stops pulling at the person who parked it; one parked with
 "continue work" does not.
+
+### The anchor grammar
+
+`scripts/next-action-hint.sh` decides whether the Coda asks **once more**. A
+next action carries an anchor when it contains at least one of:
+
+| Anchor | Pattern |
+| --- | --- |
+| A path | a token containing `/` or a known file extension |
+| A code identifier | a token containing `_`, `::`, or `()`, or in `Some.Case` form |
+| A backticked span | anything inside backticks |
+| A scenario or ticket id | a letter-digit token such as `B12`, `R4`, `#492` |
+| A line or section reference | `file:12`, `§3.2`, `line 40` |
+| A decision | a question word, a named person, or `ask` / `decide` / `choose between` |
+
+**This is a trigger heuristic, and its complement is not "vague".** A next
+action carrying no anchor gets one question. It does not get a verdict, and it
+is not being called imprecise. The table says what makes the Coda *stop
+asking* — not what makes a next action good.
+
+The decision row exists because the other five are artefacts of code-shaped
+work, and much of what gets parked is a spec, a piece of prose, or a decision.
+Without it the check would tax the dominant kind of thread at every close.
+
+### When the author was asked twice
+
+The Coda never refuses a next action. If the check triggers and the author
+gives the same answer again, the record is written with their answer plus a
+line in their own voice:
+
+```markdown
+## Next action
+
+continue work
+
+(Asked again for a starting point; confirmed this is enough to go on.)
+```
+
+**That line, not a frontmatter flag, is where the override lives.**
+`next_action_flag` is `asked` for every record; there is no second value.
+
+A flag recording that someone's answer failed a check would be an
+agent-authored verdict about the person — permanent, committed, and countable
+across records. That is a claim *about* the human rather than *by* them, which
+the `sentinel-design` boundary forbids, and the operational-state carve-out
+cannot rescue it because these records are committed and permanent.
