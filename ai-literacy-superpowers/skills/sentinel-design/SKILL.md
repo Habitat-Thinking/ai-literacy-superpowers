@@ -194,6 +194,83 @@ An agent that does any of these has left the category, whatever its
    pipeline without a person disposing it, S2 is violated and the human
    has been removed from their own decision.
 
+### The boundary of anti-pattern 2: *by* the person versus *about* them
+
+"Persist nothing about the human" is not "persist nothing the human
+appears in". The line runs between two kinds of claim, and a sentinel
+author needs it drawn before they design any record:
+
+- **About the person — forbidden.** Anything the *agent* concluded:
+  inference, telemetry, scoring, an assertion about capacity, attention,
+  or state. "Tired at 21:00" is the canonical violation, and it stays a
+  violation however softly it is worded.
+- **By the person — permitted, and often required.** A declaration the
+  *human* authored: a budget, a stop hour, a disposition, a next action
+  they wrote themselves. A pact that is not durable is not a pact, so
+  refusing to persist these would not protect anyone — it would only make
+  the person's own decisions unenforceable by them.
+
+`## Cognitive reservoir` has always sat on the permitted side: it holds a
+self-declared `chronotype` in a file the human edits, while its own prose
+forbids recording any claim about cognitive state. The pact file
+(`~/.claude/pacts.md`) generalises that shape, and it is why parking
+records and consultation dispositions are legitimate durable artefacts.
+
+Two tests, when a record is in question. **Who authored the claim?** If
+the agent did, it is about the person. **Would the person recognise it as
+something they said?** If not, it is about them.
+
+### The third category: hook-authored operational state
+
+Those two tests are necessary and not sufficient, because they classify one
+legitimate artefact wrongly. A hook that records *that a session exists* —
+its id, when it started, which project it is in — was authored by an agent,
+and no human would recognise the entry as something they said. Both tests say
+"about the person". Yet a concurrency limit cannot be honoured without knowing
+how many sessions are live, and knowing that is not an assessment of anyone.
+
+So there are three categories, not two:
+
+| Category | Example | Rule |
+| --- | --- | --- |
+| **By the person** | a budget, a stop hour, a disposition, a next action | Durable and reviewable. Often required. |
+| **About the person** | inference, telemetry, scoring, a claim about capacity or state | Forbidden, however softly worded. |
+| **Operational state** | the session registry | Permitted **only** under the four conditions below. |
+
+Operational state is permitted only when all four hold. Fail any one and it is
+a record about the person wearing a different hat:
+
+1. **Local and never committed.** It lives outside every work tree and enters
+   no repository's history.
+2. **Bounded.** It expires on a declared schedule rather than accumulating. A
+   record with no expiry is an archive, and an archive of where someone worked
+   is a surveillance artefact whatever it was built for.
+3. **Nothing in it judges.** It records facts about *sessions* — exists,
+   started, last active — never about the person running them. No score, no
+   assessment, no derived state.
+4. **Disclosed and declinable.** What it contains, how long it persists, and
+   how to switch it off are documented where the person will find them.
+
+The session registry (`~/.claude/sessions/`) is the worked example and meets
+all four. It was nearly not disclosed, which is what prompted this section: the
+pact file — the *permitted*, human-authored side of the line — shipped with a
+careful adoption ramp, while the registry was going to be created for every
+user silently. That asymmetry was backwards. The artefact on the contested side
+of a boundary needs *more* disclosure than the one safely inside it, not less.
+
+**When in doubt, this category does not apply.** It is a narrow carve-out for
+plumbing a sentinel needs and cannot infer, not a route around the rule. If you
+are reaching for it to justify storing something you find useful, you are in
+the second category.
+
+One corollary for anything a sentinel may *reach*, not merely write: a
+shared library that exposes a mutation function to a sentinel breaches
+this boundary through a channel the frontmatter check cannot see, because
+`Bash` is permitted and the check reads only the declared `tools:` list.
+Split such libraries — a read surface a sentinel may source, a write
+surface only hooks and commands may. The boundary should hold by what an
+agent *can* reach, not by what it is trusted not to call.
+
 ## When you have a candidate
 
 1. Check S1, S2, S3 against the candidate. All three, or it is not a

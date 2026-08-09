@@ -1,5 +1,5 @@
 {
-  "description": "Harness engineering hooks: constraint gate (PreToolUse) warns on violations; affordance invocation recorder (PostToolUse) logs Bash/MCP tool calls to gitignored observability; drift check, snapshot staleness, reflection prompt, framework-change prompt, rotating GC check, curation nudge, governance drift check, and reservoir check (Stop) close all feedback loops at session end; template currency check (SessionStart) nudges on plugin upgrade",
+  "description": "Harness engineering hooks: constraint gate (PreToolUse) warns on violations; affordance invocation recorder (PostToolUse) logs Bash/MCP tool calls to gitignored observability; drift check, snapshot staleness, reflection prompt, framework-change prompt, rotating GC check, curation nudge, governance drift check, reservoir check, and session-registry sweep (Stop) close all feedback loops and renew the session lease at the end of every turn; template currency check and session-registry start (SessionStart) nudge on plugin upgrade and record this session's local, never-committed registry entry.",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Check if HARNESS.md exists in the project root. If it does, read the Constraints section and identify any constraints with scope 'commit'. For each commit-scoped constraint, evaluate whether the file being written or edited would violate it. If violations are found, return a warning describing each violation with the constraint name. Do not block — only warn. If no HARNESS.md exists or no commit-scoped constraints apply, return nothing.",
+            "prompt": "Check if HARNESS.md exists in the project root. If it does, read the Constraints section and identify any constraints with scope 'commit'. For each commit-scoped constraint, evaluate whether the file being written or edited would violate it. If violations are found, return a warning describing each violation with the constraint name. Do not block \u2014 only warn. If no HARNESS.md exists or no commit-scoped constraints apply, return nothing.",
             "timeout": 30
           },
           {
@@ -78,6 +78,11 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/reservoir-check.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-registry-sweep.sh",
+            "timeout": 10
           }
         ]
       }
@@ -89,6 +94,11 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/template-currency-check.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-registry-start.sh",
             "timeout": 10
           }
         ]

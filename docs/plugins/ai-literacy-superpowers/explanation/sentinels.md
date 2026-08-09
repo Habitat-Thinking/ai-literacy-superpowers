@@ -114,6 +114,30 @@ The narrative: the decision-discipline triad guards *decisions*; the
 `reservoir-warden` guards *the decider*; the `cost-estimator` guards
 *the decision's inputs*.
 
+### A second declaration surface: the pact file
+
+The **cadence sentinels** now under construction — the Coda, the Mast,
+the WIP Warden, and the Convener — read a surface that did not exist
+before them: `~/.claude/pacts.md`, documented at
+[Pact file format](../reference/pacts-format.md).
+
+The split matters, and it is not an accident of filing. `HARNESS.md` is
+the **repository's** declaration surface: what this project requires of
+anyone who works on it. The pact file is the **person's**: what one human
+has decided about how they work. A stop hour and a concurrency limit
+belong to a person, not to a project, so they live outside every work
+tree and are never committed — nothing about the human is written into
+any repository's history.
+
+That boundary is the sentinel ethic applied to storage. It also draws a
+line that every sentinel author needs: *persist nothing about the person*
+forbids claims an agent makes **about** someone — inference, telemetry,
+scoring. It does not forbid a pact the person authored themselves, which
+is a statement **by** them. A pact that is not durable is not a pact.
+`## Cognitive reservoir` has always worked this way, holding a
+self-declared `chronotype` while forbidding any recorded claim about
+cognitive state.
+
 ## The near-miss gallery
 
 The signature has a trap. **Read-only plus advisory is not sufficient.**
