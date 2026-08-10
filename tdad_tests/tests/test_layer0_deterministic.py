@@ -74,6 +74,9 @@ BASH_TEST_SCRIPTS = [
     # scripts/next-action-hint.sh and hooks/scripts/parked-resume-check.sh.
     "test-next-action",
     "test-parked-resume",
+    # Cadence Sentinels S3 — the pact writer. RED until S3 ships
+    # hooks/scripts/lib/pact-write.sh.
+    "test-pact-write",
 ]
 
 

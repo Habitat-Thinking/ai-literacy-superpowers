@@ -56,6 +56,17 @@ closing ritual into a gate on the person.
 
 Read it before implementing or changing anything in the Coda's path.
 
+### mast
+
+The two modes, the clear-weather rule **and the exact blind spot of the check
+that supports it**, the flag discipline for a budget whose keys are mostly
+unobservable, the guarantees the pact writer makes, and the anti-patterns that
+would turn a pact-keeper into a gate.
+
+Read it before changing anything in the Mast's path — particularly the two-row
+table showing that a hand-edit does *not* fire the weather note and a calm tune
+*does*, which is the guard against an honest-sounding regression.
+
 ### cognitive-reservoir
 
 The shared grounding for the reservoir-warden agent and the reservoir-check Stop hook — the framework's watch on the one actor it cannot verify, the human verifier. Defines the four observable proxies (session span, decision volume, context switches, wall-clock hour), the `observed` / `inferred` / `asked` confidence discipline, the disjunctive default thresholds, the one firm principle (decide your stop before the next session begins), the six-level scaling guidance, and the honesty rule that keeps the contested science (ego depletion, the hungry-judges study) separate from the robust basis (vigilance decrement, task-switching cost). Advisory-only; never a fatigue score, never a gate.
