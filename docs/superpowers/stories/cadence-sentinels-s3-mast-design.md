@@ -390,7 +390,7 @@ declare a block, one slice later and with the authoring path now built.
 **Consequences.** The epic's unblocking event has no trigger inside the
 product. In a project that adopts the plugin and never runs the command, S1–S3
 are complete and behaviourally identical to not having shipped. Combined with
-#4's long unanchored dialogue, the two most likely outcomes for a new adopter
+story #4's long unanchored dialogue, the two most likely outcomes for a new adopter
 are "never invoked" and "invoked once and mostly skipped". And until #501 the
 gauge-and-ritual half is the whole of the Mast, so `/mast` carries a name, an
 epithet and an opening paragraph written for the version that speaks at the
