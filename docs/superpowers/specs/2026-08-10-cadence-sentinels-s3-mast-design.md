@@ -1,15 +1,17 @@
 # Spec: Cadence Sentinels S3 — The Mast
 
-**Status:** Approved (revision 1)
+**Status:** Approved (revision 2, post-diaboli)
 **Date:** 2026-08-10
 **Issue:** #493
 **Epic:** The Cadence Sentinels (S1–S7, issues #491–#497)
-**Depends on:** S1 (#491, 0.67.0) — the pact file and `pact-blocks.sh`;
-S2 (#492, 0.68.0) — the Coda, which the reached notice recommends and which
-carries the Mast's override to the record
-**Scope:** `ai-literacy-superpowers` plugin; one agent, skill, command, hook,
-and a session-scoped note store
-**Explicitly out of scope:** the WIP Warden (S4) and the Convener (S5).
+**Objections:** `docs/superpowers/objections/cadence-sentinels-s3-mast-design.md`
+— 11 objections, 4 accepted, 7 deferred to #501
+**Depends on:** S1 (#491, 0.67.0) — the pact file and `pact-blocks.sh`. **Not
+S2.** This slice touches no Coda file and needs none.
+**Scope:** `ai-literacy-superpowers` plugin; one agent, one skill, one command.
+No hook, no session state, no new store.
+**Explicitly out of scope:** boundary notices and the hard stop, which are
+**#501** (see §3); the WIP Warden (S4); the Convener (S5).
 
 **Provenance:** *The Second Front — Arc Insertion Remit* (slide S5) and
 *Compulsive Continuation — A Research Exploration*.
@@ -31,7 +33,20 @@ line — offers you the ritual for stopping.
 where the decision about when to stop migrates from a person who decided it in
 advance to a person who is tired and mid-thought.
 
-It feeds the Coda. It never stops anything itself.
+It never stops anything itself.
+
+**What this slice is, after the split.** S3 ships the **gauge and the authoring
+ritual** — `/mast` reads your pact and tells you where you stand against it;
+`/mast tune` is how the pact comes to exist at all. Everything that *speaks at
+the boundary* — the approaching and reached notices, the hard-stop trigger, and
+the override record — is **#501**.
+
+The split was made at the spec gate because six of eleven objections, including
+both criticals, were consequences of one decision: that the Mast writes session
+state another slice must consume. Removing that half dissolved them rather than
+mitigating them. It also ships the higher-value half first — S1 shipped a
+template that no path authors, so **until Tune exists the pact file does not
+exist and every other sentinel in this epic is permanently in observe-only.**
 
 ## 2. Two Modes, Mirroring `/reservoir`
 
@@ -46,10 +61,25 @@ Most of a budget is not observable, and saying so is the whole job.
 
 | Key | Flag | Why |
 | --- | --- | --- |
-| `hard_stop_hour` | `observed` | wall clock |
-| `focus_blocks` | `observed` | wall clock |
-| `sessions_per_day` | `inferred` | the registry holds *live* sessions, not a day's history — see below |
-| `daily_cost_ceiling` | **`asked`**, or *not observable* | nothing in this plugin can see spend |
+| `hard_stop_hour` | `observed` | the wall clock is either past it or not |
+| `focus_blocks` | `inferred` | the clock being inside a block is observed; that you *spent* it working is not |
+| `sessions_per_day` | `inferred` | the registry holds *live* sessions, not a day's history |
+| `daily_cost_ceiling` | **not observable** | nothing in this plugin can see spend |
+
+Two of these were wrong in the first revision and are corrected here (O6).
+
+`focus_blocks` was flagged `observed` on the reasoning that a focus block is a
+clock range. But "consumption against a focus block" is not *is the clock
+inside it* — it is *did you spend it working*, which needs exactly the day's
+history the next row says the registry lacks. The same sentence disqualifies
+both; it had been applied to only one.
+
+`daily_cost_ceiling` was flagged `asked`, which describes an act that does not
+happen. Reporting a declared ceiling back is reading a pact, not asking a
+question — `asked` means the human was asked and answered, as S1 and S2 both
+use it. An unearned flag would have left an implementer to invent the question,
+and the plausible invention is asking what someone spent today, which nothing
+authorises.
 
 `sessions_per_day` deserves its own sentence. S1's registry is a lease over
 *currently live* sessions; it is not a log and has no day's history in it.
@@ -57,42 +87,61 @@ Counting today's sessions from it is possible only for those still within their
 lease, so the Mast reports it `inferred` and says what it could not see. It
 does **not** reconstruct a day's count and present it as fact.
 
-`daily_cost_ceiling` is the sharper case. Nothing in this plugin observes
-spend. The pact template already blesses the literal `not observable` as a
-valid value, and the Mast honours that: it will report what the human declared
-and what it cannot check, and it will **refuse to estimate**. A fabricated
-spend figure against a real ceiling is the worst possible output — it would
-make a person stop, or not stop, on a number nobody measured.
+On cost specifically: nothing in this plugin observes spend. The pact template
+already blesses the literal `not observable` as a valid value, and the Mast
+honours it — reporting what the human declared and what it cannot check, and
+**refusing to estimate**. A fabricated spend figure against a real ceiling is
+the worst possible output: it would make a person stop, or not stop, on a
+number nobody measured.
 
-### 2.2 The weather check
+### 2.2 The weather check, and exactly what it sees
 
-Tune stamps `authored_at`. Read mode notes when a budget was authored **on the
-day it is being enforced**:
+Tune stamps `authored_at`. Read mode notes when the budget it is reading was
+**tuned today**:
 
-> This budget was authored today. A limit set in the weather it governs is not
-> the pact the clear-weather rule relies on — worth knowing, not a reason to
-> stop.
+> This budget was tuned today, so it has not been lived with yet. Worth knowing
+> when it asks something of you tonight.
 > *(observed: `authored_at` is today)*
+> *(A pact edited outside `/mast tune` is not visible to this check.)*
 
-**This is the clear-weather rule's actual mechanism**, and it replaces the one
-the build spec specified.
+**What it detects, stated honestly.** It detects a budget *tuned* today. That
+is a true and useful thing to say — a pact authored hours ago has not yet
+survived contact with a day, and knowing that is worth a line when it asks
+something of you.
 
-The build spec called for "a critic check that flags `Budgets` diffs lacking a
-same-change `authored_via: tune` update". That is impossible here:
-`~/.claude/pacts.md` lives outside every work tree and is never committed, so
-there is no diff and no CI can see the file. **Flagged for the PR** — it is a
-direct consequence of S1's user-scoped pact decision.
+**What it does not detect: weather-editing.** Revision 1 claimed this check
+caught "raising `hard_stop_hour` at 18:00 because you want to keep going… and
+nothing else". That was exactly backwards (O5). `authored_at` moves only when
+Tune writes it, so:
 
-The replacement is better aimed. The failure mode the rule exists to catch is
-not hand-editing in general — a calm Tuesday-morning tweak is exactly the
-deliberate authorship the rule wants. It is *editing the limit in the weather
-it governs*: raising `hard_stop_hour` at 18:00 because you want to keep going.
-An `authored_at` of today, read at enforcement time, catches that and nothing
-else.
+| The human does | `authored_at` | Note fires |
+| --- | --- | --- |
+| Hand-edits the stop hour at 18:00 | unchanged | **no** |
+| Runs `/mast tune` on a calm Tuesday morning | today | **yes**, that evening |
 
-It is a **note, never a gate**. The Mast reports it and continues. A sentinel
-that refused to honour a pact because it was authored recently would be
-second-guessing the person it serves.
+It fires on the honest path and stays silent on the dishonest one. A check that
+claims coverage it does not have is worse than one that claims none, because
+the human learns to read its silence as an all-clear.
+
+So the note says what it sees, and the reference page and the skill both carry
+the blind spot in the same words. A hand-edit is invisible to this check and
+always will be — the pact file is the human's, outside every work tree, and
+nothing watches it.
+
+**Why not something stronger.** The build spec called for "a critic check that
+flags `Budgets` diffs lacking a same-change `authored_via: tune` update". That
+is impossible here: `~/.claude/pacts.md` is never committed, so there is no
+diff and no CI can see the file. **Flagged for the PR** — a direct consequence
+of S1's user-scoped pact decision. Checksumming the block would detect
+hand-edits, but it would flag the calm Tuesday tweak too, which §2.2's own
+reasoning says is the authorship the rule *wants*.
+
+The honest position is a note with a disclosed blind spot, at the **Unverified**
+rung, rather than a check that overclaims. That is the same call §2.1 makes
+about spend, for the same reason.
+
+It is a **note, never a gate**. A sentinel that refused to honour a pact because
+it was authored recently would be second-guessing the person it serves.
 
 ### 2.3 Tune mode: one authoring ritual for all three blocks
 
@@ -100,198 +149,159 @@ Tune walks `Budgets`, `Session WIP`, and the reserved `Sync cadence`, and
 **creates `~/.claude/pacts.md`** if it does not exist — S1 assigned that here
 and nothing else in the epic writes the file.
 
-Three rules govern the dialogue:
+The dialogue's rules and the exact shape of what it writes are §5 — that
+section exists because revision 1 specified the ritual and never said what it
+produced, which is the highest-consequence gap the gate found (O7).
 
-1. **It proposes nothing as a default.** It asks. Authorship is the active
-   ingredient; a value the human accepted because it was pre-filled is not one
-   they authored. The template's numbers are illustrations, not suggestions.
-2. **Every block is skippable.** A human who wants only a stop hour gets only a
-   `Budgets` block. An undeclared block is not an incomplete pact.
-3. **It stamps `authored_at` (today) and `authored_via: tune`**, and says it is
-   doing so and why.
+Tune is the only path that writes the file. That is a **convention, not an
+enforced boundary** — the file is the human's and they may edit it with any
+editor they like, and nothing in this plugin will know. §2.2 says plainly what
+that costs the weather check.
 
-For `Sync cadence` it says plainly that the block is reserved and inert before
-asking, so nobody declares values believing something reads them.
+## 3. Boundary Notices Are Not In This Slice
 
-Tune is the only path that writes the file. That is a convention, not an
-enforced boundary — the file is the human's and they may edit it with any
-editor they like. §2.2 is what notices when the timing of that edit matters.
+The approaching notice, the reached notice, the hard-stop trigger, and the
+override record are **#501**.
 
-## 3. Boundary Notices
+They were specified here in revision 1 and moved out at the spec gate. The
+reason is worth recording, because it is the same shape three times: each of
+those mechanisms required the Mast to *write session state that another slice
+must consume*, and every one of the slice's structural problems followed from
+it.
 
-Two, each firing **at most once per session**.
+- The override needed the Coda's survey and its `Closed` field — a contract S2
+  owns and shipped, which knows nothing of notes.
+- The note store bundled `append, read, consume, prune` in one library a
+  `role: sentinel` agent had to reach, re-opening the channel S1 split two
+  libraries to close.
+- The once-per-session guarantee lived in the file that consumption deletes.
+- Two stop advisories could land on the same turn, since a declared `lark`
+  enters the Reservoir Warden's suboptimal band at hour ≥ 20.
 
-| Notice | When | Says |
-| --- | --- | --- |
-| **approaching** | at 80% of the way from session start to the line | where you are, and what the line is |
-| **reached** | at the line | one recommendation: invoke the Coda |
+None of that is wrong to build. It is wrong to build *here*, alongside a file
+reader, in a slice whose adversarial pass then has to be about two unrelated
+things at once.
 
-**One recommendation, once.** No repeats, no escalation, no second notice ten
-minutes later. Ambient reminders are ignored and then resented; a single
-boundary-moment reality check is the thing with evidence behind it.
+**What remains true and is carried to #501:** the notice discipline itself. One
+recommendation, once, at the boundary — no repeats, no escalation.
 
 <!-- evidence: boundary-moment reality checks improve adherence where ambient
      reminders do not. The mechanism is a prompt at the decision point, not
      accumulated pressure — which is why repeating it would not make it work
-     better, it would make it work worse. -->
+     better, it would make it work worse. Recorded here because it is the
+     reason #501 exists at all. -->
 
-Notices ride the `Stop` hook, so they arrive between turns rather than
-interrupting one. Both are `{"systemMessage": ...}` advisories: they never
-block, never exit non-zero, and never require a disposition.
+`notification_policy_after_stop` likewise stays declared intent at the
+**Unverified** rung. The Mast reads it and reports it; nothing enforces it, and
+nothing in this plugin can.
 
-### 3.1 The hard stop
-
-When `hard_stop_hour` passes during a live session, the Mast raises the reached
-notice and offers `/coda`.
-
-**It does not kill the session.** It cannot, and it should not be able to. The
-disposition is the human's.
-
-If they continue, that is recorded — see §4 — as a fact about the session:
-
-```text
-observed: continued past the 20:00 stop by choice
-```
-
-Never a judgement, never an explanation, never a count of how often. That a
-session ran past a declared line is a fact about the session; *why* is not the
-Mast's business and is not recorded.
-
-### 3.2 `notification_policy_after_stop` is declared intent
-
-It ships at the **Unverified** rung and is documented as such. Push and digest
-behaviour is platform-side and outside this plugin's reach; the block records
-the pact so a platform hook can honour it where one exists. The Mast reads it,
-reports it, and enforces nothing.
-
-## 4. Session Notes: Where the Override Lives
-
-Constraint 6 requires an on-the-record override. The override happens at 18:31,
-mid-session — and `/reflect`, the path to the record, runs a full
-branch-PR-merge cycle (S2 §2). Triggering a PR round-trip to record "I chose to
-keep working" would be absurd.
-
-**So the Mast writes a session-scoped note, and the Coda carries it to the
-record at close** — the moment `/reflect` runs anyway.
-
-```text
-~/.claude/mast/<sanitised-session-id>.notes
-```
-
-One line per event, append-only within the session:
-
-```text
-2026-08-10T20:00:00Z reached hard_stop_hour=20:00
-2026-08-10T20:00:00Z continued past the 20:00 stop by choice
-```
-
-The Coda's survey reads these and includes them in the `Closed` field. The note
-file is **removed once consumed**, which is what bounds it.
-
-### 4.1 This is a third operational-state artefact, and it is evaluated as one
-
-`sentinel-design`'s carve-out permits hook-authored operational state only when
-all four conditions hold. S2's choice story #7 established that a consumer must
-not park a new file class in another slice's directory and inherit its location
-guarantees without its retention contract — so this store is the Mast's own,
-and the conditions are checked here rather than assumed:
-
-| Condition | How it holds |
-| --- | --- |
-| **Local, never committed** | `~/.claude/mast/`, outside every work tree |
-| **Bounded** | removed when the Coda consumes it; lease-pruned otherwise, on the same `Stop` rail |
-| **Nothing in it judges** | facts about the session — a notice fired, a line was passed. No assessment, no counts across sessions |
-| **Disclosed and declinable** | `reference/hooks.md` states what it holds, how long, and how to switch the hook off |
-
-The notes file also carries the once-per-session notice state, so one mechanism
-serves both and no second store is invented.
-
-## 5. Files
+## 4. Files
 
 | File | Purpose |
 | --- | --- |
 | `agents/mast.agent.md` | `role: sentinel`, read-only — reads the pact, reports consumption with flags |
-| `skills/mast/SKILL.md` | the two modes, the clear-weather rule, the notice discipline, the anti-patterns |
-| `commands/mast.md` | Read dispatches the agent; Tune walks the authoring dialogue and writes the pact file |
-| `hooks/scripts/mast-boundary-check.sh` | `Stop` — fires the two notices, writes session notes, prunes |
-| `hooks/scripts/lib/mast-notes.sh` | the note store: append, read, consume, prune |
+| `skills/mast/SKILL.md` | the two modes, the clear-weather rule and its honest limits, the anti-patterns |
+| `commands/mast.md` | Read dispatches the agent; Tune walks the dialogue and writes the pact file |
 
-**The agent holds no `Write`.** Tune's file write is done by the command, after
-the human has confirmed each value — the `cost-estimator` precedent, and the
-same split S2 used.
+No hook. No library. No session state. Nothing outside `~/.claude/pacts.md` is
+written, and that file is written only by Tune, only after the human has
+confirmed each value.
+
+**The agent holds no `Write`.** Tune's write is the command's — the
+`cost-estimator` precedent, and the same split S2 used.
+
+## 5. What Tune Writes
+
+Tune is the only sanctioned authoring path, and revision 1 never said what it
+produces (O7). That gap mattered more than it looks: **Tune is the one
+component in this epic that *produces* the pact file, and its output is the
+input to every other sentinel.** Everything else degrades safely when the file
+is wrong; Tune is what makes it wrong.
+
+The rules:
+
+1. **Emit the mandatory clause for every block written.** `Budgets` carries
+   *Unspent budget is not a debt.*; `Session WIP` carries *This is a gate on
+   sessions, never on the person. It counts; it does not assess.* Without them
+   `block_state` returns `malformed` and every consumer — including the Mast
+   itself — drops to observe-only, with no line telling the human which
+   sentence is missing.
+2. **Emit the reserved marker** in `Sync cadence`, and say the block is
+   reserved *before* asking about it, so nobody declares values believing
+   something reads them.
+3. **Rewrite a block in place; never append.** `_block_span` exits at the next
+   known heading, so a second `## Budgets` appended to the file is silently
+   unread and the newly tuned values are invisible.
+4. **Stamp `authored_at` (today) and `authored_via: tune`**, and say so.
+5. **Propose nothing as a default.** Ask. The template's numbers are
+   illustrations, not suggestions — a value accepted because it was pre-filled
+   is not one the human authored, and authorship is the active ingredient.
+6. **Every block is skippable.** An undeclared block is not an incomplete pact.
 
 ## 6. Non-Goals
 
-- **No changes to the Reservoir Warden.** Constraint 5. The Warden recommends
-  deciding a stop; whether the human then runs `/coda` is their own move,
-  mediated by no artefact — the disposition S2 recorded, unchanged.
-- **No blocking.** Nothing here can end a session, and nothing requires a
-  disposition.
+- **No notices, no hard stop, no override record.** #501.
+- **No hook.** This slice adds nothing to the `Stop` rail.
+- **No session state and no new store.** Nothing is created under
+  `~/.claude/` except the pact file the human asked for.
+- **No changes to the Reservoir Warden.** Constraint 5. And with no notices,
+  nothing in this slice can collide with its advisory.
+- **No changes to the Coda.** This slice touches no S2 file.
+- **No blocking.** Read mode reports; the weather note is a note.
 - **No spend estimation, ever.** If cost is not observable, the Mast says so.
-- **No repeats.** One approaching notice and one reached notice per session.
-- **No count of overrides across sessions.** A note is consumed at close and
-  gone. Aggregating them would be a record of how often someone works late,
-  which is the second persistence category, not the third.
-- **No enforcement of `notification_policy_after_stop`.**
-- **No statusline work.** If a statusline surface exists, contributing to it is
-  future work; Read mode is the gauge.
+- **No statusline work.** Read mode is the gauge.
 
 ## 7. Acceptance Scenarios (TDAD)
 
-Prefixed **W** for the weather check, **B** for boundary notices, **T** for the
-note store, and **A** for agent-verified behaviour.
+Prefixed **W** for the weather check and read honesty, **T** for Tune's output,
+and **A** for agent-verified behaviour.
 
-### 7.1 Weather check and read honesty — `test-mast-read.sh`
+### 7.1 Read honesty — `tdad_tests/layer0_deterministic/test-mast-read.sh`
 
-- **W1 — a budget authored today is noted.** Given `authored_at` equal to
-  today, the read output carries the weather note flagged `observed`.
-- **W2 — a budget authored earlier is not noted.** Given `authored_at`
-  yesterday or before, no weather note appears.
-- **W3 — the note is not a gate.** The weather note never changes an exit code
-  and never suppresses the rest of the report.
-- **W4 — spend is never estimated.** Given `daily_cost_ceiling` declared and no
-  observable spend, the output says it cannot be checked and contains no
-  number presented as spend.
-- **W5 — `sessions_per_day` is flagged `inferred`**, with a statement of what
-  could not be seen.
-- **W6 — an absent `Budgets` block degrades to observe-only**, using the S1
-  fixed sentence, exit 0.
-- **W7 — a malformed `Budgets` block also degrades**, never gates.
+- **W1 — a budget tuned today is noted**, flagged `observed`, with the note
+  saying the pact has not been lived with yet.
+- **W2 — a budget tuned earlier raises no note.**
+- **W3 — the note is not a gate.** It never changes an exit code and never
+  suppresses the rest of the report.
+- **W4 — the note discloses its own blind spot.** The output states that an
+  edit made outside `/mast tune` is invisible to the check.
+- **W5 — spend is never estimated.** Given a declared `daily_cost_ceiling`, the
+  output says it cannot be checked and contains no number presented as spend.
+- **W6 — `focus_blocks` and `sessions_per_day` are flagged `inferred`**, each
+  with a statement of what could not be seen.
+- **W7 — an absent `Budgets` block degrades to observe-only** using S1's fixed
+  sentence, exit 0.
+- **W8 — a malformed `Budgets` block also degrades**, and names the missing
+  clause rather than only reporting malformed.
 
-### 7.2 Boundary notices — `test-mast-boundary.sh`
+### 7.2 Tune's output — `tdad_tests/layer0_deterministic/test-mast-tune.sh`
 
-- **B1 — approaching fires once.** At 80%, the notice appears; a second run in
-  the same session is silent.
-- **B2 — reached fires once**, and recommends `/coda` exactly once.
-- **B3 — reached does not repeat after an override.** Once the human has
-  continued, no further notice fires for that line this session.
-- **B4 — before the fraction, silence.**
-- **B5 — no `Budgets` block, silence.** Not a note, not an observe-only line —
-  a hook with nothing to say says nothing.
-- **B6 — exits 0 unconditionally**, including with an unwritable note store and
-  `HOME` unset.
-- **B7 — the hard stop never blocks.** The hook's output is a `systemMessage`
-  advisory and its exit status is 0 in every path.
+The scenario revision 1 lacked, and the most valuable in the slice.
 
-### 7.3 Note store — `test-mast-notes.sh`
+- **T1 — Tune's output reads as `declared`.** A file written by Tune, run
+  through `block_state`, returns `declared` for every block it wrote.
+- **T2 — the mandatory clauses are present** in every block written.
+- **T3 — the reserved marker is present** when `Sync cadence` is written.
+- **T4 — a skipped block is absent, not empty.** `block_state` returns
+  `absent`, and the file contains no heading for it.
+- **T5 — a second run rewrites in place.** After tuning `Budgets` twice, the
+  file contains exactly one `## Budgets` heading and `block_key` returns the
+  second run's value.
+- **T6 — `authored_at` and `authored_via` are stamped** on every block written.
+- **T7 — values with colons and spaces survive the round trip.**
+  `hard_stop_hour: 18:30` and `focus_blocks: 09:00-12:00, 14:00-17:00` read
+  back whole through `block_key` — the S1 regression, now reachable from the
+  writer's side.
 
-- **T1 — append and read round-trip.**
-- **T2 — consume removes the file.**
-- **T3 — a stale note file is pruned** past its lease.
-- **T4 — notes never leave the store directory.** A hostile session id
-  sanitises to `unknown`, as S1 established for the same field.
-- **T5 — the store holds no cross-session aggregate.** Reading notes for one
-  session returns only that session's lines.
-
-### 7.4 Agent-verified
+### 7.3 Agent-verified
 
 - **A1** — Read mode reports every key with its flag and never presents an
   unobservable value as observed.
 - **A2** — Tune proposes no defaults; every value is asked for.
-- **A3** — Tune stamps `authored_at` and `authored_via: tune` and says so.
-- **A4** — Tune states that `Sync cadence` is reserved before asking about it.
-- **A5** — every block is skippable.
-- **A6** — the agent writes no file; Tune's write is the command's.
+- **A3** — Tune states that `Sync cadence` is reserved before asking about it.
+- **A4** — every block is skippable, and skipping is offered.
+- **A5** — the agent writes no file; Tune's write is the command's.
+- **A6** — Read mode says plainly what it cannot see, rather than omitting it.
 
 ## 8. Migration & Rollout
 
@@ -302,11 +312,12 @@ the README count badges, anchors, and section headings — 38 skills → 39,
 17 agents → 18, 29 commands → 30. A Layer 1 test asserts the badge matches the
 real directory count.
 
-New components need a TDAD scenario each under `tdad_tests/scenarios/`.
+A TDAD scenario per new component under `tdad_tests/scenarios/`.
 
 Docs, same PR: a how-to for keeping a pact, reference entries on all three
-component pages, the hook and the note store in `reference/hooks.md`, the
-weather check in `reference/pacts-format.md`, and the sentinels roster 6 → 7.
+component pages, the weather check and its blind spot in
+`reference/pacts-format.md`, and the sentinels roster 6 → 7.
 
 No breaking changes. The pact file's schema is unchanged; the Mast reads what
-S1 defined and writes it only through Tune.
+S1 defined and writes it only through Tune. No hook is added, so the `Stop`
+rail is untouched.

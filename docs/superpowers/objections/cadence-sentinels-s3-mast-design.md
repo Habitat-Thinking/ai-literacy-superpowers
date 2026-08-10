@@ -9,78 +9,78 @@ objections:
     severity: critical
     claim: "Section 4's mechanism requires changing the Coda's survey and the semantics of the Closed field — a contract S2 owns and shipped — yet S3 lists no S2 file, carves out no contract change, and declares 'No breaking changes'."
     evidence: "Spec 4: 'The Coda's survey reads these and includes them in the Closed field.' Section 5's file table lists five files, none of them agents/coda.agent.md, skills/coda/SKILL.md, or commands/coda.md. Section 8: 'No breaking changes.' Verified: the shipped commands/coda.md defines Closed as 'the filename of each record parked', and neither Coda file contains a single mention of a note."
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Dissolved for S3 by the O10 split and carried to #501, which owns the Coda contract change and must carve it explicitly as the third worked instance of the consumer-never-mutates rule. S3 as revised touches no S2 file and needs none."
   - id: O2
     category: implementation
     severity: critical
     claim: "lib/mast-notes.sh bundles mutation with read in one sourceable library that a role: sentinel agent must reach, re-opening precisely the channel S1 section 4.4 split two libraries to close."
     evidence: "Spec 5: 'lib/mast-notes.sh | the note store: append, read, consume, prune'. Spec 4: 'The Coda's survey reads these.' S1 4.4 and the shipped lib/session-registry-read.sh preamble: 'A single shared library exposing registry_prune to every sentinel would manufacture exactly that case — CI green while a role: sentinel agent deletes files.' sentinel-design generalised it: 'Split such libraries — a read surface a sentinel may source, a write surface only hooks and commands may.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Dissolved for S3 by the split and carried to #501. S3 ships no note store and no library at all, so there is nothing for a sentinel to source."
   - id: O3
     category: implementation
     severity: high
     claim: "The once-per-session notice state is stored in the one file that consumption deletes and the pruner removes, so B2 and B3 are unenforceable on the most ordinary path — run /coda, then take one more turn."
     evidence: "Spec 4: 'The note file is removed once consumed, which is what bounds it.' Spec 4.1: 'The notes file also carries the once-per-session notice state.' S1 4.2 is the governing precedent and is never engaged: the Stop hook fires many times per session, and the note store would be its second destructive consumer."
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Dissolved for S3 by the split and carried to #501, with S1 section 4.2's precedent named in the issue: the Stop rail fires many times per session and a once-only guarantee must not live in a file another slice deletes."
   - id: O4
     category: specification quality
     severity: high
     claim: "The spec never says which budget keys generate boundary notices, and the 80% fraction's denominator is undefined for every key except hard_stop_hour — including the session-start value it measures from, whose source is an undeclared dependency on S1's registry."
     evidence: "Spec 3's table: 'at 80% of the way from session start to the line', with no key named; 3.1 works only hard_stop_hour. focus_blocks has two endpoints; sessions_per_day is a count flagged inferred; daily_cost_ceiling is unobservable. Section 1's Depends-on names only the pact file and pact-blocks.sh — not lib/session-registry-read.sh, the only thing that knows when a session started."
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Carried to #501 with the analysis intact — which keys notice, the fraction's endpoints per key, and the undeclared registry dependency. S3 as revised raises no notices, so the question does not arise here."
   - id: O5
     category: implementation
     severity: high
     claim: "The weather check's detection is inverted: authored_at changes only when Tune writes, so the hand-edit at 18:00 that the spec names as its target leaves it untouched and raises no note, while a calm morning tune followed by evening work raises one."
     evidence: "Spec 2.2 claims 'An authored_at of today, read at enforcement time, catches that and nothing else', where 'that' is 'raising hard_stop_hour at 18:00'. Spec 2.3 concedes the defeating channel: 'the file is the human's and they may edit it with any editor they like.' Spec 2.2 also states a calm Tuesday-morning tweak 'is exactly the deliberate authorship the rule wants' — which W1 pins as a note."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The mechanism stays; the claim made for it does not. It detects a budget TUNED today, which is a true and useful thing to say — this pact has not been lived with yet. It does not detect weather-editing: authored_at moves only when Tune writes, so a hand-edit is invisible and always will be, and the reference page says so. The spec's 'catches that and nothing else' was exactly backwards and is removed."
   - id: O6
     category: specification quality
     severity: high
     claim: "Section 2.1's flag column does not match the behaviour its own prose describes: focus_blocks is flagged observed for a quantity as unobservable as sessions_per_day, and daily_cost_ceiling is flagged asked while the prose says nothing is asked."
     evidence: "Spec 2.1's table: 'focus_blocks | observed | wall clock' and 'daily_cost_ceiling | asked, or not observable'. That the clock sits inside a focus block is observed; that the human spent it working needs the day's history the same section says the registry lacks. For cost the prose says the Mast 'will report what the human declared and what it cannot check' — reporting a declared value back is not asking."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "focus_blocks drops to inferred — that the clock sits inside a block is observed, that the human spent it working needs the day's history the registry does not have. daily_cost_ceiling becomes 'not observable' rather than asked: reporting a declared value back is reading a pact, not asking a question, and an unearned asked flag would have invited an implementer to invent the question."
   - id: O7
     category: specification quality
     severity: high
     claim: "Tune's write is unspecified, so the only sanctioned authoring path can produce a file the shipped reader classifies as malformed, or on a second run append a duplicate heading _block_span silently ignores — and no acceptance scenario round-trips Tune's output through block_state."
     evidence: "Spec 2.3 gives three rules, none about the file's shape. pact-blocks.sh requires the literal mandatory clauses or the block reads malformed; _block_span exits at the second known heading, so an appended second Budgets block is silently unread. Section 7.4's A2-A6 assert asking, stamping, disclosure and no-agent-write; none asserts the result reads as declared."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Tune's write is specified — rewrite the block in place, never append, always emit the mandatory clause and the reserved marker — and a scenario round-trips Tune's output through block_state, requiring declared for every block declared. Tune is the one component that PRODUCES the pact file, and its output is the input to every other sentinel."
   - id: O8
     category: risk
     severity: high
     claim: "The Mast's reached notice and the Reservoir Warden's advisory ride the same Stop rail, counsel the same act, and can fire on the same turn — falsifying the single-prompt mechanism the spec grounds its evidence claim on."
     evidence: "Spec 3: 'One recommendation, once... Ambient reminders are ignored and then resented.' Verified: reservoir-check.sh puts a declared early/lark chronotype into the suboptimal band at hour >= 20, so a hard_stop_hour of 20:00 for a lark lands both advisories on the same turn. cognitive-reservoir names the anti-pattern: 'A second nudge. One advisory, then silence.' Section 6 answers only 'No changes to the Reservoir Warden.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Dissolved for S3 by the split and carried to #501. S3 raises no notices, so nothing collides with the warden. The issue carries the verified band: a declared lark enters the suboptimal band at hour 20, so a 20:00 hard stop would fire both advisories on one turn."
   - id: O9
     category: risk
     severity: high
     claim: "Section 4's destination is a committed, permanently archived, machine-aggregated artefact, so the override survives as exactly the cross-session record of working late that section 6 declares out of bounds."
     evidence: "Spec 4 routes the note to the reflection record; section 6 forbids 'a record of how often someone works late'. CLAUDE.md: REFLECTION_LOG.md is a generated, committed aggregate with a permanent archive under reflections/archive/<YYYY>.md. S2's O5 rejected a structurally identical record on the same grounds. Section 4.1 checks the carve-out's four conditions against the note file, which expires — not against the destination, which does not."
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Dissolved for S3 by the split and carried to #501. S3 records no override because it raises no notice to override. The issue carries the distinction the objection drew: the route is right, the destination's permanence is what needs deciding."
   - id: O10
     category: alternatives
     severity: medium
     claim: "Shipping Read and Tune alone, and deferring the boundary notices to a slice that can carve the Coda contract properly, is a materially smaller change that dissolves O1, O2 and O3 outright — and the spec does not weigh it."
     evidence: "Section 5's five files split cleanly: the agent/skill/command triple reads a file and touches nothing else; the hook and the note-store library are the entire source of this slice's cross-slice coupling, and section 1 attributes the S2 dependency solely to them. The epic already slices by mechanism — S1 gated nothing, S2 wired no trigger."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The split. S3 becomes the gauge and the authoring ritual; boundary notices and the hard stop become #501. This dissolves O1, O2, O3, O8, O9 and O11 rather than mitigating them, and ships the higher-value half first: S1 shipped a template no path authors, so until Tune exists the pact file does not exist and every other sentinel is permanently in observe-only."
   - id: O11
     category: risk
     severity: medium
     claim: "Nothing states that ~/.claude/mast/ is created only for a human who declared a budget, repeating the silent-creation asymmetry sentinel-design records as the mistake that prompted the carve-out's fourth condition."
     evidence: "Section 7.2 B5 promises silence on stdout, not abstention on the filesystem. None of T1-T5 asserts the store is not created. sentinel-design: 'the registry was going to be created for every user silently. That asymmetry was backwards.' The fix is the self-gate reservoir-check.sh already uses: check the opt-in first, exit 0 before touching anything."
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Dissolved for S3 by the split and carried to #501. S3 creates no store. The issue carries the fix: self-gate on a declared block and exit 0 before touching the filesystem, as reservoir-check.sh does."
 ---
 
 # Objection record — Cadence Sentinels S3: The Mast (spec mode)
