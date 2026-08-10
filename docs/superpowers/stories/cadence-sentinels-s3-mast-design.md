@@ -18,7 +18,7 @@ stories:
     lens: [alternatives, consequences]
     title: A verified reader, an improvised writer
     disposition: accepted
-    disposition_rationale: "A validation checkpoint is added, and this turned out to be a convention violation rather than an option not taken: CLAUDE.md requires one of every command producing structured output that downstream consumers parse, and /mast tune produces the file pact-blocks.sh parses. After writing, Tune reads the block back, asserts block_state returns declared, and fixes in place. A write-side library is deliberately not built here — the checkpoint plus T1-T7 closes the runtime gap, and a pact-write.sh belongs with a slice that has more than one writer to serve."
+    disposition_rationale: "Both remedies adopted. The validation checkpoint is a convention violation rather than an option not taken: CLAUDE.md requires one of every command producing structured output that downstream consumers parse, and /mast tune produces the file pact-blocks.sh parses. And the write-side library IS built — lib/pact-write.sh, sourceable by commands and hooks only, matching S1's read/write split exactly. An initial disposition deferred it, which did not survive contact with implementation: T1-T7 are Layer-0 deterministic scenarios and this slice otherwise ships no shell at all, so without a writer the round-trip tests could not exist. Either the tests were not real or the library was. The library is."
   - id: 4
     lens: [forces, defaults]
     title: Asking everything, anchoring nothing

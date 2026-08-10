@@ -12,7 +12,7 @@ Cutting across those groups is a fourth, cross-cutting family — the
 **[sentinels](../explanation/sentinels.md)**. A sentinel is any agent
 whose object of care is the human's understanding and judgement rather
 than an artefact: `carpaccio`, `advocatus-diaboli`,
-`choice-cartographer`, `reservoir-warden`, `cost-estimator`, and `coda`. Each
+`choice-cartographer`, `reservoir-warden`, `cost-estimator`, `coda`, and `mast`. Each
 declares `role: sentinel` in its frontmatter, is read-only (criterion
 S1, enforced deterministically by the Sentinel integrity constraint),
 emits advisory output a human disposes (S2), and carries an explicit
@@ -194,6 +194,29 @@ never records *why* someone stopped — that a session closed and what was parke
 is the record.
 
 See the `coda` skill and [Closing a session](../how-to/closing-a-session.md).
+
+### mast
+
+**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only
+
+Reads the pact a human authored for themselves and reports where they stand
+against it — reciting their own declared words first and annotating after,
+because a pact nobody reads is not a pact and the re-reading *is* the
+intervention.
+
+Honest about how little of a budget is observable: `hard_stop_hour` is
+`observed`, `focus_blocks` and `sessions_per_day` are `inferred`, and
+`daily_cost_ceiling` is **not observable** at all. It refuses to estimate
+spend — a fabricated figure against a real ceiling would make a person stop,
+or not stop, on a number nobody measured.
+
+Notes when a budget was tuned today, and discloses that check's blind spot in
+the same breath: a pact hand-edited outside `/mast tune` never moves the stamp
+and is invisible to it.
+
+Never writes, never sources the write library, and never gates.
+
+See the `mast` skill and [Keeping a pact](../how-to/keeping-a-pact.md).
 
 ### cost-estimator
 
@@ -440,6 +463,7 @@ is a precaution under uncertainty. See the
 | advocatus-diaboli | x | | | x | x | | | | read-only |
 | choice-cartographer | x | | | x | x | | | | read-only |
 | coda | x | | | x | x | | | | read-only |
+| mast | x | | | x | x | | | | read-only |
 | cost-estimator | x | | | x | x | | | | read-only |
 | tdd-agent | x | x | x | x | x | x | | | read-write |
 | code-reviewer | x | | | x | x | x | | | read-only |

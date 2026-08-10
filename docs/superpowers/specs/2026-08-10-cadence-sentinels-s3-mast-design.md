@@ -1,15 +1,17 @@
 # Spec: Cadence Sentinels S3 — The Mast
 
-**Status:** Approved (revision 2, post-diaboli)
+**Status:** Approved (revision 3, post-cartographer)
 **Date:** 2026-08-10
 **Issue:** #493
 **Epic:** The Cadence Sentinels (S1–S7, issues #491–#497)
 **Objections:** `docs/superpowers/objections/cadence-sentinels-s3-mast-design.md`
 — 11 objections, 4 accepted, 7 deferred to #501
+**Choice stories:** `docs/superpowers/stories/cadence-sentinels-s3-mast-design.md`
+— 8 stories, all accepted
 **Depends on:** S1 (#491, 0.67.0) — the pact file and `pact-blocks.sh`. **Not
 S2.** This slice touches no Coda file and needs none.
-**Scope:** `ai-literacy-superpowers` plugin; one agent, one skill, one command.
-No hook, no session state, no new store.
+**Scope:** `ai-literacy-superpowers` plugin; one agent, one skill, one command,
+and a write-side library. No hook, no session state, no new store.
 **Explicitly out of scope:** boundary notices and the hard stop, which are
 **#501** (see §3); the WIP Warden (S4); the Convener (S5).
 
@@ -25,9 +27,10 @@ you are about to breach it does not — you will simply move it, because the
 thing you want at 18:00 is to keep working.
 
 That is why the pact file exists, and why S1 refused to scaffold one: an
-imposed default is not a pact. But a pact nobody reads is also not a pact. The
-Mast is what reads it, tells you where you are against it, and — once, at the
-line — offers you the ritual for stopping.
+imposed default is not a pact. But a pact nobody reads is also not a pact, and
+a pact nobody has authored is not one either.
+
+The Mast is what brings a pact into existence, and what reads it back to you.
 
 **Epithet:** *the pact-keeper.* **Attacks:** outsourced governance — the drift
 where the decision about when to stop migrates from a person who decided it in
@@ -201,42 +204,126 @@ nothing in this plugin can.
 | --- | --- |
 | `agents/mast.agent.md` | `role: sentinel`, read-only — reads the pact, reports consumption with flags |
 | `skills/mast/SKILL.md` | the two modes, the clear-weather rule and its honest limits, the anti-patterns |
-| `commands/mast.md` | Read dispatches the agent; Tune walks the dialogue and writes the pact file |
+| `commands/mast.md` | Read dispatches the agent; Tune walks the dialogue and calls the writer |
+| `hooks/scripts/lib/pact-write.sh` | the write surface — composes and replaces a block |
 
-No hook. No library. No session state. Nothing outside `~/.claude/pacts.md` is
-written, and that file is written only by Tune, only after the human has
-confirmed each value.
+No hook. No session state. Nothing outside `~/.claude/pacts.md` is written.
+
+**Why a library and not prose.** The first revision of this slice shipped no
+shell at all, and the write path was six numbered rules for a model to follow.
+That did not survive contact with §7: T1–T7 are Layer-0 deterministic
+scenarios, and there is nothing deterministic to test when the writer is prose
+in a command file. Either the round-trip tests were not real or the writer was.
+
+`lib/pact-write.sh` is **sourceable by commands and hooks only**, matching the
+split S1 made for the registry and the rule `sentinel-design` promoted from it:
+a read surface a sentinel may source, a write surface it may not. The `mast`
+agent never sources it and never writes.
 
 **The agent holds no `Write`.** Tune's write is the command's — the
 `cost-estimator` precedent, and the same split S2 used.
 
-## 5. What Tune Writes
+## 5. Tune: the Ritual and the Writer
 
 Tune is the only sanctioned authoring path, and revision 1 never said what it
-produces (O7). That gap mattered more than it looks: **Tune is the one
-component in this epic that *produces* the pact file, and its output is the
-input to every other sentinel.** Everything else degrades safely when the file
-is wrong; Tune is what makes it wrong.
+produces (O7). That gap mattered: **Tune is the one component in this epic that
+*produces* the pact file, and its output is the input to every other sentinel.**
+Everything else degrades safely when the file is wrong; Tune is what makes it
+wrong.
 
-The rules:
+### 5.1 It is an editor, not only an author
 
-1. **Emit the mandatory clause for every block written.** `Budgets` carries
-   *Unspent budget is not a debt.*; `Session WIP` carries *This is a gate on
-   sessions, never on the person. It counts; it does not assess.* Without them
-   `block_state` returns `malformed` and every consumer — including the Mast
-   itself — drops to observe-only, with no line telling the human which
-   sentence is missing.
-2. **Emit the reserved marker** in `Sync cadence`, and say the block is
-   reserved *before* asking about it, so nobody declares values believing
-   something reads them.
-3. **Rewrite a block in place; never append.** `_block_span` exits at the next
-   known heading, so a second `## Budgets` appended to the file is silently
-   unread and the newly tuned values are invisible.
-4. **Stamp `authored_at` (today) and `authored_via: tune`**, and say so.
-5. **Propose nothing as a default.** Ask. The template's numbers are
-   illustrations, not suggestions — a value accepted because it was pre-filled
-   is not one the human authored, and authorship is the active ingredient.
-6. **Every block is skippable.** An undeclared block is not an incomplete pact.
+`/mast tune` reads the current pact first and asks each question **with the
+human's existing value as context** — "your line is 18:30; what should it be?"
+
+That is not a proposed default. Nothing is pre-filled by the plugin, and what
+is shown is the human's own prior authorship rather than the template's
+illustration. The distinction matters because the alternative is worse: without
+it, the only sanctioned way to move one number is to re-run the whole ritual,
+and the cheapest path to a small edit becomes opening the file in an editor —
+the channel §2.2 says the weather check cannot see. A pact is meant to be
+revised in clear weather, so the honest revision path must be cheaper than the
+dishonest one.
+
+`/mast tune budgets` scopes the ritual to one block. `/reservoir tune`, the
+mirror §2 names, already works this way.
+
+### 5.2 The stop hour first
+
+The dialogue asks `hard_stop_hour` **first**, and then offers to stop there.
+
+A complete, useful two-line pact is reachable in one question. The remaining
+keys are offered rather than marched through — a person asked cold for
+`max_switches_per_hour` has no basis for an answer, and a number invented to
+move the dialogue along is not more authored than one they declined to give.
+
+This does not weaken rule 5 below. It pays down its cost: a blank field
+maximises freedom and minimises completion, and the only cheap exit the first
+revision offered was skipping a whole block — which produces `absent`, which
+returns the human to observe-only, which is the state this epic exists to move
+them out of.
+
+### 5.3 It says what nothing reads yet
+
+Before asking about any key no consumer reads today, Tune says so:
+
+- `Sync cadence` — reserved entirely.
+- `Session WIP` — only `stale_after_hours` is read today (by S1's registry
+  lease). `max_concurrent_sessions`, `max_switches_per_hour` and `enforcement`
+  wait for S4.
+- `notification_policy_after_stop` — declared intent at the Unverified rung;
+  nothing in this plugin enforces it.
+- `daily_cost_ceiling` — declared, never checkable (§2.1).
+
+Revision 1 disclosed this for `Sync cadence` alone, because that is the block
+S1 happened to give a reserved marker. But the property that triggers
+disclosure — a declaration nothing reads — belongs to *keys at a point in
+time*, not to blocks. A human authoring their first pact would otherwise have
+been working under two regimes without being told there were two.
+
+### 5.4 It composes, shows, and then writes
+
+Tune builds the block from the answers, **shows it**, and takes accept / edit /
+abort before anything is written.
+
+Per-value confirmation is not enough on its own. The parts of the file the human
+did not author — the mandatory clause, the reserved marker, `authored_at`,
+`authored_via` — are exactly the parts that decide whether the block reads as
+`declared`, and without a composed preview they land unseen. This is also what
+makes Tune an instance of the agent-emit / dispatcher-persist / human-disposes
+architecture rather than a citation of its tool split: there is now a point at
+which the whole pact can be refused.
+
+### 5.5 What the writer guarantees
+
+`lib/pact-write.sh` exposes `pact_write_block <heading> <body-file>`:
+
+1. **Derives the mandatory clause and the reserved marker from
+   `templates/pacts.md`**, never from a copy. A restated clause agrees with
+   `pact-blocks.sh` only by coincidence of wording; the promoted decision is
+   that harness artefacts derive from the source of truth rather than pinning a
+   copy of it.
+2. **Replaces a block in place; never appends.** `_block_span` exits at the
+   next known heading, so a second `## Budgets` is silently unread and the
+   newly tuned values are invisible.
+3. **Stamps `authored_at` and `authored_via: tune` on `Budgets` only**, where
+   S1's grammar defines them. Revision 1 stamped every block written, extending
+   two blocks S3 does not own — and leaving "when was this pact authored" a
+   per-block fact with no rule for combining them.
+4. **Preserves everything outside the block it is replacing**, including the
+   template's editing guidance.
+
+### 5.6 The validation checkpoint
+
+After writing, Tune reads the block back, asserts `block_state` returns
+`declared`, and fixes in place.
+
+This is not optional politeness. `CLAUDE.md` requires a validation checkpoint of
+**every command that produces structured output parsed by downstream
+consumers**, and `/mast tune` produces the file `pact-blocks.sh` parses.
+`/reservoir tune` carries one. Its absence from revision 1 was a convention
+violation, and it is the one guard that catches a malformed write at the moment
+it happens rather than the next time a sentinel silently degrades.
 
 ## 6. Non-Goals
 
@@ -256,7 +343,11 @@ The rules:
 Prefixed **W** for the weather check and read honesty, **T** for Tune's output,
 and **A** for agent-verified behaviour.
 
-### 7.1 Read honesty — `tdad_tests/layer0_deterministic/test-mast-read.sh`
+### 7.1 Read honesty — agent-verified, pinned by the TDAD scenario
+
+Read mode is a dispatched agent, so its honesty is verified structurally
+(the flags it must carry, the things it must refuse) rather than by a Layer-0
+script. The W scenarios below are assertions about the skill and agent files.
 
 - **W1 — a budget tuned today is noted**, flagged `observed`, with the note
   saying the pact has not been lived with yet.
@@ -274,12 +365,15 @@ and **A** for agent-verified behaviour.
 - **W8 — a malformed `Budgets` block also degrades**, and names the missing
   clause rather than only reporting malformed.
 
-### 7.2 Tune's output — `tdad_tests/layer0_deterministic/test-mast-tune.sh`
+### 7.2 The writer — `tdad_tests/layer0_deterministic/test-pact-write.sh`
 
-The scenario revision 1 lacked, and the most valuable in the slice.
+The scenarios revision 1 lacked, and the most valuable in the slice. They are
+deterministic because §4 ships a writer; against a prose-only Tune none of them
+could exist.
 
-- **T1 — Tune's output reads as `declared`.** A file written by Tune, run
-  through `block_state`, returns `declared` for every block it wrote.
+- **T1 — the writer's output reads as `declared`.** A block written by
+  `pact_write_block`, run through `block_state`, returns `declared`. This is
+  the round trip that makes the reader and the writer one contract.
 - **T2 — the mandatory clauses are present** in every block written.
 - **T3 — the reserved marker is present** when `Sync cadence` is written.
 - **T4 — a skipped block is absent, not empty.** `block_state` returns
@@ -287,7 +381,13 @@ The scenario revision 1 lacked, and the most valuable in the slice.
 - **T5 — a second run rewrites in place.** After tuning `Budgets` twice, the
   file contains exactly one `## Budgets` heading and `block_key` returns the
   second run's value.
-- **T6 — `authored_at` and `authored_via` are stamped** on every block written.
+- **T6 — the stamps land on `Budgets` only**, where S1's grammar defines them,
+  and on no other block.
+- **T8 — content outside the replaced block survives**, including the
+  template's editing guidance and any other declared block.
+- **T9 — the clause is derived, not restated.** Changing the clause in
+  `templates/pacts.md` changes what the writer emits, with no edit to the
+  writer.
 - **T7 — values with colons and spaces survive the round trip.**
   `hard_stop_hour: 18:30` and `focus_blocks: 09:00-12:00, 14:00-17:00` read
   back whole through `block_key` — the S1 regression, now reachable from the

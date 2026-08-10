@@ -1,5 +1,49 @@
 # Changelog
 
+## 0.69.0 — 2026-08-10
+
+### Cadence Sentinels S3 — the Mast
+
+The pact-keeper: the gauge that reads the limits you set for yourself, and the
+ritual that brings them into existence.
+
+- **`/mast tune`** is the only sanctioned path that creates or amends
+  `~/.claude/pacts.md`. **This unblocks the epic** — S1 shipped a template no
+  path authored, so until now the pact file did not exist and every sentinel was
+  permanently in observe-only.
+- **It is an editor, not only an author.** It reads your current values back as
+  each question's context — not as defaults — and `/mast tune budgets` scopes an
+  edit to one block. Without that, changing one number meant re-running the
+  whole ritual, and the cheapest path to a small edit was the file itself.
+- **It asks the stop hour first**, then offers to stop there: a useful pact in
+  one question. It proposes nothing as a default, and every block is skippable.
+- **It says what nothing reads yet before asking** — `Sync cadence` entirely,
+  three of `Session WIP`'s keys, `notification_policy_after_stop`,
+  `daily_cost_ceiling`. Disclosing for one block and not the others would have
+  had people authoring a first pact under two regimes without being told.
+- **`/mast` recites before it measures.** A pact nobody reads is not a pact, so
+  the report leads with your own declared words and annotates after.
+- **It refuses to estimate.** `hard_stop_hour` is `observed`; `focus_blocks` and
+  `sessions_per_day` are `inferred`; `daily_cost_ceiling` is **not observable**.
+  A fabricated spend figure against a real ceiling would make someone stop, or
+  not stop, on a number nobody measured.
+- **The weather check discloses its own blind spot.** It notes a budget tuned
+  today; a pact hand-edited outside Tune never moves the stamp and is invisible
+  to it. The build spec called for a CI check on `Budgets` diffs, which is
+  impossible now that pacts are never committed — flagged, and replaced with a
+  note that says what it misses rather than one that overclaims.
+- **`lib/pact-write.sh`** — the write surface, sourceable by commands and hooks
+  only, matching S1's read/write split. It derives the mandatory clauses from
+  the template rather than restating them, replaces a block instead of appending
+  a second (a duplicate heading is silently unread), stamps `Budgets` only, and
+  preserves the preamble.
+- **A validation checkpoint** after every write, per the repo convention for
+  commands producing structured output that downstream consumers parse. Its
+  absence would otherwise surface later and silently, as sentinels dropping to
+  observe-only.
+- **Boundary notices and the hard stop are #501**, split out at the spec gate.
+- **9 new Layer-0 scenarios**; sentinels 6 → 7.
+
 ## 0.68.0 — 2026-08-09
 
 ### Cadence Sentinels S2 — the Coda

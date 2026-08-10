@@ -566,6 +566,39 @@ See the `coda` skill, [Closing a session](../how-to/closing-a-session.md), and
 
 ---
 
+### /mast
+
+- **Skills read**: `mast`
+- **Agents dispatched**: `mast` (Read mode)
+
+Reads the pact you set for yourself, or authors one. Two modes:
+
+- **`/mast [read]`** (default) — recites your declared budget and says where
+  you stand, each key flagged for what can honestly be seen. If no block is
+  declared it says so and **offers Tune**; if one is malformed it names the
+  missing clause and continues in observe-only.
+- **`/mast tune [BLOCK]`** — the only sanctioned path that creates or amends
+  `~/.claude/pacts.md`. Reads your current values back as context (not as
+  defaults), asks the stop hour first and offers to stop there, says what
+  nothing reads yet before asking, then composes the block, shows it, and
+  writes only on accept — followed by a validation checkpoint.
+
+**It never estimates spend.** Nothing in this plugin observes it, and a
+fabricated figure against a real ceiling is worse than no figure.
+
+The weather note says when a budget was tuned today, and discloses its own
+blind spot: a pact hand-edited outside Tune never moves the stamp. Something
+stronger is not available — the pact file is never committed, so there is no
+diff and no CI can see it.
+
+Advisory throughout: absent, malformed, and tuned-today are all reports, and
+none changes what you may do next. Boundary notices and the hard stop are a
+separate slice.
+
+See the `mast` skill and [Keeping a pact](../how-to/keeping-a-pact.md).
+
+---
+
 ### /reservoir
 
 - **Skills read**: `cognitive-reservoir`

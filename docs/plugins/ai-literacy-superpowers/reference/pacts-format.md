@@ -136,6 +136,27 @@ is a spec-first change and a coordinated migration.
 > it is marked reserved so a value you declare in good faith does not bind a
 > future consumer to behaviour nobody has designed.
 
+## The weather check
+
+`/mast` notes when the budget it is reading was **tuned today** — a pact
+authored hours ago has not been lived with yet, and that is worth a line when
+it asks something of you tonight.
+
+**It discloses its own blind spot, and you should know it too:**
+
+| You do | `authored_at` | Note fires |
+| --- | --- | --- |
+| Hand-edit your stop hour at 18:00 | unchanged | **no** |
+| Run `/mast tune` on a calm Tuesday morning | today | **yes**, that evening |
+
+The stamp moves only when Tune writes it, so an edit made in any other way is
+invisible to the check — permanently. Something stronger is not available: the
+pact file is never committed, so there is no diff and nothing can compare it
+against a previous state.
+
+A check that claimed to catch in-the-moment edits would be worse than one that
+admits it cannot, because you would learn to read its silence as an all-clear.
+
 ## Authoring
 
 Run `/mast tune`. Nothing writes this file on your behalf, and nothing
