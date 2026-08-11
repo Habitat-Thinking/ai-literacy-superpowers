@@ -183,4 +183,42 @@ val=$(block_key 'Session WIP' 'hard_stop_hour' 'NOT-MINE')
 [ "$val" = "NOT-MINE" ] \
   || fail "B11: Session WIP must not absorb Budgets' keys, got '$val'"
 
+# --- B12: block_state answers well-formedness, not completeness -------------
+# S1 defined malformed as "mandatory clause OR required key missing" and only
+# the clause half was ever implemented. The gate that found it (#503) decided
+# the DEFINITION was the defect, not the code.
+#
+# /mast tune deliberately offers a two-line pact — "a number invented to move
+# the dialogue along is not more authored than one they declined to give" — so
+# a human who declares Session WIP with only stale_after_hours authored exactly
+# what they meant. Calling that malformed says it is broken. It is not; it is
+# partial, on purpose.
+export CLAUDE_PACTS_FILE="$FIX/partial-wip.md"
+[ "$(block_state 'Session WIP')" = "declared" ] \
+  || fail "B12: a deliberately partial block is well-formed, not malformed"
+
+# --- B13: block_has_key answers the completeness question separately ---------
+# This is what a consumer asks instead of trusting `declared` to mean "the
+# values I need are here". It is what lets the WIP Warden say "you have not
+# declared a limit" rather than inventing one.
+declare -F block_has_key >/dev/null || fail "B13: lib must define block_has_key"
+
+block_has_key 'Session WIP' 'stale_after_hours' \
+  || fail "B13: a declared key must report present"
+if block_has_key 'Session WIP' 'max_concurrent_sessions'; then
+  fail "B13: an undeclared key must report absent"
+fi
+
+# Absent block, absent key — never an error, and never a claim of presence.
+export CLAUDE_PACTS_FILE="$SCRIPT_DIR/fixtures/cadence-pacts/does-not-exist.md"
+set +e; block_has_key 'Session WIP' 'anything'; rc=$?; set -e
+[ "$rc" -eq 1 ] || fail "B13: an absent block must report the key absent, exit 1 (got $rc)"
+
+# A key whose value is empty is not declared. `- max_concurrent_sessions:` with
+# nothing after it is a human who started typing and stopped, not a limit.
+export CLAUDE_PACTS_FILE="$FIX/empty-value.md"
+if block_has_key 'Session WIP' 'max_concurrent_sessions'; then
+  fail "B13: a key with an empty value must not report as declared"
+fi
+
 echo "PASS: pact-block reader — template well-formed, three states honoured, values survive extraction, keys scoped to their block"

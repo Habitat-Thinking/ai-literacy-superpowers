@@ -122,12 +122,21 @@ the clear-weather rule says does not hold.
 - enforcement: advisory | strict
 ```
 
-| Key | Grammar | Required |
+| Key | Grammar | Consumer |
 | --- | --- | --- |
-| `max_concurrent_sessions` | single integer | yes |
-| `max_switches_per_hour` | single integer | no |
-| `stale_after_hours` | single integer | no (defaults 12) |
-| `enforcement` | one of `advisory`, `strict` | no (defaults `advisory`) |
+| `max_concurrent_sessions` | single integer | the WIP Warden's comparison |
+| `max_switches_per_hour` | single integer | none — nothing observes a switch |
+| `stale_after_hours` | single integer | the registry lease (defaults 12) |
+| `enforcement` | one of `advisory`, `strict` | the WIP Warden (defaults `advisory`) |
+
+**No key is required** (amended 2026-08-11, issue #503). The first revision
+marked `max_concurrent_sessions` required, which was never true: a person may
+declare this block solely to tune the registry lease. `/mast tune` deliberately
+offers a partial pact, so a block carrying one key is exactly what somebody
+meant to write.
+
+A consumer that needs a particular value asks `block_has_key` and says what is
+absent — it never invents one.
 
 `stale_after_hours` is the registry lease length (§4.2). It is declared rather
 than compiled in because every other threshold in this harness — the whole
@@ -267,7 +276,7 @@ A block is in exactly one of three states.
 | State | Test | Consumer behaviour |
 | --- | --- | --- |
 | **Absent** | no pact file, or no heading of that name | observe-only note, continue |
-| **Malformed** | heading present, mandatory clause or required key missing | observe-only note **plus** a line naming what is missing, continue |
+| **Malformed** | heading present, mandatory clause missing | observe-only note **plus** a line naming what is missing, continue |
 | **Declared** | heading present and well-formed | read it |
 
 The observe-only note is a fixed sentence, emitted by the library so every
@@ -281,6 +290,12 @@ in S2–S5 runs one code path whether or not the block exists; the library
 supplies the null behaviour. This is why absent and malformed collapse to the
 same behaviour rather than that collapse being a coincidence, and it is the
 library's real contract to the later slices.
+
+**`block_state` answers well-formedness, not completeness** (amended
+2026-08-11, #503). It asks whether the block carries its governing clause.
+Whether a *value* the consumer needs is present is a separate question, per
+key, answered by `block_has_key` — because a deliberately partial pact is not
+broken, and calling it malformed would say it was.
 
 **Malformed degrades to observe-only, never to a gate.** This is the reachable
 case: someone edits their pact file, deletes prose they read as boilerplate,
