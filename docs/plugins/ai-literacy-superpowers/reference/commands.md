@@ -599,6 +599,40 @@ See the `mast` skill and [Keeping a pact](../how-to/keeping-a-pact.md).
 
 ---
 
+### /wip
+
+- **Skills read**: `wip-warden`
+- **Agents dispatched**: `wip-warden`
+
+Counts live sessions against the limit you declared in your `Session WIP`
+block, and lists which sessions and how long since each last took a turn.
+
+**It counts sessions and never says anything about you.** That boundary is what
+keeps `/reservoir` trustworthy, and no script enforces it — it is held by
+whoever writes the output.
+
+Three things it will not do:
+
+- **Invent a limit.** If your block declares none, it says so and points at
+  `/mast tune`. An imposed limit is exactly the pact the clear-weather rule says
+  does not hold.
+- **Report an inexact count as exact.** When the registry's flag is `inferred`
+  it says "at least", and why.
+- **Stop you.** `enforcement: strict` asks — park one, or say what is urgent —
+  and says plainly that nothing here can hold a session.
+
+An override you speak is not recorded; the command says so rather than implying
+otherwise. Ages are measured from each session's last turn, not from when it
+started — the latter would point you at the session you are working in as the
+obvious one to park.
+
+The `SessionStart` hook reports the same breach once, on startup only. Unlike
+the hook, `/wip` answers even when no block is declared: you asked.
+
+See the `wip-warden` skill and [Watching your WIP](../how-to/watching-your-wip.md).
+
+---
+
 ### /reservoir
 
 - **Skills read**: `cognitive-reservoir`

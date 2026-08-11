@@ -38,9 +38,10 @@ have live at once, counted across every repository on this machine.
 `max_switches_per_hour` is optional. `stale_after_hours` is how long a session
 may go without finishing a turn before it is treated as gone — raise it if you
 routinely leave a session parked mid-thought. `enforcement: advisory` reports
-a breach and proceeds; `strict` asks you to park something or say, on the
-record, what was urgent enough. There is always an override, and it is always
-yours to take.
+a breach and proceeds; `strict` also asks you to park something or say what is
+urgent. **Neither can stop you** — nothing in this plugin can hold a session,
+and the WIP Warden says so rather than implying otherwise. What you say in
+answer is not written down anywhere yet.
 
 ## Budgets
 

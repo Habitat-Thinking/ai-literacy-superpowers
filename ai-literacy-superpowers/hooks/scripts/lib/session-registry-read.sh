@@ -92,25 +92,48 @@ _json_field() {
     | sed -e 's/\\"/"/g' -e 's/\\\\/\\/g'
 }
 
-# registry_list — one line per live entry: "<id>\t<started_at>\t<repo>".
-# This is what makes the `repo` field load-bearing: a consumer showing the
-# human their other live sessions needs to say where each one is.
+# registry_list — one line per LIVE entry:
+# "<id>\t<started_at>\t<heartbeat>\t<repo>".
+#
+# FILTERS EXPIRED LEASES, exactly as registry_count does. It did not until
+# 2026-08-11, while its docstring claimed it did — the claim above was written
+# in S1 and was false from the day it shipped. S4's spec gate found it: a
+# consumer reporting a count from registry_count and a list from registry_list
+# would have said "1 live session" and then listed four, on the ordinary
+# working day the count's filter exists to survive. A report whose halves
+# disagree is worse than no report.
+#
+# Repairing a function to match the behaviour its own contract promised is not
+# a contract change; it is the defect. R17 and R18 are the guards.
+#
+# `heartbeat` is carried because an honest AGE needs it. Age-since-`started_at`
+# says the session you are actively working in is the oldest and therefore the
+# obvious one to park, which is exactly backwards; time-since-`heartbeat` says
+# the one you have not touched since this morning is. Only the second is
+# actionable, and only the second matches what liveness means here.
 #
 # Tab-separated, with `repo` LAST, because `repo` is a filesystem path and
-# paths routinely contain spaces. A space-separated format with the free-form
-# field in the middle would hand every consumer doing the obvious
-# `read -r id started repo` a corrupted timestamp on `/Users/x/My Projects/y`.
-# S2–S5 are the consumers and none exists yet, so this is free to get right now.
+# paths routinely contain spaces — a free-form field in the middle would hand
+# every consumer doing the obvious `read -r` a corrupted timestamp.
 registry_list() {
-  local dir entry id repo started
+  local dir entry id repo started hb hb_epoch lease now
   dir="$(registry_dir)"
   [ -d "$dir" ] || return 0
+  lease="$(_lease_hours)"
+  now="$(date -u +%s)"
   for entry in "$dir"/*.json; do
     [ -e "$entry" ] || continue
+    hb="$(_json_field "$entry" heartbeat)"
+    hb_epoch="$(_iso_to_epoch "$hb")"
+    # An unparseable heartbeat is listed rather than dropped, matching
+    # registry_count, which counts it and flags the count inferred.
+    if [ "$hb_epoch" -gt 0 ] && [ $(( (now - hb_epoch) / 3600 )) -ge "$lease" ]; then
+      continue
+    fi
     id="$(_json_field "$entry" id)"
     repo="$(_json_field "$entry" repo)"
     started="$(_json_field "$entry" started_at)"
-    printf '%s\t%s\t%s\n' "$id" "$started" "$repo"
+    printf '%s\t%s\t%s\t%s\n' "$id" "$started" "$hb" "$repo"
   done
 }
 

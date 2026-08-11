@@ -344,4 +344,48 @@ set -e
 
 export CLAUDE_SESSIONS_DIR="$TMP/sessions"
 
+# --- R17: the list and the count never disagree -------------------------------
+# registry_list claimed "one line per live entry" from the day S1 shipped and
+# did not filter by lease. A consumer reporting a count from one and a list
+# from the other would have said "1 live session" and listed four — a report
+# whose own halves contradict each other, on the ordinary working day the
+# count's filter exists to survive.
+r17="$TMP/r17"
+for s in live-a live-b stale-c stale-d; do
+  hook_input "$s" | CLAUDE_SESSIONS_DIR="$r17" bash "$START_HOOK" >/dev/null 2>&1 || true
+done
+ts_old=$(date -u -v-20H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "20 hours ago" +%Y-%m-%dT%H:%M:%SZ)
+for s in stale-c stale-d; do
+  sed -i.bak -E "s#(\"heartbeat\"[[:space:]]*:[[:space:]]*\")[^\"]*#\1${ts_old}#" "$r17/$s.json"
+  rm -f "$r17/$s.json.bak"
+done
+
+read -r count _ <<<"$(CLAUDE_SESSIONS_DIR="$r17" registry_count)"
+r17_out="$(CLAUDE_SESSIONS_DIR="$r17" registry_list)"
+listed=$(printf '%s' "$r17_out" | grep -c . || true)
+[ "$count" = "2" ] || fail "R17: two fresh entries must count 2, got '$count'"
+[ "$listed" = "$count" ] \
+  || fail "R17: the list and the count must agree — count said $count, list had $listed"
+# No match is the passing case, so this cannot sit in an `&&` chain.
+if printf '%s' "$r17_out" | grep -q "stale-c"; then
+  fail "R17: an expired lease must not appear in the list"
+fi
+
+# --- R18: the list carries heartbeat, so age is honestly computable ----------
+# Age-since-started_at says the session you are actively working in is the
+# oldest and therefore the obvious one to park, which is backwards. Only
+# time-since-heartbeat matches what liveness means here.
+# Captured whole, then sliced — piping registry_list straight into `head`
+# closes the pipe mid-printf, which under `pipefail` is a write error rather
+# than a passing test.
+line=$(printf '%s' "$r17_out" | sed -n '1p')
+fields=$(printf '%s' "$line" | awk -F'\t' '{print NF}')
+[ "$fields" = "4" ] \
+  || fail "R18: each line must carry id, started_at, heartbeat, repo — got $fields fields"
+hb_field=$(printf '%s' "$line" | cut -f3)
+case "$hb_field" in
+  20[0-9][0-9]-*T*Z) : ;;
+  *) fail "R18: the third field must be the heartbeat timestamp, got '$hb_field'" ;;
+esac
+
 echo "PASS: session registry — lease renewed not deleted, flag durable, read library inert, hostile ids sanitised"

@@ -194,6 +194,25 @@ mechanism is the same at every level; what changes is how it is used.
 | **4 — Specification Architecture** | Multi-agent orchestration makes the *context-switch* proxy the load-bearing one — switching cost scales with parallel streams. This is the "Depletable Collaborator" signal: spec decomposition accounts for human energy, not just modularity. |
 | **5 — Sovereign Engineering** | The warden is one observability surface among many; the team reads its advisories as data and tunes rather than obeys. |
 
+## The boundary with the WIP Warden
+
+A sibling sentinel, the `wip-warden`, counts how many sessions are live and
+compares that against a limit the human declared. The two are deliberately
+split, and the split is what protects this agent:
+
+> The **Reservoir Warden** watches *the human* and never gates.
+> The **WIP Warden** counts *sessions* and never watches the human.
+
+This agent's whole standing rests on being advisory-forever and persisting
+nothing about the person — it is trustworthy precisely because it has no teeth
+and wants none. If a sibling began inferring from session counts how tired
+someone is, that contract would break **retroactively**: a human who declared a
+chronotype here would have reason to wonder what else was being read from it.
+
+So the WIP Warden reports a number, an age per session, and a comparison. It
+says nothing about attention, fatigue, or capacity, and no script enforces that
+— it is held by whoever writes its output. See `skills/wip-warden/SKILL.md`.
+
 ## Anti-patterns
 
 - **A combined fatigue score.** Forbidden. The inputs cannot support it.

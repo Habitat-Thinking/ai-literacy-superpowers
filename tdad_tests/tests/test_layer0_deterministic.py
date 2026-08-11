@@ -77,6 +77,9 @@ BASH_TEST_SCRIPTS = [
     # Cadence Sentinels S3 — the pact writer. RED until S3 ships
     # hooks/scripts/lib/pact-write.sh.
     "test-pact-write",
+    # Cadence Sentinels S4 — the WIP breach check. RED until S4 ships
+    # hooks/scripts/wip-check.sh.
+    "test-wip-check",
 ]
 
 
