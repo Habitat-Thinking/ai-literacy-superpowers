@@ -73,10 +73,19 @@ Values may contain colons and spaces. `hard_stop_hour: 18:30` reads as
 counts; it does not assess.*
 
 `enforcement: advisory` reports a breach and proceeds. `enforcement: strict`
-asks for a **disposition** before the session proceeds — park an existing
-session, or override on the record with one line naming what was urgent
-enough. There is always an override, and it is always yours to take; `strict`
-never means an unconditional refusal.
+also **asks** for a disposition — park an existing session, or say what is
+urgent enough to keep them all open.
+
+**Neither mode can stop you.** Hooks in this plugin are advisory and never
+block, and a `SessionStart` hook in particular emits a message into a session
+that is already starting. `strict` is a stronger ask, not a gate, and the WIP
+Warden says so plainly rather than implying a power it does not have.
+
+An earlier version of this page described `strict` as requiring a disposition
+*before the session proceeds*, and an override recorded on the record. Neither
+was deliverable: nothing can hold a session, and the mechanism that would carry
+the override to a record is a later slice. What you say in answer is not
+written down yet, and the Warden tells you so.
 
 `stale_after_hours` is the registry lease length. Raise it if you routinely
 leave a session parked mid-thought: liveness is measured as *recency of a

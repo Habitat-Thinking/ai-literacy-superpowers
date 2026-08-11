@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.70.0 — 2026-08-11
+
+### Cadence Sentinels S4 — the WIP Warden
+
+Closes the loop S1 and S3 left open: the registry knew how many sessions were
+live and the pact declared the limit, and nothing read either.
+
+- **`/wip`** and a `SessionStart` breach report — how many sessions are live,
+  which they are, how long since each last took a turn, and how that compares
+  against the line you drew.
+- **It counts sessions and never watches the human.** That split is what
+  protects the `reservoir-warden`, which is trustworthy precisely because it has
+  no teeth; a sibling inferring tiredness from session counts would break its
+  contract retroactively for anyone who had declared a chronotype.
+- **The boundary is not machine-enforced, and says so.** A word-ban was written
+  and rejected: it passes every sentence that actually violates the boundary
+  while failing on `focus_blocks`, a live pact key — and a green grep would have
+  been read as proof the boundary was checked.
+- **`enforcement: strict` gets an honest definition.** S1 defined it as
+  requiring a disposition before the session proceeds; no hook can hold a
+  session. It is now a stronger *ask* that says plainly it cannot compel. The
+  shipped template and reference page, which still promised an on-the-record
+  override, are corrected.
+- **It never invents a limit.** A `Session WIP` block with its clause and no
+  `max_concurrent_sessions` is a normal file — `/mast tune` offers a two-line
+  pact on purpose — so the Warden says no limit is declared and compares
+  nothing. Reporting a breach of a line nobody drew would be the worst output
+  available.
+- **Ages are measured from each session's last turn**, not from when it
+  started, which would have pointed you at the session you are working in as the
+  obvious one to park.
+- **An inexact count says "at least".** No consumer may treat the registry count
+  as an exact number of open windows, and this is the first consumer.
+
+### Fix
+
+- **`registry_list` never filtered by lease, and its docstring said it did.**
+  Shipped that way since 0.67.0. A consumer taking a count from `registry_count`
+  and a list from `registry_list` would have said "1 live session" and then
+  listed four. Repaired in its own commit, with `heartbeat` now carried so an
+  honest age is computable, and two scenarios pinning it.
+
 ## 0.69.0 — 2026-08-10
 
 ### Cadence Sentinels S3 — the Mast

@@ -67,6 +67,16 @@ Read it before changing anything in the Mast's path — particularly the two-row
 table showing that a hand-edit does *not* fire the weather note and a calm tune
 *does*, which is the guard against an honest-sounding regression.
 
+### wip-warden
+
+The constitutional boundary between counting sessions and watching the human,
+and why that split is what protects the Reservoir Warden's trust model.
+
+Also carries the honest meaning of `enforcement: strict` when no hook can hold
+a session, the flag discipline for a count that is never exact, and the reason
+the boundary is **not** machine-enforced — including the worked sentences a
+word-ban would have passed.
+
 ### cognitive-reservoir
 
 The shared grounding for the reservoir-warden agent and the reservoir-check Stop hook — the framework's watch on the one actor it cannot verify, the human verifier. Defines the four observable proxies (session span, decision volume, context switches, wall-clock hour), the `observed` / `inferred` / `asked` confidence discipline, the disjunctive default thresholds, the one firm principle (decide your stop before the next session begins), the six-level scaling guidance, and the honesty rule that keeps the contested science (ego depletion, the hungry-judges study) separate from the robust basis (vigilance decrement, task-switching cost). Advisory-only; never a fatigue score, never a gate.

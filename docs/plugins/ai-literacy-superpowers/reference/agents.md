@@ -12,7 +12,7 @@ Cutting across those groups is a fourth, cross-cutting family — the
 **[sentinels](../explanation/sentinels.md)**. A sentinel is any agent
 whose object of care is the human's understanding and judgement rather
 than an artefact: `carpaccio`, `advocatus-diaboli`,
-`choice-cartographer`, `reservoir-warden`, `cost-estimator`, `coda`, and `mast`. Each
+`choice-cartographer`, `reservoir-warden`, `cost-estimator`, `coda`, `mast`, and `wip-warden`. Each
 declares `role: sentinel` in its frontmatter, is read-only (criterion
 S1, enforced deterministically by the Sentinel integrity constraint),
 emits advisory output a human disposes (S2), and carries an explicit
@@ -217,6 +217,28 @@ and is invisible to it.
 Never writes, never sources the write library, and never gates.
 
 See the `mast` skill and [Keeping a pact](../how-to/keeping-a-pact.md).
+
+### wip-warden
+
+**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only
+
+Counts live sessions against the limit the human declared for themselves, lists
+which they are and how long since each last took a turn, and says when they are
+over the line.
+
+**It counts sessions and never watches the human.** That split is what protects
+the `reservoir-warden`: that agent is advisory-forever and persists nothing
+about the person, and it is trustworthy precisely because it has no teeth. A
+sibling inferring tiredness from session counts would break its contract
+retroactively for anyone who had declared a chronotype. **No script enforces
+this** — a word ban was tried and rejected, because it passes every sentence
+that actually violates the boundary while failing on `focus_blocks`.
+
+Never invents a limit. A `Session WIP` block with its clause and no
+`max_concurrent_sessions` is a normal file, and reporting a breach of a line
+the human never drew is the worst thing it could do.
+
+See the `wip-warden` skill and [Watching your WIP](../how-to/watching-your-wip.md).
 
 ### cost-estimator
 
@@ -464,6 +486,7 @@ is a precaution under uncertainty. See the
 | choice-cartographer | x | | | x | x | | | | read-only |
 | coda | x | | | x | x | | | | read-only |
 | mast | x | | | x | x | | | | read-only |
+| wip-warden | x | | | x | x | | | | read-only |
 | cost-estimator | x | | | x | x | | | | read-only |
 | tdd-agent | x | x | x | x | x | x | | | read-write |
 | code-reviewer | x | | | x | x | x | | | read-only |
