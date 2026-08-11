@@ -55,7 +55,13 @@ source_field="$(printf '%s' "$input" \
 read -r count flag <<<"$(registry_count 2>/dev/null || printf '0 observed')"
 case "$count" in ''|*[!0-9]*) exit 0 ;; esac
 
-limit="$(block_key 'Session WIP' 'max_concurrent_sessions' '')"
+# Ask whether the human declared a limit, rather than inferring it from an
+# empty string. `block_state` answers well-formedness; this answers
+# completeness (#503). A partial pact is a complete pact — just a short one.
+limit=""
+if block_has_key 'Session WIP' 'max_concurrent_sessions'; then
+  limit="$(block_key 'Session WIP' 'max_concurrent_sessions' '')"
+fi
 enforcement="$(block_key 'Session WIP' 'enforcement' 'advisory')"
 
 # `at least` rather than a bare number whenever the count is inferred. S1 was

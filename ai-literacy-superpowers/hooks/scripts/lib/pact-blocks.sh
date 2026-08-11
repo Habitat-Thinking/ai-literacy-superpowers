@@ -116,6 +116,43 @@ block_key() {
   if [ -n "$val" ]; then printf '%s' "$val"; else printf '%s' "$def"; fi
 }
 
+# block_has_key <heading> <key> — true when the human actually declared a value
+# for that key. Exit 0 when present, 1 when not. Never an error.
+#
+# WHY THIS IS SEPARATE FROM block_state. S1 defined `malformed` as "mandatory
+# clause **or required key** missing", and only the clause half was ever
+# implemented. When S4 exposed the gap (#503), the decision was that the
+# DEFINITION was the defect.
+#
+# `/mast tune` deliberately offers a two-line pact — a number invented to move
+# the dialogue along is not more authored than one the human declined to give —
+# so a `Session WIP` block carrying only `stale_after_hours` is exactly what
+# somebody meant to write. Calling it `malformed` would say it is broken. It is
+# not broken; it is partial, on purpose, and no key is truly required: a person
+# may declare that block solely to tune the registry lease.
+#
+# So `block_state` answers **well-formedness** — does this block carry its
+# governing clause — and this answers **completeness**, per key, for whichever
+# consumer needs one. That is what lets the WIP Warden say "you have not
+# declared a limit" instead of inventing one, which is the failure that matters:
+# an imposed limit is precisely the pact the clear-weather rule says does not
+# hold.
+#
+# An empty value is not a declaration. `- max_concurrent_sessions:` with nothing
+# after it is someone who started typing and stopped — and the sentinel catches
+# that case for free, because `block_key` returns the caller's default when the
+# extracted value is empty. One comparison covers both "no such key" and "key
+# with no value". A separate `[ -n "$val" ]` guard was written here first and a
+# mutation test showed it could never fire.
+block_has_key() {
+  local heading="$1" key="$2" sentinel val
+  # A sentinel no human would type, so an absent key is distinguishable from a
+  # declared one without a second parse.
+  sentinel=$'\x01__pact_absent__'
+  val="$(block_key "$heading" "$key" "$sentinel")"
+  [ "$val" != "$sentinel" ]
+}
+
 # _mandatory_clause <heading> — the literal sentence a block must carry, or
 # empty when the block has none.
 #

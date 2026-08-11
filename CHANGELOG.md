@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.70.1 — 2026-08-11
+
+### Fix: `block_state` answers well-formedness, not completeness
+
+S1 defined `malformed` as "mandatory clause **or required key** missing" and
+only the clause half was ever implemented. S4 exposed the gap; the resolution
+is that the **definition** was the defect, not the code.
+
+- **No pact key is required.** `/mast tune` deliberately offers a two-line
+  pact, so a `Session WIP` block carrying only `stale_after_hours` is exactly
+  what somebody meant to write. Calling that `malformed` would say it was
+  broken. It is not broken — it is partial, on purpose — and no key was ever
+  truly required, since a person may declare that block solely to tune the
+  registry lease.
+- **`block_has_key`** answers the completeness question separately, per key, so
+  a consumer can say *what* is absent instead of inventing a value. An empty
+  value is not a declaration: `- max_concurrent_sessions:` with nothing after
+  it is someone who started typing and stopped.
+- The WIP Warden now asks rather than inferring a missing limit from an empty
+  string.
+- S1's spec and the pacts reference page are amended, and the reference now
+  tells adopters plainly that a short pact is a complete one.
+
+Closes #503.
+
 ## 0.70.0 — 2026-08-11
 
 ### Cadence Sentinels S4 — the WIP Warden
