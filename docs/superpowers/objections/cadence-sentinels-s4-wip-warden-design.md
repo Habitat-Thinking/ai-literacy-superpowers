@@ -9,85 +9,85 @@ objections:
     severity: critical
     claim: "Section 4 asserts the per-session list comes from registry_list, but registry_list does not filter by lease — so the hook's count and its list will contradict each other on the ordinary working day S1 built the filter for."
     evidence: "Spec 4: 'The ages come from registry_list. Each live session is listed with its started_at and its repo.' session-registry-read.sh registry_list iterates every *.json with no heartbeat check; only registry_count filters expired leases. The function's own docstring says 'one line per live entry', which is where the spec's error came from."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Fixed in S1's library, carved as its own commit with its own scenarios. The docstring already promised this behaviour — making it true is repairing a defect, not changing a contract, and the defect was written in S1. registry_list now filters expired leases exactly as registry_count does, and carries heartbeat so an honest age is computable. R17 asserts the list and the count never disagree; R18 asserts the docstring's claim is the tested behaviour. Every future consumer gets the honest version."
   - id: O2
     category: implementation
     severity: high
     claim: "The hook's placement on the SessionStart rail alongside S1's own session-registry-start.sh leaves it undefined whether the count includes the session that is starting, and the spec states no ordering requirement."
     evidence: "hooks.json runs session-registry-start.sh on SessionStart, which writes the entry for the starting session. Spec 5 adds wip-check.sh to the same event. C2 says 'Two live sessions, limit two, no output' without saying whether the starting session is one of the two, and the spec fixes neither the inclusion rule nor the comparison operator."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The starting session IS counted, the hook is ordered after S1's registry write, and breach is count > limit — all three stated. A human writing max_concurrent_sessions: 2 means two including the one they are in, which is what the template's own field note says."
   - id: O3
     category: specification quality
     severity: high
     claim: "The spec never names the key holding the limit, and defines no behaviour for a Session WIP block that is declared but omits it — a case block_state reports as declared, so C8's malformed path will not catch it and the implementer must invent a default limit."
     evidence: "max_concurrent_sessions appears zero times in the spec. pact-blocks.sh block_state checks the mandatory clause only, never a required key, despite S1 3.7 defining malformed as 'mandatory clause OR required key missing'. block_key then returns the caller's default. Tune deliberately offers a two-line pact, so a block with the clause and no limit is a plausible product of the sanctioned authoring path."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "S4 names the key and defines the missing-key case: report that no limit is declared, point at /mast tune, and compare against nothing. Never invent a default — an imposed limit is precisely the pact the clear-weather rule says does not hold. The underlying block_state gap is #503, since S1 owns it and fixing it changes what every shipped consumer sees for a class of real files."
   - id: O4
     category: specification quality
     severity: high
     claim: "C1 and C8 specify silence on absent and malformed blocks, which departs from S1's Null Object contract and from the shipped test asserting a malformed block still emits the observe-only sentence — and the spec neither acknowledges the departure nor says whether /wip follows the hook into silence."
     evidence: "Spec C1 and C8 specify silence. S1 3.7: 'The observe-only note is a fixed sentence, emitted by the library so every consumer says the same thing... a consumer never branches on absence.' test-pact-blocks.sh B6 asserts a malformed block still emits it. session-registry-read.sh's own comment addresses this slice by name: 'that value advises a person, so a malformed block must degrade to observe-only.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The departure is argued rather than asserted, and split: the HOOK is silent, because a SessionStart hook announcing an observe-only line to everyone who never asked for this epic is the imposition S1 warns against; /wip uses S1's fixed sentence, because a human who asked a question and got nothing cannot tell an absent block from a compliant one. S1's contract note is amended so S5 inherits the rule rather than re-deriving it."
   - id: O5
     category: implementation
     severity: high
     claim: "B1 tests a vocabulary list rather than the behaviour section 2 forbids: the list is under-inclusive against every speculation an implementer would actually write, over-inclusive against the live focus_blocks key, and its 'focus (as a state)' carve-out is not machine-checkable in a Layer-0 script."
     evidence: "Spec B1 bans seven nouns under a deterministic test file. Every one of 'Three sessions is a lot to be holding at once', 'You have been switching between these for a while', and 'Might be worth slowing down' passes B1 and violates section 2. focus_blocks is a live pact key. A green B1 will be read as evidence that the boundary section 2 calls the most important in the slice is machine-enforced. It is not."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "B1 moves to an agent-verified scenario with a rubric, and the spec states plainly that the boundary is NOT machine-enforced. A green word-grep would have been read as evidence that the section 2 boundary is checked, which is the same overclaim section 3.2 forbids for strict — applied by the spec to strict and not to itself."
   - id: O6
     category: specification quality
     severity: high
     claim: "B1 extends the word ban to the WIP Warden's skill, while section 5 makes that skill responsible for stating the boundary and section 2 states that boundary using four of the banned words — and B2 then requires both skills to state it in the same terms while only one is under the ban."
     evidence: "Spec 5 tasks skills/wip-warden/SKILL.md with 'the boundary... the anti-patterns'. Section 2 states it as 'never speculates about attention, fatigue, focus, or capacity'. Section 2's own scope is OUTPUT; B1's is files. cognitive-reservoir/SKILL.md contains ten instances of the banned vocabulary and is not under the ban. B1, B2, section 2 and section 5 cannot all be satisfied."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The ban scopes to emitted OUTPUT rather than files, which is what section 2 always said. The skill can then name what it refuses, which is what makes it a usable rule for the next author — a refusal that cannot name what it refuses inverts the write-the-honesty-rule-first discipline."
   - id: O7
     category: scope
     severity: high
     claim: "The two shipped surfaces stating S1's old meaning of strict — the pact template the human authors from and the pacts reference page — are not in section 5's file list or section 10's docs list, so on the day S4 ships they promise an on-the-record override the slice deliberately does not build."
     evidence: "templates/pacts.md: 'strict asks you to park something or say, on the record, what was urgent enough. There is always an override.' reference/pacts-format.md repeats it. Spec 5 lists commands/mast.md as the only corrected existing file; section 10's docs list omits reference/pacts-format.md entirely."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "templates/pacts.md and reference/pacts-format.md join the file list. Both promise an on-the-record override this slice deliberately does not build, and the template is the worse of the two because it is what the human reads while deciding whether to write strict at all. The mandatory clause is untouched — pact-write.sh derives it and T9 pins it."
   - id: O8
     category: specification quality
     severity: medium
     claim: "Section 4's per-session 'age' is not defined and the field it would be computed from measures something other than the liveness the count uses: registry_list returns started_at, while registry_count's liveness turns on heartbeat, which the list does not return at all."
     evidence: "Spec 2 promises 'an age per session'; section 4 says the list carries started_at and repo. registry_list prints id, started_at, repo — no heartbeat. S1 4.2: 'Liveness here means recency of a completed turn, not a window is open.' The two readings give opposite advice about which session to park."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Age is time since last heartbeat, not since started_at. It is the actionable one: age-since-start says the session you are working in is the oldest and therefore the obvious one to park, which is exactly backwards. registry_list now carries heartbeat (O1)."
   - id: O9
     category: premise
     severity: medium
     claim: "Section 7's 'pattern worth naming' rests on one supporting instance rather than two — its first example misattributes to S1 a promise the build spec made — and it omits that S1's own gate already raised this exact concern as O11 and disposed it with the weaker remedy section 7 now finds insufficient."
     evidence: "Spec 7 says 'S1 promised a CI critic check on Budgets diffs'; S3 2.2 attributes it to the build spec, made impossible by S1's location decision. S1's O11 said shipping strict undefined 'pre-authorises S4 to interpret it as blocking', and was disposed with 'gains a one-line semantics' — which is what produced a token whose defined semantics no mechanism could deliver. S1 3.5 shows the stronger remedy, the reserved marker, was available and applied to Sync cadence but not to enforcement."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Section 7 keeps the lesson and corrects its provenance. The first instance was misattributed — the build spec called for the critic check, not S1. And the sharper reading is that S1's own gate DID catch this as O11 and disposed it with 'define the semantics', which is what produced a token whose semantics no mechanism could deliver. The rule promoted is therefore: when a gate accepts an objection about an undeliverable token, defining its semantics is not a sufficient disposition — mark it as awaiting a mechanism. S1 had the stronger remedy and used it on Sync cadence, not on enforcement."
   - id: O10
     category: alternatives
     severity: medium
     claim: "The spec does not weigh shipping /wip alone against adding a SessionStart hook, though the hook is the source of most of the slice's cost and three of this record's objections."
     evidence: "Ten of the slice's fourteen scenarios exist only because of the hook. S3's evidence comment, recorded for #501, distinguishes a boundary-moment check from an ambient reminder. A SessionStart breach report arrives AFTER the switch it exists to discourage, so its ask is remediation rather than prevention — which may still be the best moment available, but the spec asserts the placement rather than arguing it."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Section 1 argues the SessionStart placement rather than assuming it, and names the Stop rail as the rejected alternative with its reason. A breach report at session start arrives after the switch it discourages, so its ask is remediation rather than prevention — that is the earliest point at which the fact is knowable and the human is present, and saying so is what the record should carry."
   - id: O11
     category: scope
     severity: medium
     claim: "Section 5's file list omits skills/sentinel-design/SKILL.md, which section 7 requires this slice to change, and omits the sentinel rosters that must gain the new agent."
     evidence: "Section 7's only deliverable is a note in sentinel-design; section 5's six-file table does not include it, and no B or C scenario would catch the omission. sentinel-design also carries a five-agent roster table and a checklist step requiring the README Sentinels section to be updated; section 10 mentions only the docs page roster."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "skills/sentinel-design/SKILL.md, its roster table, and the README Sentinels section join the file list. The roster being a pinned copy of a derived fact is noted as a follow-up on the same record as section 6's — the slice noticed the pattern in commands/mast.md and not in the roster it was about to hand-edit."
   - id: O12
     category: risk
     severity: medium
     claim: "Section 5 states the write-library prohibition as a guarantee, but nothing checks it: sentinel-integrity-check.sh reads only the declared tools list, and no scenario asserts the agent sources no write surface."
     evidence: "Spec 5: 'It must never source session-registry-write.sh or pact-write.sh.' sentinel-integrity-check.sh contains no match for either name. sentinel-design states the principle: 'a shared library that exposes a mutation function to a sentinel breaches this boundary through a channel the frontmatter check cannot see.' S1's R9 is the machine check for the analogous claim; S4 has none."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "A scenario greps the agent and the hook for a source of either write surface. Pre-existing rather than invented here, but S4 is the first slice with two write surfaces in play, and the constitutional constraint is that any library a sentinel may source must be incapable of mutation."
 ---
 
 # Objection record — Cadence Sentinels S4: The WIP Warden (spec mode)
