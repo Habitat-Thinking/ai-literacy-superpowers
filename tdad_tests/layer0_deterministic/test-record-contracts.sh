@@ -156,4 +156,30 @@ echo "$open_now" | grep -qF "override-example" \
   || fail "P3: an overridden record must still be reported open"
 rm -f "$p2"
 
+# --- C4: records_latest returns the current state of each chain --------------
+# The complement of records_open, and the gap S5's merge check fell into:
+# a disposition only ever exists inside a .resolved.md, and records_open
+# excludes every transition file by name — so the one place a disposition lives
+# was the one place nothing could read.
+declare -F records_latest >/dev/null || fail "C4: lib must define records_latest"
+
+latest=$(records_latest "$FIX" | sort)
+# The resolved successor is current; its predecessor is not.
+echo "$latest" | grep -q "2026-08-02-retry-branch.resumed.md" \
+  || fail "C4: the transition file is the current state of its chain"
+if echo "$latest" | grep -q "2026-08-01-retry-branch.md"; then
+  fail "C4: a superseded predecessor is not current"
+fi
+# A record nothing supersedes returns itself.
+echo "$latest" | grep -q "2026-08-03-parser-rewrite.md" \
+  || fail "C4: an unsuperseded record is its own current state"
+
+# --- C5: records_open and records_latest answer different questions ----------
+# Stating the complement explicitly, because conflating them is what the S5
+# gate did: open excludes transitions, latest includes them.
+open_now=$(records_open "$FIX" | sort)
+if [ "$open_now" = "$latest" ]; then
+  fail "C5: records_open and records_latest must not be the same set here"
+fi
+
 echo "PASS: record contracts — schemas published in reference pages, READMEs point not duplicate, open-record glob honours state-in-the-path"

@@ -17,8 +17,15 @@ it consumes.
 ## Filename
 
 ```text
-docs/superpowers/consultations/<YYYY-MM-DD>-<slug>.md
+docs/superpowers/consultations/<spec-slug>.md
 ```
+
+**`<spec-slug>` is the spec's filename with its date prefix and `.md`
+extension stripped** — the same convention the objection and story records use,
+so one spec resolves to one record across all three. Added 2026-08-12: the
+first revision gave `<YYYY-MM-DD>-<slug>.md` without saying what `slug` was or
+how it related to the `spec:` field, which left a consumer unable to answer
+"does this spec have a record" without guessing.
 
 State lives **in the filename**, and a transition writes a new file:
 
