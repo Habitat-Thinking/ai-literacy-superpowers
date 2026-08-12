@@ -83,6 +83,22 @@ per `reference/parking-record-format.md`. `next_action_flag` is always `asked`.
 then relocates the tree to `main`; without this commit the ritual would publish
 a summary describing records left behind uncommitted.
 
+### 5b. Ask about boundary events
+
+Source `hooks/scripts/lib/mast-notes-read.sh` and read this repo's notes.
+
+For each event — a stop hour passed, a WIP limit breached — say the fact and
+ask whether they want to record anything about it.
+
+**Offer nothing as a default.** The store holds only what fired; there is no
+machine sentence to accept, and there should not be. What reaches the
+reflection fragment is a line the person wrote and would recognise as theirs —
+`REFLECTION_LOG.md` is committed and permanently archived, so a hook-authored
+observation about someone's conduct would become a durable record of how often
+they work late.
+
+A blank answer records nothing, and is complete.
+
 ### 6. Ask about records already open
 
 For each record `records_open` returns from a previous session, ask whether it
@@ -91,10 +107,17 @@ now — see `/coda resume` below.
 
 ### 7. Closure summary and reflection
 
+Mark the boundary notes consumed **here**, with the reflection — so a human who
+stops the ritual before this step has consumed nothing. Source
+`hooks/scripts/lib/mast-notes-write.sh` (a command may; the agent may not) and
+call `notes_mark_consumed`. It marks rather than deletes: the once-per-session
+notice state lives in that file, and the session is still alive.
+
 Invoke `/reflect`, supplying the optional `Closed` field:
 
 ```text
-- **Closed**: [what landed this session; the filename of each record parked]
+- **Closed**: [what landed this session; the filename of each record parked;
+  any boundary events and what the human chose to say about them]
 ```
 
 Filenames rather than a count: a count asserts that three threads were parked
@@ -112,7 +135,8 @@ be withdrawn, and implying otherwise would be a lie about the artefacts.
 
 - Stopped during or before the survey: nothing was written.
 - Stopped after records exist: name each one and offer to supersede it.
-- Stopped after `/reflect`: the fragment is committed and merged. Say so.
+- Stopped after `/reflect`: the fragment is committed and merged. Say so, and
+  say that the boundary notes were marked consumed.
 
 A request for *new work* after the ritual starts is different — park it, do not
 execute it. That drift is what the ritual is for. A request to *abandon the

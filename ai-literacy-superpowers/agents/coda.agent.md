@@ -49,6 +49,18 @@ Every claim carries its flag:
 | Commits, working-tree state, dispositions in records | `observed` |
 | Merged PRs, open-PR check state | `observed` when `gh` succeeded; `inferred` when it did not |
 | Which files constitute one thread | `asked` |
+| Boundary events this session | `observed` |
+
+**Boundary events are `observed` because you are reading a log**, not
+inferring. `lib/mast-notes-read.sh` records what fired — a stop hour passed, a
+WIP limit was breached — and nothing else. It holds no account of what the
+human did about it, because nothing observed that: continuing is the absence of
+stopping, and reading intent into silence is not yours to do.
+
+So report the fact and **ask** whether they want to record anything about it.
+Whatever they say is the whole of the account. A blank answer records nothing,
+and that is a complete answer — the boundary was never a gate, so there is
+nothing that must be accounted for.
 
 If `gh` fails, say so. Reporting "no merged PRs" because the call errored,
 flagged `observed`, is the laundering of inference as observation that the

@@ -64,10 +64,15 @@ Values may contain colons and spaces. `hard_stop_hour: 18:30` reads as
 
 | Key | Grammar | Required | Meaning |
 | --- | --- | --- | --- |
-| `max_concurrent_sessions` | integer | yes | How many live sessions you will accept, counted across every repository on this machine |
-| `max_switches_per_hour` | integer | no | |
+| `max_concurrent_sessions` | integer | no | How many live sessions you will accept, counted across every repository on this machine |
+| `max_switches_per_hour` | integer | no | Declared only — nothing observes a switch |
 | `stale_after_hours` | integer | no (default 12) | How long a session may go without finishing a turn before it is treated as gone |
+| `approaching_lead_minutes` | integer | no (default 30) | How long before `hard_stop_hour` you want a heads-up |
 | `enforcement` | `advisory` \| `strict` | no (default `advisory`) | See below |
+
+**No key is required.** A short pact is a complete one — declare only
+`stale_after_hours` if that is all you want. A sentinel that needs a value you
+did not declare will name it rather than supply one.
 
 **Mandatory clause:** *This is a gate on sessions, never on the person. It
 counts; it does not assess.*
@@ -82,10 +87,13 @@ that is already starting. `strict` is a stronger ask, not a gate, and the WIP
 Warden says so plainly rather than implying a power it does not have.
 
 An earlier version of this page described `strict` as requiring a disposition
-*before the session proceeds*, and an override recorded on the record. Neither
-was deliverable: nothing can hold a session, and the mechanism that would carry
-the override to a record is a later slice. What you say in answer is not
-written down yet, and the Warden tells you so.
+*before the session proceeds*. That was never deliverable — nothing can hold a
+session.
+
+**If you want your answer on the record, it is yours to put there.** `/coda`
+asks at close what you want to say about any boundary you passed, and writes
+your words. The plugin records that a boundary *fired*; it records nothing
+about what you decided unless you tell it to.
 
 `stale_after_hours` is the registry lease length. Raise it if you routinely
 leave a session parked mid-thought: liveness is measured as *recency of a

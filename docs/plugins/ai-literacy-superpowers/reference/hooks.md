@@ -160,6 +160,49 @@ staleness. Also flags when governance constraints exist in
 HARNESS.md but no audit has ever been run. Nudges
 `/governance-audit` or `/governance-health`.
 
+### Mast boundary check (command)
+
+- **Event**: Stop
+- **Matcher**: `*`
+- **Script**: `hooks/scripts/mast-boundary-check.sh`
+- **Timeout**: 10s
+
+Two notices against your declared `hard_stop_hour`: **approaching**, by default
+30 minutes before (tune with `approaching_lead_minutes`), and **reached**, at
+the line. Each fires **once per session**. At the line it recommends exactly
+one thing — `/coda` — and says plainly that it does not stop you.
+
+**What the store holds, and for how long.** One small file per repository under
+`~/.claude/mast/`, recording only what *fired*: `reached hard_stop_hour=20:00`.
+It holds **no record of what you decided** — nothing observes a choice, and
+continuing is simply the absence of stopping. If you want your decision on the
+record, `/coda` asks at close and writes your words.
+
+The file is refreshed while the repo has a live session and pruned after
+`stale_after_hours` without one. **The prune runs unconditionally**, before the
+opt-in check — so removing your `Budgets` block cleans up rather than stranding
+files forever.
+
+**To switch it off**, remove the `mast-boundary-check.sh` entry from
+`hooks/hooks.json`. `$CLAUDE_MAST_DIR` relocates the store and is test-only.
+
+### The advisory rail
+
+`lib/advisory-rail.sh` lets at most one stop-advisory speak per turn, because
+two messages about stopping arriving together is accumulated pressure — which
+the evidence says works *worse* than a single boundary prompt.
+
+It arbitrates by **precedence, not registration order**. A **once-only**
+advisory (the Mast's notices) speaks; a **repeating** one (the reservoir
+check, which re-emits every turn while a threshold stays crossed) defers to the
+next turn it is going to get anyway. Ordering it the other way would have
+permanently spent the message designed to arrive once.
+
+A "turn" has no identifier a hook can read, so a claim holds for a 10-second
+window. Two consequences, both bounded and neither hidden: two turns finishing
+inside 10 seconds collapse into one, costing a skipped repeating advisory; and
+a rail slow enough to straddle it lets both speak, costing one duplicate.
+
 ### Reservoir check (command)
 
 - **Event**: Stop
@@ -181,6 +224,12 @@ precaution under uncertainty; it does not assert ego depletion or the
 hungry-judges figure. See the `cognitive-reservoir` skill and the
 [Watching the Verifier](../explanation/watching-the-verifier.md)
 concept page.
+
+It now carries one coordination line: it defers when a once-only advisory has
+claimed the turn. This is a coordination change and not a behavioural one — its
+proxies, thresholds, flags, recommendation text and advisory-forever standing
+are unchanged, and it still fires whenever it would have fired, except on the
+at most one turn per session when the Mast's boundary notice has spoken.
 
 ### Session registry sweep (command)
 

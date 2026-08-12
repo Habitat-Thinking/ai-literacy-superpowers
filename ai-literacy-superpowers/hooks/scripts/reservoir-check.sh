@@ -134,6 +134,23 @@ Decide your stop BEFORE the next session begins, while the judgment making the c
 
 The choice to continue is yours. Run /reservoir for a fuller read or to tune the thresholds."
 
+# One stop-advisory per turn. This is a COORDINATION change, not a behavioural
+# one: the proxies, thresholds, honesty flags, recommendation text, and the
+# advisory-forever standing above are all unchanged, and this still fires
+# whenever it would have fired — except on the at most one turn per session
+# when a once-only advisory has already claimed.
+#
+# It defers rather than wins because it will get another turn: this hook
+# persists nothing and re-emits while a threshold stays crossed, whereas the
+# Mast's boundary notice fires once, ever. Arbitrating the other way would have
+# permanently spent the message designed to arrive once.
+_RC_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/advisory-rail.sh"
+if [ -f "$_RC_LIB" ]; then
+  # shellcheck source=/dev/null
+  . "$_RC_LIB"
+  advisory_defer_if_claimed stop && exit 0
+fi
+
 # JSON-encode: escape backslash and quote, then join lines with \n (valid JSON).
 encoded=$(printf '%s' "$message" \
   | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' \
