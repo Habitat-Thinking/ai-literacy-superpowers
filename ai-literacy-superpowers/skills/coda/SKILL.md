@@ -65,6 +65,7 @@ tree it had just relocated.
 | Commits, working-tree state, dispositions in records | `observed` |
 | Merged PRs, open-PR check state | `observed` when `gh` succeeds; `inferred` when it does not |
 | Which files constitute one thread | `asked` |
+| Boundary events this session | `observed` |
 
 **Thread grouping is the central epistemic act.** Nine modified files are an
 observation; that they are *two* threads is a judgement, and it decides how

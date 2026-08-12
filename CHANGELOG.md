@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.71.0 — 2026-08-12
+
+### Cadence Sentinels S3b — boundary notices and the hard stop
+
+The seam three slices deferred into: S3's notices and override, S4's override,
+and a contract change to the Coda that shipped before either existed.
+
+- **Two notices against `hard_stop_hour`** — approaching (default 30 minutes,
+  tunable via `approaching_lead_minutes`) and reached — each once per session.
+  At the line, exactly one recommendation: `/coda`.
+- **A lead time, not a fraction.** The first design measured 80% of the way
+  from session start, which is not computable: `started_at` is UTC,
+  `hard_stop_hour` is local, and `started_at` is deliberately never reset across
+  resume — so the notice would have fired every morning with nothing approached.
+- **The advisory rail** arbitrates by **precedence**, not registration order. A
+  once-only advisory speaks; a repeating one defers to the turn it is going to
+  get anyway. `reservoir-check.sh` has no once-per-session guard and cannot
+  have one, so ordering it first would have preserved the message that repeats
+  and permanently spent the one designed to arrive once.
+- **The store records only what fired.** An earlier design carried
+  `continued past the 20:00 stop by choice`, timestamped identically to the
+  notice — written before the human had done anything. Nothing observes a
+  choice; continuing is the absence of stopping. What the human decided is
+  asked for at close, in their own words, or not recorded at all.
+- **Keyed by repo, not session**, because its writers include `/coda` and
+  `/wip` — commands, which have no channel to learn a session id.
+- **Consumption marks rather than deletes**, so the once-per-session notice
+  state survives a close that does not end the session.
+- **The prune runs unconditionally**, before the opt-in check: gating the
+  janitor behind the feature meant deleting your pact stranded every file
+  forever.
+- **Read/write library split**, so a sentinel can reach the notes without
+  reaching a mutator.
+- **One coordination line in `reservoir-check.sh`** — a coordination change,
+  not a behavioural one, recorded as a judgement in the spec.
+
+Closes #501.
+
 ## 0.70.1 — 2026-08-11
 
 ### Fix: `block_state` answers well-formedness, not completeness

@@ -80,6 +80,10 @@ BASH_TEST_SCRIPTS = [
     # Cadence Sentinels S4 — the WIP breach check. RED until S4 ships
     # hooks/scripts/wip-check.sh.
     "test-wip-check",
+    # Cadence Sentinels S3b — the advisory rail. RED until S3b ships
+    # hooks/scripts/lib/advisory-rail.sh.
+    "test-advisory-rail",
+    "test-mast-boundary",
 ]
 
 
