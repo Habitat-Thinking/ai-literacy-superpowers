@@ -133,14 +133,12 @@ Every voice gets **one concrete question worth asking**.
 Not "sync with support". Not "check with the PO". A question a person could
 answer without a meeting:
 
-> **Support:** when this returns the new error code instead of timing out,
-> does that change what you tell people who call about it?
-
-> **Docs:** the published reference describes the 30-second timeout as
-> guaranteed — is that page generated, or maintained by hand?
-
-> **PO:** this changes behaviour for existing integrations on upgrade rather
-> than behind a flag. Is that fine this quarter, or does it need to wait?
+- **Support:** when this returns the new error code instead of timing out,
+  does that change what you tell people who call about it?
+- **Docs:** the published reference describes the 30-second timeout as
+  guaranteed — is that page generated, or maintained by hand?
+- **PO:** this changes behaviour for existing integrations on upgrade rather
+  than behind a flag. Is that fine this quarter, or does it need to wait?
 
 **A vague question is worse than none.** It converts a real gap into a
 scheduled meeting, and the meeting is what makes people stop doing this. Test

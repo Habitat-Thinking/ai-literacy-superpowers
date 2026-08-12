@@ -12,7 +12,8 @@ Cutting across those groups is a fourth, cross-cutting family — the
 **[sentinels](../explanation/sentinels.md)**. A sentinel is any agent
 whose object of care is the human's understanding and judgement rather
 than an artefact: `carpaccio`, `advocatus-diaboli`,
-`choice-cartographer`, `reservoir-warden`, `cost-estimator`, `coda`, `mast`, and `wip-warden`. Each
+`choice-cartographer`, `reservoir-warden`, `cost-estimator`, `coda`, `mast`, `wip-warden`, and
+`convener`. Each
 declares `role: sentinel` in its frontmatter, is read-only (criterion
 S1, enforced deterministically by the Sentinel integrity constraint),
 emits advisory output a human disposes (S2), and carries an explicit
@@ -239,6 +240,36 @@ Never invents a limit. A `Session WIP` block with its clause and no
 the human never drew is the worst thing it could do.
 
 See the `wip-warden` skill and [Watching your WIP](../how-to/watching-your-wip.md).
+
+### convener
+
+**Role:** sentinel · **Tools:** Read, Glob, Grep · **Trust boundary:** read-only
+
+Runs at plan approval beside the `choice-cartographer`. Maps the **voices** a
+spec affects — the roles and groups outside the room — drafts the one concrete
+question worth asking each, and returns a consultation record with every voice
+`disposition: pending`.
+
+It attacks **isolation drift**: a spec can be internally excellent and still be
+wrong because the person who wrote it never asked the one question that would
+have changed it. That failure is invisible from inside, which is why the
+pipeline surfaces the agent rather than waiting to be asked.
+
+**It never contacts anyone** — not by email, issue, mention, a PR against
+another repo, or a message drafted for the human to send. The tool boundary
+forecloses every mechanical path already; the charter draws the line against
+drift. *A question is one sentence a person could answer; a message has a
+salutation, a context paragraph, or a sign-off.*
+
+An agent is never a voice, and neither is a named individual. Voices are roles
+or groups: a record naming a person ages into a record naming the wrong person,
+and a record naming an agent shows a conversation that never involved anyone.
+
+Caps at 8 voices, biasing 3–5 — an honesty device aimed at the agent, since
+under the merge check a voice the human does not delete becomes a mandatory
+disposition.
+
+See the `convener` skill and [Convening the voices](../how-to/convening-the-voices.md).
 
 ### cost-estimator
 

@@ -1,5 +1,74 @@
 # Changelog
 
+## 0.72.0 — 2026-08-12
+
+### The Convener (Cadence Sentinels S5)
+
+- **New sentinel `convener`** — runs at plan approval beside the
+  `choice-cartographer`. Maps the roles and groups a spec affects, drafts the
+  one concrete question worth asking each, and returns a consultation record.
+  Attacks **isolation drift**: a spec can be internally excellent and still be
+  wrong because the person who wrote it never asked the one question that would
+  have changed it, and that failure is invisible from inside.
+- **It never contacts anyone**, in any medium. The read-only trust boundary
+  forecloses every mechanical path; the charter draws a line against drift —
+  *a question is one sentence a person could answer; a message has a
+  salutation, a context paragraph, or a sign-off*.
+- **New `/convene` command** — dispatches the agent, runs a prune-**and-add**
+  dialogue, and persists the record append-only (`.superseded.md` on re-run,
+  never an in-place edit). Carries an F1–F8 validation checkpoint.
+- **New `convener` skill** — the charter, the question/message line as a worked
+  pair, the derivation table for `inferred` voices, the cap, and the
+  anti-pattern gallery.
+- **New constraint `PRs have disposed consultation voices`** —
+  `Enforcement: deterministic`, matched by
+  `scripts/check-consultation-dispositions.py`. Every voice disposed with its
+  own distinct `outcome`. **Complete-if-present**: a PR whose spec has no
+  consultation record passes, because running `/convene` is a choice.
+- **Optional `## Stakeholders` section** in `HARNESS.md` (and the template,
+  commented out) declares who a project affects. Absent is not an error — the
+  agent derives candidates and flags every one `inferred`.
+- **Orchestrator wired**, not implied: a numbered step beside `1b`, a named
+  soft gate, and a structured `convene_pending_count`.
+- **The Routing Rule is now three-way** across the diaboli, cartographer and
+  convener skills, with the tie-break stated: a finding about a person who
+  should be asked is the Convener's even when it also names a failure class,
+  because the remedy is a conversation rather than a spec change.
+
+### Why outcomes must be distinct
+
+- `pending` is a **detectable** failure. N voices bulk-filled
+  `deliberately-not-consulted / "no time"` is an **undetectable** one, and
+  strictly worse: an all-pending record is truthful about disengagement, while
+  an all-declined one launders it into decisions nobody made — permanently,
+  because records are append-only and the next reader will trust the file.
+- The check never judges a reason. *"No time; shipping Thursday and the docs
+  owner is on leave"* passes. It refuses one string standing for several
+  decisions.
+
+### Substrate and honesty corrections
+
+- **`records_latest` added to `hooks/scripts/lib/record-paths.sh`** (carved
+  commit) — the current state of every record chain. `records_open` excludes
+  `*.resolved.md` by name, and a disposition only ever exists inside one, so
+  the only query S1 shipped could not see the only file that matters.
+- **Consultation records are named `<spec-slug>.md`**, matching the objection
+  and story records, so one spec resolves to one record across all three.
+- **The gate is no longer described as "agent-verified"** — never a value of
+  the enum (`deterministic | agent | unverified`). The **rung** is
+  deterministic and the **reach** is complete-if-present; those are different
+  axes.
+- **All three sentinel rosters reconciled 5 → 9**, narrative sentences
+  included — `README.md`, `sentinel-design/SKILL.md`, and the explanation page.
+  The drift is S2's, S3's and S4's: each updated the explanation page and
+  missed the other two. #507 tracks deriving the roster rather than pinning it.
+
+### Docs
+
+- New how-to: **Convening the voices**.
+- Reference entries on `agents.md`, `skills.md`, `commands.md`, and the
+  corrected `consultation-record-format.md`.
+
 ## 0.71.0 — 2026-08-12
 
 ### Cadence Sentinels S3b — boundary notices and the hard stop

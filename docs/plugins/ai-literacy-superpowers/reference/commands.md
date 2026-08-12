@@ -633,6 +633,39 @@ See the `wip-warden` skill and [Watching your WIP](../how-to/watching-your-wip.m
 
 ---
 
+### /convene \<spec-path\>
+
+- **Skills read**: `convener`
+- **Agents dispatched**: `convener`
+
+Maps the roles and groups a spec affects, drafts the one concrete question worth
+asking each, and writes the consultation record at
+`docs/superpowers/consultations/<spec-slug>.md`.
+
+**It never contacts anyone.** You carry every conversation, or the conversation
+does not happen.
+
+The dialogue runs both ways: it asks which proposed voices do not apply, **and
+who it missed**. A voice you name is flagged `asked` — the flag records who
+named the voice, not who wrote the question. The one the agent could not derive
+is usually the one worth the most.
+
+Records are append-only. Re-running against a spec that already has a record
+writes a `.superseded.md` transition rather than editing the existing file.
+
+Two dispositions are complete answers: `consulted` with what came back, and
+`deliberately-not-consulted` with the because. Each needs a one-line `outcome`,
+and **no two voices may share one** — the merge-time check refuses one string
+standing for several decisions, and never judges a reason.
+
+The plan-approval gate is soft. The merge constraint **PRs have disposed
+consultation voices** is deterministic but **complete-if-present**: a PR with no
+consultation record passes, because running `/convene` is a choice.
+
+See the `convener` skill and [Convening the voices](../how-to/convening-the-voices.md).
+
+---
+
 ### /reservoir
 
 - **Skills read**: `cognitive-reservoir`

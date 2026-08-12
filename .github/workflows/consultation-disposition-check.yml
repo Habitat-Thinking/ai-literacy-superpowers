@@ -1,0 +1,49 @@
+# Consultation-record disposition check for pull requests.
+#
+# Enforces the HARNESS constraint "PRs have disposed consultation voices":
+# every voice in a consultation record is `consulted` or
+# `deliberately-not-consulted`, each with its own distinct one-line `outcome`.
+#
+# COMPLETE-IF-PRESENT. A PR whose spec has no consultation record passes, and
+# a repo with no `consultations/` directory passes. Running `/convene` remains
+# a choice. What this catches is the ABANDONED conversation — someone ran it,
+# saw a voice they knew mattered, and shipped without saying either way.
+#
+# The `paths` filter deliberately does NOT include `docs/superpowers/specs/**`.
+# A spec without a record is not a breach, so a spec-only change has nothing
+# here to fail — and a path filter that fired on every spec would imply the
+# constraint requires a record, which it does not.
+#
+# This workflow is what makes `Enforcement: deterministic` true rather than
+# claimed. A constraint declaring an enforcement nothing runs is the drift the
+# harness-auditor exists to find.
+
+name: Consultation Disposition Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "docs/superpowers/consultations/**"
+      - "ai-literacy-superpowers/scripts/check-consultation-dispositions.py"
+      - "ai-literacy-superpowers/hooks/scripts/lib/record-paths.sh"
+      - ".github/workflows/consultation-disposition-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check consultation-record dispositions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Verify every consultation voice is disposed
+        run: python3 ai-literacy-superpowers/scripts/check-consultation-dispositions.py
