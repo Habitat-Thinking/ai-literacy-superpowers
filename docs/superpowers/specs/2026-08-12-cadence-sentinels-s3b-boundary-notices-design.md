@@ -1,12 +1,14 @@
 # Spec: Cadence Sentinels S3b — Boundary Notices and the Hard Stop
 
-**Status:** Approved (revision 1)
+**Status:** Approved (revision 2, post-diaboli)
 **Date:** 2026-08-12
 **Issue:** #501
 **Epic:** The Cadence Sentinels (S1–S7)
 **Depends on:** S1 (the pact file, the registry), S2 (the Coda, whose contract
 this changes), S3 (the Mast), S4 (the WIP Warden, whose override this carries)
-**Scope:** one hook, two libraries, a contract change to S2, and one
+**Objections:** `docs/superpowers/objections/cadence-sentinels-s3b-boundary-notices-design.md`
+— 12 objections, all accepted; three criticals reshaped the slice
+**Scope:** one hook, three libraries, a contract change to S2, and one
 coordination line in an existing hook
 
 ---
@@ -32,8 +34,22 @@ is the seam.
 
 | Notice | Fires | Says |
 | --- | --- | --- |
-| **approaching** | at 80% of the way from session start to `hard_stop_hour` | where you are, and what the line is |
+| **approaching** | `approaching_lead_minutes` before `hard_stop_hour` (default 30) | where you are, and what the line is |
 | **reached** | at `hard_stop_hour` | one recommendation: `/coda` |
+
+**A lead time, not a fraction.** Revision 1 said "80% of the way from session
+start to `hard_stop_hour`", which is not computable (O5). `started_at` is UTC
+and `hard_stop_hour` is local, so the naive arithmetic is silently wrong by the
+machine's offset. Worse, `registry_touch` deliberately never resets
+`started_at` across resume, clear and compact — so a session resumed the next
+morning reports yesterday's start, and the fraction is already past 80% at
+breakfast. The notice would fire on resume, every morning, with nothing
+approached.
+
+A fraction needs two endpoints and only one of them is honest: the line the
+human drew. A lead time needs one, sits in the same frame as the value it
+measures against, and has no behaviour to define for midnight or for a session
+that begins after the line.
 
 **One recommendation, once.** No repeats, no escalation, no second notice ten
 minutes later.
@@ -56,88 +72,170 @@ what each key can honestly support, and only one supports a line in time.
 
 ## 3. The Advisory Rail
 
-Two sentinels now counsel stopping on the same rail, and they can fire on the
-same turn: `reservoir-check.sh` puts a declared `lark` into its suboptimal band
-at hour ≥ 20, so a `hard_stop_hour: 20:00` produces two independent stop
-advisories saying essentially the same thing.
+Two sentinels counsel stopping on the same rail and can fire on the same turn:
+`reservoir-check.sh` puts a declared `lark` into its suboptimal band at hour
+≥ 20, so a `hard_stop_hour: 20:00` produces two independent stop advisories.
 
-That is not a cosmetic clash. The evidence this slice is built on says a single
-boundary-moment prompt works and accumulated pressure does not — and two
-messages about stopping, arriving together, **is** accumulated pressure. The
-Mast would be degrading the Reservoir Warden's effectiveness without editing
-one of its files.
+Two messages about stopping, arriving together, **is** accumulated pressure —
+which the evidence in §2 says makes the mechanism work worse.
 
-### 3.1 One claim per turn
+### 3.1 Precedence, not registration order
 
-`hooks/scripts/lib/advisory-rail.sh` exposes:
+Revision 1 said the first hook to claim wins, and ordered the Warden first. That
+inverted the rail's purpose (O1).
 
-```text
-advisory_claim <kind>   # true for the first claim of this kind this turn
-```
+`reservoir-check.sh` has **no once-per-session guard and cannot have one** — it
+persists nothing by charter, recomputes an eight-hour git window every `Stop`,
+and emits whenever a threshold is still crossed. Thresholds stay crossed for
+hours. So the Warden speaks on **every turn**, while the Mast's `reached` fires
+once, ever.
 
-The first hook to claim `stop` in a given turn emits; every later one stays
-silent about stopping. Nothing re-derives anyone else's logic — which is the
-point.
+First-claim-wins with the Warden first therefore preserved the message that
+repeats and permanently spent the one designed to arrive once — and because the
+note is still logged on the suppressed turn, the human would never have received
+the boundary message at all.
 
-**The alternative was worse.** Having the Mast stay quiet by re-deriving the
-Warden's chronotype band would pin a copy of logic another slice owns, which is
-the anti-pattern `AGENTS.md` has already caught twice in this epic (the README
-counts, and `registry_list`'s docstring). A shared rail costs one line in each
-participant and copies nothing.
+So the rail arbitrates by **precedence**:
 
-### 3.2 The one line in `reservoir-check.sh`
+| Class | Example | On a collision |
+| --- | --- | --- |
+| **once-only** | the Mast's `approaching` and `reached` | speaks |
+| **repeating** | the Warden's band advisory | defers to the next turn |
 
-`reservoir-check.sh` gains a single `advisory_claim stop` guard before it
-emits.
+The Warden loses nothing by deferring: it fires again next turn, on the same
+conditions. The Mast's notice has no next turn.
+
+Revision 1 also justified the old order by claiming *decide your stop* subsumes
+*you have reached the stop you decided*. The shipped sentence does not say that
+— it asks the human to decide a **future** stop before the **next** session
+(`reservoir-check.sh:133`), which is advice for someone who has not drawn a
+line. The person who declared `hard_stop_hour: 20:00` has already done it, and
+the suppressed message was the one naming their own line. The argument is
+withdrawn rather than repaired (O2).
+
+### 3.2 What a "turn" is, stated operationally
+
+A `Stop` hook receives no turn identifier, and every hook in one firing sees the
+same `session_id`. So a turn is defined by the only thing available (O3):
+
+**Hooks in one `Stop` firing run back-to-back**, so a claim is scoped by a
+short wall-clock window — **10 seconds**, recorded in the claim file.
+
+Its two failure modes are disclosed rather than hidden, in the skill and the
+reference page:
+
+- Two turns completing inside 10 seconds collapse into one, so a turn's
+  repeating advisory is suppressed. Costs one skipped Warden message.
+- A rail slow enough to straddle 10 seconds lets both emit. Costs one duplicate.
+
+Both are bounded and neither is silent to a reader of the docs. Claiming uses
+`mkdir`, which is atomic on every POSIX filesystem — a rail whose guarantee is a
+race would flicker, and a sentinel that flickers teaches the human to discount
+it.
+
+### 3.3 The one line in `reservoir-check.sh`
+
+It gains a single `advisory_defer_if_claimed` guard before it emits.
 
 This is a change to the Reservoir Warden's hook, and constraint 5 says that
-agent is untouched. The judgement, recorded here: **this is a coordination
-change, not a behavioural one.** The Warden's proxies, thresholds, honesty
-flags, recommendation text, and advisory-forever standing are all unchanged. It
-still fires whenever it would have fired — it simply claims the turn first, and
-by ordering it always wins the claim.
+agent is untouched. The judgement, recorded: **this is a coordination change,
+not a behavioural one.** Its proxies, thresholds, honesty flags, recommendation
+text and advisory-forever standing are all unchanged, and it still fires
+whenever it would have fired — except on the at most one turn per session when
+a once-only advisory has claimed.
 
-The Warden going first is deliberate. It is the older sentinel, it is
-advisory-forever by charter, and its advice is the more general — *decide your
-stop* subsumes *you have reached the stop you decided*.
+**The Mast's hook is registered before it** in `hooks.json`, so precedence and
+order agree rather than the guarantee resting on precedence alone.
 
-### 3.3 What the Mast does when it loses the claim
+### 3.4 What the Mast does when it defers
 
-It stays silent **and still logs the note** (§4). The human's boundary was
-still reached; the only thing suppressed is a second message saying so.
-
-A later reader of the session's record sees that the line was passed. They just
-were not told twice at the time.
+It never defers — it is the once-only class. When it speaks, it logs the note
+either way.
 
 ## 4. The Note Store
 
-`~/.claude/mast/<sanitised-session-id>.notes` — append-only within a session,
-one line per event.
+`~/.claude/mast/<sanitised-repo-slug>.notes` — append-only, one line per event.
 
 ```text
 2026-08-12T20:00:00Z reached hard_stop_hour=20:00
-2026-08-12T20:00:00Z continued past the 20:00 stop by choice
-2026-08-12T21:14:00Z wip-override 3 live against a limit of 2
+2026-08-12T21:14:00Z wip-breach 3 live against a limit of 2
 2026-08-12T23:10:00Z consumed-by-coda
 ```
 
-### 4.1 Marked consumed, never deleted
+### 4.0 It records what fired, never what it meant
+
+Revision 1's example carried a second line beside the first —
+`continued past the 20:00 stop by choice` — timestamped **identically** to the
+notice. Whatever wrote it wrote it before the human had done anything at all
+(O6).
+
+That is a hook attributing intent to a person. Nothing observes a choice:
+**continuing is the absence of stopping**, and reading intent into silence is
+exactly what the boundary between counting and watching forbids. It also
+falsified two of this spec's own claims — §4.4's judges-nothing condition, and
+§5.1's `observed` flag, which is true of `reached` and was false of the line
+beside it.
+
+So the store holds **only what fired**. There is no override line, because
+there is nothing to observe. What the human decided is asked for at close (§5.4)
+and their answer is the only account that exists — which also means there is no
+machine sentence left to accept by default, dissolving O10 entirely.
+
+### 4.1 Keyed by repo, because its writers are commands
+
+Revision 1 keyed the store by session id. Its two writers are `/coda` and
+`/wip` — **commands**, which have no channel to learn one. Every shipped reader
+takes `session_id` from hook stdin, and no command in this plugin reads it (O9).
+
+The obvious workaround — take the newest file — fails in exactly the world this
+epic exists for: `/coda` in one session would consume another's notes, silently,
+because the file it read contained plausible lines.
+
+So the key is the repo. A command knows its working directory, so everything
+that touches the store can name it. Per-session isolation is not lost so much as
+never achievable — and the scope fits: boundary events concern a pact that is
+machine-global and a person who is singular, and the Coda closes a session *in a
+repo*.
+
+### 4.1a Marked consumed, never deleted
 
 The Coda **marks** the file consumed rather than removing it.
 
-S3's O3 found the reason: the once-per-session notice state lives in this file,
-and `/coda`'s final step is a statement rather than a process termination — the
-session is still alive and the `Stop` rail keeps firing. A file deleted at close
-would take the notice state with it, and the reached notice would fire again on
-the next turn, on exactly the sessions where the human had already overridden
-once.
+S3's O3 found the reason: the once-per-session notice state lives here, and
+`/coda`'s final step is a statement rather than a process termination — the
+session is alive and the `Stop` rail keeps firing. A file deleted at close would
+take the notice state with it, and `reached` would fire again on the next turn,
+on exactly the sessions where the human had already been told once.
 
-Marking also makes a second `/coda` in the same session idempotent, which the
-first design would not have been.
+Marking also makes a second `/coda` idempotent, which deletion would not have
+been.
 
-**Boundedness is unchanged**: the file is lease-pruned on the same `Stop` rail,
-exactly as the registry is. That is what satisfies the operational-state
-carve-out's second condition, and it never depended on deletion-at-close.
+### 4.1b Bounded by a heartbeat, not by an event
+
+The notes file is **touched on every `Stop` while its repo has a live session**,
+exactly as a registry entry is — the same shape, for the same reason.
+
+Revision 1 said "lease-pruned, exactly as the registry is", which was not true
+of the mechanism it described: a notes file has no heartbeat and is appended to
+only on a boundary event, so under the default 12-hour lease a session reaching
+its stop at 20:00 and still alive at 08:00 would have its own hook prune its
+notice state — and `reached` would fire again (O8). That is S3's O3 arriving
+through the pruner instead of through consumption.
+
+Touching on every `Stop` makes one lease serve both jobs without compromise: a
+live repo's notes never age out, a dormant one's do.
+
+### 4.1c The prune runs unconditionally
+
+**Before the self-gate, for every user, exactly as `registry_prune` does.**
+
+Revision 1 put the prune behind the `block_state` check, which meant a human who
+used the feature for a month and then deleted their `Budgets` block left every
+note file behind forever (O7). The one path where someone has withdrawn consent
+is the one path where leftover state matters most, and gating the cleanup behind
+the feature is precisely backwards.
+
+The janitor is separable from the opt-in, and must be.
 
 ### 4.2 Two libraries, split on the trust boundary
 
@@ -212,9 +310,15 @@ S3's O9 asked the sharp question: the note file is bounded and local, but
 `grep` would return every night the human worked past their line.
 
 **So the Coda writes the human's own sentence, not the machine's.** At close it
-asks what to record — offering the note's plain content as a starting point —
-and what reaches the reflection fragment is a line the person authored and would
-recognise as theirs.
+says what fired — "your 20:00 stop passed at 20:00" — and asks whether they want
+to record anything about it. What reaches the reflection fragment is a line the
+person authored and would recognise as theirs.
+
+**Nothing is offered as a default.** Revision 1 proposed the note's own content
+as a starting point, which after §4.0 no longer exists — and would have been a
+machine-authored observation about conduct, accepted at the tiredest moment of
+the day, landing in a permanently archived file (O10). The question is open,
+and a blank answer records nothing.
 
 That is the same resolution S2 reached for the next-action override: the record
 carries the human's words, not a machine verdict, and it is what keeps a
@@ -235,6 +339,16 @@ never a gate, so there is nothing that must be accounted for.
 | `agents/coda.agent.md`, `commands/coda.md` | the survey row and the `Closed` field |
 | `agents/wip-warden.agent.md`, `commands/wip.md` | the override is now recorded |
 | `skills/mast/SKILL.md`, `skills/wip-warden/SKILL.md` | the notices, the rail |
+| `hooks/hooks.json` | registers the new hook **before** `reservoir-check.sh` |
+| `skills/coda/SKILL.md` | the survey table §5.1 amends, and the ritual's length |
+| `templates/pacts.md` | `approaching_lead_minutes`, and the override now *is* recorded |
+| `reference/pacts-format.md` | the same two corrections |
+
+The last three are the third file-table omission in four slices (S3's O1, S4's
+O11, and this). §6 now lists every file the change cannot land without — the
+ordering guarantee lives in `hooks.json` and nowhere else, and the two pact
+surfaces currently tell the human their answers are *not* written down, which
+this slice makes false.
 
 ## 7. Non-Goals
 
