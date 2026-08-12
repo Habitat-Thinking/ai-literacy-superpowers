@@ -84,6 +84,9 @@ BASH_TEST_SCRIPTS = [
     # hooks/scripts/lib/advisory-rail.sh.
     "test-advisory-rail",
     "test-mast-boundary",
+    # Cadence Sentinels S5 — the consultation-disposition matcher. RED until
+    # S5 ships scripts/check-consultation-dispositions.py.
+    "test-convene-check",
 ]
 
 
