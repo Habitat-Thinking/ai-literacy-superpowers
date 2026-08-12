@@ -633,7 +633,9 @@ See the `wip-warden` skill and [Watching your WIP](../how-to/watching-your-wip.m
 
 ---
 
-### /convene \<spec-path\>
+### /convene
+
+Usage: `/convene <spec-path>`
 
 - **Skills read**: `convener`
 - **Agents dispatched**: `convener`
