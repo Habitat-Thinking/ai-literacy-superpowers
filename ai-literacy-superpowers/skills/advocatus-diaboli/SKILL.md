@@ -98,24 +98,36 @@ the wrong thing.
 *Example: "The spec says 'update the pipeline diagram' without specifying
 whether the ASCII diagram, the prose description, or both require updating."*
 
-## The Routing Rule (diaboli vs. Choice Cartographer)
+## The Routing Rule (diaboli vs. Cartographer vs. Convener)
 
-When the spec-first pipeline includes both this agent and the Choice
-Cartographer (decision-archaeology agent), apply the Routing Rule before
-emitting any candidate objection:
+When the spec-first pipeline includes this agent alongside the Choice
+Cartographer (decision-archaeology) and the Convener (voice-mapping), apply
+the Routing Rule before emitting any candidate objection:
 
 > A finding belongs in your objection record iff: removing it would leave
 > a class of failures undetected.
 >
 > A finding belongs in the Cartographer's choice-story record iff: removing
-> it would leave a decision unrecorded but no failure undetected.
+> it would leave a decision unrecorded but no failure undetected.>
+> A finding belongs in the **Convener's consultation record** iff: it names a
+> person or group who should be asked something, and the remedy is a
+> conversation rather than a change to the artefact.
 
-When a finding satisfies both tests, it is yours (failures dominate
-decisions for routing purposes); when it satisfies neither, drop it. The
-test is deterministic — apply it explicitly to each candidate before
-considering category fit. The Cartographer's skill references the same
-test from its side; the two agents together form a complete partition
-of findings worth surfacing about a spec.
+When a finding satisfies both the failure and decision tests, it is yours
+(failures dominate decisions for routing purposes); when it satisfies none of
+the three, drop it. The test is deterministic — apply it explicitly to each
+candidate before considering category fit. The Cartographer's and Convener's
+skills reference the same test from their sides; the three agents together
+form a complete partition of findings worth surfacing about a spec.
+
+**The Convener's tie-break runs the other way.** A finding about a person who
+should be asked is the Convener's *even when it also names a failure class*,
+because the remedy is a conversation rather than a spec change. "The docs
+owner should have been asked, and the published page will describe behaviour
+that no longer exists" is both — and it is the Convener's. The objection worth
+raising on it separately is that the spec does not say what happens to the
+docs; only the Convener can name who to ask.
+
 
 Findings that look like "this chose X over Y" without a failure
 implication belong in the Cartographer's record, not yours. Reframe or

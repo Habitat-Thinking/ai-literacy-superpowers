@@ -51,6 +51,11 @@ the rule says is immutable.
 `records_open` in `hooks/scripts/lib/record-paths.sh` answers "which
 consultations are still open" from the filenames.
 
+`records_latest` in the same library answers the complementary question —
+**the current state of each chain**, transitions included. Consumers reading
+dispositions need that one: `records_open` excludes `*.resolved.md` by name,
+and a disposition only ever exists inside a `.resolved.md`.
+
 ## Frontmatter
 
 ```yaml
@@ -88,11 +93,28 @@ voices:
 
 ## The gate is soft
 
-At plan approval, unresolved voices are **listed, not blocking**. An
-agent-verified merge-time check flags a spec whose consultation record still
-carries a voice with no disposition. It is never escalated to deterministic
-enforcement.
+At plan approval, unresolved voices are **listed, not blocking**.
+
+At merge time, the constraint **PRs have disposed consultation voices** is
+`Enforcement: deterministic` — a matcher,
+`scripts/check-consultation-dispositions.py`, over the current state of each
+record chain. S1 described this as "agent-verified", which was never a value of
+the enum (`harness-md-format.md` gives `deterministic | agent | unverified`)
+and overclaimed in the other direction too.
+
+**The rung and the reach are different axes.** The rung is deterministic. The
+reach is **complete-if-present**: a PR whose spec has no consultation record
+passes, and running `/convene` remains a choice. What is held back is the scope
+of what the constraint demands, not the rigour of the check.
 
 A voice recorded as `deliberately-not-consulted` with a stated because is a
 complete, healthy disposition — not a debt. The record exists to make the
 decision visible, not to require that everyone be asked.
+
+**But no two voices in one record may carry the same `outcome`.** Each must
+name something specific to that voice. `pending` is a detectable failure;
+several voices bulk-filled with one string is an undetectable one, and worse —
+an all-`pending` record is at least truthful about disengagement, while an
+all-declined one launders it into decisions nobody made, permanently, in a
+file the next reader will trust. The check never judges a reason: *"no time;
+shipping Thursday and the docs owner is on leave"* passes.

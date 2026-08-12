@@ -57,7 +57,7 @@ choices is tomorrow's refactor.
 - **Not a code reviewer.** This release is spec-mode only. Code-mode is
   tracked under follow-up issue #209.
 
-## The Routing Rule (Cartographer vs. diaboli)
+## The Routing Rule (Cartographer vs. diaboli vs. Convener)
 
 Apply this test before emitting any candidate:
 
@@ -65,15 +65,34 @@ Apply this test before emitting any candidate:
 > it would leave a decision unrecorded but no failure undetected.
 >
 > A finding belongs in the diaboli's objection record iff: removing it would
-> leave a class of failures undetected.
+> leave a class of failures undetected.>
+> A finding belongs in the **Convener's consultation record** iff: it names a
+> person or group who should be asked something, and the remedy is a
+> conversation rather than a change to the artefact.
 
-When a finding satisfies both tests, it is a diaboli risk (failures dominate
-decisions for routing purposes); when it satisfies neither, drop it. The test
-is deterministic — apply it explicitly to each candidate, and if the routing
-is unclear, default to "drop" rather than emit.
+When a finding satisfies both the failure and decision tests, it is a diaboli
+risk (failures dominate decisions for routing purposes); when it satisfies
+none of the three, drop it. The test is deterministic — apply it explicitly to
+each candidate, and if the routing is unclear, default to "drop" rather than
+emit.
 
-The diaboli skill references the same test from its side. The two agents
-together form a complete partition of findings worth surfacing about a spec.
+The diaboli and convener skills reference the same test from their sides. The
+three agents together form a complete partition of findings worth surfacing
+about a spec.
+
+**The Convener's tie-break runs the other way.** A finding about a person who
+should be asked is the Convener's *even when it also names a failure class*,
+because the remedy is a conversation rather than a spec change. "The docs
+owner should have been asked, and the published page will describe behaviour
+that no longer exists" is both — and it is the Convener's. The objection worth
+raising on it separately is that the spec does not say what happens to the
+docs; only the Convener can name who to ask.
+
+**Why a seventh lens was not the answer.** Folding voice-mapping into the
+Cartographer was weighed and rejected on **object of care**: a choice story
+records a *decision the spec made*, while a voice is a *person the spec
+affects*. Every lens here interrogates the artefact; a seventh would have been
+the first whose subject was not the spec.
 
 ## The Six Lenses
 

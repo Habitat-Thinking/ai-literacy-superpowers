@@ -206,7 +206,7 @@ splits into two families: **sentinels**, whose object of care is the
 human's understanding and judgement, and **pipeline & harness agents**,
 whose object of care is an artefact, the pipeline, or the harness.
 
-#### Sentinels (5)
+#### Sentinels (9)
 
 > **Sentinel** — any agent whose primary purpose is to protect and
 > support the understanding and judgement of the human in the workflow.
@@ -232,7 +232,10 @@ skill for the near-miss gallery and authoring guidance.
 The [decision-discipline triad](docs/plugins/ai-literacy-superpowers/explanation/decision-discipline-triad.md)
 (`carpaccio`, `advocatus-diaboli`, `choice-cartographer`) guards
 *decisions*; the `reservoir-warden` guards *the decider*; the
-`cost-estimator` guards *the decision's inputs*.
+`cost-estimator` guards *the decision's inputs*. The four **cadence
+sentinels** guard the shape of the work around those decisions: the
+`coda` guards *the ending*, the `mast` *the pact*, the `wip-warden`
+*the count*, and the `convener` *the room*.
 
 | Agent | Guards | Role | Trust boundary |
 | ----- | ------ | ---- | -------------- |
@@ -241,6 +244,10 @@ The [decision-discipline triad](docs/plugins/ai-literacy-superpowers/explanation
 | choice-cartographer | Understanding of implicit decisions | Decision-archaeology mapper — runs after spec-mode diaboli dispositions are resolved; emits choice stories (Henney pattern stories) for each material implicit decision; soft gate at plan approval, merge-time HARNESS constraint enforces resolution | Read only |
 | reservoir-warden | The decider | Verifier-watch — counts observable proxies (session span, decision volume, context switches, wall-clock hour) over the recent git window, reports each with an observed/inferred/asked flag, and offers the single decide-your-stop-first recommendation when a threshold is crossed; persists no record of the human's state | Read only (no Write/Edit) |
 | cost-estimator | The decision's inputs | Prospective-cost emitter — reads MODEL_ROUTING.md and the latest observability/costs/ snapshot, applies the cost-estimation methodology, and returns an estimate-record string (token + time ranges, dollar cost only when grounded) for a dispatcher to persist after a human disposes; refuses rather than fabricating an ungroundable estimate | Read only |
+| coda | The ending | Session-close ritual — surfaces what was decided, what is left open, and the next action; parks open threads as append-only records for a later session to resume; returns record content for `/coda` to persist; never records why someone stopped | Read only |
+| mast | The pact | Pact-keeper — recites a limit the person set in clear weather before measuring anything against it, so the recitation cannot be shaped by the moment; refuses to estimate spend it cannot observe; discloses its own check's blind spot; never gates | Read only |
+| wip-warden | The count | Concurrency counter — counts live sessions against a limit the person declared, never inventing one; reports the count's honesty flag; watches sessions, never the human; says plainly that `strict` cannot compel | Read only |
+| convener | The room | Counsel-bringer — runs at plan approval beside the cartographer; maps the roles and groups a spec affects and drafts the one concrete question worth asking each; soft gate at plan approval, complete-if-present merge constraint; **never contacts anyone**, in any medium, ever | Read only |
 
 #### Pipeline & harness agents (11)
 
