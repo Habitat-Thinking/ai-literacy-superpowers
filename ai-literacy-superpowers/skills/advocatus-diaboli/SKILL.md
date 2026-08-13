@@ -128,7 +128,6 @@ that no longer exists" is both — and it is the Convener's. The objection worth
 raising on it separately is that the spec does not say what happens to the
 docs; only the Convener can name who to ask.
 
-
 Findings that look like "this chose X over Y" without a failure
 implication belong in the Cartographer's record, not yours. Reframe or
 drop. The Cartographer is read after your dispositions are resolved —
@@ -197,7 +196,9 @@ Emphasise **premise**, **alternatives**, **scope**, and **specification quality*
   must be caught before those implementations exist.
 
 **Deprioritise at spec time:** `risk` objections that require examining
-concrete code or runtime behaviour to ground. Threat-model, failure-mode,
+concrete code or runtime behaviour to ground — including every embedded
+assumption (below), since an assumption is embedded *by an artefact* and
+before the artefact exists there is nothing to read it out of. Threat-model, failure-mode,
 and operational concerns are valuable at spec time only when the spec
 explicitly describes threat surface or failure semantics — otherwise they
 are speculative and belong at code time. An ungrounded risk objection at
@@ -209,11 +210,92 @@ Emphasise **risk** and **implementation**.
 
 - `risk`: code time is when threat-model, failure-mode, and operational
   concerns become groundable with specific evidence from the implementation —
-  API surface exposures, error path gaps, resource-management failures, and
-  operational blind spots.
+  API surface exposures, error path gaps, resource-management failures,
+  operational blind spots, **and the assumptions the artefact encodes without
+  stating them** (see *Embedded assumptions*, below).
 - `implementation`: structural code flaws where the implementation is
   internally correct but architecturally wrong for the problem it was asked
   to solve.
+
+#### Embedded assumptions
+
+Every implementation encodes assumptions its spec never stated. That the user
+can see. That the network is there. That the list is short. That the locale is
+the author's.
+
+None of these are decisions anyone made — they are defaults that arrived with
+the code and were never noticed, because noticing them requires asking a
+question nobody thought to ask. **This is the hunt-list for that.** It is
+prompting, not schema: an objection here is a `risk` objection, or occasionally
+an `implementation` one, and nothing about the taxonomy changes.
+
+<!-- evidence: Norman's user-centred design work names the designer's model
+and the user's model as distinct, and the gap between them as where usability
+failures live. An unstated assumption is that gap in an artefact rather than a
+UI. The accessibility sub-kind rests on the same finding that motivates WCAG's
+perceivability principle — the default sensory channel is an assumption, not a
+given. Nothing here makes this a WCAG audit; see Non-Goals. -->
+
+| Sub-kind | The unstated assumption |
+| --- | --- |
+| **Usability and accessibility** | Everyone can see it, click it precisely, read it at that contrast, and is not using a screen reader |
+| **Performance context** | The list is short, the machine is fast, the round trip is cheap |
+| **Requirements enshrined in tests** | The fixture's shape *is* the requirement — a behaviour nobody specified is now locked in by the only thing that describes it |
+| **Environmental** | One locale, one timezone, one scale, connectivity present |
+
+**Quote the artefact, not a sentence about it.** The evidence for an embedded
+assumption is the line that encodes it. If you find yourself quoting the spec,
+you have a `premise` or `specification quality` objection instead — an
+assumption the spec *states* is not embedded.
+
+*Example (performance context): "`registry_count` sorts and prints every live
+session. That is correct for the 3–8 a person holds, and the WIP Warden's cap
+makes larger values a breach rather than a case — but nothing says so, so the
+next consumer inherits a linear scan as though it were a guarantee."*
+
+*Example (requirements enshrined in tests): "The only description of the
+timeout is `assert elapsed < 30` in the fixture. Thirty seconds is now a
+requirement, decided by whoever wrote the test, and no document says so."*
+
+**Some of these are the Convener's, not yours.** An assumption whose remedy is
+a conversation belongs there, under the tie-break already stated in the Routing
+Rule — a finding about a person who should be asked is the Convener's even when
+it also names a failure class.
+
+The test: **can the assumption be settled by reading the artefact, or only by
+asking someone?**
+
+> *Yours:* "The retry count is hard-coded to 3 and nothing says why." — read
+> it, quote it, object.
+>
+> *The Convener's:* "Nobody established whether screen-reader users can
+> complete this flow." — no line encodes the answer; a person has it.
+
+Note that the second is still worth *raising*; it goes in the consultation
+record, not this one.
+
+##### Offer the four remedy framings
+
+End an embedded-assumption objection's body with the four ways it can be
+answered, so the human writing the disposition has them in view:
+
+- **accept-as-stated** — the assumption holds. Write it down, so the next
+  reader inherits a decision rather than a default.
+- **revise-spec** — it is wrong, or right for a narrower case than the spec
+  claims. The spec changes.
+- **add-test** — it is a requirement nobody wrote down. A test makes it one.
+- **consciously-carry** — known, wrong for someone, and shipped anyway, on the
+  record with the because.
+
+**`consciously-carry` is a complete answer** and must not be presented as a
+lesser one. An assumption carried knowingly is strictly better than the same
+assumption carried invisibly, which is the whole point of surfacing it.
+
+These are framings offered to a human, **not a schema field**. Nothing checks
+them, and this skill does not pretend otherwise: with no distinguishing
+category, nothing deterministic can tell an assumption objection from any
+other, so a field would ship claiming an enforcement that does not exist. The
+`disposition` vocabulary is unchanged — `accepted`, `deferred`, `rejected`.
 
 **Deprioritise at code time:** `premise`. The premise was adjudicated at
 the plan-approval gate. If a premise objection fires at code time, it signals
