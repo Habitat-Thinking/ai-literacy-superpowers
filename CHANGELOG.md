@@ -4,6 +4,26 @@
 
 ### Fixed
 
+- **A constraint's enum values are now checked across the convention mirrors**
+  (#511). `check-convention-parity.py` matches constraint **headings**, so a
+  change to a rule's **body** passed untouched while `.cursor`, `.github` and
+  `.windsurf` kept the old wording. The S6 gate found that one step from
+  shipping: adding a seventh objection category would have left four files
+  declaring a six-value enum the deterministic checker no longer enforced,
+  with every gate green.
+- **New check** `scripts/check-constraint-enum-parity.py`, wired into the
+  existing Convention Parity workflow. Where a rule enumerates a closed set of
+  valid values, every member must appear in all three mirrors.
+- **Deliberately narrow.** The mirrors legitimately *abridge* — they drop
+  explanatory clauses that belong in `HARNESS.md` and would be noise in an
+  assistant's context, and 38 of 450 code literals in the rules differ today,
+  most of them correctly. A whole-body equality check would fail everywhere and
+  be switched off within a week. **Mirrors may abridge explanation; they may
+  not abridge a vocabulary** — a mirror listing five of six valid values does
+  not omit prose, it misleads about what is allowed.
+- Mutation-tested against both directions: a mirror dropping an enum member,
+  and `HARNESS.md` gaining a value the mirrors do not offer.
+
 - **The sentinel roster is now checked against its source** (#507). Which agents
   are sentinels is a derived fact — exactly the `agents/*.agent.md` files
   carrying `role: sentinel` — and three documents pinned a copy of it.

@@ -220,9 +220,9 @@
 
 ## Convention parity
 
-- **Rule**: Every active constraint heading in HARNESS.md's `## Constraints` section must appear verbatim in all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`). These files are generated from HARNESS.md by `/convention-sync` and can drift by whole constraints (content drift, not a stale mtime). This PR-time gate complements the weekly "Convention file sync" GC rule.
+- **Rule**: Every active constraint heading in HARNESS.md's `## Constraints` section must appear verbatim in all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`). These files are generated from HARNESS.md by `/convention-sync` and can drift by whole constraints (content drift, not a stale mtime). This PR-time gate complements the weekly "Convention file sync" GC rule. Headings alone are not enough: a change to a constraint's **body** passes the heading check untouched. Where a rule enumerates a closed set of valid values, every member must also appear in all three mirrors — a mirror listing five of six does not omit prose, it misleads about what is allowed. Mirrors may abridge explanation; they may not abridge a vocabulary.
 - **Enforcement**: deterministic
-- **Tool**: `python3 scripts/check-convention-parity.py` (CI: `.github/workflows/convention-parity-check.yml`)
+- **Tool**: `python3 scripts/check-convention-parity.py` and `python3 scripts/check-constraint-enum-parity.py` (CI: `.github/workflows/convention-parity-check.yml`)
 - **Scope**: pr
 
 ## Sentinel integrity
