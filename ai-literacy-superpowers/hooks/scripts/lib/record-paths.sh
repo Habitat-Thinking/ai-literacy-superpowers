@@ -58,3 +58,36 @@ records_open() {
     printf '%s\n' "$f"
   done
 }
+
+# records_latest <dir> — the CURRENT state of every record chain, one path per
+# line: the newest file in each supersession chain, transitions included.
+#
+# The complement of records_open, and a genuine gap in the substrate rather
+# than one consumer's special case. `records_open` answers "what is still
+# unresolved" and therefore excludes every transition file by name — which
+# means the one place a disposition ever lives is the one place it cannot see.
+# S5's merge check needed to read dispositions out of `.resolved.md` files and
+# found nothing to read them with.
+#
+# So: for each chain, return the file nothing supersedes. An open record with
+# no successor returns itself; a resolved one returns the `.resolved.md`, not
+# its predecessor.
+records_latest() {
+  local dir="$1" f base superseded
+
+  [ -d "$dir" ] || return 0
+
+  superseded="$(grep -hE '^supersedes:[[:space:]]*[^[:space:]]' "$dir"/*.md 2>/dev/null \
+    | sed -E 's/^supersedes:[[:space:]]*//; s/[[:space:]]+$//' \
+    | grep -v '^null$' || true)"
+
+  for f in "$dir"/*.md; do
+    [ -e "$f" ] || continue
+    base="$(basename "$f")"
+    [ "$base" = "README.md" ] && continue
+    if [ -n "$superseded" ] && printf '%s\n' "$superseded" | grep -qxF "$base"; then
+      continue
+    fi
+    printf '%s\n' "$f"
+  done
+}

@@ -77,6 +77,19 @@ a session, the flag discipline for a count that is never exact, and the reason
 the boundary is **not** machine-enforced — including the worked sentences a
 word-ban would have passed.
 
+### convener
+
+The line between a question and a message — *a question is one sentence a
+person could answer; a message has a salutation, a context paragraph, or a
+sign-off* — shown as a worked pair where the wrapper is the only difference.
+
+Also carries why a voice is a role and never an agent or a person, the
+derivation table for `inferred` voices, the prune-**and-add** dialogue that
+makes S1's third honesty flag `asked` reachable, the cap at 8 biasing 3–5 with
+the merge-time asymmetry that motivates it, the three-way Routing Rule with the
+Convener tie-break, and why `deliberately-not-consulted` is a complete answer
+whose `outcome` must still be distinct.
+
 ### cognitive-reservoir
 
 The shared grounding for the reservoir-warden agent and the reservoir-check Stop hook — the framework's watch on the one actor it cannot verify, the human verifier. Defines the four observable proxies (session span, decision volume, context switches, wall-clock hour), the `observed` / `inferred` / `asked` confidence discipline, the disjunctive default thresholds, the one firm principle (decide your stop before the next session begins), the six-level scaling guidance, and the honesty rule that keeps the contested science (ego depletion, the hungry-judges study) separate from the robust basis (vigilance decrement, task-switching cost). Advisory-only; never a fatigue score, never a gate.

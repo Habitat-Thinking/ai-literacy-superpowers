@@ -131,10 +131,16 @@ solid and which are precaution under uncertainty.
 | `choice-cartographer` | Understanding of the implicit decisions a spec has made |
 | `carpaccio` | Judgement scale — keeps each decision small enough to hold |
 | `cost-estimator` | The decision's inputs — what a choice will cost before it is made |
+| `coda` | The ending — that a session stops by decision rather than by attrition |
+| `mast` | The pact — that a limit set in clear weather survives the moment it governs |
+| `wip-warden` | The count — how much is open at once, against a line the person drew |
+| `convener` | The room — that a spec is not decided by everyone it affects being absent |
 
 Narrative: the decision-discipline triad guards *decisions*; the
 reservoir-warden guards *the decider*; the cost-estimator guards *the
-decision's inputs*.
+decision's inputs*. The four cadence sentinels guard the shape of the
+work around those decisions — the `coda` *the ending*, the `mast` *the
+pact*, the `wip-warden` *the count*, and the `convener` *the room*.
 
 ## The near-miss gallery
 

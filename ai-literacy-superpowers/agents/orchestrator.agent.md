@@ -140,10 +140,22 @@ message with multiple Agent tool calls.
            "PRs have adjudicated choice stories" is the forcing function;
            the soft gate is an invitation to engage now while context is
            fresh, not a block. Do NOT let any agent write dispositions.
+  1b'. SEQUENTIAL — convener  Alongside 1b, on the same spec at the same
+           moment; produces the consultation record at
+           `docs/superpowers/consultations/<spec-slug>.md`.
+     SOFT GATE: Consultation Surface — surface the record to the user and run
+           the prune-AND-add dialogue. ALLOW progression even if every voice
+           is still `pending`. Emit a structured `convene_pending_count: N`
+           field in the plan-approval summary. The merge-time HARNESS
+           constraint "PRs have disposed consultation voices" is the forcing
+           function, and it is complete-if-present — a PR with no record
+           passes. Do NOT let any agent write dispositions, and the convener
+           NEVER contacts anyone.
      GATE: Plan Approval — once 1a dispositions are resolved (hard) and the
-           choice-story record is surfaced (soft), present the plan summary
-           alongside both adjudicated records and `cartograph_pending_count`;
-           wait for approval.
+           choice-story and consultation records are surfaced (soft), present
+           the plan summary alongside the adjudicated records,
+           `cartograph_pending_count` and `convene_pending_count`; wait for
+           approval.
   1c. SEQUENTIAL — agent-artefact scope detection (no agent dispatch)
            Before dispatching tdd-agent, inspect the plan for any file path
            under `ai-literacy-superpowers/skills/<name>/SKILL.md`,
@@ -443,6 +455,35 @@ Do not inline check definitions here — edits to the validation contract
 live in the reference file so this orchestrator and the
 `/choice-cartograph` command stay in sync.
 
+### Step 5a: Dispatch convener (alongside the cartographer)
+
+Dispatch the convener agent with the spec file path. It reads the spec,
+`HARNESS.md`'s `## Stakeholders` section if the project declares one, and the
+adjudicated objection and story records, then returns the full consultation
+record with every voice `disposition: pending`.
+
+Run the prune-**and-add** dialogue from `/convene` step 4 before writing: show
+the proposed voices with their questions and `source_flag`s, ask which do not
+apply, and ask **who it missed**. A voice the human names is written with
+`source_flag: asked`.
+
+Both directions matter. The agent cannot see an org chart, a long-running
+argument, or the team that got burned by this last quarter — so the
+highest-leverage voice in a session is usually the one it failed to derive,
+and a prune-only dialogue has nowhere to put it.
+
+Write the pruned-and-extended content to
+`docs/superpowers/consultations/<spec-slug>.md`. Records are append-only: if
+one already exists, write `<spec-slug>.superseded.md` naming the prior file in
+`supersedes:` rather than editing in place.
+
+Apply the F1–F8 validation checkpoint defined in `commands/convene.md` step 6,
+fixing deviations in place rather than re-dispatching.
+
+The convener is read-only by tool boundary (Read, Glob, Grep) and **never
+contacts anyone** — not by email, issue, mention, or a message drafted for the
+human to send. The orchestrator writes the file from the returned content.
+
 ### Step 6: Surface the choice-story record (soft gate)
 
 PAUSE and present the choice-story record to the user. Show:
@@ -504,6 +545,9 @@ adjudicated records. Show:
 - **`carpaccio_progressed_slice: S<N>`** — the slice id this plan
   covers; surfaces "this plan covers only slice S2 of 4" so the
   plan review isn't confused about scope.
+- **`convene_pending_count: N`** — the count of consultation voices still
+  `pending`, surfaced as a structured field on the same terms as
+  `cartograph_pending_count`
 - Lens distribution of the choice-story record
 - **Cost estimate (spec-grounded, this slice) — from Step 6a**, a labelled
   block surfaced **alongside** `cartograph_pending_count` as informational
@@ -535,6 +579,13 @@ blocks the PR until choice-story dispositions are resolved. If the user
 chooses Approve with `cartograph_pending_count > 0`, the orchestrator
 proceeds to tdd-agent without further prompting on the cartographer
 state.
+
+`convene_pending_count` follows the **same rule**, with one difference worth
+naming: the Cartographer's merge constraint requires a story record on every
+non-exempt spec, while the Convener's is **complete-if-present** — a PR with no
+consultation record passes. Running `/convene` remains a choice. What the
+constraint catches is the *abandoned* conversation: someone saw a voice they
+knew mattered and shipped without saying either way.
 
 The **cost-estimate block** (Step 6a) is surfaced under the **same rule**:
 informational observability, **not** a separate decision point. It adds no

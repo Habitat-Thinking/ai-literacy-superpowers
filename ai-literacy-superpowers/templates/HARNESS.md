@@ -36,6 +36,23 @@
 - **Error handling**: {{ERROR_HANDLING}}
 - **Documentation**: {{DOCUMENTATION_STYLE}}
 
+<!-- ## Stakeholders
+
+     OPTIONAL. Who this project affects, as roles or groups — never named
+     individuals, and never agents. The Convener reads this section to map the
+     voices a spec touches, flagging a voice it names `observed` rather than
+     `inferred`.
+
+     Who a project affects is a property of the PROJECT, which is why it lives
+     here rather than in a personal file. Leaving this out is not an error: the
+     Convener derives candidates from the change itself and flags every one
+     `inferred`, producing a shorter, less certain list, honestly labelled.
+
+- Support — fields questions about the CLI
+- Docs — owns the published reference
+- PO — disposes behaviour changes
+-->
+
 ---
 
 ## Constraints
@@ -96,6 +113,27 @@
   still act on it.
 - **Enforcement**: agent
 - **Tool**: harness-enforcer
+- **Scope**: pr
+
+### PRs have disposed consultation voices
+
+- **Rule**: Every consultation record under
+  `docs/superpowers/consultations/` must have every voice disposed:
+  `consulted` or `deliberately-not-consulted`, each with a one-line
+  `outcome`, and **no two voices in one record may carry the same
+  outcome**. Complete-if-present — a PR whose spec has no consultation
+  record passes, and running `/convene` remains a choice. The check reads
+  the current state of each record chain (`records_latest`), so a
+  `.resolved.md` supersedes its pending predecessor.
+
+  It never judges a reason: "no time; the docs owner is on leave" passes.
+  What it refuses is one string standing for several decisions. `pending`
+  is a *detectable* failure; N voices bulk-filled with one outcome is an
+  undetectable one, and worse — an all-pending record is truthful about
+  disengagement, while an all-declined one launders it into decisions
+  nobody made, permanently, in an append-only file.
+- **Enforcement**: deterministic
+- **Tool**: `ai-literacy-superpowers/scripts/check-consultation-dispositions.py`
 - **Scope**: pr
 
 ### Tests must pass

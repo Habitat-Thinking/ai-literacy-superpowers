@@ -111,6 +111,10 @@ Every feature or behaviour-change PR must have (a) a spec-mode objection record 
 
 Every non-exempt PR must have either (a) at least one spec in `docs/superpowers/specs/` with a corresponding choice-story record at `docs/superpowers/stories/<spec-slug>.md` whose every story has `disposition` set to one of `accepted`, `revisit`, or `promoted` — no `pending` values; or (b) one of the exempt labels: `bug`, `fix`, `chore`, `maintenance`, `cross-repo`, or a branch prefixed `fix/` or `chore/`. Per-spec exemptions: specs with filename date before 2026-04-27 are exempt; specs with `cartographer: exempt-pre-existing` in their frontmatter are exempt individually. Enforcement: agent (harness-enforcer). Scope: pr.
 
+### PRs have disposed consultation voices
+
+Every consultation record under `docs/superpowers/consultations/` must have every voice disposed: `consulted` or `deliberately-not-consulted`, each with a one-line `outcome`, and **no two voices in one record may carry the same outcome**. Complete-if-present — a PR whose spec has no consultation record passes, and running `/convene` remains a choice. The check reads the current state of each record chain (`records_latest`), so a `.resolved.md` supersedes its pending predecessor. It never judges a reason: "no time; the docs owner is on leave" passes. It refuses one string standing for several decisions. Enforcement: deterministic (`ai-literacy-superpowers/scripts/check-consultation-dispositions.py`). Scope: pr.
+
 ### Tests must pass
 
 The project's test suite must pass with zero failures before any code is merged. Enforcement: unverified. Scope: pr.

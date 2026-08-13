@@ -121,6 +121,13 @@
 - **Tool**: harness-enforcer
 - **Scope**: pr
 
+## PRs have disposed consultation voices
+
+- **Rule**: Every consultation record under `docs/superpowers/consultations/` must have every voice disposed: `consulted` or `deliberately-not-consulted`, each with a one-line `outcome`, and **no two voices in one record may carry the same outcome**. Complete-if-present — a PR whose spec has no consultation record passes, and running `/convene` remains a choice. The check reads the current state of each record chain (`records_latest`), so a `.resolved.md` supersedes its pending predecessor. It never judges a reason: "no time; the docs owner is on leave" passes. It refuses one string standing for several decisions.
+- **Enforcement**: deterministic
+- **Tool**: `ai-literacy-superpowers/scripts/check-consultation-dispositions.py`
+- **Scope**: pr
+
 ## Tests must pass
 
 - **Rule**: The project's test suite must pass with zero failures before any code is merged

@@ -3,12 +3,12 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.4.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.71.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.72.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
 [![diagnostic-legibility](https://img.shields.io/badge/diagnostic--legibility-v0.11.0-4682B4?style=flat-square)](diagnostic-legibility/)
-[![Skills](https://img.shields.io/badge/Skills-40-2E8B57?style=flat-square)](#skills-40)
-[![Agents](https://img.shields.io/badge/Agents-19-2E8B57?style=flat-square)](#agents-19)
-[![Commands](https://img.shields.io/badge/Commands-31-2E8B57?style=flat-square)](#commands-31)
+[![Skills](https://img.shields.io/badge/Skills-41-2E8B57?style=flat-square)](#skills-41)
+[![Agents](https://img.shields.io/badge/Agents-20-2E8B57?style=flat-square)](#agents-20)
+[![Commands](https://img.shields.io/badge/Commands-32-2E8B57?style=flat-square)](#commands-32)
 [![Harness](https://img.shields.io/badge/Harness-31%2F32_enforced-4682B4?style=flat-square)](HARNESS.md)
 [![Harness Health](https://img.shields.io/badge/Harness_Health-Healthy-2E8B57?style=flat-square)](observability/snapshots/2026-07-21-snapshot.md)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-D97757?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
@@ -28,7 +28,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.71.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **40 skills, 19 agents, 31 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.72.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **41 skills, 20 agents, 32 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 | **`diagnostic-legibility`** | v0.11.0 | Hosts agents accountable for maintaining human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. The `ConceptualPipelineMap` template adds a standalone, presentation-agnostic flow-perspective data model; the agent's `scope-resolution` mode answers "what does my task touch?"; its `pipeline` mode traces control flow within that bound and cross-checks all three collections; the `/pipeline-map "<task>"` command renders the task-scoped map as a self-contained HTML flowchart (pinned, SHA-verified Mermaid inlined; no CDN); and `--predict-change` adds an opt-in change-site prediction (which stages the task will modify and where it will insert new ones), disclosed as a prediction, never a directive. | [docs](docs/plugins/diagnostic-legibility/index.md) |
 
@@ -158,7 +158,7 @@ This plugin works with both Claude Code and GitHub Copilot CLI from the same rep
 
 The remaining sections of this README document the **`ai-literacy-superpowers`** plugin in detail. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md).
 
-### Skills (40)
+### Skills (41)
 
 Code quality, harness engineering, and governance knowledge that agents read when working in your codebase.
 
@@ -199,14 +199,14 @@ Code quality, harness engineering, and governance knowledge that agents read whe
 | cognitive-reservoir | Watches the human verifier the harness cannot verify — four observable proxies, observed/inferred/asked confidence discipline, disjunctive thresholds, the decide-your-stop-first principle, and the honesty rule separating contested science (ego depletion, hungry judges) from the robust basis (vigilance decrement, switching cost); advisory-only, never a fatigue score |
 | sentinel-design | Defines the sentinel agent category — the three-part signature (S1 read-only, S2 advisory-to-human, S3 explicit honesty rule), the near-miss gallery (why code-reviewer and harness-auditor don't qualify), the honesty-rule-before-detection-logic discipline, and the three anti-patterns (scoring the human, persisting human-state records, gating automatically) |
 
-### Agents (19)
+### Agents (20)
 
 A coordinated team that handles the full development lifecycle. It
 splits into two families: **sentinels**, whose object of care is the
 human's understanding and judgement, and **pipeline & harness agents**,
 whose object of care is an artefact, the pipeline, or the harness.
 
-#### Sentinels (5)
+#### Sentinels (9)
 
 > **Sentinel** — any agent whose primary purpose is to protect and
 > support the understanding and judgement of the human in the workflow.
@@ -232,7 +232,10 @@ skill for the near-miss gallery and authoring guidance.
 The [decision-discipline triad](docs/plugins/ai-literacy-superpowers/explanation/decision-discipline-triad.md)
 (`carpaccio`, `advocatus-diaboli`, `choice-cartographer`) guards
 *decisions*; the `reservoir-warden` guards *the decider*; the
-`cost-estimator` guards *the decision's inputs*.
+`cost-estimator` guards *the decision's inputs*. The four **cadence
+sentinels** guard the shape of the work around those decisions: the
+`coda` guards *the ending*, the `mast` *the pact*, the `wip-warden`
+*the count*, and the `convener` *the room*.
 
 | Agent | Guards | Role | Trust boundary |
 | ----- | ------ | ---- | -------------- |
@@ -241,6 +244,10 @@ The [decision-discipline triad](docs/plugins/ai-literacy-superpowers/explanation
 | choice-cartographer | Understanding of implicit decisions | Decision-archaeology mapper — runs after spec-mode diaboli dispositions are resolved; emits choice stories (Henney pattern stories) for each material implicit decision; soft gate at plan approval, merge-time HARNESS constraint enforces resolution | Read only |
 | reservoir-warden | The decider | Verifier-watch — counts observable proxies (session span, decision volume, context switches, wall-clock hour) over the recent git window, reports each with an observed/inferred/asked flag, and offers the single decide-your-stop-first recommendation when a threshold is crossed; persists no record of the human's state | Read only (no Write/Edit) |
 | cost-estimator | The decision's inputs | Prospective-cost emitter — reads MODEL_ROUTING.md and the latest observability/costs/ snapshot, applies the cost-estimation methodology, and returns an estimate-record string (token + time ranges, dollar cost only when grounded) for a dispatcher to persist after a human disposes; refuses rather than fabricating an ungroundable estimate | Read only |
+| coda | The ending | Session-close ritual — surfaces what was decided, what is left open, and the next action; parks open threads as append-only records for a later session to resume; returns record content for `/coda` to persist; never records why someone stopped | Read only |
+| mast | The pact | Pact-keeper — recites a limit the person set in clear weather before measuring anything against it, so the recitation cannot be shaped by the moment; refuses to estimate spend it cannot observe; discloses its own check's blind spot; never gates | Read only |
+| wip-warden | The count | Concurrency counter — counts live sessions against a limit the person declared, never inventing one; reports the count's honesty flag; watches sessions, never the human; says plainly that `strict` cannot compel | Read only |
+| convener | The room | Counsel-bringer — runs at plan approval beside the cartographer; maps the roles and groups a spec affects and drafts the one concrete question worth asking each; soft gate at plan approval, complete-if-present merge constraint; **never contacts anyone**, in any medium, ever | Read only |
 
 #### Pipeline & harness agents (11)
 
@@ -258,7 +265,7 @@ The [decision-discipline triad](docs/plugins/ai-literacy-superpowers/explanation
 | assessor | AI literacy assessment — scans repo, asks questions, applies fixes, recommends workflow changes | Read + Write |
 | governance-auditor | Governance specialist — semantic drift analysis, debt inventory, three-frame alignment | Read + limited Write |
 
-### Commands (31)
+### Commands (32)
 
 | Command | What it does |
 | ------- | ------------ |

@@ -113,13 +113,17 @@ build goes red. S2 and S3 are agent-verifiable via the harness-enforcer.
 | `wip-warden` | The count — how much is open at once, against a line the person drew | Read-only; counts sessions and never watches the human; reports the count's flag; never invents a limit; says plainly that `strict` cannot compel |
 | `coda` | The ending — that a session stops by decision rather than by attrition | Read-only; returns record content for `/coda` to persist; per-item observed/inferred/asked flags; never refuses a next action and never records why someone stopped |
 
+| `convener` | The room — that a spec is not decided by everyone it affects being absent | Read-only; voices disposed at a soft gate; observed/inferred/asked per voice; never contacts anyone and never drafts a message to send |
 The narrative: the decision-discipline triad guards *decisions*; the
 `reservoir-warden` guards *the decider*; the `cost-estimator` guards
 *the decision's inputs*; the `coda` guards *the ending* — that a
 session stops by decision rather than by attrition, and that what was
 left open is written down rather than carried — and the `mast` guards
 *the pact*, so that a limit set in clear weather is still there when the
-weather changes.
+weather changes. The `wip-warden` guards *the count*, and the `convener`
+guards *the room* — a spec can be internally excellent and still be wrong
+because the person who wrote it never asked the one question that would
+have changed it, and that failure is invisible from inside.
 
 ### A second declaration surface: the pact file
 
