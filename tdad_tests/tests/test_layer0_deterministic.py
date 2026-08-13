@@ -58,6 +58,9 @@ BASH_TEST_SCRIPTS = [
     # #507 — the sentinel roster is a derived fact pinned in three places.
     # Membership only: the tables carry prose no generator would write well.
     "test-sentinel-roster-parity",
+    # #519 — the sentinel docs were written for authors, not users. Derives
+    # the agent-command relation from reference/commands.md's own field.
+    "test-sentinel-usage-path",
     "test-hooks-doc-parity",
     "test-cadence-integration",
     "test-affordances-template",

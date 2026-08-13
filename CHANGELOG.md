@@ -4,6 +4,29 @@
 
 ### Fixed
 
+- **The sentinel docs now have a usage path** (#519). They were written for
+  people who *build* sentinels rather than people who *use* them:
+  `explanation/sentinels.md` carried exactly one how-to link and it pointed at
+  `design-a-sentinel.md`, its roster's third column was "signature evidence"
+  (proof an agent qualifies), and two of its eight sections were for authors.
+  A reader who had just learned what the nine are had almost no path onward.
+- **New `Using them` section** on the sentinels page: one row per sentinel with
+  *reach for it when*, the command, and the guide — answering "which one",
+  "how", and "what is available" in one table. Plus what to try first, and the
+  distinction between the four that run in the pipeline and the five you call.
+- **Every sentinel's `reference/agents.md` entry now names its command.** Four
+  did; `coda` and `mast` passed only incidentally, with the command appearing in
+  prose. All nine now carry a structural `Run` field.
+- **New tutorial `your-first-sentinels.md`** — the Diataxis learning quadrant was
+  empty for this category. All nine tutorials mentioned no sentinel, and
+  `first-time-tour.md` presented `/diaboli` as freestanding rather than one of
+  nine. It now says so, and links onward.
+- **New Layer 0 test** `test-sentinel-usage-path.sh` (U1-U4). Three relations,
+  each derived from both ends: sentinels from `role: sentinel`, commands from
+  `reference/commands.md`'s own **Agents dispatched** field — a mapping that
+  already existed and nothing consumed — and guides from the new table. Six
+  mutations, all killed.
+
 - **A constraint's enum values are now checked across the convention mirrors**
   (#511). `check-convention-parity.py` matches constraint **headings**, so a
   change to a rule's **body** passed untouched while `.cursor`, `.github` and

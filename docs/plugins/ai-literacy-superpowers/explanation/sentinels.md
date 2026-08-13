@@ -142,6 +142,47 @@ guards *the room* — a spec can be internally excellent and still be wrong
 because the person who wrote it never asked the one question that would
 have changed it, and that failure is invisible from inside.
 
+## Using them
+
+The roster above says what each sentinel *guards*. This says when to reach for
+one.
+
+| Sentinel | Reach for it when | Run | Guide |
+| --- | --- | --- | --- |
+| `carpaccio` | A task is big enough that you cannot hold the whole decision at once | `/carpaccio` | [Slicing a task](../how-to/slicing-a-task.md) |
+| `advocatus-diaboli` | A spec is about to be approved, or code is about to be integrated | `/diaboli` | [Review a spec adversarially](../how-to/review-a-spec-adversarially.md) |
+| `choice-cartographer` | A spec has made decisions nobody wrote down as decisions | `/choice-cartograph` | [Run choice-cartograph](../how-to/run-choice-cartograph.md) |
+| `convener` | A change reaches past the room — a published surface, a default, an error message | `/convene` | [Convening the voices](../how-to/convening-the-voices.md) |
+| `cost-estimator` | You want the token and time cost of a task **before** committing to it | `/cost-estimate` | [Estimate task cost](../how-to/estimate-task-cost.md) |
+| `reservoir-warden` | You have been at it a while and want the observable proxies, not a verdict | `/reservoir` | [Watch your cognitive reservoir](../how-to/watch-your-cognitive-reservoir.md) |
+| `wip-warden` | You suspect more is open at once than you can hold | `/wip` | [Watching your WIP](../how-to/watching-your-wip.md) |
+| `mast` | You want a limit you set in clear weather to survive the moment it governs | `/mast` | [Keeping a pact](../how-to/keeping-a-pact.md) |
+| `coda` | A session is ending and you would rather stop by decision than by attrition | `/coda` | [Closing a session](../how-to/closing-a-session.md) |
+
+### You do not have to adopt them all
+
+Nothing here is required, and nothing cascades. Each sentinel reads its own
+declaration surface and stays silent when you have not declared one — a
+`Session WIP` block you never wrote means `/wip` reports no limit rather than
+inventing one, and a project with no `## Stakeholders` section gets a shorter,
+`inferred`-flagged voice list rather than a warning.
+
+**The four in the pipeline run whether you ask or not.** `carpaccio`,
+`advocatus-diaboli`, `choice-cartographer` and `convener` have positions in the
+orchestrator's flow, because the failures they catch are invisible from inside
+the work — the people who most need them are the people who would not think to
+run them. The commands above are for running one on demand.
+
+**The other five are yours to call.** `/reservoir`, `/wip`, `/mast`, `/coda` and
+`/cost-estimate` answer when asked and otherwise stay out of the way.
+
+### If you only try one
+
+`/coda`, at the end of a session you would otherwise let trail off. It is the
+cheapest to adopt — no declaration surface to write first — and it produces the
+thing the others depend on: a session that ended on purpose, with what was left
+open written down rather than carried.
+
 ### A second declaration surface: the pact file
 
 The **cadence sentinels** now under construction — the Coda, the Mast,

@@ -528,6 +528,13 @@ isolation from your main workspace.
 
 ### `/diaboli`
 
+> **One of nine.** `/diaboli` is a **sentinel** — an agent that informs,
+> challenges, surfaces or warns, and never fixes, writes, merges or decides.
+> There are nine, and this tour covers one. See
+> [Your first sentinels](your-first-sentinels.md) for three of them across a
+> session, or [Sentinels](../explanation/sentinels.md) for the full roster and
+> which to reach for when.
+
 **What it does.** Dispatches the advocatus-diaboli agent against a
 spec file and produces a structured objection record at
 `docs/superpowers/objections/<slug>.md`. The agent raises up to 12
