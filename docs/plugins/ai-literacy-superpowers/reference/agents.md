@@ -62,6 +62,7 @@ falling back to static where it is absent. The Plan Approval GATE and
 
 ### carpaccio
 
+- **Run**: `/carpaccio`
 - **Tools**: Read, Glob, Grep
 - **Dispatched by**: orchestrator (step 0, before spec-writer)
 - **Trust boundary**: Read-only
@@ -118,6 +119,7 @@ the TDD agent will translate into tests.
 
 ### advocatus-diaboli
 
+- **Run**: `/diaboli`
 - **Tools**: Read, Glob, Grep
 - **Dispatched by**: orchestrator (after spec-writer, before plan approval)
 - **Trust boundary**: Read-only
@@ -148,6 +150,7 @@ read-only trust boundary unchanged.
 
 ### choice-cartographer
 
+- **Run**: `/choice-cartograph`
 - **Tools**: Read, Glob, Grep
 - **Dispatched by**: orchestrator (after spec-mode advocatus-diaboli
   dispositions are resolved, before plan approval)
@@ -178,7 +181,7 @@ This release is spec-mode only. Code-mode behaviour is tracked under
 
 ### coda
 
-**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only
+**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only · **Run:** `/coda`
 
 Closes a session deliberately rather than by attrition. Surveys what landed and
 what is still live, proposes a thread grouping for the human to confirm, and
@@ -198,7 +201,7 @@ See the `coda` skill and [Closing a session](../how-to/closing-a-session.md).
 
 ### mast
 
-**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only
+**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only · **Run:** `/mast`
 
 Reads the pact a human authored for themselves and reports where they stand
 against it — reciting their own declared words first and annotating after,
@@ -221,7 +224,7 @@ See the `mast` skill and [Keeping a pact](../how-to/keeping-a-pact.md).
 
 ### wip-warden
 
-**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only
+**Role:** sentinel · **Tools:** Read, Glob, Grep, Bash · **Trust boundary:** read-only · **Run:** `/wip`
 
 Counts live sessions against the limit the human declared for themselves, lists
 which they are and how long since each last took a turn, and says when they are
@@ -243,7 +246,7 @@ See the `wip-warden` skill and [Watching your WIP](../how-to/watching-your-wip.m
 
 ### convener
 
-**Role:** sentinel · **Tools:** Read, Glob, Grep · **Trust boundary:** read-only
+**Role:** sentinel · **Tools:** Read, Glob, Grep · **Trust boundary:** read-only · **Run:** `/convene`
 
 Runs at plan approval beside the `choice-cartographer`. Maps the **voices** a
 spec affects — the roles and groups outside the room — drafts the one concrete
@@ -273,6 +276,7 @@ See the `convener` skill and [Convening the voices](../how-to/convening-the-voic
 
 ### cost-estimator
 
+- **Run**: `/cost-estimate`
 - **Tools**: Read, Glob, Grep
 - **Dispatched by**: a downstream `/cost-estimate` command / orchestrator
   fold-in (out of scope at this slice)
@@ -484,6 +488,7 @@ governance analysis requires nuanced judgement about meaning.
 
 ### reservoir-warden
 
+- **Run**: `/reservoir`
 - **Tools**: Read, Glob, Grep, Bash
 - **Model**: inherit (routed to an inexpensive tier — see `MODEL_ROUTING.md`)
 - **Dispatched by**: `/reservoir`

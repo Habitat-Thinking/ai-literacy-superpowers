@@ -53,6 +53,7 @@ matches the kind of reading you're doing right now.
 
 Start here if you're new to the plugin.
 
+- [Your First Sentinels](tutorials/your-first-sentinels.md) — meet three of the nine in one session; the category that guards your understanding rather than your code
 - [Getting Started](tutorials/getting-started.md)
 - [First Time Tour](tutorials/first-time-tour.md)
 - [Harness From Scratch](tutorials/harness-from-scratch.md)
