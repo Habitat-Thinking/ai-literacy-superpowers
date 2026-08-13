@@ -10,9 +10,9 @@
 **Scope:** the docs site, `hooks.json`'s description, `README.md`, and one
 integration test
 
-**Provenance:** *The Second Front — Arc Insertion Remit* (slide S7) — **a
-document that is in neither repository.** See §3 and #514; the citation is
-recorded as unresolvable rather than repeated as though it were retrievable.
+**Provenance:** the Cadence Sentinels build spec, supplied in conversation
+2026-08-08 — transcribed to `docs/superpowers/cadence-sentinels-charter.md`.
+Slice scope: issue #497.
 
 ---
 
@@ -195,6 +195,13 @@ is to give the epic's results a durable home, is the last place anyone looks
 Revision 1 filed this as a blocked checklist item. It is the epic's own
 recurring defect at epic scale: a confident sentence describing something that
 is not there. **#514** records it, and this spec's own provenance line says so.
+
+> **Resolved 2026-08-13 (#514).** The deck does not exist *at all* — it was a
+> label for a build spec supplied in conversation, not a document that went
+> missing. Item 4 is therefore unverifiable by construction rather than blocked,
+> and #497 closed on that basis. The constraints the epic cites by number are
+> transcribed to `docs/superpowers/cadence-sentinels-charter.md`, and all seven
+> provenance lines now point there.
 
 ### 3.2 So this PR does not close #497
 

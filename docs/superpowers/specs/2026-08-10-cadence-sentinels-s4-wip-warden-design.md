@@ -14,8 +14,9 @@ commit (§4.1).
 **Explicitly out of scope:** the override *record*, which is **#501**; the
 Convener (S5).
 
-**Provenance:** *The Second Front — Arc Insertion Remit* (slide S5) and
-*Compulsive Continuation — A Research Exploration*.
+**Provenance:** the Cadence Sentinels build spec, supplied in conversation
+2026-08-08 — transcribed to `docs/superpowers/cadence-sentinels-charter.md`.
+Slice scope: issue #494.
 
 ---
 

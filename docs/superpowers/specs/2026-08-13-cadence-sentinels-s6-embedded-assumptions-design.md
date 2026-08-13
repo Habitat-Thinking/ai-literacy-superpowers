@@ -10,7 +10,9 @@
 agent rather than a new one.
 **Scope:** `skills/advocatus-diaboli/SKILL.md` and one new reference page.
 
-**Provenance:** *The Second Front — Arc Insertion Remit* (slide S6).
+**Provenance:** the Cadence Sentinels build spec, supplied in conversation
+2026-08-08 — transcribed to `docs/superpowers/cadence-sentinels-charter.md`.
+Slice scope: issue #496.
 
 ---
 

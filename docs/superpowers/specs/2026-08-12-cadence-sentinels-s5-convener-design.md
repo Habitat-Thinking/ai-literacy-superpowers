@@ -12,7 +12,9 @@ in a carved commit (§6)
 `HARNESS.md` constraint
 **Explicitly out of scope:** contacting anyone, ever.
 
-**Provenance:** *The Second Front — Arc Insertion Remit* (slide S5).
+**Provenance:** the Cadence Sentinels build spec, supplied in conversation
+2026-08-08 — transcribed to `docs/superpowers/cadence-sentinels-charter.md`.
+Slice scope: issue #495.
 
 ---
 
