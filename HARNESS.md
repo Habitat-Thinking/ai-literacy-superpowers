@@ -171,14 +171,22 @@
     follow this convention; new tags continue to.
   - **`model-cards`** (sister plugin): `model-cards-vX.Y.Z` tags.
     CHANGELOG at `model-cards/CHANGELOG.md`.
+  - **`diagnostic-legibility`** (sister plugin): `diagnostic-legibility-vX.Y.Z`
+    tags. CHANGELOG at `diagnostic-legibility/CHANGELOG.md`.
   - Future sister plugins follow the same shape: `<plugin-name>-vX.Y.Z`,
-    with their own per-plugin CHANGELOG.
+    with their own per-plugin CHANGELOG. **Adding one requires a new
+    `auto-tag-<plugin>.yml` workflow and a new step in the gc.yml
+    release-tag-completeness rule** — the tagging half of this constraint is
+    enumerated per plugin, deliberately (2026-08-13). `version-check.yml`
+    needs no edit: it derives its plugin list from `marketplace.json`.
 - **Enforcement**: deterministic
 - **Tool**:
   - `.github/workflows/version-check.yml` (changelog match — PR gate)
   - `.github/workflows/auto-tag.yml` (ai-literacy-superpowers post-merge)
   - `.github/workflows/auto-tag-model-cards.yml` (model-cards post-merge)
-  - `.github/workflows/gc.yml` (release-tag-completeness GC, both plugins)
+  - `.github/workflows/auto-tag-diagnostic-legibility.yml`
+    (diagnostic-legibility post-merge)
+  - `.github/workflows/gc.yml` (release-tag-completeness GC, one step per plugin)
 - **Scope**: pr + post-merge
 - **Governance requirement**: All published plugin versions must have
   a corresponding changelog entry and a tag on GitHub
@@ -188,14 +196,21 @@
   per-plugin convention) if one does not already exist. A GC rule
   verifies completeness for both plugins and auto-creates any missing
   tags.
-- **Verification method**: deterministic — version-check CI (PR gate),
-  auto-tag CI per plugin (post-merge), release-tag-completeness GC
-  (periodic, both plugins)
+- **Verification method**: deterministic — version-check CI (PR gate, derived
+  from `marketplace.json`), auto-tag CI per plugin (post-merge, one workflow
+  each), release-tag-completeness GC (periodic, one step each)
 - **Evidence**: CI check output, git tag list, GC run logs
 - **Failure action**: block merge (changelog mismatch); auto-create
   tag (GC finding)
 - **Frame check**: engineering / compliance / AI system interpretations
-  confirmed aligned (see spec 2026-04-15-release-governance-constraint-design.md)
+  confirmed aligned (see spec 2026-04-15-release-governance-constraint-design.md).
+  **Re-aligned 2026-08-13** after the 2026-06-13 governance audit scored this
+  constraint down from Falsifiable to *Partially operationalised*: the rule
+  promised "every plugin in this marketplace" while the tagging machinery
+  enumerated two of three, so `diagnostic-legibility` shipped 11 versions with
+  no tags and no failure action. All 11 were backfilled and the third tagger
+  added. The enumeration remains a known recurrence risk at plugin four, stated
+  above rather than left to be rediscovered.
 
 ### Docs site builds in strict mode
 
