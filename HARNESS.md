@@ -494,8 +494,14 @@
   complements the weekly "Convention file sync" GC rule, which only runs on
   cadence. Surfaced by the 2026-06-23 audit, which found two constraints
   missing from the convention files since 2026-06-01 (`/reflect` signal=failure).
+  Headings alone are not enough: a change to a constraint's **body** passes the
+  heading check untouched. Where a rule enumerates a closed set of valid values,
+  every member must also appear in all three mirrors — a mirror listing five of
+  six does not omit prose, it misleads about what is allowed. Mirrors may
+  abridge explanation; they may not abridge a vocabulary.
 - **Enforcement**: deterministic
-- **Tool**: `python3 scripts/check-convention-parity.py`
+- **Tool**: `python3 scripts/check-convention-parity.py` and
+  `python3 scripts/check-constraint-enum-parity.py`
   (CI: `.github/workflows/convention-parity-check.yml`)
 - **Scope**: pr
 

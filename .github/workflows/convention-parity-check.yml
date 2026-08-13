@@ -13,6 +13,15 @@
 # It is a whole-repo invariant (checked on HEAD, not a diff) because a
 # constraint can be added to HARNESS.md in one PR while the convention
 # files are updated — or forgotten — in another.
+#
+# HEADINGS ARE NOT ENOUGH (#511). The parity check above matches constraint
+# HEADINGS, so a change to a constraint's BODY passes untouched while the
+# mirrors keep the old wording. The S6 gate found that one step from shipping:
+# adding a seventh objection category would have left four files declaring a
+# six-value enum the deterministic checker no longer enforced, every gate
+# green. The second check closes that for the case where it is dangerous — an
+# enumeration, where a mirror listing five of six actively misleads. Mirrors
+# may abridge explanation; they may not abridge a vocabulary.
 
 name: Convention Parity Check
 
@@ -25,6 +34,7 @@ on:
       - ".github/copilot-instructions.md"
       - ".windsurf/rules/constraints.md"
       - "scripts/check-convention-parity.py"
+      - "scripts/check-constraint-enum-parity.py"
       - ".github/workflows/convention-parity-check.yml"
   workflow_dispatch:
 
@@ -45,3 +55,6 @@ jobs:
 
       - name: Verify convention files mirror HARNESS.md constraints
         run: python3 scripts/check-convention-parity.py
+
+      - name: Verify convention files offer every constraint enum value
+        run: python3 scripts/check-constraint-enum-parity.py
