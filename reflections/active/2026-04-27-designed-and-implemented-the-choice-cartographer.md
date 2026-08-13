@@ -6,6 +6,7 @@
 - **Improvement**: A `/scaffold-chartered-agent <name>` command would have saved real time and would have caught the missing-routing-rule-in-paired-skill bug (O1 of code-mode review) at scaffold time rather than at code-review time. The scaffold would generate all eight components from a single name input, populate cross-references, and (critically) update the paired skill's routing-rule section in lock-step. A second improvement: a `/harness-audit` check that detects when a HARNESS constraint declares logic the enforcer doesn't implement — O3 (date cutoff and frontmatter exemption flag declared but not enforced) is the kind of declarations-vs-implementation drift that the harness-auditor could surface periodically.
 - **Signal**: workflow
 - **Constraint**: none (the failures we found in code-mode review — O3, O8 — were remediated within the PR; no new HARNESS constraint surfaces from this work, and the existing "PRs have adjudicated objections" / "PRs have adjudicated choice stories" already cover the gates)
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: unknown (long session, ~3 hrs of active work given the volume of file changes; not precisely tracked)
   - Model tiers used: claude-opus-4-7[1m] throughout (main conversation); two subagent dispatches to advocatus-diaboli (spec mode and code mode) using the same model

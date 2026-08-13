@@ -6,6 +6,7 @@
 - **Improvement**: A standing `/observatory-verify` command that runs the 72-signal checklist on demand would make signal contract auditing reusable. The one-off prompt found 13 gaps (6 PARTIAL, 7 MISSING) that drove most of the session's work — making it a command would let any session start with "what signals are we missing?"
 - **Signal**: workflow
 - **Constraint**: none
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: ~3 hours
   - Model tiers used: most-capable (main conversation, ~55%), haiku (implementation subagents, ~25%), capable (Explore/governance subagents, ~20%)

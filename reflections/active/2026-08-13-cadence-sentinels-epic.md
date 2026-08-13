@@ -6,6 +6,7 @@
 - **Improvement**: The adversarial gate caught all three, but only after the spec was written and the human had answered. Moving the obligation to the spec author — cite the defining file when asserting a convention — shifts the cost from post-hoc to up-front. Separately: every derived check written this session (roster parity, docs coverage, hooks parity, usage path) reads its relation from *both* ends, and each was mutation-tested against the drift shape that had actually occurred. That pairing — derive from both ends, then mutate against the real historical failure — worked better than any review step and is cheap enough to be routine.
 - **Signal**: workflow
 - **Constraint**: Specs cite the source of a claimed convention (agent)
+- **Promoted**: 2026-08-13 → HARNESS.md: Specs cite the source of a claimed convention
 - **Session metadata**:
   - Duration: ~2 days of session time (2026-08-08 → 2026-08-13, resumed across compaction)
   - Model tiers used: capable (100%) — Opus 5 throughout, including all advocatus-diaboli dispatches

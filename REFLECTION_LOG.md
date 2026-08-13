@@ -191,6 +191,7 @@
 - **Improvement**: Spec and plan should be committed separately (spec first, plan second) to satisfy the spec-first CI check without needing a label workaround. Future plans should note this in their Task 1.
 - **Signal**: workflow
 - **Constraint**: none
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: ~60 min
   - Model tiers used: most-capable (main conversation, brainstorming, coordination, ~50%), capable (Explore subagent for audit, ~10%), haiku (7 implementation subagents, ~40%)
@@ -207,6 +208,7 @@
 - **Improvement**: A standing `/observatory-verify` command that runs the 72-signal checklist on demand would make signal contract auditing reusable. The one-off prompt found 13 gaps (6 PARTIAL, 7 MISSING) that drove most of the session's work — making it a command would let any session start with "what signals are we missing?"
 - **Signal**: workflow
 - **Constraint**: none
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: ~3 hours
   - Model tiers used: most-capable (main conversation, ~55%), haiku (implementation subagents, ~25%), capable (Explore/governance subagents, ~20%)
@@ -223,6 +225,7 @@
 - **Improvement**: The Observatory signal verification checklist should be a reusable skill or command (`/observatory-verify`) rather than a one-off prompt. It produced high-value findings (6 PARTIAL, 7 MISSING across 72 signals) and the structured table format made gaps immediately actionable.
 - **Signal**: failure
 - **Constraint**: none (fix already in place as command checkpoint in step 5 of /governance-audit)
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: ~45 min
   - Model tiers used: most-capable (main conversation, ~70%), standard (Explore subagent, ~10%), capable (governance-auditor subagent, ~20%)
@@ -303,6 +306,7 @@
 - **Improvement**: `gh pr create` accepts `--label <label>` — use it in the create command itself so the label is present at trigger time. No empty commits needed.
 - **Signal**: failure
 - **Constraint**: Label PRs at creation time (agent)
+- **Promoted**: 2026-04-19 → HARNESS.md: Label PRs at creation time
 - **Session metadata**:
   - Duration: ~30 min (this session; total across summarised + live session ~3 hrs)
   - Model tiers used: most-capable (main conversation, 100%; no subagents dispatched)
@@ -319,6 +323,7 @@
 - **Improvement**: Plan-presentation should include docs site review as a named, visible checkpoint — not just a standing convention, but an explicit stage in the file-change list so it is not missed under implementation momentum.
 - **Signal**: workflow
 - **Constraint**: Docs site kept current constraint added in this session (HARNESS.md + CLAUDE.md); no further constraint proposed.
+- **Promoted**: 2026-04-19 → HARNESS.md: Docs site kept current
 - **Session metadata**:
   - Duration: ~3 hrs across two sessions (second session ~30 min post-compaction)
   - Model tiers used: flagship (main conversation, 100%; no subagents)
@@ -351,6 +356,7 @@
 - **Improvement**: A `/scaffold-chartered-agent <name>` command would have saved real time and would have caught the missing-routing-rule-in-paired-skill bug (O1 of code-mode review) at scaffold time rather than at code-review time. The scaffold would generate all eight components from a single name input, populate cross-references, and (critically) update the paired skill's routing-rule section in lock-step. A second improvement: a `/harness-audit` check that detects when a HARNESS constraint declares logic the enforcer doesn't implement — O3 (date cutoff and frontmatter exemption flag declared but not enforced) is the kind of declarations-vs-implementation drift that the harness-auditor could surface periodically.
 - **Signal**: workflow
 - **Constraint**: none (the failures we found in code-mode review — O3, O8 — were remediated within the PR; no new HARNESS constraint surfaces from this work, and the existing "PRs have adjudicated objections" / "PRs have adjudicated choice stories" already cover the gates)
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: unknown (long session, ~3 hrs of active work given the volume of file changes; not precisely tracked)
   - Model tiers used: claude-opus-4-7[1m] throughout (main conversation); two subagent dispatches to advocatus-diaboli (spec mode and code mode) using the same model
@@ -498,6 +504,7 @@
 - **Improvement**: Two one-off candidates not closed by the new constraint. **(1) Add a `pre-PR docs grep` task to the writing-plans output for any feature PR that introduces or consolidates commands.** The plan file's task list should include "grep for old command names across docs/, update each" as an explicit task, NOT something the controller infers at audit time. The new constraint catches the gap if the agent forgets, but having it as a plan task means the agent does not need to be reminded — it is part of the canonical scaffolding. **(2) Capture the per-file MD049 lesson somewhere more discoverable than this reflection.** Either as a comment in `.markdownlint.json` ("MD049 is in `consistent` mode — match each file's existing style, not a project-global default") or as a workflow note in CLAUDE.md. The lesson bit twice this session (PR #254 and PR #258) in opposite directions; if the gap recurs once more, the GC reflection-driven regression detection rule will surface it for promotion to a constraint, but capturing it pre-emptively in a discoverable place would close the loop faster.
 - **Signal**: workflow
 - **Constraint**: Docs propagation when shipping new commands (agent, scope=pr) — added to HARNESS.md in this PR
+- **Promoted**: 2026-05-07 → HARNESS.md: Docs propagation when shipping new commands
 - **Session metadata**:
   - Duration: ~6 hours cumulative across 7 PRs (#248, #249, #253, #254, #255, #257, #258); plus issues #250, #251, #252, #256 opened during the work
   - Model tiers used: claude-opus-4-7[1m] for main conversation; sonnet for ~6 general-purpose subagent dispatches during the `/harness-sync` TDD pipeline (Task 2 implementer + spec reviewer + code quality reviewer + fix-dispatcher × 2 + re-reviewer; Task 6 implementer)
@@ -514,6 +521,7 @@
 - **Improvement**: Three follow-ups, ordered by leverage. **(1)** When a new constraint is being authored about "docs propagation" or "docs freshness", explicitly enumerate every public-facing markdown surface the rule should cover *before* fixing the scope — README.md, ONBOARDING.md, marketplace listings, model-cards/README.md, anywhere else counts or version strings are embedded in prose. The #259 constraint's narrow scope was a context omission, not a design choice. **(2)** Audit the rest of README.md (and the model-cards README) for any other prose-embedded counts or version strings that may be drifting. The marketplace table row is the most likely candidate but `Skills (30)`, `Agents (13)`, `Commands (25)`, and `Templates (11)` headings all carry the same risk class. **(3)** Consider a tiny `scripts/check-readme-counts.sh` deterministic helper that the GC rule can invoke; the same script could run as a PreToolUse advisory hook on README.md edits to warn at edit time, closing the loop at all three timescales (advisory / strict / investigative).
 - **Signal**: failure
 - **Constraint**: proposed — extend `Docs site kept current` scope to include README.md (PR-time agent enforcement) **and** add new GC rule `README marketplace row consistency` (weekly deterministic, auto-fix). Authoring deferred to a follow-up `/harness-constrain` invocation; this entry records the failure pattern that motivates both.
+- **Promoted**: 2026-05-07 → HARNESS.md: Docs site kept current
 - **Session metadata**:
   - Duration: ~25 min (`/harness-upgrade` invocation through marker-bump PR #260 merge, then user-prompted README audit, drift identification, fix branch, and reflection)
   - Model tiers used: claude-opus-4-7[1m] throughout; no subagent dispatches
@@ -578,6 +586,7 @@
 - **Improvement**: Add `mkdocs build --strict` as a PR-time CI gate, mirroring what the Pages deploy already runs post-merge. The same workflow file shape as `pages.yml`'s build job, minus the deploy step. Done in this PR via a new `.github/workflows/docs-build-check.yml` and a corresponding HARNESS.md constraint. Run cost: ~30s per PR that touches `docs/**` or `mkdocs.yml`. Run benefit: catches every broken-link, missing-page, and bad-frontmatter error before merge instead of after.
 - **Signal**: failure
 - **Constraint**: Docs site builds in strict mode (deterministic) — added in this PR via `.github/workflows/docs-build-check.yml` and HARNESS.md. PR scope: triggered on changes to `docs/**`, `mkdocs.yml`, `requirements.txt`, or the workflow itself.
+- **Promoted**: 2026-05-09 → HARNESS.md: Docs site builds in strict mode
 - **Session metadata**:
   - Duration: ~45 min total (Contributing page authoring → first PR merge → broken-deploy diagnosis → recovery PR → reflection authoring → constraint authoring)
   - Model tiers used: claude-opus-4-7[1m] throughout; no subagent dispatches.
@@ -674,6 +683,7 @@
 - **Improvement**: Two. **(1)** The carpaccio slicing record (or the orchestrator's last-slice handling) could carry a "marketplace surfaces" checklist that fires when the final slice of a new-plugin chain merges — the analogue of the per-component "Docs propagation when shipping new commands" constraint, but at plugin-introduction granularity. **(2)** The O9 near-miss suggests version-contract questions touching `marketplace.json` should default to a quick `git log -- .claude-plugin/marketplace.json` archaeology step before adjudication. A one-line note in CLAUDE.md's Marketplace Versioning section — that a *per-plugin entry* description change does NOT bump the top-level listing `version` — would prevent re-litigation (the S4 spec §9 now records this, but CLAUDE.md is where people look first).
 - **Signal**: failure
 - **Constraint**: Every marketplace plugin appears in the docs index pages (deterministic) — added to HARNESS.md + `.github/workflows/marketplace-docs-coverage-check.yml` in PR #354. Checks that every plugin in `marketplace.json` `plugins[]` has its landing-page link in both `docs/index.md` and `docs/plugins/index.md`; the marketplace-scoped analogue of the per-plugin reference-page check.
+- **Promoted**: 2026-06-01 → HARNESS.md: Every marketplace plugin appears in the docs index pages
 - **Session metadata**:
   - Duration: long — ~5–6h equivalent. S3 code-mode adjudication + merge (#349) → S4 full pipeline (spec → spec-mode diaboli [11 objections, 10 accepted/1 deferred] → choice-cartographer [8 stories, 2 promoted/5 accepted/1 revisit] → plan approval → tdd red → implementation → code-reviewer [1 blocking finding, fixed, PASS] → code-mode diaboli [7 objections, 6 accepted/1 accept-fragility] → integration #351) → slicing-record chore (#352) → docs-homepage chore (#353) → /reflect with constraint authoring (#354) + this reflection.
   - Model tiers used: claude-opus-4-8[1m] main session throughout; spec-writer / advocatus-diaboli / choice-cartographer / code-reviewer / tdd-agent subagent dispatches (model tier inherited per subagent definition).
@@ -690,6 +700,7 @@
 - **Improvement**: Three. **(1)** The advocatus-diaboli agent definition should make the **mode→category-set binding unmissable** — restate the spec-mode category list inside the spec-mode branch and the code-mode list inside the code-mode branch, so the agent cannot pick the wrong table from one shared section. **(2)** The orchestrator step-2 validation already enumerates the allowed categories; it should **hard-fail loud** with an explicit "wrong-mode vocabulary detected" message (plus the wrong→right remap) rather than relying on the dispatcher to notice and silently fix. **(3)** A **deterministic lint** over `docs/superpowers/objections/*.md` could check each record's `category` values against its `mode`'s allowed set — a falsifiable backstop that catches a mislabelled record pre-merge regardless of who dispatched it. Governing lesson for future agents: do NOT trust the agent's self-justification about which vocabulary is authoritative; the agent definition (lines 54-68) is the source of truth, not the agent's claim.
 - **Signal**: instruction
 - **Constraint**: none — proposed but not drafted. A deterministic "objection-record categories match their mode" lint (Improvement 3) is a viable falsifiable constraint candidate for a follow-up `/harness-constrain`, but the primary fix is to the agent prompt (instruction-routed), so no constraint was authored in this entry.
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: long — full S1 pipeline end-to-end (carpaccio → spec → spec-mode diaboli ×2 rounds → cartographer → plan approval → tdd → implement → review loop → code-mode diaboli → commit + PR + green CI) plus choice-story adjudication, the AGENTS.md promotion, and this reflection.
   - Model tiers used: claude-opus-4-8[1m] main session throughout; subagent dispatches inherit model tier per definition.
@@ -790,6 +801,7 @@
 - **Improvement**: Run the Layer 0 bash suite on a macOS + Ubuntu CI matrix so BSD/GNU divergence surfaces deterministically instead of depending on adversarial review or remembering to run `/usr/bin/grep`. (Declared as the `Layer 0 bash tests run on macOS and Linux` constraint below; implementation — adding `macos-latest` to `tdad-tests-fast.yml` — is the follow-up that promotes it from `unverified`.)
 - **Signal**: failure
 - **Constraint**: Layer 0 bash tests run on macOS and Linux (unverified — declared in HARNESS.md, awaiting a `macos-latest` CI-matrix leg)
+- **Promoted**: 2026-06-17 → HARNESS.md: Layer 0 bash tests run on macOS and Linux
 - **Session metadata**:
   - Duration: long multi-hour session (2026-06-15 → 2026-06-17) spanning ~14 merged PRs
   - Model tiers used: claude-opus-4-8[1m] for the main driving/design loop throughout; advocatus-diaboli subagents (spec- and code-mode) dispatched per affordance step. Main-loop-dominant; exact split unknown.
@@ -822,6 +834,7 @@
 - **Improvement**: A deterministic PR-time parity check (every active HARNESS.md constraint appears in all three convention files) would catch this the moment it happens, complementing the weekly agent GC rule that only runs on cadence.
 - **Signal**: failure
 - **Constraint**: Convention parity — every active HARNESS.md constraint heading must appear in `.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, and `.windsurf/rules/constraints.md` (deterministic, pr scope). Accepted; drafted in a follow-up PR.
+- **Promoted**: 2026-06-23 → HARNESS.md: Convention parity
 - **Session metadata**:
   - Duration: multi-hour (9 PRs, #460–#468)
   - Model tiers used: capable (Opus 4.8) throughout, including subagents
@@ -870,6 +883,7 @@
 - **Improvement**: The adversarial gate caught all three, but only after the spec was written and the human had answered. Moving the obligation to the spec author — cite the defining file when asserting a convention — shifts the cost from post-hoc to up-front. Separately: every derived check written this session (roster parity, docs coverage, hooks parity, usage path) reads its relation from *both* ends, and each was mutation-tested against the drift shape that had actually occurred. That pairing — derive from both ends, then mutate against the real historical failure — worked better than any review step and is cheap enough to be routine.
 - **Signal**: workflow
 - **Constraint**: Specs cite the source of a claimed convention (agent)
+- **Promoted**: 2026-08-13 → HARNESS.md: Specs cite the source of a claimed convention
 - **Session metadata**:
   - Duration: ~2 days of session time (2026-08-08 → 2026-08-13, resumed across compaction)
   - Model tiers used: capable (100%) — Opus 5 throughout, including all advocatus-diaboli dispatches

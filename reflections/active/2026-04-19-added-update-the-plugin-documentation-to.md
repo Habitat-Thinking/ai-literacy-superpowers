@@ -6,6 +6,7 @@
 - **Improvement**: `gh pr create` accepts `--label <label>` — use it in the create command itself so the label is present at trigger time. No empty commits needed.
 - **Signal**: failure
 - **Constraint**: Label PRs at creation time (agent)
+- **Promoted**: 2026-04-19 → HARNESS.md: Label PRs at creation time
 - **Session metadata**:
   - Duration: ~30 min (this session; total across summarised + live session ~3 hrs)
   - Model tiers used: most-capable (main conversation, 100%; no subagents dispatched)
