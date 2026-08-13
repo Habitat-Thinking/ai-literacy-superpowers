@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.72.1 — 2026-08-13
+
+### Fixed
+
+- **The auto-enforcer constraint hook no longer blocks writes** (#509). It was
+  a `type: prompt` hook on `PreToolUse` whose prompt ended *"Do not block —
+  only warn."* A `PreToolUse` prompt hook has exactly two channels — return
+  nothing (allow) or return text (deny) — so the instruction was addressed to a
+  model with no mechanism to comply: the text it returns **is** the block. Moved
+  to `PostToolUse`, where the write has landed, the file is still uncommitted,
+  and returned text is genuinely advisory. Two legitimate writes were denied
+  during the Cadence Sentinels epic.
+- **And no longer invents constraints.** Both denials named a constraint absent
+  from `HARNESS.md`; the second paraphrased an objection out of the payload it
+  was inspecting and reframed it as a violation — pattern-matching on the
+  content rather than reading the file. The prompt now requires the constraint
+  heading be quoted **verbatim** from `HARNESS.md` alongside the offending line,
+  and to return nothing when it cannot do both. Returning nothing is named as
+  the correct and common outcome.
+- **New Layer 0 test** `test-hooks-advisory-placement.sh` (H1–H4): no advisory
+  prompt hook may sit on `PreToolUse`, the constraint check must still exist and
+  live on `PostToolUse`, its prompt must demand a verbatim quote, and every hook
+  must declare a valid type and timeout. Structural rather than behavioural —
+  the same hook allowed three agent-file writes and denied the fourth, so a test
+  that ran the prompt would be flaky in exactly the way the bug is.
+
 ## 0.72.0 — 2026-08-12
 
 ### The Convener (Cadence Sentinels S5)

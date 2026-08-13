@@ -48,6 +48,9 @@ BASH_TEST_SCRIPTS = [
     "test-archive-promoted-reflections",
     "test-migrate-reflection-log",
     "test-auto-enforcer",
+    # #509 — an advisory prompt hook must not hold a blocking position.
+    # PreToolUse prompt hooks can only allow or deny; there is no warn channel.
+    "test-hooks-advisory-placement",
     "test-affordances-template",
     "test-affordance-check",
     "test-affordance-staleness",
