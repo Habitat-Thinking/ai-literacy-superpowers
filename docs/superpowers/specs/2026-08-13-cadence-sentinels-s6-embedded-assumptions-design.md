@@ -1,13 +1,14 @@
 # Spec: Cadence Sentinels S6 — Embedded Assumptions
 
-**Status:** Draft (revision 1)
+**Status:** Approved (revision 2, post-diaboli)
 **Date:** 2026-08-13
 **Issue:** #496
 **Epic:** The Cadence Sentinels (S1–S7)
+**Objections:** `docs/superpowers/objections/cadence-sentinels-s6-embedded-assumptions-design.md`
+— 12 objections, all dispositioned
 **Depends on:** nothing. Independent of S1–S5 — an extension to an existing
 agent rather than a new one.
-**Scope:** `skills/advocatus-diaboli/SKILL.md`, the objection-record schema,
-`scripts/check-objection-taxonomy.py`, and the docs pages that name the six.
+**Scope:** `skills/advocatus-diaboli/SKILL.md` and one new reference page.
 
 **Provenance:** *The Second Front — Arc Insertion Remit* (slide S6).
 
@@ -22,205 +23,220 @@ the locale is the author's. None of these are decisions anyone made — they are
 defaults that arrived with the code and were never noticed, because noticing
 them requires asking a question nobody thought to ask.
 
-The Diaboli's six categories cannot surface them, and not by oversight. **All
-six interrogate what the spec says or fails to say.** An embedded assumption is
-a property of the *artefact*, and it is invisible from the spec precisely
-because the spec is silent on it — silence being the thing that makes it
-embedded rather than decided.
+**The Diaboli can hold these findings today. Nothing tells it to look.**
 
-## 2. The Seventh Category
+Revision 1 claimed more: that all six categories interrogate what the spec says
+and therefore *cannot* reach an artefact's silent assumptions. That is false,
+and the gate falsified it against the file this slice edits — the code-time
+weighting already directs `risk` at "specific evidence from the implementation
+— API surface exposures, error path gaps, resource-management failures, and
+operational blind spots" (O1).
 
-### 2.1 `embedded assumptions`
+So the gap is attention, not capability. This slice closes the attention gap
+and nothing else.
 
-> The implementation encodes an assumption the spec never states, which will be
-> wrong for some real user, environment, or scale.
+## 2. The Approach: a Hunt-List, Not a Category
 
-Four sub-kinds, which are prompts for attention rather than schema:
+### 2.1 What ships
 
-| Kind | The unstated assumption |
+Four items appended to the **code-time `risk` weighting** in
+`skills/advocatus-diaboli/SKILL.md`, in the same shape as the four already
+there:
+
+| Sub-kind | The unstated assumption |
 | --- | --- |
 | **Usability and accessibility** | Everyone can see it, click it precisely, read it at that contrast, and is not using a screen reader |
 | **Performance context** | The list is short, the machine is fast, the round trip is cheap |
 | **Requirements enshrined in tests** | The fixture's shape *is* the requirement — a behaviour nobody specified is now locked in by the only thing that describes it |
 | **Environmental** | One locale, one timezone, one scale, connectivity present |
 
-*Example: "`registry_count` sorts and prints every live session. That is
-correct for the 3–8 sessions a person holds, and the WIP Warden's own cap
-makes larger values a breach rather than a case — but nothing says so, so the
-next consumer inherits a linear scan as though it were a guarantee."*
+Plus worked examples, the routing rule for them (§4), and the four remedy
+framings as prose (§3).
 
-### 2.2 Why a seventh rather than a fold-in
+### 2.2 Why not a seventh category
 
-Folding these into `risk` or `implementation` was weighed and rejected.
+Revision 1 proposed `embedded assumptions` as a seventh category and rejected
+fold-in on the grounds that "neither `risk` nor `implementation` instructs
+anyone to hunt for what the artefact assumes silently."
 
-Both could *hold* the finding — an environmental assumption is a failure mode,
-and an encoded default is an implementation property. But a category's job is
-not storage. **A category tells the agent what to go looking for**, and neither
-`risk` nor `implementation` instructs anyone to hunt for what the artefact
-assumes silently. Folded in, the lens would exist in the schema and go
-unexercised in practice.
+**That mechanism is exactly what the code-time weighting is** (O2). The
+rejection argued against a *silent* fold-in that nobody proposed, and the
+option actually available — appending to the existing hunt-list — delivers the
+same attention-direction at a fraction of the cost:
 
-The Routing Rule's own test says the same thing from the other side: a finding
-belongs to a category iff removing that category would leave a class of
-findings unsurfaced. Remove `embedded assumptions` and the class goes with it.
+| | Seventh category | Hunt-list |
+| --- | --- | --- |
+| Files touched | ~16 | 2 |
+| `check-objection-taxonomy.py` | new category, new remedy set, new pairing rule | unchanged |
+| `HARNESS.md` constraint **body** | enumerates the six verbatim — must change | unchanged |
+| Three convention-file mirrors | must change, and `check-convention-parity.py` compares **headings only**, so the drift would be invisible to every gate (O4) | unchanged |
+| Reversibility | its own slice | one paragraph |
 
-### 2.3 It is primarily a code-mode lens
+The remaining honest argument for a category — that a first-class name carries
+attention weight a sub-bullet cannot — is real but unevidenced, and it is not
+worth a deterministic checker change to test. **If the hunt-list proves
+insufficient in practice, promoting it to a category is a later slice with
+evidence behind it.** That is the direction this repo's progressive-hardening
+convention runs.
 
-The existing per-mode weighting gains a line: **emphasise at code time,
-deprioritise at spec time.**
+### 2.3 What this does not claim
 
-An assumption is *embedded* by an artefact. Before the artefact exists there is
-nothing to read it out of, so a spec-time embedded-assumption objection is
-either a `premise` objection wearing a costume, or speculation — and the skill
-already warns that ungrounded objections waste adjudication time.
+The Routing Rule argument in revision 1 is withdrawn. It restated a test that
+partitions *findings between three agents* as one that partitions *lenses
+between categories*, and in that form it is satisfied by any category one cares
+to name — including "assumptions about Tuesdays" (O7). It did no work.
 
-It is not *forbidden* at spec time. A spec that names a concrete mechanism can
-embed an assumption in the mechanism it names. But the evidence bar is the
-existing one: quote the thing that encodes it.
+## 3. The Four Remedy Framings — Prose, Not Schema
 
-## 3. The Remedy Field
+The build spec asks for a per-assumption disposition line: `accept-as-stated` /
+`revise-spec` / `add-test` / `consciously-carry`.
 
-### 3.1 `disposition` is untouched
+These ship as **a prose section the skill requires at the end of an
+assumption objection's body**, offering the four framings to the human who is
+about to write a disposition. They do **not** become a schema field.
 
-Every objection, in every category, keeps `disposition: pending | accepted |
-deferred | rejected`. Three consumers read that field — the orchestrator's
-non-pending gate, the `PRs have adjudicated objections` constraint, and the
-code-gate flow — and none of them changes.
-
-### 3.2 `remedy` is new, optional, and additive
-
-Embedded-assumption objections carry one further field:
-
-```yaml
-  - id: O3
-    category: embedded assumptions
-    severity: medium
-    claim: "one sentence"
-    evidence: "the line that encodes it"
-    disposition: accepted
-    remedy: add-test
-    disposition_rationale: "..."
-```
-
-| `remedy` | Means |
+| Framing | Means |
 | --- | --- |
 | `accept-as-stated` | The assumption holds. Write it down so the next reader inherits a decision rather than a default. |
 | `revise-spec` | The assumption is wrong, or right for a narrower case than the spec claims. The spec changes. |
 | `add-test` | The assumption is a requirement nobody wrote down. A test makes it one. |
 | `consciously-carry` | Known, wrong for someone, and shipped anyway — on the record, with the because. |
 
-**`consciously-carry` is a complete answer**, and must not read as a lesser
-one. An assumption carried knowingly is strictly better than the same
-assumption carried invisibly, which is the entire point of surfacing it. The
-`disposition_rationale` is what makes it a decision rather than a shrug.
+**`consciously-carry` is a complete answer** and must not read as a lesser one.
+An assumption carried knowingly is strictly better than the same assumption
+carried invisibly, which is the entire point of surfacing it.
 
-### 3.3 Why a new field rather than a wider enum
+### 3.1 Why not a `remedy` field
 
-The build spec's four values are answers to *"what do we do about it"*.
-`disposition` answers *"does the human agree"*. Those are different questions,
-and the four do not partition the three: `add-test` and `revise-spec` are both
-`accepted`, and an assumption can be `rejected` outright (the reviewer disputes
-that it is assumed at all) with no remedy owed.
+Revision 1 added an optional `remedy` field with a checker rule pairing it to
+the category: a `remedy` on any other category is an error, and an adjudicated
+assumption objection without one is an error.
 
-Widening `disposition` would have made every existing consumer learn four
-values it has no use for, to express something it was never asking. Additive
-beats widening when the new information is genuinely orthogonal — the same
-reasoning that gave S5 a separate check rather than a stricter one.
+**That rule cannot exist without the category.** With no `embedded assumptions`
+value in the schema, nothing deterministic can tell an assumption objection
+from any other, so a `remedy` field would ship with no enforcement and the spec
+would be claiming one — which is the failure this epic keeps catching, and the
+one O2 just caught (S5's O2: an `agent-verified` rung that was never a value of
+the enum; #509: a hook instructed to warn from a position that can only block).
 
-**Optional means optional.** `remedy` is absent on the other six categories and
-absent on every record written before this ships. Nothing branches on its
-absence: a consumer that does not know the field ignores it, and the checker
-requires it only where the category demands it.
+The honest options were an unenforceable field or no field. Prose that shapes
+the human's choice at the moment they make it is worth more than a field
+nothing checks, and it claims nothing.
 
-## 4. The Deterministic Checker
+`disposition` is untouched: `pending | accepted | deferred | rejected`, read by
+the orchestrator's non-pending gate, the `PRs have adjudicated objections`
+constraint, the code-gate flow, and `snapshot-format.md`'s
+disposition-distribution metric — four consumers, one more than revision 1
+counted, and none of them changes.
 
-`scripts/check-objection-taxonomy.py` gains:
+## 4. Routing: Some Assumptions Are the Convener's
 
-1. `"embedded assumptions"` in `CANONICAL_CATEGORIES`.
-2. A `CANONICAL_REMEDIES` set, validated **only** where present.
-3. A rule pairing the two: `remedy` on a non-embedded-assumptions objection is
-   an error, and an embedded-assumptions objection with a non-`pending`
-   disposition and no `remedy` is an error.
+An assumption whose remedy is **a conversation** belongs to the Convener, not
+here — the tie-break shipped in S5 one day before this slice (O8).
 
-Rule 3 is what stops the field decaying into decoration. Without it, `remedy`
-is a value nobody has to supply and nobody notices missing — which describes a
-field that will be empty within two slices.
+That is not a corner case. Two of the four sub-kinds are paradigm cases:
 
-### 4.1 No cutover is needed, and the issue's note is wrong on this
+> *"Nobody established whether screen-reader users can complete this flow."*
+> *"Nobody asked which locales this ships to."*
 
-Issue #496 says a dated cutover comparable to 2026-04-19 is required "so
-pre-change records are not retroactively invalid".
+Both name a failure class **and** name a person to ask, and the shipped rule is
+explicit that the Convener wins those.
 
-**Adding a member to a validation set cannot invalidate anything.** The
-checker asks whether a record's category is *in* `CANONICAL_CATEGORIES`; a
-larger set answers yes strictly more often. All 45 existing records stay valid
-by construction.
+**The test:** can the assumption be settled by reading the artefact, or only by
+asking someone? Reading it out of a fixture, a sort, or a hard-coded timeout is
+the Diaboli's. Needing a person's answer is the Convener's.
 
-The 2026-04-19 cutover exists because that migration **retired** vocabulary —
-`design|threat|failure|operational|cost` and `major|minor` — which is what
-makes old records fail a new check. This slice retires nothing, so a cutover
-would be a dated exemption from a rule nothing violates.
+The skill states this with a worked pair, because the three-way partition is
+shared contract and a seventh entry into it should not be left to inference.
 
-`MIGRATION_CUTOVER` stays exactly as it is. A second date constant, guarding
-nothing, would be a live-looking mechanism with no behaviour behind it.
+### 4.1 And some are the Cartographer's — once #209 lands
+
+The Choice Cartographer's `defaults` lens already describes this class almost
+verbatim: *"an inherited default is a decision the team did not make but now
+owns"* (O9). It is spec-mode-only, pending #209.
+
+When code mode ships, `defaults` becomes the natural home for the
+*decision-recording* half of an embedded assumption, and this hunt-list keeps
+the *failure-detecting* half — which is the existing partition applied
+unchanged, rather than a new question. Noted here so #209's slice inherits the
+observation rather than rediscovering it.
 
 ## 5. Files
 
 | File | Purpose |
 | --- | --- |
-| `skills/advocatus-diaboli/SKILL.md` | the seventh category, the remedy vocabulary, per-mode weighting, the schema |
-| `agents/advocatus-diaboli.agent.md` | the category list, if duplicated there |
-| `scripts/check-objection-taxonomy.py` | the category, the remedies, the pairing rule |
-| `docs/superpowers/objections/README.md` | **new** — what these records are, the taxonomy, the two dispositions |
-| `docs/.../reference/objection-record-format.md` | the schema and `remedy` |
-| `docs/.../explanation/*` and `reference/agents.md`, `skills.md` | "six categories" → seven |
-| `orchestrator.agent.md`, `commands/diaboli.md` | wherever the six are enumerated |
+| `skills/advocatus-diaboli/SKILL.md` | the four sub-kinds on the code-time weighting, worked examples, the remedy framings, the Convener routing pair |
+| `docs/.../reference/objection-record-format.md` | **new** — the reader-facing record contract, missing beside its two siblings |
+
+Two files. Revision 1's table listed seven and missed four more (O4, O5, O11).
+
+### 5.1 The reference page, not a README in the records directory
+
+Issue #496 asks for `docs/superpowers/objections/README.md`. **That would be
+counted as an objection record** by two shipped consumers — the taxonomy
+checker globs `objections/*.md`, and `snapshot-format.md` counts the same glob
+"excluding `.gitkeep`" and classifies anything without a `-code` suffix as
+spec-mode. A `README` would land in four published metrics as a record with
+zero objections (O5).
+
+Rather than teach both consumers a second exclusion, the page goes where its
+two siblings already live — `consultation-record-format.md` and
+`parking-record-format.md` are both under `reference/`, and
+`objection-record-format.md` is simply missing (O11).
+
+**Divergence from #496, declared:** the README becomes a reference page, in a
+different directory, for this reason.
+
+To avoid a third copy of one schema, the reference page is the **reader-facing
+contract** and states plainly that `skills/advocatus-diaboli/SKILL.md` owns the
+agent's emission rules. It does not restate them.
 
 ## 6. Non-Goals
 
-- **No change to `disposition`**, its enum, or any consumer of it.
-- **No dated cutover.** §4.1.
-- **No new agent, skill, or command.** Component counts are unchanged.
-- **No retirement of any existing category.** Seven, not six-plus-a-rename.
-- **No accessibility audit.** The category names accessibility as a place
+- **No new category.** §2.2. Six stays six.
+- **No checker change.** `check-objection-taxonomy.py` is untouched, so the
+  cutover question does not arise at all.
+- **No schema change.** No `remedy` field, no change to `disposition`.
+- **No `README.md` inside the records directory.** §5.1.
+- **No new agent, skill, or command.** Component counts unchanged.
+- **No accessibility audit.** The hunt-list names accessibility as a place
   assumptions hide; it does not make the Diaboli a WCAG checker, any more than
   `risk` made it a CVE scanner.
-- **No spec-mode requirement.** The category is available at both gates and
-  emphasised at one.
+- **No claim of enforcement.** Nothing here is deterministically checked, and
+  the spec says so rather than implying otherwise.
 
 ## 7. Acceptance Scenarios (TDAD)
 
-### 7.1 The checker — `tdad_tests/layer0_deterministic/test-objection-taxonomy.sh`
+The slice ships no executable code, so there are no Layer 0 scenarios. One
+structural TDAD scenario covers the skill.
 
-- **E1 — `embedded assumptions` is accepted** as a category.
-- **E2 — the six existing categories still pass.** Regression against a real
-  record.
-- **E3 — retired vocabulary still fails.** `design`, `threat`, `major`.
-- **E4 — every `remedy` value is accepted**; an unknown one fails.
-- **E5 — `remedy` on a non-embedded-assumptions objection fails**, naming the
-  category it appeared on.
-- **E6 — an adjudicated embedded-assumptions objection with no `remedy`
-  fails.** `pending` is exempt: the field is the human's to write.
-- **E7 — the 45 committed records pass unchanged.** The proof that the change
-  is additive, run against the real corpus rather than a fixture.
+### 7.1 `tdad_tests/scenarios/skills/advocatus-diaboli/embedded-assumptions.md`
 
-### 7.2 Agent-verified
+- **A1** — the code-time `risk` weighting names all four sub-kinds.
+- **A2** — each carries a worked example that quotes an **artefact** line, not
+  a spec sentence about one.
+- **A3** — the four remedy framings appear with `consciously-carry` presented
+  as a complete answer.
+- **A4** — the Convener routing pair appears with the read-it/ask-someone test.
+- **A5** — the six categories are unchanged, and no seventh is introduced.
+- **A6** — the spec-time weighting still deprioritises artefact-grounded
+  findings, so the hunt-list does not leak into spec mode.
 
-- **A1** — an embedded-assumption objection quotes the artefact line that
-  encodes the assumption, not a spec sentence about it.
-- **A2** — at code time the category is emphasised; at spec time an objection
-  in it is either grounded in a named mechanism or not raised.
-- **A3** — `consciously-carry` is presented as a complete answer.
-- **A4** — the four sub-kinds are prompts for attention, not a required field.
+### 7.2 Regression
+
+`check-objection-taxonomy.py` passes over the **whole committed corpus**,
+derived from the glob rather than a pinned count. Revision 1 wrote "the 45
+committed records", which the gate's own record made stale before the slice
+could merge — the fourth instance of the pinned-literal pattern in this epic
+(O6, `AGENTS.md:481`, #507).
 
 ## 8. Rollout
 
-Minor bump, 0.72.0 → 0.73.0 — a behavioural change to a skill and a
-deterministic checker. **Component counts are unchanged**: 41 skills, 20
-agents, 32 commands.
+Minor bump, 0.72.1 → 0.73.0 — a behavioural change to a skill. **Component
+counts unchanged**: 41 skills, 20 agents, 32 commands.
 
 Five CI-checked version locations plus the README plugin-table cell. No count
 badges, anchors, or headings change.
 
-No breaking changes: `remedy` is optional and additive, `disposition` is
-untouched, and the taxonomy grows rather than shifts.
+No breaking changes: the taxonomy, the schema, the checker, and every
+constraint body are untouched.

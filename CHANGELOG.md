@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.73.0 — 2026-08-13
+
+### Embedded assumptions (Cadence Sentinels S6)
+
+- **The advocatus-diaboli now hunts for assumptions an artefact encodes without
+  stating them** — that the user can see, that the list is short, that the
+  locale is the author's. Four sub-kinds appended to the **code-time `risk`
+  weighting**: usability and accessibility, performance context, requirements
+  enshrined in tests, and environmental.
+- **Not a seventh category.** The spec gate falsified the premise the first
+  revision rested on: the shipped code-time weighting already directs `risk` at
+  "specific evidence from the implementation", so the gap was **attention, not
+  capability**. Four items on an existing hunt-list, against a taxonomy change
+  touching sixteen surfaces including a deterministic checker, a HARNESS
+  constraint body and three convention-file mirrors.
+- **Quote the artefact, not a sentence about it.** An objection that quotes the
+  spec is a `premise` or `specification quality` objection instead — an
+  assumption the spec *states* is not embedded.
+- **The Convener routing is stated**, with the test: can the assumption be
+  settled by *reading the artefact*, or only by *asking someone*? Two of the
+  four sub-kinds are paradigm cases where the remedy is a conversation, and the
+  S5 tie-break already assigns those to the Convener.
+- **Four remedy framings as prose, not schema** — `accept-as-stated`,
+  `revise-spec`, `add-test`, `consciously-carry` — offered at the end of an
+  assumption objection so the human has them in view when writing the
+  disposition. `consciously-carry` is a complete answer: an assumption carried
+  knowingly is strictly better than the same one carried invisibly.
+- **New reference page** `objection-record-format.md`, which was simply missing
+  beside its two siblings. Issue #496 asked for a README inside
+  `docs/superpowers/objections/`; that directory is globbed by two consumers as
+  the complete record set, so the page went where it belongs instead.
+
+### Unchanged, deliberately
+
+- **Six categories, one schema, one checker.** No `remedy` field: with no
+  distinguishing category, nothing deterministic can tell an assumption
+  objection from any other, so the field would have shipped claiming an
+  enforcement that does not exist. `disposition` keeps `accepted | deferred |
+  rejected` and its four consumers.
+- **No dated cutover**, because nothing about the taxonomy changed.
+
 ## 0.72.1 — 2026-08-13
 
 ### Fixed
