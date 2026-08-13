@@ -15,8 +15,9 @@ hook, and validator
 **Explicitly out of scope:** the Mast (S3), the WIP Warden (S4), the Convener
 (S5). S2 ships the ritual and the records it writes.
 
-**Provenance:** *The Second Front — Arc Insertion Remit* (slide S5) and
-*Compulsive Continuation — A Research Exploration*.
+**Provenance:** the Cadence Sentinels build spec, supplied in conversation
+2026-08-08 — transcribed to `docs/superpowers/cadence-sentinels-charter.md`.
+Slice scope: issue #492.
 
 ---
 

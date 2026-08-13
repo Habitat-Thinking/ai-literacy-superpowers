@@ -15,8 +15,9 @@ and a write-side library. No hook, no session state, no new store.
 **Explicitly out of scope:** boundary notices and the hard stop, which are
 **#501** (see §3); the WIP Warden (S4); the Convener (S5).
 
-**Provenance:** *The Second Front — Arc Insertion Remit* (slide S5) and
-*Compulsive Continuation — A Research Exploration*.
+**Provenance:** the Cadence Sentinels build spec, supplied in conversation
+2026-08-08 — transcribed to `docs/superpowers/cadence-sentinels-charter.md`.
+Slice scope: issue #493.
 
 ---
 
