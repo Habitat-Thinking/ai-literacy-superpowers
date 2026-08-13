@@ -6,6 +6,7 @@
 - **Improvement**: Spec and plan should be committed separately (spec first, plan second) to satisfy the spec-first CI check without needing a label workaround. Future plans should note this in their Task 1.
 - **Signal**: workflow
 - **Constraint**: none
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: ~60 min
   - Model tiers used: most-capable (main conversation, brainstorming, coordination, ~50%), capable (Explore subagent for audit, ~10%), haiku (7 implementation subagents, ~40%)

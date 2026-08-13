@@ -6,6 +6,7 @@
 - **Improvement**: Add `mkdocs build --strict` as a PR-time CI gate, mirroring what the Pages deploy already runs post-merge. The same workflow file shape as `pages.yml`'s build job, minus the deploy step. Done in this PR via a new `.github/workflows/docs-build-check.yml` and a corresponding HARNESS.md constraint. Run cost: ~30s per PR that touches `docs/**` or `mkdocs.yml`. Run benefit: catches every broken-link, missing-page, and bad-frontmatter error before merge instead of after.
 - **Signal**: failure
 - **Constraint**: Docs site builds in strict mode (deterministic) — added in this PR via `.github/workflows/docs-build-check.yml` and HARNESS.md. PR scope: triggered on changes to `docs/**`, `mkdocs.yml`, `requirements.txt`, or the workflow itself.
+- **Promoted**: 2026-05-09 → HARNESS.md: Docs site builds in strict mode
 - **Session metadata**:
   - Duration: ~45 min total (Contributing page authoring → first PR merge → broken-deploy diagnosis → recovery PR → reflection authoring → constraint authoring)
   - Model tiers used: claude-opus-4-7[1m] throughout; no subagent dispatches.

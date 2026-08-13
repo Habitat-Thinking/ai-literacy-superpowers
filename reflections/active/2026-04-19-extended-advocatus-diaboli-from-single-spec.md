@@ -6,6 +6,7 @@
 - **Improvement**: Plan-presentation should include docs site review as a named, visible checkpoint — not just a standing convention, but an explicit stage in the file-change list so it is not missed under implementation momentum.
 - **Signal**: workflow
 - **Constraint**: Docs site kept current constraint added in this session (HARNESS.md + CLAUDE.md); no further constraint proposed.
+- **Promoted**: 2026-04-19 → HARNESS.md: Docs site kept current
 - **Session metadata**:
   - Duration: ~3 hrs across two sessions (second session ~30 min post-compaction)
   - Model tiers used: flagship (main conversation, 100%; no subagents)

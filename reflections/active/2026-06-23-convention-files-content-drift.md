@@ -6,6 +6,7 @@
 - **Improvement**: A deterministic PR-time parity check (every active HARNESS.md constraint appears in all three convention files) would catch this the moment it happens, complementing the weekly agent GC rule that only runs on cadence.
 - **Signal**: failure
 - **Constraint**: Convention parity — every active HARNESS.md constraint heading must appear in `.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, and `.windsurf/rules/constraints.md` (deterministic, pr scope). Accepted; drafted in a follow-up PR.
+- **Promoted**: 2026-06-23 → HARNESS.md: Convention parity
 - **Session metadata**:
   - Duration: multi-hour (9 PRs, #460–#468)
   - Model tiers used: capable (Opus 4.8) throughout, including subagents

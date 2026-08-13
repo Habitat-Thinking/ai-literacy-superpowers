@@ -6,6 +6,7 @@
 - **Improvement**: Run the Layer 0 bash suite on a macOS + Ubuntu CI matrix so BSD/GNU divergence surfaces deterministically instead of depending on adversarial review or remembering to run `/usr/bin/grep`. (Declared as the `Layer 0 bash tests run on macOS and Linux` constraint below; implementation — adding `macos-latest` to `tdad-tests-fast.yml` — is the follow-up that promotes it from `unverified`.)
 - **Signal**: failure
 - **Constraint**: Layer 0 bash tests run on macOS and Linux (unverified — declared in HARNESS.md, awaiting a `macos-latest` CI-matrix leg)
+- **Promoted**: 2026-06-17 → HARNESS.md: Layer 0 bash tests run on macOS and Linux
 - **Session metadata**:
   - Duration: long multi-hour session (2026-06-15 → 2026-06-17) spanning ~14 merged PRs
   - Model tiers used: claude-opus-4-8[1m] for the main driving/design loop throughout; advocatus-diaboli subagents (spec- and code-mode) dispatched per affordance step. Main-loop-dominant; exact split unknown.

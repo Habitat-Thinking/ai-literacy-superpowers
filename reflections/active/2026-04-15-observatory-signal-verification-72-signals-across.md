@@ -6,6 +6,7 @@
 - **Improvement**: The Observatory signal verification checklist should be a reusable skill or command (`/observatory-verify`) rather than a one-off prompt. It produced high-value findings (6 PARTIAL, 7 MISSING across 72 signals) and the structured table format made gaps immediately actionable.
 - **Signal**: failure
 - **Constraint**: none (fix already in place as command checkpoint in step 5 of /governance-audit)
+- **Promoted**: 2026-08-13 → CLAUDE.md "Output Validation Checkpoints"
 - **Session metadata**:
   - Duration: ~45 min
   - Model tiers used: most-capable (main conversation, ~70%), standard (Explore subagent, ~10%), capable (governance-auditor subagent, ~20%)
