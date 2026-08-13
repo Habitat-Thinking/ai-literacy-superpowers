@@ -55,6 +55,9 @@ BASH_TEST_SCRIPTS = [
     # D1/D2/D3 derive both sides rather than pinning a count; K1-K5 assert the
     # one property the per-library tests structurally cannot show.
     "test-sentinel-docs-coverage",
+    # #507 — the sentinel roster is a derived fact pinned in three places.
+    # Membership only: the tables carry prose no generator would write well.
+    "test-sentinel-roster-parity",
     "test-hooks-doc-parity",
     "test-cadence-integration",
     "test-affordances-template",
