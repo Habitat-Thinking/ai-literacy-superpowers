@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.73.2 — 2026-08-13
+
+### Fixed
+
+- **The sentinel roster is now checked against its source** (#507). Which agents
+  are sentinels is a derived fact — exactly the `agents/*.agent.md` files
+  carrying `role: sentinel` — and three documents pinned a copy of it.
+  `README.md` and `sentinel-design/SKILL.md` were both still at 5 after S2, S3
+  and S4 had each shipped one; each of those slices updated
+  `explanation/sentinels.md` and missed the other two. Nobody was careless;
+  there were three places and one habit.
+- **New Layer 0 test** `test-sentinel-roster-parity.sh` — every `role: sentinel`
+  agent appears in all three rosters, no roster claims an agent that is not one,
+  and the README's `#### Sentinels (N)` count is compared against the derived
+  set rather than a literal. **Membership only**: the rosters carry per-agent
+  "Guards" columns and narrative prose that no generator would write well, so a
+  check treating them as one list would be right about membership and wrong
+  about everything else.
+- Mutation-tested against all six drift shapes, including the one that will
+  actually happen — a new sentinel shipping with no roster updated.
+
 ## 0.73.1 — 2026-08-13
 
 ### Documentation (Cadence Sentinels S7)
