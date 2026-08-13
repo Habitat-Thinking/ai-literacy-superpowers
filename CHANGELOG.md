@@ -1,5 +1,60 @@
 # Changelog
 
+## 0.73.1 — 2026-08-13
+
+### Documentation (Cadence Sentinels S7)
+
+- **The hook manifest no longer contradicts itself.** `hooks.json`'s description
+  said the constraint gate was `PreToolUse` while the same file registered it
+  under `PostToolUse` eight lines below — the shipped artefact, not its
+  documentation. `README.md` carried the error twice more, in prose and in the
+  architecture diagram.
+- **`reference/hooks.md` gains a `PostToolUse` section** (it had none), the two
+  hooks it was missing (`wip-check`, `affordance-invocation-recorder`), and a
+  `Libraries` section for the advisory rail — a sourced library that sat among
+  the Stop hooks and made every heading count off by one. 18 declared, 18
+  documented.
+- **New page: The cadence discipline** — `coda`, `mast`, `wip-warden` and
+  `convener`, mirroring `decision-discipline-triad.md`. It is the home for the
+  epic's conceptual results: the operational-state carve-out, the read/write
+  library split, state-in-the-path records, the advisory rail's precedence rule,
+  and the lease that renews because `Stop` fires per turn.
+- **`harness-md-format.md` documents `## Stakeholders`** — the Convener's
+  declaration surface, promised by S5's rollout and not delivered.
+- **Rung and reach are now distinguished** across all eight pages that taught
+  the enforcement ladder as one axis. The rung is *how* a check runs
+  (`unverified | agent | deterministic | deterministic + agent`); the reach is
+  *what it demands* (required, or complete-if-present). Collapsing them is how
+  S5's first revision came to invent an `agent-verified` rung that was never a
+  value of the enum.
+- **`sentinels.md` repaired**: a blank line was orphaning the `convener` row
+  into a second one-row table — live on the docs site since S5, introduced by
+  the edit that added the row — and the page still said "the five roster agents"
+  beneath a roster of nine.
+- **`index.md`'s hand-maintained Concepts list** gains six pages it was missing.
+
+### Tests
+
+- **`test-sentinel-docs-coverage.sh`** — every `role: sentinel` agent is named
+  by an explanation page's new `sentinels:` frontmatter key, and no page claims
+  an agent that is not one. **Both sides derived**; no count pinned anywhere.
+  The key exists because nothing on disk previously linked a sentinel to the
+  page explaining it — pages are named for concepts, not agents.
+- **`test-hooks-doc-parity.sh`** — the page's event sections match what
+  `hooks.json` registers, by count *and* by script name, and nothing in the repo
+  calls the constraint gate a `PreToolUse` hook.
+- **`test-cadence-integration.sh`** — the property per-library tests
+  structurally cannot show: one pact file, one registry, **three readers, one
+  answer**. Plus silence on an unadopted machine, and no state leaking into a
+  work tree. Sets all four test-only overrides, because the pact file and
+  registry live outside every work tree and a toy repo does not isolate them.
+
+### Known gaps
+
+- **#497 stays open.** Its fourth acceptance item — verifying links in the
+  epic's source deck — cannot be done: that deck is in neither repository.
+- **#514** records the wider finding: all seven Cadence Sentinels specs cite it.
+
 ## 0.73.0 — 2026-08-13
 
 ### Embedded assumptions (Cadence Sentinels S6)

@@ -1,5 +1,6 @@
 ---
 title: Prospective Cost Estimation
+sentinels: [cost-estimator]
 ---
 # Prospective cost estimation
 

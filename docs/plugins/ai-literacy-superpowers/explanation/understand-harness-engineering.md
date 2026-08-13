@@ -65,6 +65,8 @@ The more precise the context, the more accurate AI-generated code will be.
 
 Constraints follow a three-stage promotion ladder:
 
+The ladder is one axis. **Reach** — whether a constraint is required on every PR or [complete-if-present](progressive-hardening.md#rung-and-reach-are-different-axes) — is a second, and the `Enforcement` field does not record it.
+
 | Stage | Meaning |
 | --- | --- |
 | `unverified` | Declared intent — no automation yet |

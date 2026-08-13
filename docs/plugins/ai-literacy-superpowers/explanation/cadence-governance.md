@@ -1,5 +1,6 @@
 ---
 title: Cadence Governance
+sentinels: [carpaccio]
 ---
 # Cadence Governance
 

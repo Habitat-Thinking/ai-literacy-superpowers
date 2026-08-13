@@ -1,5 +1,6 @@
 ---
 title: Watching the Verifier
+sentinels: [reservoir-warden]
 ---
 # Watching the Verifier
 

@@ -51,6 +51,12 @@ BASH_TEST_SCRIPTS = [
     # #509 — an advisory prompt hook must not hold a blocking position.
     # PreToolUse prompt hooks can only allow or deny; there is no warn channel.
     "test-hooks-advisory-placement",
+    # Cadence Sentinels S7 — docs parity and the cadence substrate as a whole.
+    # D1/D2/D3 derive both sides rather than pinning a count; K1-K5 assert the
+    # one property the per-library tests structurally cannot show.
+    "test-sentinel-docs-coverage",
+    "test-hooks-doc-parity",
+    "test-cadence-integration",
     "test-affordances-template",
     "test-affordance-check",
     "test-affordance-staleness",

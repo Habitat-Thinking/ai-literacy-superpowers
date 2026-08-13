@@ -1,3 +1,8 @@
+---
+title: The decision-discipline triad
+sentinels: [carpaccio, advocatus-diaboli, choice-cartographer]
+---
+
 # The decision-discipline triad
 
 Three agents in the plugin form a single discipline for AI-augmented
@@ -63,7 +68,7 @@ boundary *is* the discipline.
 
 ## When each runs
 
-```
+```text
 Raw task description
   ↓
 [carpaccio]    Step 0 — slice into pieces

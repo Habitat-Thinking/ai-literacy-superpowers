@@ -1,3 +1,7 @@
+---
+title: Sentinels
+---
+
 # Sentinels — the agents that guard the human
 
 Most agents in the plugin act on an artefact. The `spec-writer` edits a
@@ -112,8 +116,21 @@ build goes red. S2 and S3 are agent-verifiable via the harness-enforcer.
 | `mast` | The pact — that a limit set in clear weather survives contact with the moment it governs | Read-only; recites before measuring; refuses to estimate spend; discloses its own check's blind spot; never gates |
 | `wip-warden` | The count — how much is open at once, against a line the person drew | Read-only; counts sessions and never watches the human; reports the count's flag; never invents a limit; says plainly that `strict` cannot compel |
 | `coda` | The ending — that a session stops by decision rather than by attrition | Read-only; returns record content for `/coda` to persist; per-item observed/inferred/asked flags; never refuses a next action and never records why someone stopped |
-
 | `convener` | The room — that a spec is not decided by everyone it affects being absent | Read-only; voices disposed at a soft gate; observed/inferred/asked per voice; never contacts anyone and never drafts a message to send |
+
+The roster splits into **two disciplines**, plus one agent in neither.
+
+The [decision discipline](decision-discipline-triad.md) asks whether a decision
+is sound. The [cadence discipline](cadence-discipline.md) — `coda`, `mast`,
+`wip-warden`, `convener` — guards the *shape of the work* around decisions: how
+a session ends, what limits survive the moment they govern, how much is open at
+once, and who was never asked. Those questions assume a person in a condition to
+answer them; the cadence discipline is about that condition.
+
+The `reservoir-warden` belongs to neither, and deliberately: it watches *the
+decider*, so gating lives in the cadence sentinels and the one agent observing
+the human never acquires teeth.
+
 The narrative: the decision-discipline triad guards *decisions*; the
 `reservoir-warden` guards *the decider*; the `cost-estimator` guards
 *the decision's inputs*; the `coda` guards *the ending* — that a
@@ -195,7 +212,7 @@ the step-by-step walkthrough is the
 
 - **Not a new gate.** Sentinels feed existing gates; the category adds
   none.
-- **Not a behavioural change.** The five roster agents behave exactly as
+- **Not a behavioural change.** Every roster agent behaves exactly as
   before; the `role: sentinel` tag is additive.
 - **Not cross-plugin (yet).** The `diagnostic-legibility` plugin's
   charter ("maintaining human understanding") makes it a natural future

@@ -71,6 +71,8 @@ This is the strongest level. It is also the most expensive and the most dangerou
 
 ## Progressive hardening: the promotion ladder
 
+The ladder is one axis. **Reach** — whether a constraint is required on every PR or [complete-if-present](progressive-hardening.md#rung-and-reach-are-different-axes) — is a second, and the `Enforcement` field does not record it.
+
 Every constraint should start soft and earn its way up. This is progressive hardening: start flexible, observe what works, increase enforcement as confidence grows.
 
 ```text

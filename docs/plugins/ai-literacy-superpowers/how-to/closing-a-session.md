@@ -95,3 +95,7 @@ Changing your mind about stopping is different, and always yours.
 - Grade your wording. The check asks a question; it renders no verdict.
 - Record *why* you stopped. That a session closed and what was parked is the
   record. Why is not, ever.
+
+## See also
+
+- [The cadence discipline](../explanation/cadence-discipline.md) — why this sentinel is built the way it is, and what it shares with the other three

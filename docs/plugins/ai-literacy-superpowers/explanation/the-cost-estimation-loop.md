@@ -1,5 +1,6 @@
 ---
 title: The Cost Estimation Loop
+sentinels: [cost-estimator]
 ---
 # The cost estimation loop
 

@@ -69,6 +69,8 @@ The self-referential property is what distinguishes a living harness from a docu
 
 Not all constraints are equal, and not all constraints are ready to be enforced deterministically from the start. Progressive hardening is the promotion ladder that describes how constraints mature.
 
+The ladder is one axis. **Reach** — whether a constraint is required on every PR or [complete-if-present](progressive-hardening.md#rung-and-reach-are-different-axes) — is a second, and the `Enforcement` field does not record it.
+
 **Unverified** is the starting state. You have declared a constraint in `HARNESS.md`. You believe it is important. You do not yet have a mechanism to check it. This state is not a failure; it is honest accounting. An unverified constraint is a commitment to build enforcement, not a claim that enforcement already exists.
 
 **Agent** is the second state. You have written an agent prompt that checks the constraint as part of PR review or a scheduled inspection. The constraint is being enforced, but by a language model making a judgment, not by a deterministic rule. Agent enforcement catches most violations most of the time. It is not perfectly reliable, and it requires human review of the agent's output.

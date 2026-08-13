@@ -85,3 +85,7 @@ misses rather than implying it catches everything.
 - **Guess.** Especially not at spend.
 - **Judge your pact.** Your stop hour is not too late. It is yours.
 - **Write anything you didn't accept.** No pact is scaffolded, ever.
+
+## See also
+
+- [The cadence discipline](../explanation/cadence-discipline.md) — why this sentinel is built the way it is, and what it shares with the other three

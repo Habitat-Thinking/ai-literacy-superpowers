@@ -80,7 +80,11 @@ To move a constraint from `unverified` to `deterministic`:
 
 4. Wire the command into CI (see [Set Up Auto-Enforcer](set-up-auto-enforcer.md))
 
-The promotion ladder is: `unverified` → `agent` → `deterministic`. You can skip steps
+The promotion ladder is: `unverified` → `agent` → `deterministic`.
+
+The ladder is one axis. **Reach** — whether a constraint is required on every PR or [complete-if-present](../explanation/progressive-hardening.md#rung-and-reach-are-different-axes) — is a second, and the `Enforcement` field does not record it.
+
+You can skip steps
 if tooling is immediately available.
 
 ---
