@@ -128,6 +128,13 @@
 - **Tool**: `ai-literacy-superpowers/scripts/check-consultation-dispositions.py`
 - **Scope**: pr
 
+## Specs cite the source of a claimed convention
+
+- **Rule**: A spec that asserts an existing repo convention — "the pattern here is X", "all N of these do Y", "this has always been Z" — must cite the file that **defines** the convention, by path. A table built from the examples that fit is not a citation: the S6, S7 and #499 gates each falsified such a claim by opening the defining file, and two of the three had already been put to a human as a gate decision, so the human decided on a false input. The obligation is the spec author's; the diaboli verifying it afterwards is the backstop, not the mechanism.
+- **Enforcement**: agent
+- **Tool**: advocatus-diaboli (spec-mode gate)
+- **Scope**: pr
+
 ## Tests must pass
 
 - **Rule**: The project's test suite must pass with zero failures before any code is merged

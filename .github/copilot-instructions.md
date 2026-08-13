@@ -115,6 +115,10 @@ Every non-exempt PR must have either (a) at least one spec in `docs/superpowers/
 
 Every consultation record under `docs/superpowers/consultations/` must have every voice disposed: `consulted` or `deliberately-not-consulted`, each with a one-line `outcome`, and **no two voices in one record may carry the same outcome**. Complete-if-present — a PR whose spec has no consultation record passes, and running `/convene` remains a choice. The check reads the current state of each record chain (`records_latest`), so a `.resolved.md` supersedes its pending predecessor. It never judges a reason: "no time; the docs owner is on leave" passes. It refuses one string standing for several decisions. Enforcement: deterministic (`ai-literacy-superpowers/scripts/check-consultation-dispositions.py`). Scope: pr.
 
+### Specs cite the source of a claimed convention
+
+A spec that asserts an existing repo convention — "the pattern here is X", "all N of these do Y", "this has always been Z" — must cite the file that **defines** the convention, by path. A table built from the examples that fit is not a citation: the S6, S7 and #499 gates each falsified such a claim by opening the defining file, and two of the three had already been put to a human as a gate decision, so the human decided on a false input. The obligation is the spec author's; the diaboli verifying it afterwards is the backstop, not the mechanism. Enforcement: agent (advocatus-diaboli, spec-mode gate). Scope: pr.
+
 ### Tests must pass
 
 The project's test suite must pass with zero failures before any code is merged. Enforcement: unverified. Scope: pr.
