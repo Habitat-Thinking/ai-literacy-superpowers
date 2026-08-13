@@ -6,11 +6,6 @@
         "matcher": "Write|Edit",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Check if HARNESS.md exists in the project root. If it does, read the Constraints section and identify any constraints with scope 'commit'. For each commit-scoped constraint, evaluate whether the file being written or edited would violate it. If violations are found, return a warning describing each violation with the constraint name. Do not block \u2014 only warn. If no HARNESS.md exists or no commit-scoped constraints apply, return nothing.",
-            "timeout": 30
-          },
-          {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/markdownlint-check.sh",
             "timeout": 15
@@ -26,6 +21,16 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/affordance-invocation-recorder.sh",
             "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Read HARNESS.md in the project root. If it does not exist, return nothing. Find the `## Constraints` section and list only the `### ` headings whose entry declares `Scope: commit`. For each, decide whether the file just written or edited breaks that specific rule.\n\nReport a violation ONLY when you can quote the constraint's `### ` heading verbatim from HARNESS.md and quote the line in the file that breaks it. If you cannot do both, return nothing. Never name a constraint you have not read in HARNESS.md, and never infer one from the content of the file being written \u2014 a document that discusses a rule is not a document that breaks one.\n\nThis runs after the write, so your output is advisory: the file is on disk and uncommitted, and the author decides what to do. Returning nothing is the correct and common outcome.",
+            "timeout": 30
           }
         ]
       }
