@@ -179,6 +179,8 @@ you fix that one.
 
 ## See also
 
+- [The cadence discipline](../explanation/cadence-discipline.md) — why this sentinel is built the way it is
+
 - [Sentinels](../explanation/sentinels.md) — the category and its signature
 - [Consultation record format](../reference/consultation-record-format.md)
 - [`/convene` reference](../reference/commands.md)

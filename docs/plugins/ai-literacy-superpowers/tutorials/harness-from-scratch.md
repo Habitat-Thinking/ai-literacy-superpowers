@@ -273,6 +273,10 @@ Update each constraint's enforcement field to reflect reality:
 ## Step 5: Promote Incrementally
 
 With your constraints categorised, start promoting them. The promotion
+ladder has three rungs — one axis, *how* the check runs. A
+second axis, *what it demands*, is covered in
+[Progressive Hardening](../explanation/progressive-hardening.md#rung-and-reach-are-different-axes).
+
 ladder has three rungs:
 
 1. **Unverified** — declared intent, no automation

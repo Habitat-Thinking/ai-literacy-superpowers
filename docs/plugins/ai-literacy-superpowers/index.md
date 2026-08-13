@@ -161,10 +161,15 @@ from first principles to the complete system:
 - [Harness Engineering](explanation/harness-engineering.md) — what the harness is and isn't
 - [Cadence Governance](explanation/cadence-governance.md) — the carpaccio agent's role; slicing the task before any spec exists
 - [The Decision-Discipline Triad](explanation/decision-discipline-triad.md) — how carpaccio, advocatus-diaboli, and choice-cartographer relate
+- [Sentinels](explanation/sentinels.md) — the category that guards the human's understanding and judgement, its three-part signature, and the roster
+- [The Cadence Discipline](explanation/cadence-discipline.md) — coda, mast, wip-warden and convener; the shape of the work around decisions
 - [Decision Archaeology](explanation/decision-archaeology.md) — the choice-cartographer's role; intent debt and cognitive debt
 - [Adversarial Review](explanation/adversarial-review.md) — the advocatus-diaboli's role and the human-cognition gate
 - [Watching the Verifier](explanation/watching-the-verifier.md) — the reservoir-warden's advisory watch on the human the harness cannot verify
-- [Progressive Hardening](explanation/progressive-hardening.md) — the promotion ladder from unverified to agent to deterministic
+- [Prospective Cost Estimation](explanation/prospective-cost-estimation.md) — the cost-estimator's range-not-point contract and its refusal to fabricate
+- [The Cost Estimation Loop](explanation/the-cost-estimation-loop.md) — how the cost capability works as a whole
+- [Harness Affordances](explanation/harness-affordances.md) — what the harness can reach, declared and checked
+- [Progressive Hardening](explanation/progressive-hardening.md) — the promotion ladder, and why rung and reach are different axes
 - [Determinacy Calibration](explanation/determinacy-calibration.md) — the bidirectional review practice that uses the ladder over time
 - [The Three Enforcement Loops](explanation/three-enforcement-loops.md) — inner, middle, and outer loops operating at different timescales
 - [Garbage Collection](explanation/garbage-collection.md) — fighting entropy with periodic checks and scheduled agents

@@ -1,5 +1,6 @@
 ---
 title: Adversarial Review
+sentinels: [advocatus-diaboli]
 ---
 # Adversarial Review
 

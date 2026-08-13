@@ -11,6 +11,13 @@ Progressive hardening is the constraint promotion ladder: constraints begin as u
 
 Every constraint in `HARNESS.md` sits at one of three enforcement levels. The levels are not arbitrary categories. They reflect the team's understanding of the constraint: how precisely they can state it, how reliably they can check it, and how much they trust the checking mechanism.
 
+> **A note on names and values.** The three levels below are the *conceptual*
+> rungs. The `Enforcement` field takes four values — `unverified`, `agent`,
+> `deterministic`, and `deterministic + agent`, the last for constraints where a
+> tool covers the mechanical subset and an agent the semantic remainder. Level 2
+> is written `agent`, not `agent-verified` or `agent-backed`: only the enum's
+> own vocabulary belongs in a `HARNESS.md` entry.
+
 ### Level 1: Unverified (Declared)
 
 An unverified constraint is a written commitment. The team has identified a rule, agreed that it matters, and documented it in `HARNESS.md`. No automated mechanism checks it. Enforcement depends entirely on human memory and discipline.
@@ -109,6 +116,41 @@ The `harness-enforcer` reads the constraint from `HARNESS.md`, sees `enforcement
 Secret detection is a textbook candidate for deterministic enforcement. The rule is precise, the tool is mature, and false negatives are more dangerous than false positives. There is no judgment involved in detecting a private key in source code.
 
 ---
+
+## Rung and reach are different axes
+
+The ladder above is one axis: **the rung** — *how* the check runs, and the only
+thing the `Enforcement` field records. Its values are `unverified`, `agent`,
+`deterministic`, and `deterministic + agent`.
+
+There is a second axis the field does not record: **the reach** — *what the
+constraint demands*.
+
+- **Required** — every non-exempt PR must satisfy it. Most constraints.
+- **Complete-if-present** — the constraint is fully enforced *where the thing
+  exists*, and a PR that does not have the thing passes.
+
+`PRs have disposed consultation voices` is the worked example. Its enforcement
+is **`deterministic`** — a matcher over record frontmatter, not an LLM applying
+judgement. But its reach is deliberately held back: a PR whose spec has no
+consultation record **passes**, because running `/convene` is a choice. What is
+withheld is the *scope of what it demands*, not the *rigour of the check*.
+
+### Why this distinction earns its keep
+
+Collapsing the two axes produces a specific, observed failure: a constraint
+whose rung is honestly deterministic gets described as something softer, because
+"deterministic" is heard as "mandatory for everyone".
+
+That happened here. A spec proposed shipping this very constraint at a rung
+called **`agent-verified`** — reasoning that a new constraint should start low
+on the ladder. `agent-verified` was never a value of the enum. The intent was
+sound and the vocabulary did not exist, because the thing being held back was
+reach and the only axis available was rung.
+
+**Hold back reach, not rigour.** A check worth writing is worth writing
+correctly; what a new constraint should earn over time is the right to demand
+more, not the right to be checked properly.
 
 ## Verification Slots
 

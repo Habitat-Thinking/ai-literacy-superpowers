@@ -1,5 +1,6 @@
 ---
 title: Decision Archaeology
+sentinels: [choice-cartographer]
 ---
 # Decision Archaeology
 

@@ -10,19 +10,11 @@ session. Hooks are advisory only — they warn but never block.
 
 ## PreToolUse Hooks
 
-These hooks fire when Claude invokes the `Write` or `Edit` tool.
-
-### Constraint gate (prompt)
-
-- **Event**: PreToolUse
-- **Matcher**: `Write|Edit`
-- **Type**: prompt
-- **Timeout**: 30s
-
-Reads the Constraints section of `HARNESS.md`, identifies any
-constraints scoped to `commit`, and evaluates whether the file being
-written or edited would violate them. Returns a warning describing
-each violation. Uses LLM judgement to interpret constraints.
+These hooks fire **before** Claude's `Write` or `Edit` tool call runs, and can
+stop it. A `command` hook warns by printing and exiting 0, or blocks by exiting
+2. A **`prompt`** hook has no such distinction: returning nothing allows the
+call and returning any text denies it. That is why the constraint gate is not
+here — see PostToolUse, below.
 
 ### Markdownlint check (command)
 
@@ -43,6 +35,46 @@ checking — the prompt hook catches constraint intent, while this
 hook catches formatting that machines are better at detecting.
 
 ---
+
+## PostToolUse Hooks
+
+These fire **after** a tool call has run. Output is advisory by construction:
+the work has happened, so a hook here informs rather than prevents.
+
+### Constraint gate (prompt)
+
+- **Event**: PostToolUse
+- **Matcher**: `Write|Edit`
+- **Type**: prompt
+- **Timeout**: 30s
+
+Reads the Constraints section of `HARNESS.md`, identifies constraints scoped to
+`commit`, and reports any the file just written breaks.
+
+**It reports only what it can quote.** A violation requires the constraint's
+heading verbatim from `HARNESS.md` *and* the offending line from the
+file. Without both, it returns nothing — and returning nothing is the correct
+and common outcome. A document that discusses a rule is not a document that
+breaks one.
+
+**Why it is not a `PreToolUse` hook.** It used to be, and it could not do what
+its own prompt asked. A `PreToolUse` prompt hook has exactly two channels —
+return nothing (allow) or return text (deny) — so "warn, only warn" was
+addressed to a model with no mechanism to comply, and the text it returned *was*
+the block. It denied two legitimate writes, each citing a constraint that does
+not exist in `HARNESS.md`. Moved in #510; the file is on disk and uncommitted
+when the hook runs, so the warning stays actionable.
+
+### Affordance invocation recorder (command)
+
+- **Event**: PostToolUse
+- **Matcher**: `Bash|mcp__.*`
+- **Type**: command
+- **Timeout**: 10s
+
+Logs `Bash` and MCP tool calls to gitignored observability, so the affordance
+inventory can be checked against what is actually invoked rather than what was
+declared. Exits 0 unconditionally.
 
 ## Stop Hooks
 
@@ -186,23 +218,6 @@ files forever.
 **To switch it off**, remove the `mast-boundary-check.sh` entry from
 `hooks/hooks.json`. `$CLAUDE_MAST_DIR` relocates the store and is test-only.
 
-### The advisory rail
-
-`lib/advisory-rail.sh` lets at most one stop-advisory speak per turn, because
-two messages about stopping arriving together is accumulated pressure — which
-the evidence says works *worse* than a single boundary prompt.
-
-It arbitrates by **precedence, not registration order**. A **once-only**
-advisory (the Mast's notices) speaks; a **repeating** one (the reservoir
-check, which re-emits every turn while a threshold stays crossed) defers to the
-next turn it is going to get anyway. Ordering it the other way would have
-permanently spent the message designed to arrive once.
-
-A "turn" has no identifier a hook can read, so a claim holds for a 10-second
-window. Two consequences, both bounded and neither hidden: two turns finishing
-inside 10 seconds collapse into one, costing a skipped repeating advisory; and
-a rail slow enough to straddle it lets both speak, costing one duplicate.
-
 ### Reservoir check (command)
 
 - **Event**: Stop
@@ -342,15 +357,72 @@ Records superseded by a `.resumed.md` transition are not surfaced. Exits
 0 unconditionally. `$CLAUDE_PARKED_DIR` overrides the directory and is
 test-only.
 
+### WIP check (command)
+
+- **Event**: SessionStart
+- **Matcher**: `*`
+- **Type**: command
+- **Timeout**: 10s
+
+Counts live registry entries against the `max_concurrent_sessions` limit
+declared in the pact file's `Session WIP` block, and reports when the starting
+session puts you over it. Lists which sessions are live and how long since each
+last took a turn — "park one" is unanswerable if you cannot see which.
+
+**It never invents a limit.** A `Session WIP` block carrying its mandatory
+clause and no `max_concurrent_sessions` is a normal product of `/mast tune`, not
+a malformed file. Reporting a breach of a line the human never drew is the worst
+output this hook could produce, so it says no limit is declared and points at
+`/mast tune`.
+
+**It counts sessions and never watches the human.** That boundary is what keeps
+the `reservoir-warden` trustworthy, and no script enforces it.
+
+Silent when no block is declared — a `SessionStart` hook announcing itself to
+everyone who never asked for this is an imposition. Fires on `source: startup`
+**only**: `SessionStart` re-fires on resume, clear and compact, and a breach
+report re-injected mid-session is the thrash the sentinel exists to name.
+
+An inferred count is reported as approximate. Exits 0 on every path, including
+an unreadable registry, unset `HOME`, and unparseable stdin.
+
 ---
+
+## Libraries
+
+Sourced by hooks, never registered in `hooks.json`. They appear here because
+hooks are documented in terms of them, but they are **not hooks** and are not
+counted as such — a heading count over the event sections above is exact.
+
+### The advisory rail (`lib/advisory-rail.sh`)
+
+`lib/advisory-rail.sh` lets at most one stop-advisory speak per turn, because
+two messages about stopping arriving together is accumulated pressure — which
+the evidence says works *worse* than a single boundary prompt.
+
+It arbitrates by **precedence, not registration order**. A **once-only**
+advisory (the Mast's notices) speaks; a **repeating** one (the reservoir
+check, which re-emits every turn while a threshold stays crossed) defers to the
+next turn it is going to get anyway. Ordering it the other way would have
+permanently spent the message designed to arrive once.
+
+A "turn" has no identifier a hook can read, so a claim holds for a 10-second
+window. Two consequences, both bounded and neither hidden: two turns finishing
+inside 10 seconds collapse into one, costing a skipped repeating advisory; and
+a rail slow enough to straddle it lets both speak, costing one duplicate.
 
 ## Configuration
 
 Hooks are configured in `hooks/hooks.json`. The file contains:
 
 - A `description` field summarising the hook set
-- A `PreToolUse` array with matcher patterns and hook definitions
-- A `Stop` array with wildcard matcher and hook definitions
+- A `PreToolUse` array — matcher patterns; fires before the tool call and can
+  block it
+- A `PostToolUse` array — matcher patterns; fires after, advisory by
+  construction
+- A `Stop` array — wildcard matcher; fires at the end of every assistant turn
+- A `SessionStart` array — wildcard matcher; fires on start **and** on resume,
+  clear and compact, so entries must be idempotent
 
 Each hook entry specifies:
 

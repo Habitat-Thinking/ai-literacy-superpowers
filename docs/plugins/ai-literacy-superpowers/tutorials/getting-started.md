@@ -272,6 +272,10 @@ Each constraint is a rule with an enforcement level:
 - **Scope**: pr
 ```
 
+Enforcement has three levels — one axis, *how* the check runs. A
+second axis, *what it demands*, is covered in
+[Progressive Hardening](../explanation/progressive-hardening.md#rung-and-reach-are-different-axes).
+
 Enforcement has three levels:
 
 - **deterministic** — a tool runs and exits non-zero if the rule is

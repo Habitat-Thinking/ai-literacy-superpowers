@@ -91,3 +91,7 @@ entry may stand for more than one session.
 The count is never presented as exact when it is not. If you need certainty,
 you know better than it does: it can only see sessions that have taken a turn
 recently.
+
+## See also
+
+- [The cadence discipline](../explanation/cadence-discipline.md) — why this sentinel is built the way it is, and what it shares with the other three
