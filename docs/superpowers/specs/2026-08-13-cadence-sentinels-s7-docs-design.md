@@ -1,13 +1,18 @@
 # Spec: Cadence Sentinels S7 — Documentation, Marketplace, and Sync
 
-**Status:** Draft (revision 1)
+**Status:** Approved (revision 2, post-diaboli)
 **Date:** 2026-08-13
 **Issue:** #497 — and folds in #513 (docs-site gaps), whose scope is the same work
 **Epic:** The Cadence Sentinels (S1–S7) — the closing slice
 **Depends on:** S2–S6, all merged (0.68.0 – 0.73.0)
-**Scope:** the docs site, `sentinel-design/SKILL.md`, and one smoke test
+**Objections:** `docs/superpowers/objections/cadence-sentinels-s7-docs-design.md`
+— 12 objections, all accepted
+**Scope:** the docs site, `hooks.json`'s description, `README.md`, and one
+integration test
 
-**Provenance:** *The Second Front — Arc Insertion Remit* (slide S7).
+**Provenance:** *The Second Front — Arc Insertion Remit* (slide S7) — **a
+document that is in neither repository.** See §3 and #514; the citation is
+recorded as unresolvable rather than repeated as though it were retrievable.
 
 ---
 
@@ -26,23 +31,35 @@ adversarial pass the code did.
 
 Verified against shipped files, not inferred.
 
-### 2.1 Four explanation pages that the convention demands
+### 2.1 One cadence-discipline page, mirroring the one that exists
 
-Five of the nine sentinels have a one-page explanation each:
+Revision 1 claimed a one-page-per-sentinel convention and produced a five-row
+table proving it. **The table was built by omitting the counterexamples** (O3):
 
-| Page | Sentinel |
+| Page | Covers |
 | --- | --- |
 | `cadence-governance.md` | `carpaccio` |
 | `adversarial-review.md` | `advocatus-diaboli` |
 | `decision-archaeology.md` | `choice-cartographer` |
 | `watching-the-verifier.md` | `reservoir-warden` |
 | `prospective-cost-estimation.md` | `cost-estimator` |
+| **`decision-discipline-triad.md`** | **`carpaccio` + `advocatus-diaboli` + `choice-cartographer`** |
+| **`the-cost-estimation-loop.md`** | **`cost-estimator`, a second time** |
 
-**The four cadence sentinels have none.** Their how-to guides shipped with their
-slices — `closing-a-session.md`, `keeping-a-pact.md`, `watching-your-wip.md`,
-`convening-the-voices.md` — but a how-to answers *how do I use this*, and the
-convention here is that each sentinel also gets a page answering *why is it
-built this way*.
+The real pattern is **mixed**: per-agent pages *and* per-discipline pages, both
+linked from the landing page. So the convention that justified four new pages
+does not exist — and the per-discipline shape this slice was going to introduce
+as a framing is already sitting in the directory.
+
+This is the S6 finding one slice later: a premise asserted from the cases that
+fit. It is worth naming rather than quietly correcting, because it is now the
+second time in two slices.
+
+**S7 therefore ships ONE page — `cadence-discipline.md` — mirroring
+`decision-discipline-triad.md` exactly**, with a `###` section per sentinel.
+The four how-to guides already answer *how do I use this*; this answers *why is
+it built this way*, once, for the four together, which is also the only place
+their shared results can be stated.
 
 That quadrant is where this epic's genuinely conceptual results have no home:
 
@@ -67,10 +84,22 @@ PreToolUse` line, and there is **no `## PostToolUse Hooks` section on the page
 at all**. The description is also pre-write framing ("would violate") and omits
 the verbatim-quote rule that fix introduced.
 
-**Short:** `hooks.json` declares **18** hooks; the page documents **17**.
+**Short:** `hooks.json` declares **18**; the page documents **16** — revision 1
+said 17 under a heading reading "short by two", and both could not hold (O6).
 `wip-check.sh` (SessionStart, S4) is absent though both its siblings from this
 epic are present, and `affordance-invocation-recorder.sh` (PostToolUse) has had
 nowhere to live for want of the missing section.
+
+The discrepancy hides a third thing: `### The advisory rail` sits among the Stop
+hooks but documents `lib/advisory-rail.sh`, **a sourced library that is never
+registered**. It moves to a `## Libraries` section outside the event groups, so
+a count over event-section headings is exact rather than off by one forever.
+
+**And the error is in the shipped artefact, not only its documentation** (O5).
+`hooks.json`'s own description field says the constraint gate is `PreToolUse`
+while the same file registers it under `PostToolUse` eight lines later. `README.md`
+carries it twice more — once in prose at :323, once in the architecture diagram
+at :428. A grep for `PreToolUse` returns three files; revision 1 named one.
 
 ### 2.3 `harness-md-format.md` never documents `## Stakeholders`
 
@@ -100,20 +129,42 @@ held back in reach: a PR with no consultation record passes, because running
 which is precisely how S5's first revision came to invent an `agent-verified`
 rung that was never a value of the enum.
 
-Note also that the page's own level names disagree with the enum it documents.
+The page's own level names also disagree with the enum it documents: three
+rungs are named, then a **four**-value enum appears
+(`unverified | agent | deterministic | deterministic + agent`), whose fourth
+value has no rung at all.
+
+**And the one-axis model is in eight pages, not one** (O8) — including
+`how-to/add-a-constraint.md`, which states the ladder at the exact moment
+someone is choosing an `Enforcement` value. That is where the missing reach axis
+has consequences, so fixing only `progressive-hardening.md` would have corrected
+the page a reader consults *after* they have the question and left the page that
+forms it. All eight are corrected.
 
 ### 2.5 `sentinels.md` has a roster and no organising idea
 
-The roster reached 9 in S5. What it lacks is the **two disciplines**:
+The roster reached 9 in S5. **The framing it needs is already shipped** — in
+`sentinel-design/SKILL.md:139-143` and repeated in `sentinels.md`:
 
-- **Decision discipline** — `carpaccio`, `advocatus-diaboli`,
-  `choice-cartographer`, `cost-estimator`: they guard *decisions* and their
-  inputs.
-- **Cadence discipline** — `coda`, `mast`, `wip-warden`, `convener`: they guard
-  *the shape of the work around* those decisions. `carpaccio` is the forerunner,
-  sitting in both.
+> the decision-discipline triad guards *decisions*; the reservoir-warden guards
+> *the decider*; the cost-estimator guards *the decision's inputs*. The four
+> cadence sentinels guard the shape of the work around those decisions.
 
-`reservoir-warden` belongs to neither and guards *the decider*.
+Revision 1 proposed a *different* framing that moved `cost-estimator` inside the
+decision discipline. That is a **reclassification contradicting three shipped
+surfaces**, and it would have misnamed `decision-discipline-triad.md` — a page
+whose title says three and whose body argues "why three, not one" — on the day
+S7 merged (O7). A slice built to remove pages teaching superseded models would
+have created one.
+
+**The shipped framing stands.** What S7 adds is the name *cadence discipline*
+for the group that already has the description, and the page that explains it.
+
+`sentinels.md` also needs two repairs revision 1 did not see: a blank line at
+:115 **orphans the `convener` row into a second one-row table** — live on the
+docs site since S5, introduced by the edit that added the row — and :198 still
+reads "The five roster agents behave exactly as before" beneath a roster of
+nine.
 
 ## 3. What Is Not Buildable Here
 
@@ -133,8 +184,28 @@ links in a document that cannot be located is not something to approximate**,
 and reporting it as done would be exactly the overclaim this epic keeps
 catching.
 
-The PR declares this openly and lists what would unblock it: the deck's path, or
-the list of links it carries.
+### 3.1 The finding is bigger than one acceptance item
+
+**All seven** Cadence Sentinels specs cite this deck in their provenance line.
+If it cannot be located, the answer to *"why these nine sentinels, in this
+order, with this remit?"* has no external referent — and S7, the slice whose job
+is to give the epic's results a durable home, is the last place anyone looks
+(O1).
+
+Revision 1 filed this as a blocked checklist item. It is the epic's own
+recurring defect at epic scale: a confident sentence describing something that
+is not there. **#514** records it, and this spec's own provenance line says so.
+
+### 3.2 So this PR does not close #497
+
+Declaring item 4 undone and closing the issue that tracks it are the same
+overclaim through two channels (O2). `Closes #497` is a machine instruction, and
+merging it would shut an issue whose fourth acceptance item was never met, with
+the only record living in a merged PR body — not a surface anyone returns to.
+
+**The PR closes #513 only.** A comment on #497 records what shipped, what did
+not, and what would unblock it: the deck's path, or the list of links it
+carries.
 
 ## 4. Decisions Taken at the Gate
 
@@ -163,50 +234,118 @@ Inventing a grouping field would be declaring a contract the platform does not
 define. The framing lands in the docs, where it is readable and costs nothing to
 revise once the keynote is final.
 
-## 5. The Smoke Test
+## 5. The Integration Test
 
 Issue #497's third acceptance item asks for a fresh-clone smoke run of `/coda`,
 `/mast`, `/wip` and `/convene` against a toy repo.
 
 **Half of that is honestly automatable and half is not.** The commands dispatch
 model-mediated agents; a real run needs a live session and cannot be a CI test.
-What *can* be exercised end-to-end is the **deterministic substrate S1–S5 built**
-— and it has never been tested as a whole, only per-library.
 
-`tdad_tests/layer0_deterministic/test-cadence-smoke.sh` builds a toy repo in a
-temp directory and drives the real shipped scripts across it:
+### 5.1 What it must test, and what it must not re-test
 
-- **K1** — a pact file with all three blocks reads back through `pact-blocks.sh`
-  with the right keys, including `hard_stop_hour: 18:30` (the first-delimiter
-  rule).
-- **K2** — `session-registry-start.sh` registers, `registry_count` counts, and
-  `session-registry-sweep.sh` retires only what the lease expired.
-- **K3** — `wip-check.sh` is silent under the limit and reports over it, naming
-  count and limit.
-- **K4** — `next-action-hint.sh` finds an anchor; a parking record written to
-  the records directory is found open by `records_open` and, once resolved, is
-  superseded by `records_latest`.
-- **K5** — `check-consultation-dispositions.py` passes on a fully-disposed
-  record and fails on a pending one, in the same toy repo.
-- **K6** — every one of these exits 0 on a repo with **none** of these files,
-  which is the state of every project that has not adopted the epic.
+Revision 1 proposed K1–K5 re-running per-library coverage that already ships —
+`test-pact-blocks.sh`, `test-session-registry.sh`, `test-wip-check.sh`,
+`test-next-action.sh`, `test-record-contracts.sh`, `test-convene-check.sh`. Five
+independent assertions sharing an `mktemp` is not integration coverage; it is
+the same coverage with a shared temp directory (O11).
 
-K6 is the one that matters most: the substrate must be silent by default.
+The property per-library tests **structurally cannot** show is agreement:
+
+> **Three libraries read the pact file independently.** `pact-blocks.sh` reads
+> the limit, `session-registry-read.sh` applies the lease, and `wip-check.sh`
+> compares one against the other. Nothing today asserts that the value one
+> library reads is the value the next one acts on.
+
+That is the whole test: **one pact file, one registry, three readers, one
+answer.**
+
+### 5.2 It must not touch the developer's machine
+
+The pact file and the session registry live **outside every work tree by
+design** — `$HOME/.claude/pacts.md` and `$HOME/.claude/sessions/`. A toy repo
+does not isolate them (O9).
+
+Revision 1 named a temp directory and none of the four test-only overrides. A
+run would have written into the **real** registry, inflating the live-session
+count the WIP Warden reports against a line the person drew — which
+`test-wip-check.sh` already names as the worst output this substrate can
+produce — and `session-registry-sweep.sh` could have retired a merely-idle
+colleague session (O10).
+
+All four are set: `$CLAUDE_PACTS_FILE`, `$CLAUDE_SESSIONS_DIR`,
+`$CLAUDE_MAST_DIR`, `$CLAUDE_PARKED_DIR`.
+
+### 5.3 Scenarios — `tdad_tests/layer0_deterministic/test-cadence-integration.sh`
+
+- **K1 — one pact, three readers, one answer.** A pact declaring
+  `max_concurrent_sessions: 2` is read by `pact-blocks.sh`, and `wip-check.sh`
+  reports a breach at exactly the third live registry entry — not the second,
+  not the fourth.
+- **K2 — the lease governs what the count sees.** An entry aged past
+  `_lease_hours` stops being counted, so the breach clears without the pact
+  changing. The limit and the lease are read by different libraries and must
+  agree on the same registry.
+- **K3 — a record written by one contract is found by the other.** A parking
+  record is open to `records_open`; its `.resolved.md` successor is what
+  `records_latest` returns, and `check-consultation-dispositions.py` reads
+  through the latter.
+- **K4 — silence on an unadopted machine.** No pact file, empty registry: every
+  hook emits **nothing** and exits 0. This constructs *machine*-state absence,
+  which is the state that actually matters, and it is the scenario revision 1
+  got wrong.
+- **K5 — no shipped script writes outside its store.** After a full run, the
+  toy repo contains no `.claude/` directory and no session or pact file.
+
+K4 and K5 are the ones that matter: the substrate must be silent by default and
+must not leak into a work tree.
 
 ## 6. Files
 
+Revision 1 listed ten and missed nine (O5, O12). This is the fourth slice in
+this epic whose Files table was found short, which is itself the argument for
+deriving rather than listing.
+
+### 6.1 New
+
 | File | Purpose |
 | --- | --- |
-| `explanation/the-closing-ritual.md` | **new** — the Coda |
-| `explanation/ulysses-pacts.md` | **new** — the Mast |
-| `explanation/concurrency-and-wip.md` | **new** — the WIP Warden |
-| `explanation/consulting-the-affected.md` | **new** — the Convener |
-| `explanation/sentinels.md` | the two disciplines (§2.5) |
-| `explanation/progressive-hardening.md` | rung vs reach (§2.4) |
-| `reference/hooks.md` | the PostToolUse section, the correction, the two missing hooks (§2.2) |
+| `explanation/cadence-discipline.md` | the one page (§2.1), mirroring `decision-discipline-triad.md` |
+| `tdad_tests/layer0_deterministic/test-cadence-integration.sh` | §5 |
+
+### 6.2 The `PreToolUse` correction — three surfaces
+
+| File | Why |
+| --- | --- |
+| `ai-literacy-superpowers/hooks/hooks.json` | its **description field** says `PreToolUse` while the same file registers `PostToolUse`. The shipped artefact, not its docs |
+| `README.md` (:323 prose, :428 diagram) | the first surface anyone reads, wrong twice |
+| `reference/hooks.md` | the `## PostToolUse Hooks` section, the two missing hooks, `## Libraries` for the advisory rail, and the `## Configuration` section that still describes only `PreToolUse` and `Stop` arrays |
+
+### 6.3 The rung/reach correction — eight pages
+
+`explanation/progressive-hardening.md` (the full treatment, plus its
+three-rungs-four-values mismatch), then a corrected sentence in
+`explanation/constraints-and-enforcement.md`,
+`explanation/understand-harness-engineering.md`,
+`explanation/harness-engineering.md`, `explanation/fitness-functions.md`,
+`how-to/add-a-constraint.md`, `tutorials/harness-from-scratch.md`,
+`tutorials/getting-started.md`, and `docs/plugins/.../index.md`.
+
+### 6.4 Everything else
+
+| File | Purpose |
+| --- | --- |
+| `explanation/sentinels.md` | the cadence-discipline name, the **broken table at :115**, and "five roster agents" at :198 |
 | `reference/harness-md-format.md` | the `## Stakeholders` section (§2.3) |
-| `skills/sentinel-design/SKILL.md` | the two disciplines, mirroring the roster it already carries |
-| `tdad_tests/layer0_deterministic/test-cadence-smoke.sh` | **new** — §5 |
+| `docs/plugins/ai-literacy-superpowers/index.md` | its **hand-maintained** Concepts list, already short by three before this slice adds one |
+| the four how-to guides | backlinks to the new page, per the `watching-the-verifier` ↔ `watch-your-cognitive-reservoir` pattern |
+| every explanation page covering a sentinel | a `sentinels:` frontmatter key (§8) |
+
+### 6.5 Version surfaces
+
+`plugin.json`, the README badge, the README plugin-table cell, the CHANGELOG
+heading, `marketplace.json` `plugin_version`, `marketplace.json`
+`plugins[].version`. Hard CI gates, absent from revision 1's table.
 
 ## 7. Non-Goals
 
@@ -217,27 +356,63 @@ K6 is the one that matters most: the substrate must be silent by default.
 - **No behaviour change anywhere.** S7 is documentation plus one test over
   already-shipped code.
 - **No new how-to pages.** All four already exist.
+- **No reclassification of `cost-estimator`.** The shipped framing stands
+  (§2.5).
+- **No four per-sentinel pages.** One discipline page (§2.1).
+- **Does not close #497.** §3.2.
 
 ## 8. Acceptance Scenarios
 
-- **D1** — every one of the nine sentinels has exactly one explanation page, and
-  the count is derived from `role: sentinel` frontmatter rather than pinned.
-- **D2** — `reference/hooks.md` documents every hook `hooks.json` declares, and
-  each entry's stated event matches the event it is registered under.
-- **D3** — no page describes the constraint gate as a `PreToolUse` hook.
+### 8.1 The derivation surface D1 needed and did not have
+
+Revision 1 asserted the page count would be "derived from `role: sentinel`
+frontmatter rather than pinned". **Half that derivation had no source** (O4):
+nine agents carry the tag, but nothing on disk links a sentinel to the page
+explaining it — pages are named for concepts (`cadence-governance.md`,
+`watching-the-verifier.md`), not agents.
+
+`AGENTS.md:480-501` is explicit that where no on-disk source exists, a pin must
+carry a comment saying what makes it change. The cheaper and better option is to
+**create the missing relation**: every explanation page covering a sentinel
+gains a frontmatter key naming which.
+
+```yaml
+---
+title: The decision-discipline triad
+sentinels: [carpaccio, advocatus-diaboli, choice-cartographer]
+---
+```
+
+Coverage is then derivable from both ends, and `test-sentinel-docs-coverage.sh`
+checks it.
+
+- **D1** — every agent with `role: sentinel` is named by at least one page's
+  `sentinels:` key, and every name in a `sentinels:` key is a real sentinel.
+  Both sides derived; no literal count anywhere.
+- **D2** — `reference/hooks.md`'s event sections document exactly the hooks
+  `hooks.json` registers, each under its registered event. Derived by parsing
+  both. The advisory rail is outside the event sections and outside the count.
+- **D3** — **no file in the repo** describes the constraint gate as a
+  `PreToolUse` hook — not `hooks.json`, not `README.md`, not any page. Revision
+  1 scoped this to "no page", which the planned fix satisfied by construction.
 - **D4** — `harness-md-format.md` documents `## Stakeholders`.
-- **D5** — `progressive-hardening.md` distinguishes rung from reach and uses the
-  enum's own vocabulary.
-- **K1–K6** — §5.
-- Docs build clean under `--strict`.
+- **D5** — every page teaching the enforcement ladder distinguishes rung from
+  reach, and none names a rung outside the enum.
+- **K1–K5** — §5.3.
+- Docs build clean under `--strict`, and the new page is reachable from
+  `index.md`.
 
 ## 9. Rollout
 
-`skills/sentinel-design/SKILL.md` is a plugin file, so a bump is required:
-**0.73.0 → 0.74.0**. Five CI-checked version locations plus the README
-plugin-table cell.
+**Patch bump, 0.73.0 → 0.73.1.** Revision 1 said 0.74.0 while §7 said "no
+behaviour change anywhere", and both could not hold (O12). With the
+`cost-estimator` reclassification dropped (§2.5), nothing behaves differently —
+the only plugin file touched is `hooks.json`'s description, a documentation
+correction. `CLAUDE.md` makes that a patch.
 
-**Component counts unchanged**: 41 skills, 20 agents, 32 commands. No count
-badges, anchors, or headings move.
+Five CI-checked version locations plus the README plugin-table cell.
 
-Closes **#497** and **#513**.
+**Component counts unchanged**: 41 skills, 20 agents, 32 commands.
+
+Closes **#513**. **#497 stays open** (§3.2), with a comment recording what
+shipped. **#514** carries the provenance gap.
