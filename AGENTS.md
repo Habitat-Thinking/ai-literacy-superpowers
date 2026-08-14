@@ -505,10 +505,33 @@
 <!-- How tests are structured in this project. Helps agents write consistent
      tests without reading every test file from scratch. -->
 
-- This project has no application code or test suite. Content is
-  validated by markdownlint (CI), ShellCheck, bash -n syntax checks,
-  and gitleaks secret scanning. All validation is deterministic and
-  runs in the harness CI workflow.
+- There is no application code, but there is a substantial test suite
+  under `tdad_tests/`, run by pytest. Four layers:
+  - **Layer 0 — deterministic.** Bash scripts under
+    `tdad_tests/layer0_deterministic/`, each registered by stem in
+    `tdad_tests/tests/test_layer0_deterministic.py`. They exercise the
+    shipped hook scripts and checkers against temp fixtures. Adding one
+    means adding the file *and* the roster entry.
+  - **Layer 1 — structural.** Scenario files under
+    `tdad_tests/scenarios/<type>/<component>/`, asserting that agent,
+    skill and command files carry the charter clauses required of them.
+  - **Layer 2 — skill triggers.** Does a skill's description still fire
+    on the queries it should? Model-mediated, one inference per query,
+    skipped when no API key is present.
+  - **Layer 3 — behavioural.** Opt-in, case by case.
+- Write the failing test first and confirm it fails for the *right*
+  reason. A test that passes the moment it is written proves nothing.
+- Mutation-test anything that guards a property: break the thing
+  deliberately and confirm the test catches it. Several checks here were
+  found passing for the wrong reason that way, and a surviving mutant is
+  a hypothesis about the test — confirm the mutation actually applied
+  before believing it.
+- Tests that read the clock must pin it rather than race it. See
+  `$CLAUDE_MAST_NOW` and issue #527.
+- markdownlint, ShellCheck, `bash -n` and gitleaks still run in CI. They
+  are lint, not the test suite, and two constraints enforce the suite
+  separately: *TDAD fast-suite passes (Layers 0 + 1)* and *New plugin
+  components must ship with a TDAD scenario*.
 
 ## DESIGN_DECISIONS
 

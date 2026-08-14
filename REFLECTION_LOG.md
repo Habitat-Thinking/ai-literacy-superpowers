@@ -889,3 +889,20 @@
   - Model tiers used: capable (100%) — Opus 5 throughout, including all advocatus-diaboli dispatches
   - Pipeline stages completed: spec-writer, advocatus-diaboli (spec gate, 5 slices), implement, integration — TDD applied per slice; carpaccio and choice-cartographer not dispatched, the build spec supplying the slicing
   - Agent delegation: partial
+
+---
+
+- **Date**: 2026-08-14
+- **Agent**: Claude Opus 5
+- **Task**: Corrected `AGENTS.md` → `TEST_STRATEGY`, which claimed the project had no test suite while 443 TDAD tests ran and two deterministic constraints enforced them (#529).
+- **Surprise**: The drift was invisible until a *generator* consumed it. `ONBOARDING.md` is built from `AGENTS.md`, and regenerating it surfaced a paragraph that had been wrong since the TDAD work landed — long enough that `HARNESS.md` and `AGENTS.md` had been contradicting each other in the same tree, without anything noticing. Nothing reads `TEST_STRATEGY` on a schedule, so nothing could. The sweep for siblings then found the opposite of what I expected: `STYLE`'s "all hook scripts are advisory only" and `DESIGN_DECISIONS`'s naming rules both verified clean. The drift was localised, not systemic — **the section that had a consumer was the section that had drifted**, which is the reverse of the intuition that unread prose rots fastest. And correcting it exposed one more instance in something I had shipped an hour earlier: the `ONBOARDING.md` I generated described three test layers when there are four. Layer 2 exists, is model-mediated, and accounts for most of the suite's 31 skips.
+- **Proposal**: none for `AGENTS.md` beyond the correction itself. Worth considering as a GC rule rather than a constraint: a periodic check that `AGENTS.md` sections making *checkable* claims still hold. The obstacle is that "checkable claim" is not machine-identifiable, so it would be an agent-enforced sweep, and the honest version of it is small — this sweep took four greps and found one defect in three sections.
+- **Improvement**: The generator caught what curation did not. That suggests a cheap general move: when a document is generated from a curated source, have the generator *verify* the source's checkable claims rather than transcribe them. I did this by hand here — writing the `ONBOARDING.md` test section from the tree rather than from `AGENTS.md`, then flagging the discrepancy — and it is what turned a docs task into a real finding. Doing it deliberately would make every regeneration a source audit.
+- **Signal**: context
+- **Constraint**: none — two deterministic constraints already enforce the behaviour (*TDAD fast-suite passes (Layers 0 + 1)*, *New plugin components must ship with a TDAD scenario*). `TEST_STRATEGY` is descriptive prose, not a rule; a constraint cannot fix a stale description, and "keep AGENTS.md accurate" would be unfalsifiable — the governance anti-pattern this repo already names.
+- **Promoted**: 2026-08-14 → AGENTS.md TEST_STRATEGY: "There is no application code, but there is a substantial test suite"
+- **Session metadata**:
+  - Duration: ~30 min
+  - Model tiers used: capable (100%)
+  - Pipeline stages completed: none — a documentation correction routed through the reflection path per #529, not a pipeline task
+  - Agent delegation: manual
