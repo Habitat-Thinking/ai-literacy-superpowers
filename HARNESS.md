@@ -62,10 +62,18 @@
 
 ### Consistent markdown formatting
 
-- **Rule**: All markdown files must pass markdownlint with the
-  project's `.markdownlint.json` configuration without warnings
+- **Rule**: Every markdown file in the repository must pass markdownlint
+  with the project's `.markdownlint.json` configuration, **except the
+  append-only record corpora** — `docs/superpowers/**` and
+  `reflections/**` — the gitignored `REFLECTION_STAGING.md`, and
+  untracked local artefacts under `.claude/**`. Records carry human
+  dispositions and quote markdown as evidence, so style rules fight them
+  by construction; reformatting one would edit something the append-only
+  rule protects. The exclusions live in `.markdownlint-cli2.jsonc` and
+  are the same set locally and in CI (#531).
 - **Enforcement**: deterministic
-- **Tool**: npx markdownlint-cli2 "**/*.md"
+- **Tool**: `npx markdownlint-cli2` (globs and ignores come from
+  `.markdownlint-cli2.jsonc`, so a bare local run checks exactly what CI does)
 - **Scope**: commit + pr
 
 ### No secrets in source

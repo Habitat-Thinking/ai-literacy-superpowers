@@ -45,7 +45,7 @@ a header comment block explaining purpose and behaviour.
 
 ### Consistent markdown formatting
 
-All markdown files must pass markdownlint with the project's `.markdownlint.json` configuration without warnings. Enforcement: deterministic (`npx markdownlint-cli2 "**/*.md"`). Scope: commit + pr.
+Every markdown file in the repository must pass markdownlint with the project's `.markdownlint.json` configuration, **except the append-only record corpora** (`docs/superpowers/**`, `reflections/**`), the gitignored `REFLECTION_STAGING.md`, and untracked local artefacts under `.claude/**`. Records carry human dispositions and quote markdown as evidence, so style rules fight them by construction. Globs and ignores live in `.markdownlint-cli2.jsonc`, so a bare local run checks exactly what CI does. Enforcement: deterministic (`npx markdownlint-cli2 "**/*.md"`). Scope: commit + pr.
 
 ### No secrets in source
 

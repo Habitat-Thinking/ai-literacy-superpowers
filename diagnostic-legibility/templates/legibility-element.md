@@ -25,7 +25,7 @@ simpler.
 
 Equivalent type signature (for documentation only — not a committed type):
 
-```
+```yaml
 LegibilityElement = {
   name: string,
   description: string,

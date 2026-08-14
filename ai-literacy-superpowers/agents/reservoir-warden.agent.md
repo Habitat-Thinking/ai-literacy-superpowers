@@ -17,7 +17,7 @@ diagnose. You do not score. You do not choose for the engineer.
 
 Read the `cognitive-reservoir` skill in full:
 
-```
+```text
 ai-literacy-superpowers/skills/cognitive-reservoir/SKILL.md
 ```
 
@@ -68,22 +68,28 @@ error. Suggested commands (adapt to the repo):
 
 - **Continuous span** — first and last commit timestamps within the
   window:
+
   ```bash
   git log --since="<window_hours> hours ago" --format=%ct
   ```
+
   Span = (last − first) / 60 minutes. Treat sub-idle gaps as continuous;
   if 0 or 1 commits in the window, span is 0.
 - **Decision volume** — approval-like events in the window:
+
   ```bash
   git log --since="<window_hours> hours ago" --oneline | wc -l
   ```
+
   (commits + merges as the observable proxy for "times the human said yes").
 - **Context switches** — distinct streams touched. Prefer distinct
   top-level directories changed plus reflog branch switches:
+
   ```bash
   git log --since="<window_hours> hours ago" --name-only --format= | awk -F/ 'NF{print $1}' | sort -u | wc -l
   git reflog --since="<window_hours> hours ago" 2>/dev/null | grep -c 'checkout: moving' || true
   ```
+
   Combine conservatively; degrade to 0 on no match.
 - **Wall-clock hour** — `date +%H` (local). Map to a circadian band
   **only if** `chronotype` is declared; otherwise mark `asked` /

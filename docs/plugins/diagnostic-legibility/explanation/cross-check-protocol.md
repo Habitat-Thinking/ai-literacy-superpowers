@@ -173,7 +173,7 @@ and can be re-added in the same PR as its first named consumer
 When an input violates a precondition, the agent emits a structured
 refusal line and no YAML block:
 
-```
+```text
 diagnostic-legibility refusal: <single-sentence reason>.
 ```
 

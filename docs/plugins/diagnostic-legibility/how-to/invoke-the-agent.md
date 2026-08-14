@@ -168,7 +168,7 @@ The agent does **not** write files. Your dispatcher is responsible
 for persisting the YAML to whatever path you choose. A common
 convention:
 
-```
+```text
 diagnostic-legibility/output/<YYYY-MM-DD>-<scope-slug>.legibility.yaml
 ```
 

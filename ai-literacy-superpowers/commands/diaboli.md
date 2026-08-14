@@ -26,7 +26,7 @@ before integration-agent.
 
 Confirm the spec file exists at the given path. If not, abort with:
 
-```
+```text
 Error: spec file not found at <path>. Pass a valid path under docs/superpowers/specs/.
 ```
 
@@ -37,6 +37,7 @@ Strip the date prefix and `.md` extension from the filename.
 Example: `docs/superpowers/specs/2026-04-19-advocatus-diaboli.md` → `advocatus-diaboli`
 
 Output path:
+
 - Spec mode: `docs/superpowers/objections/<slug>.md`
 - Code mode: `docs/superpowers/objections/<slug>-code.md`
 

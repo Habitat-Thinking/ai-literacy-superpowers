@@ -149,7 +149,7 @@ consume the YAML block would not see a prose warning.
 
 **Refusal line shape (any precondition violation):**
 
-```
+```text
 diagnostic-legibility refusal: <single-sentence reason>.
 ```
 
@@ -702,7 +702,7 @@ an explicit per-element step:
 Where a question surfaces a change, revise the element and append a
 single string to `challenge_notes[]`:
 
-```
+```text
 Q<N> (question-name): <what surfaced and how it was resolved>
 ```
 
@@ -733,7 +733,7 @@ silently.
 When all five questions surface no changes for an element, append the
 single sentinel string verbatim:
 
-```
+```text
 Challenge applied; no questions surfaced changes
 ```
 
@@ -793,7 +793,7 @@ reasoning:
    surfaces a change to the **subject** element, revise the subject
    and append a single string to its `challenge_notes[]`:
 
-   ```
+   ```text
    CC<N> (question-name): <what surfaced and how it was resolved>
    ```
 
@@ -839,7 +839,7 @@ When all five cross-check questions surface no changes for a subject
 element, append the single sentinel string verbatim to that element's
 `challenge_notes[]`:
 
-```
+```text
 Cross-check applied; no questions surfaced changes
 ```
 

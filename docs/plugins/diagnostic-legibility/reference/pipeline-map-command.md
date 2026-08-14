@@ -107,7 +107,7 @@ failure direction when < high) · **Mermaid flowchart** (inlined bundle)
 | `stage.kind: decision` | diamond `id{"… "}` |
 | `stage.kind: outcome` | stadium `id(["… "])` |
 | `transition` | `from --> to` |
-| `transition.condition_label` | `from -->|label| to` |
+| `transition.condition_label` | `from -->\|label\| to` |
 | `part_of` | `subgraph` / indentation |
 | context vs touched | `classDef context` |
 

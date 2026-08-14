@@ -122,6 +122,7 @@ message with multiple Agent tool calls.
            `gh issue create` and write the URL to `issue_url:` on
            that slice (audit trail). Then dispatch spec-writer against
            the progressed slice's `scope`, not the original task.
+
   1. SEQUENTIAL  — spec-writer        Update spec and plan files first.
   1a. SEQUENTIAL — advocatus-diaboli  Read the spec; produce objection record.
      GATE: Objection Adjudication — surface the objection record to the user.
@@ -370,7 +371,7 @@ the pipeline; the user can retry manually.
 
 Add to the orchestrator context:
 
-```
+```yaml
 progressed_slice_id: <S-id>
 carpaccio_slug: <task-slug>
 carpaccio_total_slices: N
