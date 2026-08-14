@@ -1,19 +1,39 @@
 {
-  // Rule configuration. ``config`` (cli2) merges with the legacy
-  // .markdownlint.json — keeping rules here means there is one source
-  // of truth for which markdownlint rules are on.
-  "config": {
-    "default": true,
-    "MD013": false,
-    "MD025": false,
-    "MD024": false
-  },
-  // Files to ignore. The TDAD Layer 0 fixtures are intentionally
-  // malformed test data — one fixture is named
-  // ``reflection-log-promoted-trailing-space.md`` precisely because
-  // its purpose is to verify the parser strips trailing whitespace.
-  // Linting them would fail by design and drown real regressions.
+  // MD033 (inline HTML) and MD038 (space in code span) are OFF in
+  // `.markdownlint.json`. Both fight deliberate content here: agent files use
+  // <task-slug>-style placeholders, and command files document YAML indentation
+  // with spans like `    evidence:` and `### ` where the SPACE IS THE SUBJECT.
+  // markdownlint --fix silently stripped four such spans before this was caught.
+  //
+  // Rule configuration lives in `.markdownlint.json`, NOT here. markdownlint-cli2
+  // gives that file precedence over this `config` key, so rules set here are
+  // silently ignored — this block's own comment used to claim the opposite and
+  // was wrong for as long as it existed (#531). Globs and ignores below are
+  // honoured, which is why they live here.
+
+  // Files to lint. Without this key the action falls back to its own default,
+  // `*.{md,markdown}` — TOP LEVEL ONLY — so CI linted 9 of 741 files while the
+  // constraint declared `**/*.md`. A bare local `markdownlint-cli2` linted
+  // zero. Stating globs here makes the local run and CI check the same set,
+  // which is the property that was actually missing (#531).
+  "globs": ["**/*.md"],
+
   "ignores": [
+    // Record corpora: append-only artefacts with human dispositions, not
+    // documents anyone formats. Objection records quote markdown as evidence,
+    // which trips style rules by construction, and reformatting a record edits
+    // something the append-only rule protects. 177 files, 620 findings, all of
+    // them noise.
+    "docs/superpowers/**",
+    // Reflection fragments legitimately begin `- **Date**:` rather than a
+    // heading, so MD041 is structurally wrong for them. REFLECTION_LOG.md is
+    // generated from them and lives at the root, where it IS linted.
+    "reflections/**",
+    // Gitignored staging, regenerated on every mining run.
+    "REFLECTION_STAGING.md",
+    // Untracked local working artefacts. CI never sees them, so linting them
+    // locally would put the two out of step again.
+    ".claude/**",
     "tdad_tests/layer0_deterministic/fixtures/**",
     "**/.venv/**",
     "site/**",

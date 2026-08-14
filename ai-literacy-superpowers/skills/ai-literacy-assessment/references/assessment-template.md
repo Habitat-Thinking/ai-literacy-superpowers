@@ -118,4 +118,5 @@ addresses. Order by impact.}}
 Suggested re-assessment date: {{YYYY-MM-DD}} (quarterly)
 
 Previous assessment: {{link to previous if exists, or "first assessment"}}
-```
+
+```text

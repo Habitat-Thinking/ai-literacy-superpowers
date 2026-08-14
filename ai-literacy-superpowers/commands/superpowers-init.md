@@ -98,6 +98,7 @@ Copy CI templates from `${CLAUDE_PLUGIN_ROOT}/templates/`:
   REFLECTION_LOG.md merge=union
   reflections/archive/*.md merge=union
   ```
+
 - `HARNESS.md` → `.claude/HARNESS.md` if it does not exist
 
 Use the harness-engineering skill to verify the scaffold is coherent before

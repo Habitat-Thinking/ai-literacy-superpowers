@@ -18,6 +18,8 @@ and process the task touches — and discloses the boundary it drew.
 > command with its Mermaid HTML render (P5) are later slices. Until P5
 > lands, scope-resolution and pipeline modes are the agent-output surface.
 
+---
+
 > **Want the flow, not just the bound?** Since **v0.8.0** the agent also
 > has **`mode: pipeline`** — it resolves the same bound and then *traces
 > the control flow within it*, emitting a `ConceptualPipelineMap` (stages,

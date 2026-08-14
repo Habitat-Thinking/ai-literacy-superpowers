@@ -484,8 +484,8 @@ per-plugin entry description is the plugin's own contract, not the
 listing contract — S1–S3 precedent).
 
 S4 of the parent slicing record at
-`docs/superpowers/slices/diagnostic-legibility-plugin.md`. Closes issue
-#333 and parent issue #327.
+`docs/superpowers/slices/diagnostic-legibility-plugin.md`. Closes issue #333 and
+parent issue #327.
 
 ## 0.4.0 — 2026-06-01
 
@@ -642,8 +642,8 @@ addressed in this PR, 2 deferred.
   `CLAUDE.md` so it governs every future PR without ceremony).
 
 Sub-S2b of the meta-iteration recorded at
-`docs/superpowers/slices/dl-s2-two-model-agent.md`. Closes issue
-#335; parent issue #331 auto-closes per its own comment.
+`docs/superpowers/slices/dl-s2-two-model-agent.md`. Closes issue #335;
+parent issue #331 auto-closes per its own comment.
 
 ## 0.2.0 — 2026-05-26
 

@@ -81,6 +81,6 @@ disclosure sections are all present and reference (not redefine) the S1 contract
 ## Notes
 
 Scope is S2 only. This scenario asserts the agent's structural shape; it does
-**not** assert anything about the S3 command, the S4 orchestrator wiring, or the
-#377 per-stage `cost_usd` format change. S2 makes no change to
+**not** assert anything about the S3 command, the S4 orchestrator wiring, or
+issue #377's per-stage `cost_usd` format change. S2 makes no change to
 `estimate-record-format.md`.

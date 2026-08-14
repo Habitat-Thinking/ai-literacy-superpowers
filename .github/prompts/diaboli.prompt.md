@@ -10,7 +10,7 @@ or implementation (code mode).
 
 ## Usage
 
-```
+```text
 /diaboli docs/superpowers/specs/<date>-<name>.md [--mode spec|code]
 ```
 

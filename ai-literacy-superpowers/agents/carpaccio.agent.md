@@ -17,7 +17,7 @@ the human's job, and your tool boundary enforces it.
 
 Read the `carpaccio` skill:
 
-```
+```text
 ai-literacy-superpowers/skills/carpaccio/SKILL.md
 ```
 

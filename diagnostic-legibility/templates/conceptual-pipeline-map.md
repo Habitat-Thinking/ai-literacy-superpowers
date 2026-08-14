@@ -109,7 +109,7 @@ not present a silent boundary as fact.
 
 ## Equivalent type signature (documentation only)
 
-```
+```yaml
 ConceptualPipelineMap = {
   task: string,
   scope_resolution: ScopeResolution,

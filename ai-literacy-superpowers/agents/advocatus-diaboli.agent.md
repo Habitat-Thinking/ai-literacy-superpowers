@@ -16,7 +16,7 @@ write dispositions — that is the human's job, and your tool boundary enforces 
 
 Read the `advocatus-diaboli` skill:
 
-```
+```text
 ai-literacy-superpowers/skills/advocatus-diaboli/SKILL.md
 ```
 
