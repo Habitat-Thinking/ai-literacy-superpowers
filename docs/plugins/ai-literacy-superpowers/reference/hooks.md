@@ -216,7 +216,7 @@ opt-in check — so removing your `Budgets` block cleans up rather than strandin
 files forever.
 
 **To switch it off**, remove the `mast-boundary-check.sh` entry from
-`hooks/hooks.json`. `$CLAUDE_MAST_DIR` relocates the store and is test-only.
+`hooks/hooks.json`. `$CLAUDE_MAST_DIR` relocates the store and is test-only, as is `$CLAUDE_MAST_NOW`, which pins the clock to an `HH:MM` so a test can build a stop hour deterministically instead of racing `date`. A malformed value falls through to the real clock — a boundary notice must never break a `Stop` hook.
 
 ### Reservoir check (command)
 

@@ -54,7 +54,21 @@ case "$lead" in ''|*[!0-9]*) lead=30 ;; esac
 
 # Minutes from now until the line, in local time — the same frame the human
 # declared it in.
-now_min=$(( 10#$(date +%H) * 60 + 10#$(date +%M) ))
+#
+# $CLAUDE_MAST_NOW pins the clock to an `HH:MM` for tests, and is TEST-ONLY —
+# the fifth such override in this codebase, beside $CLAUDE_PACTS_FILE,
+# $CLAUDE_SESSIONS_DIR, $CLAUDE_MAST_DIR and $CLAUDE_PARKED_DIR. It exists
+# because a test that builds its fixture from `date` races the clock: MB3 built
+# a stop hour five hours ahead, which wraps past midnight after 19:00 and comes
+# back as a bare HH:MM the hook can only read as many hours BEHIND. The hook was
+# right every time; the fixture was impossible. Malformed values fall through to
+# the real clock rather than failing — a boundary notice must never break a Stop
+# hook (#527).
+now_hhmm="$(date +%H:%M)"
+case "${CLAUDE_MAST_NOW:-}" in
+  [0-9][0-9]:[0-9][0-9]) now_hhmm="$CLAUDE_MAST_NOW" ;;
+esac
+now_min=$(( 10#${now_hhmm%%:*} * 60 + 10#${now_hhmm##*:} ))
 stop_min=$(( 10#${stop_hour%%:*} * 60 + 10#${stop_hour##*:} ))
 remaining=$(( stop_min - now_min ))
 

@@ -37,7 +37,30 @@ pact() {
     printf '\nUnspent budget is not a debt.\n'; } > "$CLAUDE_PACTS_FILE"
 }
 at() { printf '%02d:%02d' "$1" "$2"; }   # a local HH:MM
-minutes_from_now() { date -v+"$1"M +%H:%M 2>/dev/null || date -d "+$1 minutes" +%H:%M; }
+
+# THE CLOCK IS PINNED (#527). Every stop hour below is arithmetic from NOW_MIN,
+# never from `date`.
+#
+# MB3 used to build its fixture with `date -v+300M +%H:%M`, which formats HH:MM
+# and throws the date away. Run after 19:00 that returns a time on the FOLLOWING
+# day, which the hook can only read as many hours behind — so it emitted the
+# reached notice and MB3 failed. The hook was correct every time; the fixture was
+# impossible. The failure window was about five hours in every twenty-four, and
+# CI never hit it only because pushes landed earlier in the day.
+#
+# MB1 (+20m) and MB2 (00:01, "already passed for any run after 00:01") carried
+# smaller versions of the same defect — 21-minute and 1-minute windows. Pinning
+# removes all three rather than narrowing them.
+export CLAUDE_MAST_NOW="12:00"
+NOW_MIN=$(( 12 * 60 ))
+
+# minutes_from_now <n> — an HH:MM <n> minutes after the pinned NOW.
+# Refuses to wrap: a fixture that crosses midnight is the bug this test has.
+minutes_from_now() {
+  local m=$(( NOW_MIN + $1 ))
+  [ "$m" -lt 1440 ] || fail "fixture error: +$1m from the pinned clock crosses midnight"
+  printf '%02d:%02d' $(( m / 60 )) $(( m % 60 ))
+}
 
 # --- MB4: no block, no output, AND no store ---------------------------------
 : > "$CLAUDE_PACTS_FILE"
@@ -61,7 +84,7 @@ run
 
 # --- MB2: reached fires once and recommends /coda ---------------------------
 rm -rf "${CLAUDE_MAST_DIR:?}" "${CLAUDE_ADVISORY_DIR:?}"
-pact "$(at 0 1)"   # 00:01 — already passed for any run after 00:01
+pact "$(at 0 1)"   # 00:01 — before the pinned 12:00, so unambiguously passed
 run
 echo "$OUT" | grep -qF '/coda' || fail "MB2: reached must recommend /coda. Got: $OUT"
 echo "$OUT" | grep -qiE 'stops you|keep going' \
