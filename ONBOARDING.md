@@ -142,8 +142,8 @@ Sixteen decisions are recorded in `AGENTS.md`. The four that shape most work:
 
 ## How We Test
 
-There is no application code, but there is a substantial test suite across the
-TDAD layers, run by `pytest`.
+There is no application code, but there is a substantial test suite under
+`tdad_tests/`, run by `pytest`, across four layers.
 
 - **Layer 0 — deterministic.** Bash scripts under
   `tdad_tests/layer0_deterministic/`, each registered by stem in
@@ -153,6 +153,9 @@ TDAD layers, run by `pytest`.
 - **Layer 1 — structural.** Scenario files under `tdad_tests/scenarios/`,
   one directory per component, asserting that agent and command files carry the
   charter clauses they are required to.
+- **Layer 2 — skill triggers.** Does a skill's description still fire on the
+  queries it should? Model-mediated, one inference per query, and skipped when
+  no API key is present — which accounts for most of the suite's skips.
 - **Layer 3 — behavioural.** Opt-in, case by case.
 
 Two habits are worth copying. **Write the test first and watch it fail for the
