@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.73.3 — 2026-08-14
+
+### Fixed
+
+- **`test-mast-boundary` no longer races the clock** (#527). MB3 built its
+  fixture with `date -v+300M +%H:%M`, which formats `HH:MM` and discards the
+  date — so a run after 19:00 produced a stop hour on the *following* day, which
+  the hook could only read as many hours behind. It emitted the reached notice
+  and the test failed, for roughly five hours in every twenty-four. CI never hit
+  it because pushes landed earlier in the day.
+- **The hook was correct throughout.** Its own comment says so: *"there is no
+  day-rollover puzzle because there is no interval."* A stop hour already past
+  today *should* produce the reached notice. The fixture was impossible, not the
+  behaviour — worth stating, because the obvious fix would have been to change
+  the hook.
+- **MB1 and MB2 carried smaller versions of the same defect** — 21-minute and
+  1-minute failure windows. Pinning the clock removes all three rather than
+  narrowing them.
+- **New `$CLAUDE_MAST_NOW` test-only override**, the fifth here beside
+  `$CLAUDE_PACTS_FILE`, `$CLAUDE_SESSIONS_DIR`, `$CLAUDE_MAST_DIR` and
+  `$CLAUDE_PARKED_DIR`. Malformed values fall through to the real clock: a
+  boundary notice must never break a `Stop` hook. `minutes_from_now` now refuses
+  to wrap rather than emitting a fixture the hook cannot satisfy.
+- Verified across eight timezones, including the two that reproduced the failure.
+  Three mutations killed.
+
 ## 0.73.2 — 2026-08-13
 
 ### Fixed
