@@ -6,6 +6,23 @@ title: Add a Constraint
 Add or promote a constraint in HARNESS.md using `/harness-constrain` to capture the rule,
 its enforcement state, and the verification command.
 
+> **Use this for the first draft, not for evolution**
+>
+> `/harness-constrain` writes a rule straight into `HARNESS.md`. That is the
+> right thing when you are **authoring a harness that does not exist yet**.
+>
+> For changing a harness that already exists, use the governed path —
+> [Record a Governance Change](record-a-governance-change.md). It records the
+> evidence that justified the rule, the cost the approver wrote, the
+> enforcement each surface actually achieves, and an expiry that CI enforces.
+>
+> The difference matters after about a year, when a harness written by hand
+> has a dozen rules and nobody can say why any of them are there or what it
+> would cost to remove one.
+>
+> A constraint added this way can be brought under governance later by
+> importing it as a grandfathered decision record.
+
 ---
 
 ## 1. Open a guided session

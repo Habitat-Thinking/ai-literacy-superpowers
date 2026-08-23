@@ -188,6 +188,29 @@ When adding a new command that writes structured markdown, add a
 validation step following this pattern. Reference the format spec
 rather than inlining field definitions.
 
+## Changing a Harness Rule
+
+Once a harness exists, changing it goes through the governed loop rather than a
+hand edit to `HARNESS.md`:
+
+```text
+/harness-assay → /harness-propose → /harness-accept → /harness-check
+```
+
+with `/harness-review` when a rule lapses, `/harness-compile` as repair, and
+`/harness-timeline` for the Observatory feed.
+
+A rule enters on recorded evidence, carries a cost the approver wrote in their
+own words, and expires unless someone renews it. `/harness-check` runs in
+`.github/workflows/harness.yml` and fails the build when what is written down
+and what is in force disagree, or when a rule has outlived its expiry.
+
+`/harness-constrain` still authors the _first_ draft of a harness. After that,
+hand edits are how a governing document becomes the least governed thing in the
+repository.
+
+See `docs/plugins/ai-literacy-superpowers/explanation/harness-evolution.md`.
+
 ## Dynamic Workflows
 
 When a task looks **long-running**, massively parallel, highly structured,

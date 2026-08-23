@@ -143,7 +143,7 @@ is an untested assertion, and the friction you just felt is the quality.
 
 ## Where to go next
 
-There are **nine** sentinels. You have met three.
+There are **ten** sentinels. You have met three.
 
 - **[Sentinels](../explanation/sentinels.md)** — the full roster and, in *Using
   them*, which to reach for when

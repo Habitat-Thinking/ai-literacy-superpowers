@@ -7,6 +7,14 @@ Harness engineering is the practice of surrounding AI-assisted code generation w
 
 ---
 
+> **How a harness changes**
+>
+> Once a harness exists, changing it is itself a governed act:
+> [Harness Evolution](harness-evolution.md). A rule enters on recorded
+> evidence, carries a cost written by the person approving it, and expires
+> unless someone renews it — because the alternative is a governing document
+> that becomes the least governed thing in the repository.
+
 ## The Origin
 
 The term comes from Birgitta Boeckeler's article on martinfowler.com, written in the ThoughtWorks context of teams shipping real software with AI coding assistants. Boeckeler observed something that many teams had noticed independently: AI assistants produce plausible-looking code, but left unconstrained they drift. They forget conventions, repeat mistakes, and slowly erode the internal consistency of a codebase. The code continues to compile and pass tests. The degradation is quiet.

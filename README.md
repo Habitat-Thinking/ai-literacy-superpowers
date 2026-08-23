@@ -140,6 +140,34 @@ After installation, run these commands to set up your project:
 
 **`/harness-init`** sets up only the harness: HARNESS.md with starter constraints and GC rules. Use this if you want the constraint and enforcement machinery without the full agent pipeline.
 
+### Changing a harness rule
+
+Setting a harness up is the easy half. **Once it exists, this is how it changes:**
+
+```bash
+/harness-assay      # read what actually happened; propose, then stop
+/harness-propose    # draft a decision record, rule text copied verbatim
+/harness-accept     # you write the cost; the rule is applied and compiled
+/harness-check      # CI verifies what is written down is what is in force
+/harness-review     # when a rule lapses: re-evidence, weaken, or demote
+```
+
+Harness rules accrete. One enters because somebody was annoyed once, and it never leaves, because leaving requires somebody to remember it exists. A year later the document governing the work is the least governed thing in the repository — a dozen rules, none carrying the evidence that justified it, none saying what it costs, none with an expiry.
+
+This loop is the answer, and it is deliberately asymmetric: **rules are hard to add and easy to retire.**
+
+- A rule enters on **recorded evidence**, and a change to `HARNESS.md` needs evidence from two distinct assays — one bad afternoon is not a governance finding
+- The **cost is written by the approver**, in their own words. A cost copied from the proposal is refused, because a copy-pasted cost reads exactly like a considered one
+- Every rule is **provisional by default**. An expired rule still in force fails CI, so retiring one never depends on anyone remembering to reflect
+- `harness/enforcement-report.md` says which rules are **actually enforced** and which are merely written down — a rule intending `blocked` on a tool that can only advise is reported as a gap, never silently downgraded
+- **`no-change` is a first-class outcome.** An assay in which nothing needs changing is a successful assay
+
+The two roles are kept apart on purpose: the **Harness Assayer** diagnoses and is read-only by construction; the **Harness Registrar** writes but never authors. An agent that did both could rationalise its own findings into rules that make its next diagnosis easier.
+
+Start with [Your First Governance Change](docs/plugins/ai-literacy-superpowers/tutorials/your-first-governance-change.md).
+
+Editing `HARNESS.md` by hand still has one job — the first draft of a harness that does not exist yet.
+
 ### Tool Compatibility
 
 This plugin works with both Claude Code and GitHub Copilot CLI from the same repository. The formats have converged:
