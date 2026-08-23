@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import json
 import importlib.util
 import os
 import re
@@ -1322,6 +1323,84 @@ def cmd_review(args) -> int:
     return 0
 
 
+# --------------------------------------------------------------------------- #
+# The Observatory intervention feed                                            #
+# --------------------------------------------------------------------------- #
+#
+# The difference-in-differences design currently has to INFER when governance
+# changed. The corpus knows exactly, and this says so.
+#
+# Two properties are load-bearing.
+#
+# NO TIME-VARYING FIELD. Whether a rule is expired *right now* depends on the
+# clock, so a feed carrying it produces different output on different days from a
+# corpus nobody touched — a run in November would disagree with the same run in
+# September. `expires` is emitted as data and the consumer decides what it means
+# at their analysis date. This command takes no clock at all.
+#
+# EVERY INTERVENTION HAS AN END. Without `superseded_by` and `ends`, every rule
+# ever retired is still counted as in force: a step function that never steps
+# back.
+
+
+def _direction(record: Record, predecessor: Record | None) -> str:
+    """Derived, never declared. A self-reported direction is a self-report."""
+    if record.is_retirement:
+        return "loosen"
+    if predecessor is None:
+        return "none" if record.classification == "no-change" else "tighten"
+
+    now = LADDER.get(str(record.fm.get("enforcement")), 0)
+    before = LADDER.get(str(predecessor.fm.get("enforcement")), 0)
+    if now != before:
+        return "tighten" if now > before else "loosen"
+
+    # Surfaces break the tie only at equal enforcement, and only when one set
+    # contains the other. Two overlapping-but-different sets are `same`, because
+    # nothing honest can be said about which is stronger.
+    new, old = set(record.surfaces), set(predecessor.surfaces)
+    if new > old:
+        return "tighten"
+    if new < old:
+        return "loosen"
+    return "same"
+
+
+def cmd_timeline(args) -> int:
+    records = load_records(args.root)
+    by_id = {r.id: r for r in records}
+    successor = {r.supersedes: r for r in records if r.supersedes}
+
+    rows = []
+    for record in records:
+        if record.status != "accepted":
+            # Not an intervention: nothing was ever in force.
+            continue
+        predecessor = by_id.get(record.supersedes) if record.supersedes else None
+        nxt = successor.get(record.id)
+        approved = str(record.fm.get("approved_at") or "")[:10]
+        rows.append({
+            "id": record.id,
+            "date": approved,
+            "classification": str(record.classification),
+            "enforcement": str(record.fm.get("enforcement")),
+            "direction": _direction(record, predecessor),
+            "surfaces": record.surfaces,
+            "cohort": (str(record.fm["cohort"]) if record.fm.get("cohort") else None),
+            "provisional": record.fm.get("provisional") is True,
+            "expires": (str(record.fm["expires"]) if record.fm.get("expires") else None),
+            "state": "superseded" if nxt else "in force",
+            "supersedes": record.supersedes,
+            "superseded_by": nxt.id if nxt else None,
+            "ends": str(nxt.fm.get("approved_at") or "")[:10] if nxt else None,
+        })
+
+    rows.sort(key=lambda r: (r["date"], r["id"]))
+    for row in rows:
+        print(json.dumps(row, sort_keys=False, separators=(",", ":")))
+    return 0
+
+
 def cmd_check(args) -> int:
     root = args.root
     problems: list[str] = []
@@ -1429,6 +1508,11 @@ def main(argv: list[str]) -> int:
     p = sub.add_parser("check", help="read-only drift detection; the CI entry point")
     p.add_argument("--today", help="YYYY-MM-DD; injected so nothing races the clock")
     p.set_defaults(func=cmd_check)
+
+    p = sub.add_parser(
+        "timeline",
+        help="emit the Observatory intervention feed to stdout (no clock, no file)")
+    p.set_defaults(func=cmd_timeline)
 
     p = sub.add_parser("review", help="list every lapsed rule and its three options")
     p.add_argument("--today", help="YYYY-MM-DD; injected so nothing races the clock")

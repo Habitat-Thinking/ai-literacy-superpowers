@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.79.0 — 2026-08-23
+
+### Added
+
+- **`/harness-timeline`** — emits the Observatory intervention feed to stdout,
+  one JSON line per accepted decision record: when a rule entered, in which
+  direction, at what enforcement level, on which cohort, and when it stopped.
+  This is the timeline the difference-in-differences design otherwise has to
+  infer. Completes the harness evolution epic (#533, #539).
+- **Reference page** `intervention-feed-format.md`.
+- **Layer-0 suite** `test-harness-timeline.sh` (T1–T13), mutation-tested against
+  12 deliberately broken implementations.
+
+### Changed from the source spec
+
+Two additions to the example line, each because the example as given cannot
+support the analysis the feed exists for.
+
+- **No field depends on the current date.** Whether a rule is expired *right now*
+  is a fact about the clock, not the corpus. A feed carrying it produces
+  different output on different days from a repository nobody touched — a run in
+  November would disagree with the same run in September about the same data. So
+  `expires` is emitted as data for the consumer to interpret, `state` is limited
+  to `in force` and `superseded`, and the command reads no clock at all.
+- **Every intervention carries an end** — `superseded_by` and `ends`, giving the
+  interval `[date, ends)`. The example records only when a rule started; without
+  an end, every rule ever retired is still counted as in force, and the step
+  function never steps back.
+
+Also: `direction` is **derived** from the enforcement ladder and the surface
+sets, never declared. A self-reported direction is a self-report, and this is the
+one field the analysis turns on. And `no-change` records stay in the feed as
+`direction: none` — an intervention of size zero. They record that governance was
+examined at a known moment and deliberately not changed, which is a control
+observation rather than an absence; dropping them would convert "we looked and
+decided no" into "nobody looked".
+
+### Note on the cohort tag
+
+`cohort` remains on the decision record, per the epic's resolution of the source
+spec's §14 Q4. Worth naming: a cohort tag on a governance artifact is visible to
+whoever writes the next rule, which is a route by which a study can influence the
+thing it studies. If that matters, the field can be dropped from the record and
+joined externally at analysis time with no change to this command — it emits
+`null` and the join happens downstream.
+
 ## 0.78.0 — 2026-08-23
 
 ### Added
