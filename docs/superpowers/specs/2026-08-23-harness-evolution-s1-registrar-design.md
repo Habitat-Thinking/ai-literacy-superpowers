@@ -104,6 +104,10 @@ since been replaced is a rule whose evidence deserves re-reading.
 ````markdown
 ### finding-3 — Unevidenced completion claims
 
+Claude Code reported the integration suite passing on 2026-08-04 and again on
+2026-08-12. The build log records the command being planned on both dates and
+never records it running.
+
 ```yaml
 classification: agent-instruction
 enforcement: validated
@@ -128,6 +132,11 @@ One extra check per phase boundary; roughly two minutes.
 
 - The heading is `### <finding-id> <sep> <Title>`, where `<sep>` is an em dash,
   en dash, or hyphen, and `<finding-id>` matches `[a-z0-9]+(-[a-z0-9]+)*`.
+- The text between the heading and the metadata block is the finding's
+  **observation** — what was actually seen — and becomes the HDR's `## Finding`
+  section. It is required. A finding with no observation is not a finding but a
+  rule with a citation attached, and the HDR it produced would have nothing to
+  say about what went wrong.
 - The YAML block requires `classification`, `enforcement`, `surfaces`,
   `evidence` and `priority`. `priority` is required not because
   `/harness-propose` needs it but because a finding nobody can triage is a
@@ -163,6 +172,7 @@ Writes `harness/decisions/HDR-<today>-<slug>.md` at `status: proposed`.
 | --- | --- |
 | `id`, filename | `HDR-<today>-<slug>`; slug from the finding title, or `--slug` |
 | `title` | the finding's heading title |
+| `## Finding` | the finding's observation prose, verbatim |
 | `status` | `proposed` |
 | `classification`, `enforcement`, `surfaces` | the finding's YAML block |
 | `evidence` | the finding's evidence **plus** the source assay anchor (§4.3) |

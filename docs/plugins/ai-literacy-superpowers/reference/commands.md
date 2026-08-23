@@ -198,6 +198,70 @@ unresolved `no` leaves the date unchanged and records a single
 `[review-gap: <check>]` Notes line for the failing check. Use `review`
 to clear what the **Affordance review staleness** GC rule reports.
 
+### /harness-propose
+
+Usage: `/harness-propose <assay-path> <finding-id>`
+
+- **Skills read**: none
+- **Agents dispatched**: `harness-registrar`
+
+Drafts a Harness Decision Record from one finding in an assay, at
+`status: proposed`, in `harness/decisions/HDR-<date>-<slug>.md`.
+
+The rule text and the evidence list are copied **by the script**, byte for byte.
+That is not a convenience: a model asked to copy text usually copies it and
+occasionally improves it — a typo fixed, a bullet tidied, a line rewrapped — and
+every one of those is a silent edit to a rule a human is about to approve
+believing it to be the Assayer's words. The command's validation checkpoint
+requires diffing the two blocks rather than eyeballing them, and a deviation is
+reported as a defect rather than fixed in place.
+
+`cost` is left **empty**. The approver writes it at the acceptance gate.
+
+For a tier-2 classification (`harness-loop`, `script-validator`, `new-agent`)
+four sections are written as placeholders. Acceptance is refused until a human
+fills them — neither the Assayer nor the Registrar is entitled to write the
+argument for why a rule belongs at the loop layer.
+
+Pass `--slug` only to resolve a filename collision; the script never overwrites.
+
+### /harness-accept
+
+Usage: `/harness-accept <hdr-path>`
+
+- **Skills read**: none
+- **Agents dispatched**: `harness-registrar`
+
+The single write transaction of the harness evolution loop, and the only place
+the `cost` is ever written.
+
+**Refusals run before the cost prompt.** Making someone compose a considered
+cost for a rule that is about to be refused for citing a single assay spends
+exactly the human attention the mechanism exists to protect, so the order is
+load-bearing rather than stylistic.
+
+The cost question is asked verbatim:
+
+```text
+Cost of this rule, in your own words. What will it demand of whoever
+works here next, and how might it be gamed?
+```
+
+The answer is passed as `--cost-file`, never as an argument — it is multi-line
+prose, and an argument would put the approver's own words into shell history one
+copy-paste from the next HDR. If asked to write the cost, the command declines:
+a copy-pasted cost reads exactly like a considered one, so nothing downstream
+can tell them apart.
+
+Acceptance is all-or-nothing. The script validates a staged copy of the whole
+corpus — necessary because the cycle cap and the promotion threshold compare
+HDRs against each other — and writes only on success, so a refusal leaves the
+HDR `proposed` and the corpus byte-identical.
+
+It writes to no control surface, and it does not commit, push, or open a pull
+request. Three gates exist — drafting, accepting, committing — and none is
+implied by another.
+
 ---
 
 ## Assessment & Improvement

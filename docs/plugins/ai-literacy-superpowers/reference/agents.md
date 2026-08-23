@@ -434,6 +434,37 @@ GitHub issues for them.
 
 ---
 
+### harness-registrar
+
+- **Tools**: Read, Write, Edit, Glob, Grep, Bash
+- **Model**: inherit
+- **Dispatched by**: `/harness-propose`, `/harness-accept`
+- **Trust boundary**: Read-write
+
+Keeps the record of how governance itself changes. Drafts a Harness Decision
+Record from an assay finding, runs the acceptance transaction once the approver
+has written the cost, and regenerates the decision index.
+
+**It applies; it does not author.** The Harness Assayer proposes, a human
+approves, and the Registrar writes it down. If an approved record is ambiguous
+it stops and asks rather than filling the gap.
+
+Deliberately **not** tagged `role: sentinel`. It holds `Write` and `Edit`, so
+claiming a read-only trust boundary would be a lie `sentinel-integrity-check.sh`
+would catch — and, worse, the exact category error the two-role separation
+exists to prevent. The Assayer diagnoses; the Registrar legislates. An agent
+doing both could rationalise its own findings into rules that make its next
+diagnosis easier.
+
+Because it has write authority, every guarantee that could be made mechanical
+has been: rule text is copied byte for byte by
+`scripts/harness-registrar.py`, every refusal is enforced by
+`scripts/check-harness-decisions.py` inside the transaction, and acceptance
+validates a staged copy of the whole corpus so nothing is ever half-written.
+The agent is the interface, not the mechanism.
+
+---
+
 ## Assessment
 
 ### assessor
@@ -534,6 +565,7 @@ is a precaution under uncertainty. See the
 | assessor | x | x | x | x | x | x | | | read-write |
 | governance-auditor | x | x | x | x | x | x | | | read-write (limited) |
 | reservoir-warden | x | | | x | x | x | | | read-only |
+| harness-registrar | x | x | x | x | x | x | | | read-write |
 
 ---
 
