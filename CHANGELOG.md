@@ -1,5 +1,69 @@
 # Changelog
 
+## 0.78.0 — 2026-08-23
+
+### Added
+
+- **`/harness-review`** — lists every lapsed rule and the three things a human
+  can do about each: re-evidence, weaken, demote. Read-only; every outcome
+  produces a **new superseding record** through `/harness-accept`, because every
+  outcome is a decision with a cost that a human writes (#533, #538).
+- **Expiry enforcement in `/harness-check`.** A rule past its `expires` date and
+  still in force is a build failure, so retiring a rule is never contingent on
+  anyone remembering to reflect.
+- **Evidence resolution.** An evidence reference naming a repository path that no
+  longer exists fails. A reference carrying a URI scheme is **named as skipped**,
+  never passed in silence — failing it would demand the check resolve things it
+  has no access to, and passing it quietly would let any unresolvable evidence be
+  laundered by prefixing a scheme.
+- **Supersession chain validation** — `supersedes` naming a missing record,
+  itself, or one already superseded by a different record.
+- **Retirements.** A record withdrawing a rule says `Withdrawn.` where the rule
+  text would be, mirroring `no-change`, and must name a non-null `supersedes`.
+
+### Changed
+
+- **`superseded` and `expired` are derived, never stored.** Only `proposed`,
+  `accepted` and `rejected` may be written, and `superseded_by` must be `null`.
+  S2 froze accepted records and checks them against git, so writing
+  `superseded_by` onto the record being superseded would be an edit to a frozen
+  record — the two mechanisms would have contradicted each other on the first
+  demotion anyone performed. Rather than carve an exception into the one check
+  that guarantees accepted rules are not quietly reworded, the derivable fact is
+  not stored. Same discipline `record-paths.sh` already uses.
+- **A `harness-loop` retirement is exempt from the two-assay threshold.** That
+  threshold exists to make rules hard to *add*; applying it to removal would mean
+  a rule that turned out to be wrong needed two assays' evidence before anyone
+  could withdraw it, and would stay in force meanwhile.
+- **The cycle cap counts live records.** Superseding one frees its slot: the cap
+  limits how much governance an assay adds, and a retired rule adds nothing.
+- `provisional: false` alongside an `expires` date is now refused as a
+  contradiction — a rule not on trial has no trial date.
+
+### Fixed
+
+- **Compilation left a retired rule sitting in its target artifact.** When the
+  last live record routed to a file was superseded, that target dropped out of
+  the compilation plan entirely and its region was never regenerated. Any
+  artifact the corpus has ever written to, which still carries a region, is now
+  regenerated — with an empty region when nothing routes there any more.
+  Withdrawing the last rule from a file has to actually remove it.
+- The S2 test fixture cited assay files it never created, which the new evidence
+  check correctly refused. The fixture was completed rather than the check
+  weakened.
+
+### Known limitation
+
+A `review_trigger` is free text and nothing can evaluate it mechanically, so a
+rule carrying a trigger and no `expires` never lapses, never fails
+`/harness-check`, and is permanent by construction — which is the opposite of
+permanence being earned at review. `/harness-review` lists such records in their
+own section, **Triggers nothing can evaluate**, with their age, and says plainly
+that they will not lapse on their own. Closing the gap properly means requiring
+`expires` always and treating `review_trigger` as an additional, earlier prompt
+rather than a substitute; that is a change to the design's intent and is left to
+its author rather than slipped in by an implementation slice.
+
 ## 0.77.0 — 2026-08-23
 
 ### Added

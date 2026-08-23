@@ -50,6 +50,47 @@ naming it in `supersedes:`.
 Demotion therefore produces a **superseding HDR** rather than a deletion. The
 record shows the rule existed, what it cost, and why it was retired.
 
+### Superseded and expired are derived, never stored
+
+Only `proposed`, `accepted` and `rejected` may be **written**. `superseded` and
+`expired` are computed at read time:
+
+| Derived state | Condition |
+| --- | --- |
+| `superseded` | Some other record names this one in `supersedes:` |
+| `expired` | Accepted, provisional, `expires` in the past, not superseded |
+| `in force` | Accepted, not superseded, not expired |
+
+`superseded_by` must be `null`. The field stays in the schema because a reader
+expects it, and the validator refuses any value.
+
+**This is forced by the frozen-record rule, and it is the better design anyway.**
+Writing `superseded_by` onto the record being superseded would be an edit to a
+frozen record, so supersession and the frozen check would contradict each other
+on the first demotion anyone performed. Deriving the field removes the need for
+an exception in the one check that guarantees accepted rules are not quietly
+reworded — and it removes a second place for the same fact to be wrong.
+
+### A retirement says `Withdrawn.`
+
+A record that withdraws a rule carries the literal `Withdrawn.` in its `## Rule`
+section, with no fenced block, and must name a non-null `supersedes`. Retiring
+nothing is not a decision.
+
+Retirements compile nothing and are absent from the enforcement report.
+
+**A `harness-loop` retirement is exempt from the two-assay threshold.** That
+threshold exists to make rules hard to *add*. Applying it to removal would mean a
+rule that turned out to be wrong needed two assays' evidence before anyone could
+withdraw it, and would stay in force meanwhile — the exact inversion of "hard to
+add, easy to retire".
+
+### The cycle cap counts live records
+
+Three accepted records per assay, counting records **in force**. Superseding one
+frees its slot: the cap limits how much governance an assay *adds*, and a retired
+rule adds nothing.
+
 This is why the corpus does not use the state-in-path substrate in
 `hooks/scripts/lib/record-paths.sh` that the cadence-sentinel records use. That
 substrate exists because a `parked → resumed` transition is a state change with
@@ -187,6 +228,9 @@ itself past.
 | **Attribution** | An accepted HDR without `approver` and `approved_at`. |
 | **Surfaces** | An HDR naming a surface not declared in `surfaces.yaml`. |
 | **Target** | An accepted HDR whose classification has no route and which names no `target`. |
+| **Derived state** | A record storing `status: superseded` or `expired`, or a non-null `superseded_by`. |
+| **Broken chain** | `supersedes` naming a record that does not exist, itself, or one already superseded by a different record. |
+| **Contradiction** | `provisional: false` alongside an `expires` date — a rule not on trial has no trial date. |
 
 The promotion threshold and the cycle cap are **corpus-level**: they compare
 HDRs against each other, so they cannot be checked from one file at write time.

@@ -69,6 +69,14 @@ expect_fail() {
     || fail "$1: message must mention '$2'. Out: $OUT"
 }
 
+# The assay files this suite's fixtures cite as evidence. They have to exist:
+# /harness-check resolves every repo-path evidence reference, because a rule
+# whose evidence has gone is a rule nobody can re-examine.
+for A in 2026-08-01T09-00Z 2026-08-04T09-12Z 2026-08-21T16-02Z; do
+  printf -- '---\nassay: harness/assay/%s-assay.md\ndate: 2026-08-21\nagent: harness-assayer\nmodel: m\n---\n' \
+    "$A" > "$HARNESS/assay/$A-assay.md"
+done
+
 cat > "$HARNESS/surfaces.yaml" <<'EOF'
 routes:
   harness-loop: HARNESS.md

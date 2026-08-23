@@ -55,6 +55,17 @@ SURFACES_FILE = os.path.join(HARNESS_DIR, "surfaces.yaml")
 ASSAY_DIR = os.path.join(HARNESS_DIR, "assay")
 
 VALID_STATUS = {"proposed", "accepted", "rejected", "superseded", "expired"}
+
+# Only these three may be WRITTEN. `superseded` and `expired` are derived at read
+# time from the corpus, never stored.
+#
+# S2 froze accepted records and checks them against git. Writing `superseded`
+# onto the record being superseded would be an edit to a frozen record, so the
+# two mechanisms would contradict each other on the first demotion anyone
+# performed. Rather than carve an exception into the one check that guarantees
+# accepted rules are not quietly reworded, the derivable thing is not stored —
+# the same discipline `record-paths.sh` already uses, for the same reason.
+STORABLE_STATUS = {"proposed", "accepted", "rejected"}
 VALID_ENFORCEMENT = {"advisory", "validated", "blocked"}
 VALID_CLASSIFICATION = {
     "harness-loop",
@@ -523,6 +534,13 @@ def check_hdr(path: str, surfaces: dict, errors: list[str],
             f"FAIL: {where}: unknown status '{status}' "
             f"(allowed: {', '.join(sorted(VALID_STATUS))})."
         )
+    elif status is not None and status not in STORABLE_STATUS:
+        errors.append(
+            f"FAIL: {where}: '{status}' is a derived state and must never be "
+            "stored. Supersession is read from the successor's 'supersedes:' "
+            f"field and expiry from 'expires:'; a record storing '{status}' "
+            "would be claiming a fact about itself that only the corpus can know."
+        )
     classification = fm.get("classification")
     if classification is not None and classification not in VALID_CLASSIFICATION:
         errors.append(
@@ -536,6 +554,29 @@ def check_hdr(path: str, surfaces: dict, errors: list[str],
             f"(allowed: {', '.join(sorted(VALID_ENFORCEMENT))})."
         )
 
+    # A retirement withdraws a rule. It says so where the rule text would be —
+    # the same convention `no-change` uses — so a reader meets the fact in the
+    # place they are already looking, and no second frontmatter field has to be
+    # remembered.
+    rule_section = sections(body).get("Rule", "")
+    is_retirement = ("Withdrawn." in rule_section
+                     and not rule_blocks(rule_section))
+    fm["__retirement"] = is_retirement
+
+    if is_retirement and not fm.get("supersedes"):
+        errors.append(
+            f"FAIL: {where}: a retirement must name the record it withdraws in "
+            "'supersedes'. Retiring nothing is not a decision."
+        )
+
+    if fm.get("superseded_by") is not None:
+        errors.append(
+            f"FAIL: {where}: 'superseded_by' must be null — supersession is "
+            "derived from the successor's 'supersedes:' field. Storing it would "
+            "require editing a frozen record, and would create a second place "
+            "for the same fact to be wrong."
+        )
+
     imported = fm.get("imported") is True
     provisional = fm.get("provisional")
     is_no_change = classification == "no-change"
@@ -546,9 +587,9 @@ def check_hdr(path: str, surfaces: dict, errors: list[str],
     _check_imported(fm, imported, provisional, where, errors)
     _check_evidence(fm, where, errors)
     _check_acceptance(fm, status, where, errors)
-    _check_body(fm, body, classification, is_no_change, where, errors)
+    _check_body(fm, body, classification, is_no_change, is_retirement, where, errors)
     _check_promotion_threshold(fm, status, classification, imported, where, errors)
-    _check_target(fm, status, classification, is_no_change,
+    _check_target(fm, status, classification, is_no_change or is_retirement,
                   routes if routes is not None else dict(DEFAULT_ROUTES),
                   where, errors)
     _check_validator(fm, where, errors)
@@ -602,6 +643,17 @@ def _check_no_change(fm, is_no_change, where, errors) -> None:
 
 def _check_provisional(fm, imported, is_no_change, where, errors) -> None:
     if fm.get("provisional") is not True:
+        # A rule that is not on trial has no trial date. Permitting both would
+        # leave a record carrying an expiry that nothing acts on, which reads to
+        # a human as a lapse waiting to happen and to a machine as nothing at
+        # all - and those two readings diverging is the whole failure this
+        # corpus exists to prevent.
+        if fm.get("expires") is not None:
+            errors.append(
+                f"FAIL: {where}: 'provisional: false' with an 'expires' date is "
+                "a contradiction. A record that is not provisional does not "
+                "expire; drop the date, or set 'provisional: true'."
+            )
         return
     expires = fm.get("expires")
     trigger = fm.get("review_trigger")
@@ -704,7 +756,7 @@ def _check_acceptance(fm, status, where, errors) -> None:
         )
 
 
-def _check_body(fm, body, classification, is_no_change, where, errors) -> None:
+def _check_body(fm, body, classification, is_no_change, is_retirement, where, errors) -> None:
     found = sections(body)
     required = list(TIER1_SECTIONS)
     if classification in TIER2_CLASSIFICATIONS:
@@ -721,6 +773,9 @@ def _check_body(fm, body, classification, is_no_change, where, errors) -> None:
 
     rule = found.get("Rule")
     if rule is None:
+        return
+    if is_retirement:
+        # Nothing is applied, so there is nothing to hold verbatim.
         return
     if is_no_change:
         if "No change." not in rule:
@@ -757,6 +812,12 @@ def _check_promotion_threshold(
     assay is exactly right: it sits and waits for corroboration.
     """
     if status != "accepted" or classification != "harness-loop" or imported:
+        return
+    # A retirement is exempt. The threshold exists to make rules hard to ADD;
+    # applying it to removal would mean a rule that turned out to be wrong needed
+    # two assays' evidence before anyone could withdraw it, and would stay in
+    # force meanwhile — the exact inversion of "hard to add, easy to retire".
+    if fm.get("__retirement"):
         return
     evidence = fm.get("evidence")
     if not isinstance(evidence, list):
@@ -818,6 +879,50 @@ def _check_validator(fm, where, errors) -> None:
             )
 
 
+def superseded_ids(records: list[dict]) -> set[str]:
+    """Every record id that some other record supersedes."""
+    return {str(r["supersedes"]) for r in records if r.get("supersedes")}
+
+
+def check_supersession(records: list[dict], errors: list[str]) -> None:
+    """The chain has to be readable, because everything else derives from it.
+
+    Supersession is the only stored fact about a record's lifecycle, so a chain
+    that forks or points at nothing takes the derived state with it: nothing
+    could then say which record is in force.
+    """
+    by_id = {str(r.get("id")): r for r in records if r.get("id")}
+    claimed: dict[str, str] = {}
+    for record in records:
+        target = record.get("supersedes")
+        if not target:
+            continue
+        target = str(target)
+        rid = str(record.get("id"))
+        where = record["__path"]
+        if target == rid:
+            errors.append(
+                f"FAIL: {where}: supersedes itself. A record cannot replace the "
+                "decision it is."
+            )
+            continue
+        if target not in by_id:
+            errors.append(
+                f"FAIL: {where}: supersedes '{target}', which is not in the "
+                "corpus. A retired rule's record is the output of this "
+                "mechanism, not its residue — it is never deleted."
+            )
+            continue
+        if target in claimed:
+            errors.append(
+                f"FAIL: {where}: '{target}' is already superseded by "
+                f"'{claimed[target]}'. The chain would fork, and nothing could "
+                "say which successor is in force."
+            )
+            continue
+        claimed[target] = rid
+
+
 def check_cycle_cap(records: list[dict], errors: list[str]) -> None:
     """At most three accepted HDRs may share one assay.
 
@@ -826,9 +931,15 @@ def check_cycle_cap(records: list[dict], errors: list[str]) -> None:
     cycle, where they compete with whatever the next assay found. A finding that
     cannot win a slot twice running probably was not worth a rule.
     """
+    # Live records only. The cap limits how much governance an assay ADDS, and a
+    # rule that has been superseded adds nothing — so superseding one frees its
+    # slot rather than spending it forever.
+    retired = superseded_ids(records)
     by_assay: dict[str, list[str]] = {}
     for fm in records:
         if fm.get("status") != "accepted":
+            continue
+        if str(fm.get("id")) in retired:
             continue
         proposer = fm.get("proposer")
         if not isinstance(proposer, dict):
@@ -878,6 +989,7 @@ def main(argv: list[str]) -> int:
         fm = check_hdr(path, surfaces, errors, routes)
         if fm is not None:
             records.append(fm)
+    check_supersession(records, errors)
     check_cycle_cap(records, errors)
 
     for line in errors:
