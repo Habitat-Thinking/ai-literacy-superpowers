@@ -3,12 +3,12 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.4.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.76.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.77.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
 [![diagnostic-legibility](https://img.shields.io/badge/diagnostic--legibility-v0.11.0-4682B4?style=flat-square)](diagnostic-legibility/)
-[![Skills](https://img.shields.io/badge/Skills-41-2E8B57?style=flat-square)](#skills-41)
-[![Agents](https://img.shields.io/badge/Agents-20-2E8B57?style=flat-square)](#agents-20)
-[![Commands](https://img.shields.io/badge/Commands-32-2E8B57?style=flat-square)](#commands-32)
+[![Skills](https://img.shields.io/badge/Skills-42-2E8B57?style=flat-square)](#skills-42)
+[![Agents](https://img.shields.io/badge/Agents-22-2E8B57?style=flat-square)](#agents-22)
+[![Commands](https://img.shields.io/badge/Commands-37-2E8B57?style=flat-square)](#commands-37)
 [![Harness](https://img.shields.io/badge/Harness-31%2F32_enforced-4682B4?style=flat-square)](HARNESS.md)
 [![Harness Health](https://img.shields.io/badge/Harness_Health-Healthy-2E8B57?style=flat-square)](observability/snapshots/2026-07-21-snapshot.md)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-D97757?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
@@ -28,7 +28,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.76.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **41 skills, 21 agents, 36 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.77.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **42 skills, 22 agents, 37 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 | **`diagnostic-legibility`** | v0.11.0 | Hosts agents accountable for maintaining human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. The `ConceptualPipelineMap` template adds a standalone, presentation-agnostic flow-perspective data model; the agent's `scope-resolution` mode answers "what does my task touch?"; its `pipeline` mode traces control flow within that bound and cross-checks all three collections; the `/pipeline-map "<task>"` command renders the task-scoped map as a self-contained HTML flowchart (pinned, SHA-verified Mermaid inlined; no CDN); and `--predict-change` adds an opt-in change-site prediction (which stages the task will modify and where it will insert new ones), disclosed as a prediction, never a directive. | [docs](docs/plugins/diagnostic-legibility/index.md) |
 
@@ -158,7 +158,7 @@ This plugin works with both Claude Code and GitHub Copilot CLI from the same rep
 
 The remaining sections of this README document the **`ai-literacy-superpowers`** plugin in detail. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md).
 
-### Skills (41)
+### Skills (42)
 
 Code quality, harness engineering, and governance knowledge that agents read when working in your codebase.
 
@@ -170,6 +170,7 @@ Code quality, harness engineering, and governance knowledge that agents read whe
 | dependency-vulnerability-audit | Go and Maven CVE scanning procedures |
 | docker-scout-audit | Docker image CVE triage and remediation |
 | harness-engineering | Foundational concepts — the three components, promotion ladder, enforcement timing |
+| harness-assay | The read-only postmortem — materiality test, evidence pool and its honesty flags, the report's six sections |
 | context-engineering | Writing conventions precise enough for humans and LLMs to enforce |
 | dynamic-workflows | When/which/how to author ephemeral multi-agent workflows — six patterns, election rubric, INV-1/INV-2 governance |
 | constraint-design | Designing enforceable constraints with the verification slot model |
@@ -199,14 +200,14 @@ Code quality, harness engineering, and governance knowledge that agents read whe
 | cognitive-reservoir | Watches the human verifier the harness cannot verify — four observable proxies, observed/inferred/asked confidence discipline, disjunctive thresholds, the decide-your-stop-first principle, and the honesty rule separating contested science (ego depletion, hungry judges) from the robust basis (vigilance decrement, switching cost); advisory-only, never a fatigue score |
 | sentinel-design | Defines the sentinel agent category — the three-part signature (S1 read-only, S2 advisory-to-human, S3 explicit honesty rule), the near-miss gallery (why code-reviewer and harness-auditor don't qualify), the honesty-rule-before-detection-logic discipline, and the three anti-patterns (scoring the human, persisting human-state records, gating automatically) |
 
-### Agents (20)
+### Agents (22)
 
 A coordinated team that handles the full development lifecycle. It
 splits into two families: **sentinels**, whose object of care is the
 human's understanding and judgement, and **pipeline & harness agents**,
 whose object of care is an artefact, the pipeline, or the harness.
 
-#### Sentinels (9)
+#### Sentinels (10)
 
 > **Sentinel** — any agent whose primary purpose is to protect and
 > support the understanding and judgement of the human in the workflow.
@@ -248,6 +249,7 @@ sentinels** guard the shape of the work around those decisions: the
 | mast | The pact | Pact-keeper — recites a limit the person set in clear weather before measuring anything against it, so the recitation cannot be shaped by the moment; refuses to estimate spend it cannot observe; discloses its own check's blind spot; never gates | Read only |
 | wip-warden | The count | Concurrency counter — counts live sessions against a limit the person declared, never inventing one; reports the count's honesty flag; watches sessions, never the human; says plainly that `strict` cannot compel | Read only |
 | convener | The room | Counsel-bringer — runs at plan approval beside the cartographer; maps the roles and groups a spec affects and drafts the one concrete question worth asking each; soft gate at plan approval, complete-if-present merge constraint; **never contacts anyone**, in any medium, ever | Read only |
+| harness-assayer | The rules themselves | Assayer — the read-only postmortem a governance change is built from; reads evidence at a phase boundary, classifies findings by ownership, and returns a bounded proposal for a human to dispose; **never converts a planned command from a build file into passing evidence**; a finding the harness auditor already reports is recorded as a rejected candidate, not a finding | Read only |
 
 #### Pipeline & harness agents (11)
 
@@ -262,10 +264,11 @@ sentinels** guard the shape of the work around those decisions: the
 | harness-enforcer | Unified verification engine for all constraint types | Read + Bash |
 | harness-gc | Periodic entropy fighter | Read + Write |
 | harness-auditor | Meta-agent — checks whether the harness matches reality | Write to Status only |
+| harness-registrar | Keeps the record of how governance changes — applies human-approved decisions, never authors them | Read + Write |
 | assessor | AI literacy assessment — scans repo, asks questions, applies fixes, recommends workflow changes | Read + Write |
 | governance-auditor | Governance specialist — semantic drift analysis, debt inventory, three-frame alignment | Read + limited Write |
 
-### Commands (32)
+### Commands (37)
 
 | Command | What it does |
 | ------- | ------------ |
@@ -275,6 +278,11 @@ sentinels** guard the shape of the work around those decisions: the
 | `/harness-status` | Quick harness health read |
 | `/harness-constrain` | Add or promote a constraint |
 | `/harness-gc` | Manage and run garbage collection rules |
+| `/harness-assay` | Run the read-only postmortem a governance change is built from |
+| `/harness-propose` | Draft a decision record from an assay finding, rule text copied verbatim |
+| `/harness-accept` | The write transaction — you author the cost, then the rule is applied and compiled |
+| `/harness-compile` | Idempotent repair of every generated region |
+| `/harness-check` | Read-only drift detection; the CI entry point |
 | `/harness-audit` | Read-only diagnostic. Same engine as `/harness-sync` but prints findings without prompting to fix. Use for inspection-without-commitment, CI scripts, or the quarterly cadence anchor. |
 | `/reflect` | Capture a post-task reflection |
 | `/worktree` | Git worktree lifecycle — spin, merge, clean |

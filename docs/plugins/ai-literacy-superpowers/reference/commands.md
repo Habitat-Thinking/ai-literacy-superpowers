@@ -198,6 +198,36 @@ unresolved `no` leaves the date unchanged and records a single
 `[review-gap: <check>]` Notes line for the failing check. Use `review`
 to clear what the **Affordance review staleness** GC rule reports.
 
+### /harness-assay
+
+Usage: `/harness-assay`
+
+- **Skills read**: `harness-assay`
+- **Agents dispatched**: `harness-assayer`
+
+Runs the read-only postmortem at a phase boundary and persists the report to
+`harness/assay/<ISO8601>-assay.md`. Invoked **explicitly** — the Assayer never
+self-triggers, and never runs mid-phase, because an assay of work still in flight
+is an assay of a guess.
+
+The agent holds no `Write`; it returns the report as a string and this command
+persists it. Assays are append-only, so an existing file at that path is never
+overwritten.
+
+**Do not pass it a hypothesis.** An assay steered toward a conclusion is a
+confirmation, and no honesty rule protects against a question that already
+contains its answer.
+
+The validation checkpoint has a mechanical half and a human half.
+`harness-registrar.py lint-assay` checks the finding contract and reports every
+malformed finding in one pass. Checks S1–S6 cover what a linter cannot: that
+every passing-check claim cites observed output, that absent sources are named as
+absent rather than reported as empty, that **Rejected candidates** is non-empty
+or explains why, and that conflicting evidence appears under Unresolved questions
+rather than being resolved.
+
+A lint failure is fixed by re-running the agent, never by editing the record.
+
 ### /harness-propose
 
 Usage: `/harness-propose <assay-path> <finding-id>`

@@ -45,6 +45,20 @@ Generating human-readable onboarding documentation from harness state. Covers th
 
 The shared drift-detection layer that backs both `/harness-audit` (read-only) and `/harness-sync`. Produces a structured drift report covering convention files, ONBOARDING.md, snapshot staleness, template drift, constraint regressions, recurring reflection patterns, and HARNESS.md Status section accuracy.
 
+### harness-assay
+
+The read-only postmortem that governance changes are built from.
+
+Carries the evidence pool and its `observed` / `reported` / `inferred` flags, the
+materiality test, the report's six sections, and the rule that makes the whole
+thing possible to trust: never convert a planned command from a build file into
+passing evidence.
+
+Also carries the anti-proliferation rule pointed at the assay itself — a finding
+that `/harness-audit`, `/governance-audit` or `/reflect` already reports is a
+rejected candidate, not a finding — and the failure mode to resist, which is not
+laziness but productivity.
+
 ### coda
 
 The closing ritual: survey, park, closure summary and reflection, close.

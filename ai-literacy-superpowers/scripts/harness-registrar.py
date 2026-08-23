@@ -184,6 +184,22 @@ FINDING_HEADING = re.compile(r"^([a-z0-9]+(?:-[a-z0-9]+)*)\s*[—–-]\s*(.+)$")
 FINDING_REQUIRED_KEYS = ["classification", "enforcement", "surfaces", "evidence", "priority"]
 
 
+class AssayError(Exception):
+    """The assay document itself is unreadable — frontmatter, or no findings."""
+
+
+class FindingError(Exception):
+    """One finding does not satisfy the contract.
+
+    A raise rather than an exit, because the two consumers need opposite
+    behaviour. `propose` wants the first failure and nothing else — it is acting
+    on one finding. `lint-assay` wants them all, because at write time the
+    question is whether the DOCUMENT is well-formed, and a linter that stopped
+    at the first defect would send an author round the loop once per mistake
+    against a record that is append-only once written.
+    """
+
+
 class Finding:
     def __init__(self, fid, title, observation, meta, rule_block, cost_estimate):
         self.id = fid
@@ -194,21 +210,22 @@ class Finding:
         self.cost_estimate = cost_estimate
 
 
-def parse_assay(path: str) -> tuple[dict, list[Finding]]:
+def parse_assay_doc(path: str) -> tuple[dict, list[tuple[str, str, str]]]:
+    """(frontmatter, [(id, title, block)]). Raises AssayError, never exits."""
     with open(path, encoding="utf-8") as handle:
         text = handle.read()
 
     raw_fm, body = S0.split_frontmatter(text)
     if raw_fm is None:
-        die(f"{path}: no YAML frontmatter block.")
+        raise AssayError(f"{path}: no YAML frontmatter block.")
     try:
         fm = S0.parse_yaml(raw_fm)
     except S0.YamlError as exc:
-        die(f"{path}: frontmatter could not be read: {exc}")
+        raise AssayError(f"{path}: frontmatter could not be read: {exc}")
 
     for key in ("agent", "model"):
         if not fm.get(key):
-            die(
+            raise AssayError(
                 f"{path}: assay frontmatter must declare '{key}'. An HDR records "
                 "which model proposed it, because a rule proposed by a model that "
                 "has since been replaced is a rule whose evidence deserves "
@@ -221,7 +238,7 @@ def parse_assay(path: str) -> tuple[dict, list[Finding]]:
             findings_block = block
             break
     if findings_block is None:
-        die(f"{path}: no '## Findings' section.")
+        raise AssayError(f"{path}: no '## Findings' section.")
 
     # Headings only. Findings are parsed LAZILY, one at a time, because a single
     # malformed finding must not block proposing from a well-formed one — an
@@ -233,7 +250,22 @@ def parse_assay(path: str) -> tuple[dict, list[Finding]]:
         if not match:
             continue
         raw.append((match.group(1), match.group(2), block))
+    if not raw:
+        raise AssayError(
+            f"{path}: the '## Findings' section contains no findings. "
+            "`no-change` exists so that an assay with nothing to change can say "
+            "so as a finding — recording that nothing needed to change is itself "
+            "evidence, and an empty section records nothing at all."
+        )
     return fm, raw
+
+
+def parse_assay(path: str) -> tuple[dict, list[tuple[str, str, str]]]:
+    """The exiting wrapper `propose` uses."""
+    try:
+        return parse_assay_doc(path)
+    except AssayError as exc:
+        die(str(exc))
 
 
 def _parse_finding(path: str, fid: str, title: str, block: str) -> Finding:
@@ -249,43 +281,43 @@ def _parse_finding(path: str, fid: str, title: str, block: str) -> Finding:
 
     raw_meta = first_info_fence(preamble, "yaml")
     if raw_meta is None:
-        die(f"{where}: no ```yaml metadata block.")
+        raise FindingError(f"{where}: no ```yaml metadata block.")
     try:
         meta = S0.parse_yaml(raw_meta)
     except S0.YamlError as exc:
-        die(f"{where}: metadata block could not be read: {exc}")
+        raise FindingError(f"{where}: metadata block could not be read: {exc}")
     for key in FINDING_REQUIRED_KEYS:
         if key not in meta:
-            die(f"{where}: metadata is missing '{key}'.")
+            raise FindingError(f"{where}: metadata is missing '{key}'.")
 
     # The observation prose is everything before the metadata block. A finding
     # with no observation is not a finding — it is a rule with a citation, and
     # the HDR's `## Finding` section would have nothing to say.
     observation = preamble.split("```", 1)[0].strip()
     if not observation:
-        die(
+        raise FindingError(
             f"{where}: no observation prose between the heading and the metadata "
             "block. A finding must say what was observed."
         )
 
     if "Proposed rule" not in subsections:
-        die(f"{where}: no '#### Proposed rule' section.")
+        raise FindingError(f"{where}: no '#### Proposed rule' section.")
     if "Cost estimate" not in subsections:
-        die(f"{where}: no '#### Cost estimate' section.")
+        raise FindingError(f"{where}: no '#### Cost estimate' section.")
 
     cost_estimate = subsections["Cost estimate"].strip()
     if not cost_estimate:
-        die(f"{where}: '#### Cost estimate' is empty.")
+        raise FindingError(f"{where}: '#### Cost estimate' is empty.")
 
     rule_text = subsections["Proposed rule"]
     if meta.get("classification") == "no-change":
         if "No change." not in rule_text:
-            die(f"{where}: a no-change finding's proposed rule must say 'No change.'")
+            raise FindingError(f"{where}: a no-change finding's proposed rule must say 'No change.'")
         rule_block = None
     else:
         blocks = S0.rule_blocks(rule_text)
         if len(blocks) != 1:
-            die(
+            raise FindingError(
                 f"{where}: '#### Proposed rule' must hold exactly one "
                 f"four-backtick block, found {len(blocks)}."
             )
@@ -436,7 +468,10 @@ def cmd_propose(args) -> int:
     if selected is None:
         available = ", ".join(r[0] for r in raw_findings) or "none"
         die(f"finding '{args.finding}' is not in {args.assay} (found: {available})")
-    match = _parse_finding(assay_abs, selected[0], selected[1], selected[2])
+    try:
+        match = _parse_finding(assay_abs, selected[0], selected[1], selected[2])
+    except FindingError as exc:
+        die(str(exc))
 
     today = datetime.date.fromisoformat(args.today) if args.today \
         else datetime.date.today()
@@ -715,6 +750,39 @@ def write_index(root: str) -> str:
     with open(path, "w", encoding="utf-8") as handle:
         handle.write(render_index(load_records(root)))
     return path
+
+
+def cmd_lint_assay(args) -> int:
+    """Check every finding in an assay against the contract, in one pass.
+
+    Deliberately NOT a CI gate. An assay is an append-only record of what an
+    agent observed at a moment; failing the build retroactively over one
+    malformed block would pressure someone to edit a record, which is the one
+    thing the append-only rule forbids. This runs at write time, where the
+    author can still fix it.
+    """
+    path = os.path.join(args.root, args.assay)
+    if not os.path.isfile(path):
+        die(f"assay not found at {args.assay}")
+    try:
+        _, raw = parse_assay_doc(path)
+    except AssayError as exc:
+        die(str(exc))
+
+    errors = []
+    for fid, title, block in raw:
+        try:
+            _parse_finding(path, fid, title, block)
+        except FindingError as exc:
+            errors.append(f"FAIL: {exc}")
+
+    for line in errors:
+        print(line)
+    if errors:
+        print(f"\n{len(errors)} of {len(raw)} finding(s) do not satisfy the contract.")
+        return 1
+    print(f"assay OK ({len(raw)} finding(s) checked)")
+    return 0
 
 
 def cmd_index(args) -> int:
@@ -1151,6 +1219,10 @@ def main(argv: list[str]) -> int:
 
     p = sub.add_parser("index", help="regenerate harness/decisions/index.md")
     p.set_defaults(func=cmd_index)
+
+    p = sub.add_parser("lint-assay", help="check every finding against the contract")
+    p.add_argument("--assay", required=True)
+    p.set_defaults(func=cmd_lint_assay)
 
     p = sub.add_parser("compile", help="idempotent repair of every generated region")
     p.set_defaults(func=cmd_compile)
