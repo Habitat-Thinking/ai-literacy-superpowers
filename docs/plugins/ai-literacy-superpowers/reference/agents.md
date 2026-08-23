@@ -434,6 +434,45 @@ GitHub issues for them.
 
 ---
 
+### harness-assayer
+
+- **Tools**: Read, Glob, Grep, Bash
+- **Model**: inherit
+- **Role**: sentinel
+- **Dispatched by**: `/harness-assay`
+- **Trust boundary**: Read-only
+
+The read-only postmortem a governance change is built from. At a phase boundary
+it reads evidence from completed work, reconstructs the intended workflow and
+what actually happened, classifies material findings by ownership, and returns a
+bounded proposal for a human to dispose.
+
+Holds no `Write`: it returns the report content as a string and `/harness-assay`
+persists it — the `cost-estimator` and `coda` precedent. Frontmatter tools are
+all-or-nothing, so an Assayer that could write its own report is one that could
+rewrite `HARNESS.md`, and the whole design rests on the thing that diagnoses
+failures being unable to legislate about them.
+
+**Its honesty rule is the sharpest in the roster**, because its subject matter
+invites the failure directly: *never claim a check, test or integration passed
+unless the result was observed in the evidence, and never convert a planned
+command from a build file into passing evidence.* An assay reads build logs full
+of commands that were going to run; treating one as a passing command produces a
+report saying the harness is working when nobody looked.
+
+Claims carry `observed` / `reported` / `inferred` flags, every `inferred` claim
+sits on an `observed` one, and conflicting evidence is marked **unresolved**
+rather than resolved in favour of the neater reading. An absent source is named
+as absent, not reported as empty.
+
+The overlap with `harness-auditor`, `governance-auditor` and `/reflect` is real
+and managed rather than denied: those audit **rules that already exist**, while
+the Assayer governs **the act of changing one**. A finding one of them already
+reports is recorded as a **rejected candidate** with the owner named — and an
+assay that never rejects anything on those grounds has stopped checking.
+
+---
+
 ### harness-registrar
 
 - **Tools**: Read, Write, Edit, Glob, Grep, Bash
@@ -565,6 +604,7 @@ is a precaution under uncertainty. See the
 | assessor | x | x | x | x | x | x | | | read-write |
 | governance-auditor | x | x | x | x | x | x | | | read-write (limited) |
 | reservoir-warden | x | | | x | x | x | | | read-only |
+| harness-assayer | x | | | x | x | x | | | read-only |
 | harness-registrar | x | x | x | x | x | x | | | read-write |
 
 ---

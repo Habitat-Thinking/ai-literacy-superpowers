@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.77.0 — 2026-08-23
+
+### Added
+
+- **`harness-assayer` agent** — the read-only postmortem a governance change is
+  built from. `role: sentinel`, so `sentinel-integrity-check.sh` mechanically
+  enforces its read-only trust boundary. Reads evidence at a phase boundary,
+  reconstructs the intended workflow and what actually happened, classifies
+  material findings by ownership, and returns a bounded proposal for a human to
+  dispose (#533, #537).
+- **`/harness-assay`** — runs the Assayer and persists the report to
+  `harness/assay/<ISO8601>-assay.md`. Invoked explicitly; the agent never
+  self-triggers and never runs mid-phase.
+- **`harness-assay` skill** — the materiality test, the evidence pool and its
+  honesty flags, the report's six sections, and the anti-patterns.
+- **`harness-registrar.py lint-assay`** — checks every finding in an assay
+  against the S1 contract and reports **all** malformed findings in one pass.
+  Deliberately not a CI gate: an assay is an append-only record of what an agent
+  observed at a moment, and failing the build retroactively over one malformed
+  block would pressure someone to edit a record.
+- **Forward-test fixture** at
+  `tdad_tests/layer0_deterministic/fixtures/assay_seed/` — two variants of a
+  small repository, one carrying a seeded defect (an integration suite planned
+  twice and never run, with both phases reported complete) and one with the
+  defect removed. The negative variant is the half that matters: a forward test
+  that only checks the agent finds the planted thing rewards a confident guesser.
+- **Explanation page** `harness-evolution.md`, **how-to** `assay-a-phase.md`, and
+  reference entries for the agent, command and skill.
+- **Layer-0 suite** `test-harness-assay.sh` (A5–A8), mutation-tested against 9
+  deliberately broken implementations.
+
+### Changed
+
+- **The Assayer returns its report as a string; the command persists it.** The
+  source spec declares the Assayer a sentinel and then instructs it to write its
+  own report. Those cannot both hold: criterion S1 is a read-only trust boundary,
+  `sentinel-integrity-check.sh` fails CI on a sentinel granted `Write`, and
+  frontmatter tools are all-or-nothing — so an Assayer that could write to
+  `harness/assay/` could rewrite `HARNESS.md`. This follows the `cost-estimator`
+  and `coda` precedent already established twice in this plugin.
+- **The anti-proliferation rule is turned on the Assayer itself.** The plugin
+  already has `/harness-audit`, `/governance-audit` and `/reflect`, which read the
+  same artifacts. The distinction — those audit rules that already exist, while
+  the Assayer governs the act of changing one — is enforced rather than asserted:
+  a finding one of those three already reports is recorded as a **rejected
+  candidate** with the owner named, and an assay that never rejects anything on
+  those grounds has stopped checking.
+- Finding parsing now raises rather than exits, so `lint-assay` can report every
+  defect while `/harness-propose` still stops at the first. The two consumers
+  want opposite behaviour: propose is acting on one finding, the linter is asking
+  whether the document is well-formed.
+
 ## 0.76.0 — 2026-08-23
 
 ### Added

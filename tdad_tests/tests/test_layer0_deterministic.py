@@ -120,6 +120,13 @@ BASH_TEST_SCRIPTS = [
     # check: region drift cannot catch an agent rewording the rule in the
     # accepted HDR and recompiling, because the region would then match.
     "test-harness-compile",
+    # Harness Evolution S3 — the assay linter and the forward-test fixture.
+    # A6 asserts EVERY malformed finding is reported in one pass: /harness-propose
+    # parses lazily so one bad block costs one finding, but at write time the
+    # question is whether the document is well-formed, and a linter that stopped
+    # at the first defect would send an author round the loop once per mistake
+    # against a record that is append-only once written.
+    "test-harness-assay",
 ]
 
 

@@ -1,0 +1,14 @@
+routes:
+  harness-loop: HARNESS.md
+  turn-instructions: AGENTS.md
+
+surfaces:
+  claude-code:
+    targets: [CLAUDE.md, .claude/agents/]
+    supports: [advisory, validated, blocked]
+  copilot:
+    targets: [.github/copilot-instructions.md]
+    supports: [advisory]
+  ci:
+    targets: [.github/workflows/]
+    supports: [validated, blocked]
