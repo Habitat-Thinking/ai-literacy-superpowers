@@ -52,6 +52,14 @@ print(h.hexdigest())
 " )
 }
 
+# A no-op commit exits 1, which under `set -e` would kill the suite. Whether a
+# given step produced a change is not what any of these tests assert.
+# `|| true` sits OUTSIDE the subshell deliberately: `A && B || C` is not
+# if-then-else, and ShellCheck is right to say so (SC2015).
+commit_all() {
+  ( cd "$TMP" && git add -A && git commit -qm "$1" >/dev/null 2>&1 ) || true
+}
+
 expect_ok()   { [ "$RC" -eq 0 ] || fail "$1: expected exit 0, got $RC. Out: $OUT"; }
 expect_fail() {
   [ "$RC" -ne 0 ] || fail "$1: expected non-zero exit, got 0. Out: $OUT"
@@ -449,7 +457,8 @@ reg compile >/dev/null; reg check; expect_ok "C19 (repaired)"
 
 # === C14/C15: the frozen-record check =======================================
 ( cd "$TMP" && git init -q && git config user.email t@example.invalid \
-    && git config user.name Test && git add -A && git commit -qm "seed" >/dev/null 2>&1 || true )
+    && git config user.name Test )
+commit_all seed
 reg check; expect_ok "C14 (clean after commit)"
 
 # C15 first: an accepted HDR that has never been committed is SKIPPED, not
@@ -466,7 +475,7 @@ printf '%s' "$OUT" | grep -qi 'not yet committed\|never committed\|uncommitted' 
   || fail "C15: the skip must be reported as a note. Out: $OUT"
 rm -f "$DEC/HDR-2026-08-22-never-committed.md"
 reg compile >/dev/null
-( cd "$TMP" && git add -A && git commit -qm "compile" >/dev/null 2>&1 || true )
+commit_all compile
 
 # C14: editing an accepted HDR after the commit that accepted it.
 "$PY" - "$DEC/HDR-2026-08-21-observed-evidence.md" <<'PYEOF'
@@ -500,11 +509,11 @@ mkhdr <<'EOF'
  "classification": "turn-instructions", "status": "proposed",
  "enforcement": "advisory", "surfaces": ["codex"]}
 EOF
-( cd "$TMP" && git add -A && git commit -qm "propose" >/dev/null 2>&1 || true )
+commit_all propose
 reg accept --hdr harness/decisions/HDR-2026-08-23-proposed-then-accepted.md \
   --cost-file cost.txt --approver russ@russmiles.com --now 2026-08-23T09:00Z
 expect_ok "C14b (accept a record that was committed while proposed)"
-( cd "$TMP" && git add -A && git commit -qm "accept" >/dev/null 2>&1 || true )
+commit_all accept
 reg check
 expect_ok "C14b (frozen check uses the accepting revision, not the first)"
 
@@ -540,7 +549,7 @@ grep -q 'Hand-written agent instructions.' "$TMP/.claude/agents/example.agent.md
 reg check; expect_ok "C16 (check clean after accept)"
 
 # And a failing acceptance leaves every artifact byte-identical.
-( cd "$TMP" && git add -A && git commit -qm "accepted" >/dev/null 2>&1 || true )
+commit_all accepted
 mkhdr <<'EOF'
 {"id": "HDR-2026-08-22-bad-target", "title": "Bad target",
  "classification": "agent-instruction", "status": "proposed",
