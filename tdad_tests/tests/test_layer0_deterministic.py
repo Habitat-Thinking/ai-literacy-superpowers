@@ -134,6 +134,12 @@ BASH_TEST_SCRIPTS = [
     # exempt from the two-assay threshold — that threshold exists to make rules
     # hard to ADD, and applying it to removal inverts the design.
     "test-harness-review",
+    # Harness Evolution S5 — the Observatory intervention feed. T3 asserts no
+    # field derives from the current date: expiry is a clock fact, and a feed
+    # carrying one produces different output on different days from a corpus
+    # nobody touched. T9 asserts every intervention has an end — without it,
+    # every rule ever retired is still counted as in force.
+    "test-harness-timeline",
 ]
 
 

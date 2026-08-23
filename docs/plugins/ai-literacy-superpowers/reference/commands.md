@@ -297,6 +297,35 @@ step, and a gate with no decision behind it is the shape of approval theatre.
 It does not commit, push, or open a pull request. Three gates exist — drafting,
 accepting, committing — and none is implied by another.
 
+### /harness-timeline
+
+Usage: `/harness-timeline`
+
+- **Skills read**: none
+- **Agents dispatched**: `harness-registrar`
+
+Emits the Observatory intervention feed to **stdout** — one JSON line per
+accepted decision record. See
+[intervention feed format](intervention-feed-format.md).
+
+Deliberately not a stored artifact: a committed derivative drifts from its
+source, and `/harness-check` would then have to police it. Redirect it if you
+want a file.
+
+**It reads no clock.** Whether a rule is expired right now depends on the date,
+so a feed carrying it would produce different output on different days from a
+corpus nobody touched — a difference-in-differences run in November would
+disagree with the same run in September. `expires` is emitted as data; `state` is
+`in force` or `superseded`, both corpus facts.
+
+**Every intervention carries an end** — `superseded_by` and `ends` — because
+without them every rule ever retired is still counted as in force.
+
+`direction` is derived from the enforcement ladder and the surface sets, never
+declared: the one field the analysis turns on is the last place to accept a
+self-report. A `no-change` record is `none` and is included deliberately, as a
+control observation rather than an absence.
+
 ### /harness-review
 
 Usage: `/harness-review`
