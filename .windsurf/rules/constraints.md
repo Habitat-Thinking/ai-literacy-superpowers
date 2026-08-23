@@ -245,3 +245,10 @@
 - **Enforcement**: deterministic
 - **Tool**: `python3 ai-literacy-superpowers/scripts/check-harness-decisions.py` (CI: `.github/workflows/harness.yml`)
 - **Scope**: pr
+
+## Harness governance is applied and undrifted
+
+- **Rule**: Every generated region compiled from the Harness Decision Record corpus must match what the corpus produces, every accepted record must be applied to the artifact its classification routes it to, and no accepted record may differ from its content at the commit that accepted it. Compilation writes only between `<!-- BEGIN GENERATED: harness-registrar -->` and `<!-- END GENERATED: harness-registrar -->`; content outside the markers is never touched, and an ambiguous marker pair is refused rather than guessed at. The frozen-record check is git-backed because region drift alone cannot see a rule reworded in the accepted record and then recompiled — the region would match the corpus and every byte-identity check would pass. An accepted record that has never been committed is skipped with a note rather than failed. A repository with no `harness/` directory passes.
+- **Enforcement**: deterministic
+- **Tool**: `python3 ai-literacy-superpowers/scripts/harness-registrar.py check` (CI: `.github/workflows/harness.yml`)
+- **Scope**: pr

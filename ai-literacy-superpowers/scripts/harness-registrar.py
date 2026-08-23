@@ -66,6 +66,13 @@ GENERATED_END = "<!-- END GENERATED: harness-registrar -->"
 
 DEFAULT_PROVISIONAL_DAYS = 90
 
+# advisory < validated < blocked. The ladder exists so "achieved" can be derived
+# rather than asserted.
+LADDER = {"advisory": 1, "validated": 2, "blocked": 3}
+
+REPORT_REL = os.path.join("harness", "enforcement-report.md")
+INDEX_REL = os.path.join("harness", "decisions", "index.md")
+
 TIER2_PLACEHOLDERS = [
     ("Why this layer",
      "why this change belongs at this layer and not one layer down"),
@@ -333,6 +340,12 @@ def render_hdr(hdr_id: str, finding: Finding, assay_path: str, assay_fm: dict,
         lines.append("provisional: true")
         expires = today + datetime.timedelta(days=DEFAULT_PROVISIONAL_DAYS)
         lines.append(f"expires: {expires.isoformat()}")
+    # The finding may already know which artifact should own the rule. Often it
+    # does not — an Assayer can see that a behaviour belongs to an agent without
+    # knowing which of four agent files owns it — so this is copied when present
+    # and left for the human at the acceptance gate when it is not.
+    if meta.get("target"):
+        lines.append(f"target: {meta['target']}")
     lines.append("evidence:")
     for item in evidence:
         lines.append(f"  - {item}")
@@ -559,11 +572,97 @@ def cmd_accept(args) -> int:
             "of whoever works here next, and how it might be gamed.")
 
     hdr_abs, candidate, _ = _accept_common(args, cost, "acceptance")
+
+    # Applying and compiling are NOT separate approval gates. Once an HDR is
+    # accepted there is no decision left in either step, and a gate with no
+    # decision behind it is the exact shape of approval theatre. The two gates
+    # that remain are the two where a human is genuinely deciding: writing the
+    # cost, and reviewing the resulting diff.
+    #
+    # So the plan is computed against the corpus as it WOULD be, before anything
+    # is written. A target that does not exist, or a file with ambiguous
+    # markers, refuses the whole acceptance rather than leaving a record
+    # accepted and unapplied.
+    records = substitute(load_records(args.root), args.hdr, candidate)
+    _, errors, _ = compile_plan(args.root, records)
+    if errors:
+        for line in errors:
+            print(line)
+        die("acceptance refused: the rule could not be applied. Nothing was "
+            "written and the HDR is still proposed.")
+
     with open(hdr_abs, "w", encoding="utf-8") as handle:
         handle.write(candidate)
-    write_index(args.root)
-    print(f"accepted {args.hdr}")
+
+    plan, errors, _ = compile_plan(args.root, load_records(args.root))
+    if errors:  # pragma: no cover - the dry run above already refused these
+        for line in errors:
+            print(line)
+        die("acceptance applied the record but compilation failed. Run "
+            "/harness-compile.")
+    write_plan(args.root, plan)
+    print(f"accepted and applied {args.hdr}")
     return 0
+
+
+# --------------------------------------------------------------------------- #
+# Records                                                                      #
+# --------------------------------------------------------------------------- #
+
+
+class Record:
+    """One HDR, parsed once and passed around.
+
+    Compilation reads the corpus in three different ways — to route rule text, to
+    build the index, to build the enforcement report — and acceptance has to do
+    all three against a candidate that is not on disk yet. Parsing once into a
+    value that can be substituted is what makes the dry run possible.
+    """
+
+    def __init__(self, rel: str, text: str):
+        self.rel = rel
+        self.text = text
+        raw_fm, body = S0.split_frontmatter(text)
+        self.fm = S0.parse_yaml(raw_fm) if raw_fm else {}
+        self.body = body or ""
+        self.id = str(self.fm.get("id") or os.path.basename(rel)[:-3])
+        self.status = self.fm.get("status")
+        self.classification = self.fm.get("classification")
+
+    @property
+    def surfaces(self) -> list[str]:
+        return [str(s) for s in (self.fm.get("surfaces") or [])]
+
+    @property
+    def rule_body(self) -> str | None:
+        section = S0.sections(self.body).get("Rule")
+        if section is None:
+            return None
+        blocks = S0.rule_blocks(section)
+        return blocks[0] if len(blocks) == 1 else None
+
+
+def load_records(root: str) -> list[Record]:
+    decisions = os.path.join(root, "harness", "decisions")
+    out = []
+    if os.path.isdir(decisions):
+        for name in sorted(os.listdir(decisions)):
+            if not name.startswith("HDR-") or not name.endswith(".md"):
+                continue
+            rel = os.path.join("harness", "decisions", name)
+            with open(os.path.join(root, rel), encoding="utf-8") as handle:
+                out.append(Record(rel, handle.read()))
+    out.sort(key=lambda r: r.id)
+    return out
+
+
+def substitute(records: list[Record], rel: str, text: str) -> list[Record]:
+    """The corpus as it WOULD be with one record replaced. No I/O."""
+    rel = os.path.normpath(rel)
+    out = [r for r in records if os.path.normpath(r.rel) != rel]
+    out.append(Record(rel, text))
+    out.sort(key=lambda r: r.id)
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -571,18 +670,10 @@ def cmd_accept(args) -> int:
 # --------------------------------------------------------------------------- #
 
 
-def render_index(root: str) -> str:
-    decisions = os.path.join(root, "harness", "decisions")
+def render_index(records: list[Record]) -> str:
     rows = []
-    if os.path.isdir(decisions):
-        for name in sorted(os.listdir(decisions)):
-            if not name.startswith("HDR-") or not name.endswith(".md"):
-                continue
-            with open(os.path.join(decisions, name), encoding="utf-8") as handle:
-                raw_fm, _ = S0.split_frontmatter(handle.read())
-            if raw_fm is None:
-                continue
-            fm = S0.parse_yaml(raw_fm)
+    for record in records:
+            fm = record.fm
             surfaces = fm.get("surfaces") or []
             rows.append((
                 str(fm.get("id") or name[:-3]),
@@ -622,13 +713,413 @@ def write_index(root: str) -> str:
     os.makedirs(decisions, exist_ok=True)
     path = os.path.join(decisions, "index.md")
     with open(path, "w", encoding="utf-8") as handle:
-        handle.write(render_index(root))
+        handle.write(render_index(load_records(root)))
     return path
 
 
 def cmd_index(args) -> int:
     path = write_index(args.root)
     print(f"wrote {os.path.relpath(path, args.root)}")
+    return 0
+
+
+# --------------------------------------------------------------------------- #
+# Compilation: classification routes, surfaces report                          #
+# --------------------------------------------------------------------------- #
+#
+# The build spec asks compilation to regenerate "the marked regions of every
+# control surface". Taken literally that puts two generators on one file — in
+# this repository `/convention-sync` already owns three of the five convention
+# files — and it is ambiguous wherever a surface lists a directory among its
+# targets, since nothing says which of `.claude/agents/`'s many files an
+# agent-instruction belongs in.
+#
+# So: CLASSIFICATION decides where the rule text goes, one artifact per HDR.
+# SURFACES decide who is told about it, and the enforcement report is what they
+# are told. Every property the build spec was after survives — verbatim
+# application inside markers, idempotent repair, a gap report as a primary
+# output — without the collision or the ambiguity.
+
+
+class MarkerError(Exception):
+    """The generated markers in a file are ambiguous."""
+
+
+def find_marker_span(text: str) -> tuple[int, int] | None:
+    """(first, last) line indices of the marker pair, or None if absent.
+
+    Refuses rather than guessing. Working out which BEGIN belongs to which END is
+    exactly how a generator ends up eating hand-written content, and there is no
+    safe default: picking the outermost pair swallows everything between two
+    regions, picking the innermost silently orphans one.
+    """
+    lines = text.splitlines()
+    begins = [i for i, line in enumerate(lines) if line.strip() == GENERATED_BEGIN]
+    ends = [i for i, line in enumerate(lines) if line.strip() == GENERATED_END]
+    if not begins and not ends:
+        return None
+    if len(begins) != 1 or len(ends) != 1:
+        raise MarkerError(
+            f"found {len(begins)} BEGIN and {len(ends)} END markers; exactly one "
+            "of each is required"
+        )
+    if ends[0] < begins[0]:
+        raise MarkerError("the END marker appears before the BEGIN marker")
+    return begins[0], ends[0]
+
+
+def apply_region(text: str, region: str) -> str:
+    """Replace the marked region, or append one. Never touches anything else."""
+    span = find_marker_span(text)
+    lines = text.splitlines()
+    if span is None:
+        body = "\n".join(lines).rstrip("\n")
+        return body + "\n\n" + region.rstrip("\n") + "\n"
+    start, end = span
+    new = lines[:start] + region.rstrip("\n").split("\n") + lines[end + 1:]
+    return "\n".join(new).rstrip("\n") + "\n"
+
+
+def load_matrix(root: str) -> tuple[dict[str, str], dict[str, dict]]:
+    path = os.path.join(root, "harness", "surfaces.yaml")
+    surfaces: dict = {}
+    if os.path.isfile(path):
+        with open(path, encoding="utf-8") as handle:
+            try:
+                doc = S0.parse_yaml(handle.read())
+                surfaces = doc.get("surfaces") or {}
+            except S0.YamlError:
+                surfaces = {}
+    return S0.effective_routes(root), surfaces
+
+
+def target_of(record: Record, routes: dict[str, str]) -> str | None:
+    if record.classification == "no-change":
+        return None
+    routed = routes.get(str(record.classification))
+    if routed:
+        return routed
+    target = record.fm.get("target")
+    return str(target) if target else None
+
+
+def has_validator(record: Record, root: str) -> bool:
+    """A validator counts only if the file it names actually exists.
+
+    A declared-but-absent validator is the failure the report is built to catch,
+    so believing the declaration would defeat the mechanism at the one point it
+    is supposed to bite.
+    """
+    value = record.fm.get("validator")
+    if not value:
+        return False
+    items = value if isinstance(value, list) else [value]
+    return any(os.path.exists(os.path.join(root, str(item))) for item in items)
+
+
+def achieved_for(intended: str, supports: list[str], validated: bool) -> tuple[str, str]:
+    """(achieved, reason). See the spec's §5.1 ladder."""
+    supports = [s for s in supports if s in LADDER]
+    if intended in supports:
+        candidate, reason = intended, ""
+    else:
+        lower = [s for s in supports if LADDER[s] < LADDER.get(intended, 0)]
+        if not lower:
+            return "none", f"surface supports neither {intended} nor anything below it"
+        candidate = max(lower, key=lambda s: LADDER[s])
+        reason = f"surface supports at most {candidate}"
+    if LADDER[candidate] >= LADDER["validated"] and not validated:
+        if "advisory" in supports:
+            return "advisory", "no validator declared or resolvable"
+        return "none", "no validator declared or resolvable"
+    return candidate, reason
+
+
+def enforcement_rows(record: Record, surfaces: dict, root: str) -> list[dict]:
+    intended = str(record.fm.get("enforcement") or "advisory")
+    validated = has_validator(record, root)
+    rows = []
+    for name in record.surfaces:
+        entry = surfaces.get(name) or {}
+        supports = [str(s) for s in (entry.get("supports") or [])]
+        achieved, reason = achieved_for(intended, supports, validated)
+        if not supports:
+            achieved, reason = "none", f"surface '{name}' is not declared"
+        rows.append({
+            "surface": name, "intended": intended, "achieved": achieved,
+            "gap": achieved != intended, "reason": reason,
+        })
+    return rows
+
+
+def enforcement_summary(record: Record, surfaces: dict, root: str) -> str:
+    """The one-line account rendered beside the rule, where it is read.
+
+    A rule declaring `blocked` that is merely advisory on the surface someone is
+    actually reading should admit that there, not only in a report they may
+    never open.
+    """
+    parts = [f"Intended: {record.fm.get('enforcement')}"]
+    for row in enforcement_rows(record, surfaces, root):
+        mark = " (gap)" if row["gap"] else ""
+        parts.append(f"{row['surface']}: {row['achieved']}{mark}")
+    if record.fm.get("provisional") is True:
+        expiry = record.fm.get("expires") or record.fm.get("review_trigger")
+        parts.append(f"provisional until {expiry}")
+    return "_" + " · ".join(parts) + "_"
+
+
+def render_region(records: list[Record], surfaces: dict, root: str) -> str:
+    out = [GENERATED_BEGIN, "",
+           "<!-- Compiled from harness/decisions/. "
+           "Run /harness-compile to regenerate. -->"]
+    for record in records:
+        body = record.rule_body
+        if body is None:
+            continue
+        out += ["", f"### {record.id} — {record.fm.get('title')}", "",
+                enforcement_summary(record, surfaces, root), ""]
+        out += body.rstrip("\n").split("\n")
+    out += ["", GENERATED_END]
+    return "\n".join(out)
+
+
+def render_report(records: list[Record], surfaces: dict, root: str) -> str:
+    accepted = [r for r in records
+                if r.status == "accepted" and r.classification != "no-change"]
+    routes, _ = load_matrix(root)
+
+    total = gaps = 0
+    sections: list[str] = []
+    for record in accepted:
+        rows = enforcement_rows(record, surfaces, root)
+        total += len(rows)
+        gaps += sum(1 for row in rows if row["gap"])
+        sections += ["", f"## {record.id} — {record.fm.get('title')}", "",
+                     f"Target: `{target_of(record, routes)}` · classification: "
+                     f"`{record.classification}`", "",
+                     "| Surface | Intended | Achieved | Gap | Why |",
+                     "| --- | --- | --- | --- | --- |"]
+        for row in rows:
+            sections.append(
+                f"| {row['surface']} | {row['intended']} | {row['achieved']} | "
+                f"{'gap' if row['gap'] else 'ok'} | {row['reason'] or '—'} |")
+
+    out = [
+        "# Enforcement report",
+        "",
+        "For every accepted rule, on every surface it names: the enforcement "
+        "level **intended**, and the level **achieved**.",
+        "",
+        "A rule that intends `blocked` on a surface that can only advise is "
+        "reported as a gap, never silently downgraded. Knowing which rules are "
+        "actually enforced, and which are merely written down, is the point.",
+        "",
+        GENERATED_BEGIN,
+        "",
+    ]
+    if accepted:
+        out.append(f"Gaps: {gaps} of {total} rule-surface pairs.")
+        out += sections
+    else:
+        out.append("No accepted decisions.")
+    out += ["", GENERATED_END, ""]
+    return "\n".join(out)
+
+
+def compile_plan(root: str, records: list[Record]) -> tuple[dict[str, str], list[str], list[str]]:
+    """(files to write, errors, targets with no region yet). Writes nothing."""
+    routes, surfaces = load_matrix(root)
+    errors: list[str] = []
+    unapplied: list[str] = []
+
+    by_target: dict[str, list[Record]] = {}
+    for record in records:
+        if record.status != "accepted" or record.classification == "no-change":
+            continue
+        target = target_of(record, routes)
+        if not target:
+            errors.append(
+                f"FAIL: {record.rel}: classification '{record.classification}' "
+                "has no route and the HDR names no 'target'."
+            )
+            continue
+        by_target.setdefault(target, []).append(record)
+
+    plan: dict[str, str] = {}
+    for target in sorted(by_target):
+        abs_target = os.path.join(root, target)
+        if not os.path.isfile(abs_target):
+            errors.append(
+                f"FAIL: target artifact '{target}' does not exist. The Registrar "
+                "writes records, not governance documents — create it first."
+            )
+            continue
+        with open(abs_target, encoding="utf-8") as handle:
+            text = handle.read()
+        try:
+            span = find_marker_span(text)
+        except MarkerError as exc:
+            errors.append(f"FAIL: {target}: malformed generated markers — {exc}.")
+            continue
+        if span is None:
+            unapplied.append(target)
+        region = render_region(by_target[target], surfaces, root)
+        plan[target] = apply_region(text, region)
+
+    plan[INDEX_REL] = render_index(records)
+    plan[REPORT_REL] = render_report(records, surfaces, root)
+    return plan, errors, unapplied
+
+
+def write_plan(root: str, plan: dict[str, str]) -> list[str]:
+    written = []
+    for rel, text in sorted(plan.items()):
+        path = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        current = None
+        if os.path.isfile(path):
+            with open(path, encoding="utf-8") as handle:
+                current = handle.read()
+        if current == text:
+            continue
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(text)
+        written.append(rel)
+    return written
+
+
+def cmd_compile(args) -> int:
+    root = args.root
+    records = load_records(root)
+    plan, errors, _ = compile_plan(root, records)
+    if errors:
+        for line in errors:
+            print(line)
+        die("compilation refused; nothing was written.")
+    written = write_plan(root, plan)
+    if written:
+        print("compiled: " + ", ".join(written))
+    else:
+        print("compiled: already up to date")
+    return 0
+
+
+# --------------------------------------------------------------------------- #
+# The drift check                                                              #
+# --------------------------------------------------------------------------- #
+
+
+def git(root: str, *args: str) -> tuple[int, str]:
+    result = subprocess.run(["git", "-C", root, *args],
+                            capture_output=True, text=True, check=False)
+    return result.returncode, result.stdout
+
+
+def frozen_violations(root: str, records: list[Record]) -> tuple[list[str], list[str]]:
+    """(violations, notes) for accepted HDRs changed since they were accepted.
+
+    Region drift catches a hand-edit to a COMPILED rule. It cannot catch the
+    failure this whole design is arranged against: an agent with write authority
+    rewording the rule in the accepted HDR and recompiling. The region would then
+    match the corpus exactly, every byte-identity check would pass, and the rule
+    in force would quietly differ from the one a human approved.
+
+    So an accepted record is compared against its content at the commit that
+    accepted it.
+    """
+    violations: list[str] = []
+    notes: list[str] = []
+    accepted = [r for r in records if r.status == "accepted"]
+    if not accepted:
+        return violations, notes
+    code, _ = git(root, "rev-parse", "--git-dir")
+    if code != 0:
+        notes.append("note: not a git repository — the frozen-record check was skipped.")
+        return violations, notes
+
+    for record in accepted:
+        code, out = git(root, "log", "--format=%H", "--reverse", "--", record.rel)
+        revs = [line.strip() for line in out.splitlines() if line.strip()]
+        if not revs:
+            notes.append(
+                f"note: {record.rel} is accepted but not yet committed, so its "
+                "frozen-record check was skipped. Human review of the diff is "
+                "what closes that window."
+            )
+            continue
+        baseline = None
+        for rev in revs:
+            code, blob = git(root, "show", f"{rev}:{record.rel}")
+            if code != 0:
+                continue
+            raw_fm, _ = S0.split_frontmatter(blob)
+            if raw_fm and "status: accepted" in raw_fm:
+                baseline = blob
+                break
+        if baseline is None:
+            notes.append(
+                f"note: {record.rel} has no committed revision in which it was "
+                "accepted, so its frozen-record check was skipped."
+            )
+            continue
+        if baseline != record.text:
+            violations.append(
+                f"FAIL: {record.rel}: an accepted HDR is frozen, and this one "
+                "differs from its content at the commit that accepted it. A "
+                "later decision supersedes a rule; nothing edits one."
+            )
+    return violations, notes
+
+
+def cmd_check(args) -> int:
+    root = args.root
+    problems: list[str] = []
+    notes: list[str] = []
+
+    result = subprocess.run([sys.executable, VALIDATOR, root],
+                            capture_output=True, text=True, check=False)
+    if result.returncode != 0:
+        problems.append((result.stdout + result.stderr).strip())
+
+    records = load_records(root)
+    plan, errors, unapplied = compile_plan(root, records)
+    problems += errors
+
+    for target in unapplied:
+        problems.append(
+            f"FAIL: {target}: accepted rules route here but the file has no "
+            "generated region — the decision was accepted and never applied. "
+            "Run /harness-compile."
+        )
+
+    for rel, text in sorted(plan.items()):
+        if rel in unapplied:
+            continue
+        path = os.path.join(root, rel)
+        current = None
+        if os.path.isfile(path):
+            with open(path, encoding="utf-8") as handle:
+                current = handle.read()
+        if current != text:
+            problems.append(
+                f"FAIL: {rel}: drift — the generated content differs from what "
+                "the decision corpus produces. Run /harness-compile to repair, "
+                "or supersede the decision if the change was intended."
+            )
+
+    violations, more_notes = frozen_violations(root, records)
+    problems += violations
+    notes += more_notes
+
+    for note in notes:
+        print(note)
+    for line in problems:
+        print(line)
+    if problems:
+        print(f"\n{len(problems)} harness problem(s). This is a build failure.")
+        return 1
+    print(f"harness check: OK ({len(records)} decision(s))")
     return 0
 
 
@@ -660,6 +1151,12 @@ def main(argv: list[str]) -> int:
 
     p = sub.add_parser("index", help="regenerate harness/decisions/index.md")
     p.set_defaults(func=cmd_index)
+
+    p = sub.add_parser("compile", help="idempotent repair of every generated region")
+    p.set_defaults(func=cmd_compile)
+
+    p = sub.add_parser("check", help="read-only drift detection; the CI entry point")
+    p.set_defaults(func=cmd_check)
 
     args = parser.parse_args(argv[1:])
     return args.func(args)

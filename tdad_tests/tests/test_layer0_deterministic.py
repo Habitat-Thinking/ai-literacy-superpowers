@@ -114,6 +114,12 @@ BASH_TEST_SCRIPTS = [
     # every file under harness/ before and after each refusal, because "nothing
     # was written" deserves a measurement rather than a reading of the code.
     "test-harness-registrar",
+    # Harness Evolution S2 — compilation, the enforcement report, and the drift
+    # check. C12b asserts that a validator DECLARED but absent does not lift the
+    # enforcement degradation, and C14 asserts the git-backed frozen-record
+    # check: region drift cannot catch an agent rewording the rule in the
+    # accepted HDR and recompiling, because the region would then match.
+    "test-harness-compile",
 ]
 
 

@@ -69,6 +69,8 @@ provisional: true
 expires: 2026-11-19        # required when provisional, unless review_trigger is set
 review_trigger: "Two consecutive assays with zero findings in this class"
 imported: false
+target: .claude/agents/tdd-agent.agent.md
+validator: ai-literacy-superpowers/scripts/check-observed-evidence.py
 evidence:
   - harness/assay/2026-08-04T09-12Z-assay.md#finding-1
   - harness/assay/2026-08-12T14-03Z-assay.md#finding-3
@@ -97,7 +99,23 @@ cohort: b                  # optional
 | `cost` | always | only when `status: accepted` |
 | `approver`, `approved_at` | `status: accepted` | `status: accepted` |
 | `expires` **or** `review_trigger` | `provisional: true` | `provisional: true` |
+| `target` | when the classification has no route | `status: accepted` |
+| `validator` | optional | — |
 | `cohort`, `proposed_cost`, `imported` | optional | — |
+
+**`target`** names the artifact the rule text is written into, and is required at
+**acceptance** for `agent-instruction`, `agent-reference`, `script-validator`,
+`regression-test` and `new-agent`. `harness-loop` and `turn-instructions` have
+fixed routes in `surfaces.yaml` and need no target of their own.
+
+It binds at acceptance rather than at proposal because the Assayer frequently
+identifies a behaviour without knowing which of four agent files should own it.
+That is the human's decision, made at the gate beside the cost.
+
+**`validator`** is a path, or list of paths, to whatever actually enforces the
+rule. Its absence is never an error — an unenforced rule is not a malformed one —
+but it is what the [enforcement report](enforcement-report-format.md) uses to
+tell *enforced* from *written down*.
 
 **Why `cost` is present but empty while proposed.** The human authors the cost
 at the acceptance gate. Requiring it earlier would force `/harness-propose` to
@@ -168,6 +186,7 @@ itself past.
 | **Grandfathering** | `imported: true` combined with `provisional: true`, or carrying an `expires`, or naming any proposer other than `imported`. |
 | **Attribution** | An accepted HDR without `approver` and `approved_at`. |
 | **Surfaces** | An HDR naming a surface not declared in `surfaces.yaml`. |
+| **Target** | An accepted HDR whose classification has no route and which names no `target`. |
 
 The promotion threshold and the cycle cap are **corpus-level**: they compare
 HDRs against each other, so they cannot be checked from one file at write time.
@@ -228,4 +247,6 @@ project that has not opted in.
 
 - Spec: `docs/superpowers/specs/2026-08-23-harness-evolution-s0-schema-validator-design.md`
 - Tests: `tdad_tests/layer0_deterministic/test-harness-decisions.sh`
+- [Enforcement report format](enforcement-report-format.md)
 - Constraint: **Harness decision records are well-formed** in `HARNESS.md`
+- Constraint: **Harness governance is applied and undrifted** in `HARNESS.md`

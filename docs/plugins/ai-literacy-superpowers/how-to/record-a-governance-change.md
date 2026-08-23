@@ -75,10 +75,56 @@ agent to write it, it will decline and offer to discuss the rule instead.
 Acceptance is all-or-nothing: on any refusal, nothing is written and the record
 stays `proposed`.
 
-## 4. Review the diff and commit
+**If the classification is not `harness-loop` or `turn-instructions`,** you will
+also be asked for a `target` — the artifact the rule text is written into.
+`agent-instruction` says the behaviour belongs to an agent, not which agent, and
+nothing in the schema can infer it.
+
+Acceptance then does three things in one transaction: accepts the record, writes
+the rule into its target's generated region, and recompiles the index and the
+enforcement report.
+
+## 4. Read the enforcement report
+
+`harness/enforcement-report.md` tells you what actually happened, per surface:
+
+```markdown
+| Surface | Intended | Achieved | Gap | Why |
+| --- | --- | --- | --- | --- |
+| claude-code | blocked | advisory | gap | no validator declared or resolvable |
+| copilot | blocked | advisory | gap | surface supports at most advisory |
+```
+
+**A gap is not a failure.** It is a true fact about the world, and the report
+exists to state it. What you should not do is downgrade the rule's `enforcement`
+to make the gaps disappear — that discards the very information you just gained.
+
+The second row is the surface's ceiling: Copilot reads prose and refuses nothing.
+The first is more interesting. It says the rule *could* be enforced here but
+nothing enforces it. Declare a `validator:` pointing at the script, workflow or
+hook that does the refusing, and the gap closes. A validator that does not exist
+counts as no validator — believing the declaration would defeat the check at the
+one point it bites.
+
+## 5. Review the diff and commit
 
 Nothing has been committed on your behalf. Three gates exist — drafting,
 accepting, committing — and none is implied by another.
+
+Applying and compiling are deliberately *not* extra gates. Once a record is
+accepted there is no decision left in either step, and a gate with no decision
+behind it is the shape of approval theatre.
+
+## When CI goes red
+
+`/harness-check` runs on every pull request and a failure is a build failure.
+
+| It says | What to do |
+| --- | --- |
+| **drift** | `/harness-compile`, if the generated region was what changed. If the *corpus* changed, the question is whether that change was approved — and that is not answered by a command |
+| **never applied** | `/harness-compile` |
+| **malformed markers** | Repair them yourself. Never guess which BEGIN pairs with which END |
+| **frozen record** | Serious. An accepted decision was edited after the fact. Do not recompile to make it agree — read the diff against its accepted revision and either restore it or supersede it with a new decision |
 
 ## The refusals you will actually meet
 
@@ -89,6 +135,8 @@ accepting, committing — and none is implied by another.
 | Fourth acceptance from one assay | The three-per-cycle cap | Leave it `proposed`; it carries forward and competes with the next assay's findings |
 | Cost identical to `proposed_cost` | You pasted the Assayer's words | Write your own |
 | Undeclared surface | A typo, or a surface missing from the matrix | Fix the name, or declare the surface |
+| No route and no target | The rule has nowhere to go | Name the artifact that owns it |
+| Target does not exist | The record points at a missing file | Create it yourself — the Registrar writes records, not governance documents |
 
 **A refusal is the mechanism working.** The design assumes rules should be hard
 to add and easy to retire. A proposal that carries forward is not a blocked
@@ -117,3 +165,4 @@ costs far more than the un-evidenced legacy rules ever did.
 
 - [Harness Decision Record format](../reference/harness-decision-records.md)
 - [Assay finding format](../reference/assay-finding-format.md)
+- [Enforcement report format](../reference/enforcement-report-format.md)
