@@ -72,7 +72,20 @@ expect_fail() {
     || fail "$1: message must mention '$2'. Out: $OUT"
 }
 
+# The artifacts rules are applied to. Acceptance now applies AND compiles in one
+# transaction, so a record routing to a file that does not exist refuses the
+# whole acceptance - the Registrar writes records, not governance documents.
+printf '# Harness\n\nHand-written.\n' > "$TMP/HARNESS.md"
+printf '# Agents\n\nHand-written.\n' > "$TMP/AGENTS.md"
+mkdir -p "$TMP/.claude/agents"
+printf -- '---\nname: example\n---\n\n# Example agent\n\nHand-written.\n' \
+  > "$TMP/.claude/agents/example.agent.md"
+
 cat > "$HARNESS/surfaces.yaml" <<'EOF'
+routes:
+  harness-loop: HARNESS.md
+  turn-instructions: AGENTS.md
+
 surfaces:
   claude-code:
     targets: [CLAUDE.md, .claude/agents/]
@@ -112,6 +125,7 @@ never records it running.
 classification: agent-instruction
 enforcement: validated
 surfaces: [claude-code, copilot]
+target: .claude/agents/example.agent.md
 priority: P1
 evidence:
   - harness/build-log.md#2026-08-04T09-12Z
@@ -296,6 +310,10 @@ set -e
 [ "$(field "$HDR" status)" = "proposed" ] || fail "R1: status must be proposed"
 [ "$(field "$HDR" classification)" = "agent-instruction" ] || fail "R1: classification not copied"
 [ "$(field "$HDR" enforcement)" = "validated" ] || fail "R1: enforcement not copied"
+# A finding that knows its target says so; propose copies it rather than leaving
+# the human to rediscover it at the gate.
+[ "$(field "$HDR" target)" = ".claude/agents/example.agent.md" ] \
+  || fail "R1: target not copied from the finding metadata"
 [ "$(field "$HDR" provisional)" = "true" ] || fail "R1: provisional must default true"
 [ "$(field "$HDR" expires)" = "2026-11-19" ] \
   || fail "R1: expires must be today+90 (2026-11-19), got '$(field "$HDR" expires)'"

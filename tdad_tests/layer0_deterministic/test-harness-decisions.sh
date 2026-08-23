@@ -214,6 +214,7 @@ defaults() {
   PROVISIONAL=true
   EXPIRES="expires: 2026-11-19"
   IMPORTED=""
+  TARGET="target: .claude/agents/example.agent.md"
   EVIDENCE="  - harness/assay/2026-08-21T16-02Z-assay.md#finding-3"
   PROPOSED_COST="One extra check per phase boundary."
   COST=""
@@ -242,6 +243,7 @@ gen() {
     [ "$OMIT" = provisional ] || printf 'provisional: %s\n' "$PROVISIONAL"
     if [ -n "$EXPIRES" ]; then printf '%s\n' "$EXPIRES"; fi
     if [ -n "$IMPORTED" ]; then printf '%s\n' "$IMPORTED"; fi
+    if [ -n "$TARGET" ]; then printf '%s\n' "$TARGET"; fi
     if [ "$OMIT" != evidence ]; then
       printf 'evidence:\n'
       printf '%s\n' "$EVIDENCE"

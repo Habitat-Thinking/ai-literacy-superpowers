@@ -95,6 +95,12 @@ A ```` ```yaml ```` block requiring `classification`, `enforcement`, `surfaces`,
 nobody can triage is a finding that will be triaged by whichever one happens to
 be listed first.
 
+`target` is **optional**. Include it when the finding already knows which
+artifact should own the rule; `/harness-propose` copies it through. Leave it out
+when it does not — an Assayer can see that a behaviour belongs to an agent
+without knowing which of four agent files owns it, and that decision belongs to
+the human at the acceptance gate. It is required there, not here.
+
 ### The proposed rule
 
 `#### Proposed rule` holds **exactly one four-backtick block** — the same
@@ -131,6 +137,7 @@ assay. Recording that nothing needed to change is itself evidence.
 | `title` | the heading title |
 | `## Finding` | the observation, verbatim |
 | `classification`, `enforcement`, `surfaces` | the metadata block |
+| `target` | the metadata block, when present |
 | `evidence` | the metadata `evidence` **plus** `<assay-path>#<finding-id>` |
 | `proposed_cost` | the cost estimate, verbatim |
 | `## Rule` block | the proposed-rule block, byte for byte |

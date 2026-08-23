@@ -1,5 +1,67 @@
 # Changelog
 
+## 0.76.0 — 2026-08-23
+
+### Added
+
+- **`/harness-compile`** — idempotent repair. Regenerates the generated region of
+  every target artifact, the decision index, and the enforcement report. Writes
+  only between markers, and refuses rather than guessing when a marker pair is
+  ambiguous (#533, #536).
+- **`/harness-check`** — read-only drift detection and the CI entry point. Fails
+  on an invalid corpus, malformed markers, an accepted record never applied,
+  region drift, report drift, or a frozen-record violation. Wired into
+  `.github/workflows/harness.yml`; a failure is a build failure, not a warning.
+- **`harness/enforcement-report.md`** — for every accepted rule on every surface
+  it names, the enforcement level intended and the level achieved. Documented at
+  `docs/plugins/ai-literacy-superpowers/reference/enforcement-report-format.md`.
+- **The validator gate.** `achieved` also asks whether a declared `validator`
+  resolves to a file that exists. Without it, a rule declaring
+  `enforcement: blocked` on the `ci` surface reports as blocked while nothing
+  anywhere refuses anything — a confident, legible, wrong answer from the
+  mechanism whose purpose is telling enforced from written down. A
+  declared-but-absent validator counts as none.
+- **The frozen-record check.** Each accepted record is compared against its
+  content at the commit that accepted it. Region drift catches a hand-edit to a
+  compiled rule; it cannot catch a rule reworded in the *accepted record* and
+  then recompiled, because the region would match the corpus and every
+  byte-identity check would pass.
+- **`target` and `validator`** on the decision record; **`routes`** in
+  `harness/surfaces.yaml`.
+- **Constraint: Harness governance is applied and undrifted** — deterministic,
+  mirrored into all three convention files.
+- **Layer-0 suite** `test-harness-compile.sh` (C1–C19), mutation-tested against
+  19 deliberately broken implementations.
+
+### Changed
+
+- `/harness-accept` now accepts, applies, and recompiles in **one transaction**.
+  Applying and compiling are deliberately not separate approval gates: once a
+  record is accepted there is no decision left in either step, and a gate with no
+  decision behind it is the shape of approval theatre. The compilation plan is
+  computed before anything is written, so a missing target or an ambiguous marker
+  pair refuses the whole acceptance rather than leaving a record accepted and
+  unapplied.
+- **Compilation routes by classification, and reports by surface.** The source
+  spec asks compilation to regenerate the marked regions of every control
+  surface. Taken literally that puts two generators on one file —
+  `/convention-sync` already owns `.github/copilot-instructions.md`,
+  `.cursor/rules/constraints.mdc` and `.windsurf/rules/constraints.md` — and is
+  ambiguous wherever a surface lists a directory among its targets. So
+  classification decides where a rule's text goes, and the enforcement report is
+  what the surfaces are told.
+
+### Fixed
+
+- Four weaknesses in the S2 tests, all found by mutation testing. A
+  truncate-before-read bug in a fixture (`open(p,"w").write(open(p).read()…)`)
+  silently emptied the file under test. Region ordering was untestable because no
+  target held two rules. The frozen-record baseline was indistinguishable from
+  "first revision" because no fixture was committed while still proposed. And an
+  assertion for the absent-validator case passed against a mutated checker
+  because it grepped the whole report and matched an identical message emitted
+  for a *different* record — the same false-pass shape found twice in S1.
+
 ## 0.75.0 — 2026-08-23
 
 ### Added

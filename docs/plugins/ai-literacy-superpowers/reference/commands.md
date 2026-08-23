@@ -258,9 +258,64 @@ corpus — necessary because the cycle cap and the promotion threshold compare
 HDRs against each other — and writes only on success, so a refusal leaves the
 HDR `proposed` and the corpus byte-identical.
 
-It writes to no control surface, and it does not commit, push, or open a pull
-request. Three gates exist — drafting, accepting, committing — and none is
-implied by another.
+Acceptance covers three things in one transaction: the record is accepted, its
+rule text is applied to the artifact its classification routes it to, and every
+generated region is recompiled. Applying and compiling are deliberately **not**
+separate gates — once a record is accepted there is no decision left in either
+step, and a gate with no decision behind it is the shape of approval theatre.
+
+It does not commit, push, or open a pull request. Three gates exist — drafting,
+accepting, committing — and none is implied by another.
+
+### /harness-compile
+
+Usage: `/harness-compile`
+
+- **Skills read**: none
+- **Agents dispatched**: `harness-registrar`
+
+Idempotent repair. Regenerates the generated region of every target artifact, the
+decision index, and `harness/enforcement-report.md`.
+
+You should rarely need it: acceptance compiles as part of its own transaction, so
+the occasions that call for it are a hand-edit to a generated region and a merge
+that combined two branches.
+
+Compilation writes **only** between the markers, and refuses — writing nothing at
+all — when a target artifact does not exist, or when a marker pair is ambiguous.
+There is no safe default for an ambiguous pair: taking the outermost swallows
+everything between two regions, taking the innermost silently orphans one. A
+human repairs those.
+
+It does not write into `.github/copilot-instructions.md`, `.cursor/rules/` or
+`.windsurf/rules/` — `/convention-sync` generates those from `HARNESS.md`, and
+two generators on one file emit the same rule twice in two voices.
+
+### /harness-check
+
+Usage: `/harness-check`
+
+- **Skills read**: none
+- **Agents dispatched**: `harness-registrar`
+
+Read-only drift detection, and the CI entry point rather than something anyone
+types. Non-zero exit on: an invalid corpus, malformed markers, an accepted record
+that was never applied, region drift, report or index drift, or a **frozen-record
+violation**.
+
+**A failure is a build failure, not a warning.** A governance check that can be
+ignored is a governance check that will be.
+
+The frozen-record check is git-backed, and it is the one byte-identity cannot
+perform. Region drift catches a hand-edit to a compiled rule; it cannot catch an
+agent rewording the rule in the *accepted record* and recompiling, because the
+region would then match the corpus exactly and every byte-identity check would
+pass. So each accepted record is compared against its content at the commit that
+accepted it.
+
+Known limit, stated rather than hidden: a record accepted but never committed has
+no accepted revision to compare against, and is skipped with a note. That window
+is closed by human review of the diff.
 
 ---
 

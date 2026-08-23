@@ -12,6 +12,19 @@
 # Schema and validation: ai-literacy-superpowers/scripts/check-harness-decisions.py
 # Spec: docs/superpowers/specs/2026-08-23-harness-evolution-s0-schema-validator-design.md §6
 
+# Where a rule's TEXT goes, by classification. Two have a fixed home; the rest
+# name their own `target`, because nothing in the schema can infer which of four
+# agent files a given agent instruction belongs in.
+routes:
+  harness-loop: HARNESS.md
+  turn-instructions: AGENTS.md
+
+# Who is TOLD about a rule, and how strongly it binds there. Compilation does not
+# write into these files: `.github/copilot-instructions.md`, `.cursor/rules/` and
+# `.windsurf/rules/` are already generated from HARNESS.md by /convention-sync,
+# and a second generator on the same file produces the same rule twice in two
+# voices. A rule reaches those surfaces once it is in HARNESS.md, and the
+# enforcement report says so rather than claiming they are ungoverned.
 surfaces:
   # The only surface with a hook system, so the only one that can refuse a tool
   # call before it happens.

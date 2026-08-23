@@ -67,6 +67,16 @@ VALID_CLASSIFICATION = {
     "no-change",
 }
 
+# Where a rule's text goes is decided by its classification. Two classifications
+# have a fixed home; the rest name their own `target`, because no fixed rule can
+# know which of four agent files a given agent instruction belongs in.
+#
+# A project may override these in `surfaces.yaml`'s `routes` block.
+DEFAULT_ROUTES = {
+    "harness-loop": "HARNESS.md",
+    "turn-instructions": "AGENTS.md",
+}
+
 # The classifications whose reach extends beyond a single agent. Process burden
 # should be proportional to blast radius, so only these three pay for the four
 # extra body sections.
@@ -330,6 +340,41 @@ def is_real_date(value: str) -> bool:
 # --------------------------------------------------------------------------- #
 
 
+def check_routes(doc: dict, errors: list[str]) -> dict[str, str]:
+    """Validate the optional `routes` block and return the effective routing.
+
+    Absent, the built-in defaults apply. Present, it must map a known
+    classification to a non-empty path — a route to `no-change` is refused
+    because a no-change decision has no text to place anywhere.
+    """
+    routes = doc.get("routes")
+    if routes is None:
+        return dict(DEFAULT_ROUTES)
+    if not isinstance(routes, dict) or not routes:
+        errors.append(
+            f"FAIL: {SURFACES_FILE}: 'routes' must be a non-empty mapping of "
+            "classification to target path."
+        )
+        return dict(DEFAULT_ROUTES)
+    for classification, target in routes.items():
+        if classification not in VALID_CLASSIFICATION:
+            errors.append(
+                f"FAIL: {SURFACES_FILE}: routes names unknown classification "
+                f"'{classification}'."
+            )
+        if classification == "no-change":
+            errors.append(
+                f"FAIL: {SURFACES_FILE}: 'no-change' cannot be routed — a "
+                "no-change decision has no rule text to place."
+            )
+        if not isinstance(target, str) or not target.strip():
+            errors.append(
+                f"FAIL: {SURFACES_FILE}: route for '{classification}' must be a "
+                "non-empty path."
+            )
+    return {k: v for k, v in routes.items() if isinstance(v, str) and v.strip()}
+
+
 def check_surfaces(root: str, errors: list[str]) -> dict[str, dict]:
     """Validate the capability matrix and return it, or {} if unusable."""
     path = os.path.join(root, SURFACES_FILE)
@@ -348,6 +393,8 @@ def check_surfaces(root: str, errors: list[str]) -> dict[str, dict]:
     except YamlError as exc:
         errors.append(f"FAIL: {SURFACES_FILE} could not be read: {exc}")
         return {}
+
+    check_routes(doc, errors)
 
     surfaces = doc.get("surfaces")
     if not isinstance(surfaces, dict) or not surfaces:
@@ -399,7 +446,24 @@ def check_surfaces(root: str, errors: list[str]) -> dict[str, dict]:
 # --------------------------------------------------------------------------- #
 
 
-def check_hdr(path: str, surfaces: dict, errors: list[str]) -> dict | None:
+def effective_routes(root: str) -> dict[str, str]:
+    """The routing table in force, defaults included."""
+    path = os.path.join(root, SURFACES_FILE)
+    if not os.path.isfile(path):
+        return dict(DEFAULT_ROUTES)
+    try:
+        with open(path, encoding="utf-8") as handle:
+            doc = parse_yaml(handle.read())
+    except (OSError, YamlError):
+        return dict(DEFAULT_ROUTES)
+    routes = doc.get("routes")
+    if not isinstance(routes, dict) or not routes:
+        return dict(DEFAULT_ROUTES)
+    return {k: v for k, v in routes.items() if isinstance(v, str) and v.strip()}
+
+
+def check_hdr(path: str, surfaces: dict, errors: list[str],
+              routes: dict[str, str] | None = None) -> dict | None:
     """Validate one HDR file. Returns its frontmatter for the corpus checks."""
     name = os.path.basename(path)
     stem = name[:-3]
@@ -484,6 +548,10 @@ def check_hdr(path: str, surfaces: dict, errors: list[str]) -> dict | None:
     _check_acceptance(fm, status, where, errors)
     _check_body(fm, body, classification, is_no_change, where, errors)
     _check_promotion_threshold(fm, status, classification, imported, where, errors)
+    _check_target(fm, status, classification, is_no_change,
+                  routes if routes is not None else dict(DEFAULT_ROUTES),
+                  where, errors)
+    _check_validator(fm, where, errors)
 
     return fm
 
@@ -707,6 +775,49 @@ def _check_promotion_threshold(
         )
 
 
+def _check_target(fm, status, classification, is_no_change, routes, where, errors) -> None:
+    """A rule has to end up somewhere, and someone has to say where.
+
+    Two classifications have a fixed home. The rest do not, and nothing in the
+    schema can infer one: `agent-instruction` says the behaviour belongs to an
+    agent, not which agent. That choice is the human's, made at the acceptance
+    gate beside the cost — which is why it is required at acceptance rather than
+    at proposal, when the Assayer often knows the behaviour without yet knowing
+    its owner.
+    """
+    if is_no_change or status != "accepted":
+        return
+    if classification in routes:
+        return
+    target = fm.get("target")
+    if target is None or not str(target).strip():
+        errors.append(
+            f"FAIL: {where}: classification '{classification}' has no route in "
+            f"{SURFACES_FILE}, so the HDR must name its own 'target' — the "
+            "artifact the rule text is written into."
+        )
+
+
+def _check_validator(fm, where, errors) -> None:
+    """`validator` is a path or a list of paths. Its ABSENCE is never an error.
+
+    A rule with no validator is not malformed; it is unenforced, which is a
+    different fact and one the enforcement report exists to state. Failing here
+    would collapse the distinction the whole report is built to preserve.
+    """
+    value = fm.get("validator")
+    if value is None:
+        return
+    items = value if isinstance(value, list) else [value]
+    if not items:
+        errors.append(f"FAIL: {where}: 'validator' must not be an empty list.")
+    for item in items:
+        if not isinstance(item, str) or not item.strip():
+            errors.append(
+                f"FAIL: {where}: every 'validator' entry must be a non-empty path."
+            )
+
+
 def check_cycle_cap(records: list[dict], errors: list[str]) -> None:
     """At most three accepted HDRs may share one assay.
 
@@ -761,9 +872,10 @@ def main(argv: list[str]) -> int:
     have_matrix = os.path.isfile(os.path.join(root, SURFACES_FILE))
     surfaces = check_surfaces(root, errors) if (have_matrix or paths) else {}
 
+    routes = effective_routes(root)
     records = []
     for path in paths:
-        fm = check_hdr(path, surfaces, errors)
+        fm = check_hdr(path, surfaces, errors, routes)
         if fm is not None:
             records.append(fm)
     check_cycle_cap(records, errors)
