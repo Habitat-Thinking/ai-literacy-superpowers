@@ -669,6 +669,17 @@ class Record:
         return [str(s) for s in (self.fm.get("surfaces") or [])]
 
     @property
+    def supersedes(self) -> str | None:
+        value = self.fm.get("supersedes")
+        return str(value) if value else None
+
+    @property
+    def is_retirement(self) -> bool:
+        """A record that withdraws a rule says so where the rule text would be."""
+        section = S0.sections(self.body).get("Rule", "")
+        return "Withdrawn." in section and not S0.rule_blocks(section)
+
+    @property
     def rule_body(self) -> str | None:
         section = S0.sections(self.body).get("Rule")
         if section is None:
@@ -691,6 +702,31 @@ def load_records(root: str) -> list[Record]:
     return out
 
 
+def superseded_ids(records: list[Record]) -> set[str]:
+    return {r.supersedes for r in records if r.supersedes}
+
+
+def lapsed(record: Record, retired: set[str], today: datetime.date) -> bool:
+    """Accepted, provisional, past its expiry, and nothing has replaced it.
+
+    Expiry is enforced here rather than by a calendar, so retiring a rule never
+    depends on anyone remembering to reflect.
+    """
+    if record.status != "accepted" or record.id in retired:
+        return False
+    # Unreachable in a valid corpus: the validator refuses `provisional: false`
+    # alongside an `expires`, so no record can be both non-provisional and past a
+    # date. Kept anyway, because `review` and `index` call this on corpora
+    # nobody has validated first, and a second line of defence that costs one
+    # comparison is worth more than the satisfaction of deleting it.
+    if record.fm.get("provisional") is not True:
+        return False
+    expires = record.fm.get("expires")
+    if not expires or not S0.is_real_date(str(expires)):
+        return False
+    return datetime.date.fromisoformat(str(expires)) < today
+
+
 def substitute(records: list[Record], rel: str, text: str) -> list[Record]:
     """The corpus as it WOULD be with one record replaced. No I/O."""
     rel = os.path.normpath(rel)
@@ -706,6 +742,8 @@ def substitute(records: list[Record], rel: str, text: str) -> list[Record]:
 
 
 def render_index(records: list[Record]) -> str:
+    retired = superseded_ids(records)
+    today = datetime.date.today()
     rows = []
     for record in records:
             fm = record.fm
@@ -718,6 +756,11 @@ def render_index(records: list[Record]) -> str:
                 ", ".join(str(s) for s in surfaces) or "—",
                 "yes" if fm.get("provisional") is True else "no",
                 str(fm.get("expires") or fm.get("review_trigger") or "—"),
+                # Derived, never stored. See check-harness-decisions.py.
+                "superseded" if record.id in retired
+                else "expired" if lapsed(record, retired, today)
+                else "retirement" if record.is_retirement
+                else ("in force" if record.status == "accepted" else record.status or "?"),
             ))
     rows.sort(key=lambda row: row[0])
 
@@ -733,8 +776,8 @@ def render_index(records: list[Record]) -> str:
     ]
     if rows:
         out.append("| ID | Status | Classification | Enforcement | Surfaces | "
-                   "Provisional | Expires |")
-        out.append("| --- | --- | --- | --- | --- | --- | --- |")
+                   "Provisional | Expires | State |")
+        out.append("| --- | --- | --- | --- | --- | --- | --- | --- |")
         for row in rows:
             out.append("| " + " | ".join(row) + " |")
     else:
@@ -953,8 +996,10 @@ def render_region(records: list[Record], surfaces: dict, root: str) -> str:
 
 
 def render_report(records: list[Record], surfaces: dict, root: str) -> str:
+    retired = superseded_ids(records)
     accepted = [r for r in records
-                if r.status == "accepted" and r.classification != "no-change"]
+                if r.status == "accepted" and r.classification != "no-change"
+                and r.id not in retired and not r.is_retirement]
     routes, _ = load_matrix(root)
 
     total = gaps = 0
@@ -1001,9 +1046,16 @@ def compile_plan(root: str, records: list[Record]) -> tuple[dict[str, str], list
     errors: list[str] = []
     unapplied: list[str] = []
 
+    retired = superseded_ids(records)
     by_target: dict[str, list[Record]] = {}
     for record in records:
         if record.status != "accepted" or record.classification == "no-change":
+            continue
+        # A superseded rule is no longer in force, and a retirement has no rule
+        # text of its own. Both stay in the corpus - the record that a rule
+        # existed, what it cost, and why it was withdrawn is the output of this
+        # mechanism, not its residue - but neither reaches an artifact.
+        if record.id in retired or record.is_retirement:
             continue
         target = target_of(record, routes)
         if not target:
@@ -1013,6 +1065,31 @@ def compile_plan(root: str, records: list[Record]) -> tuple[dict[str, str], list
             )
             continue
         by_target.setdefault(target, []).append(record)
+
+    # A target whose last live record was superseded drops out of `by_target`
+    # entirely — and its region would then never be regenerated, leaving the
+    # retired rule sitting in the artifact as though it were still in force.
+    # So any artifact this corpus has ever written to, which still carries a
+    # region, is regenerated too: with an empty region when nothing routes there
+    # any more. Withdrawing the last rule from a file has to actually remove it.
+    ever: set[str] = set()
+    for record in records:
+        if record.classification == "no-change":
+            continue
+        candidate = target_of(record, routes)
+        if candidate:
+            ever.add(candidate)
+    for target in sorted(ever - set(by_target)):
+        abs_target = os.path.join(root, target)
+        if not os.path.isfile(abs_target):
+            continue
+        with open(abs_target, encoding="utf-8") as handle:
+            text = handle.read()
+        try:
+            if find_marker_span(text) is not None:
+                by_target.setdefault(target, [])
+        except MarkerError as exc:
+            errors.append(f"FAIL: {target}: malformed generated markers — {exc}.")
 
     plan: dict[str, str] = {}
     for target in sorted(by_target):
@@ -1140,6 +1217,111 @@ def frozen_violations(root: str, records: list[Record]) -> tuple[list[str], list
     return violations, notes
 
 
+# A reference carrying a URI scheme names something outside the repository.
+URI_SCHEME = re.compile(r"^[a-z][a-z0-9+.-]*://")
+
+
+def evidence_problems(root: str, records: list[Record]) -> tuple[list[str], list[str]]:
+    """(failures, notes) for evidence that no longer resolves.
+
+    A repository path must exist. A reference carrying a scheme is SKIPPED and
+    NAMED, never passed in silence — failing it would demand the check resolve
+    things it has no access to, and passing it quietly would let any
+    unresolvable evidence be laundered by prefixing a scheme.
+    """
+    failures: list[str] = []
+    notes: list[str] = []
+    for record in records:
+        if record.status != "accepted":
+            continue
+        for item in (record.fm.get("evidence") or []):
+            ref = str(item)
+            if URI_SCHEME.match(ref):
+                notes.append(
+                    f"note: {record.rel} cites '{ref}', which is outside the "
+                    "repository. It was not checked."
+                )
+                continue
+            path = ref.split("#", 1)[0].strip()
+            if not path:
+                continue
+            if not os.path.exists(os.path.join(root, path)):
+                failures.append(
+                    f"FAIL: {record.rel}: evidence '{ref}' names a path that no "
+                    "longer exists. A rule whose evidence has gone is a rule "
+                    "nobody can re-examine — re-evidence it or supersede it."
+                )
+    return failures, notes
+
+
+def cmd_review(args) -> int:
+    """List every lapsed rule and the three things a human can do about it.
+
+    Read-only. Every outcome — re-evidence, weaken, demote — produces a NEW
+    record that supersedes the old one, through /harness-accept. Nothing here
+    edits anything, because an accepted record is frozen.
+    """
+    root = args.root
+    records = load_records(root)
+    retired = superseded_ids(records)
+    today = (datetime.date.fromisoformat(args.today) if args.today
+             else datetime.date.today())
+
+    expired = [r for r in records if lapsed(r, retired, today)]
+    trigger_only = [
+        r for r in records
+        if r.status == "accepted" and r.id not in retired
+        and r.fm.get("provisional") is True
+        and not r.fm.get("expires")
+        and r.fm.get("review_trigger")
+    ]
+
+    if not expired and not trigger_only:
+        print("harness review: nothing has lapsed.")
+        return 0
+
+    if expired:
+        print("Lapsed — past their expiry and still in force:")
+        print()
+        for record in expired:
+            print(f"  {record.id} — {record.fm.get('title')}")
+            print(f"    expired {record.fm.get('expires')} · "
+                  f"{record.fm.get('enforcement')} on "
+                  f"{', '.join(record.surfaces) or '—'}")
+        print()
+        print("  Three options for each, and all three produce a NEW record that")
+        print("  supersedes the old one. Nothing edits an accepted record.")
+        print()
+        print("    re-evidence  cite fresh evidence; may earn permanence")
+        print("    weaken       lower the enforcement, or narrow the surfaces")
+        print("    demote       withdraw the rule — the new record's ## Rule")
+        print("                 section says 'Withdrawn.'")
+        print()
+        print("  Draft with /harness-propose, then /harness-accept, where you")
+        print("  write what the change costs.")
+        print()
+
+    if trigger_only:
+        print("Triggers nothing can evaluate:")
+        print()
+        for record in trigger_only:
+            age = ""
+            approved = str(record.fm.get("approved_at") or "")[:10]
+            if S0.is_real_date(approved):
+                age = f" · {(today - datetime.date.fromisoformat(approved)).days} days old"
+            print(f"  {record.id} — {record.fm.get('title')}{age}")
+            print(f"    trigger: {record.fm.get('review_trigger')}")
+        print()
+        print("  A review trigger is free text, so nothing can evaluate it")
+        print("  mechanically. These records carry no expiry, which means they")
+        print("  never lapse, never fail /harness-check, and are permanent by")
+        print("  construction — the opposite of permanence being earned at")
+        print("  review. Evaluate them here, by hand, or give them an expiry.")
+        print()
+
+    return 0
+
+
 def cmd_check(args) -> int:
     root = args.root
     problems: list[str] = []
@@ -1175,6 +1357,23 @@ def cmd_check(args) -> int:
                 "the decision corpus produces. Run /harness-compile to repair, "
                 "or supersede the decision if the change was intended."
             )
+
+    # Expiry is enforced by CI, not by a calendar, so demotion is never
+    # contingent on anyone remembering to reflect.
+    retired = superseded_ids(records)
+    today = (datetime.date.fromisoformat(args.today) if args.today
+             else datetime.date.today())
+    for record in records:
+        if lapsed(record, retired, today):
+            problems.append(
+                f"FAIL: {record.rel}: expired on {record.fm.get('expires')} and "
+                "still in force. Run /harness-review: re-evidence it, weaken it, "
+                "or withdraw it with a superseding record."
+            )
+
+    ev_failures, ev_notes = evidence_problems(root, records)
+    problems += ev_failures
+    notes += ev_notes
 
     violations, more_notes = frozen_violations(root, records)
     problems += violations
@@ -1228,7 +1427,12 @@ def main(argv: list[str]) -> int:
     p.set_defaults(func=cmd_compile)
 
     p = sub.add_parser("check", help="read-only drift detection; the CI entry point")
+    p.add_argument("--today", help="YYYY-MM-DD; injected so nothing races the clock")
     p.set_defaults(func=cmd_check)
+
+    p = sub.add_parser("review", help="list every lapsed rule and its three options")
+    p.add_argument("--today", help="YYYY-MM-DD; injected so nothing races the clock")
+    p.set_defaults(func=cmd_review)
 
     args = parser.parse_args(argv[1:])
     return args.func(args)

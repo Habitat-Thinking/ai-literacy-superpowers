@@ -127,6 +127,13 @@ BASH_TEST_SCRIPTS = [
     # at the first defect would send an author round the loop once per mistake
     # against a record that is append-only once written.
     "test-harness-assay",
+    # Harness Evolution S4 — review, expiry and demotion. D7/D8 hold the line on
+    # the conflict S2 created: supersession is DERIVED from the successor's
+    # `supersedes` field, because writing `superseded_by` onto the record being
+    # superseded would be an edit to a frozen record. D11 keeps retirements
+    # exempt from the two-assay threshold — that threshold exists to make rules
+    # hard to ADD, and applying it to removal inverts the design.
+    "test-harness-review",
 ]
 
 

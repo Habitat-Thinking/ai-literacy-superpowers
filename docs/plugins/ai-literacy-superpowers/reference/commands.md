@@ -297,6 +297,34 @@ step, and a gate with no decision behind it is the shape of approval theatre.
 It does not commit, push, or open a pull request. Three gates exist — drafting,
 accepting, committing — and none is implied by another.
 
+### /harness-review
+
+Usage: `/harness-review`
+
+- **Skills read**: none
+- **Agents dispatched**: `harness-registrar`
+
+Lists every lapsed rule — past its expiry and still in force — and the three
+things a human can do about each: **re-evidence**, **weaken**, or **demote**.
+
+Read-only. Every outcome produces a **new record that supersedes the old one**,
+through `/harness-accept`, because every outcome is a decision with a cost that a
+human writes. A demotion has a cost too, usually the behaviour the rule was
+holding back returning, and the validator refuses an empty one just the same.
+
+**Nothing edits the old record.** An accepted record is frozen, and supersession
+is derived from the successor's `supersedes:` field — so the record that a rule
+existed, what it cost, and why it was withdrawn survives. That record is the
+output of this mechanism, not its residue.
+
+A demotion's `## Rule` section says `Withdrawn.`, mirroring how a `no-change`
+record says `No change.`
+
+Records carrying a `review_trigger` and no `expires` appear in their own section,
+**Triggers nothing can evaluate**. A trigger is free text; nothing evaluates it
+mechanically, so those rules never lapse, never fail CI, and are permanent by
+construction. The command says so rather than treating a trigger as satisfied.
+
 ### /harness-compile
 
 Usage: `/harness-compile`

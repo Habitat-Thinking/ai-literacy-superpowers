@@ -591,8 +591,13 @@
   region drift alone cannot see a rule reworded in the accepted record
   and then recompiled — the region would match the corpus and every
   byte-identity check would pass. An accepted record that has never been
-  committed is skipped with a note rather than failed. A repository with
-  no `harness/` directory passes. See
+  committed is skipped with a note rather than failed. A rule past its
+  `expires` date and still in force **fails**, so retiring a rule is
+  never contingent on anyone remembering to reflect; an evidence
+  reference naming a repository path that no longer exists fails, while
+  a reference carrying a URI scheme is named as skipped rather than
+  passed in silence. A repository with no `harness/` directory passes.
+  See
   `docs/plugins/ai-literacy-superpowers/reference/enforcement-report-format.md`
   and the spec at
   `docs/superpowers/specs/2026-08-23-harness-evolution-s2-compile-check-design.md`.
