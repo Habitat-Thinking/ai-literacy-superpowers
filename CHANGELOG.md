@@ -37,6 +37,32 @@ examined at a known moment and deliberately not changed, which is a control
 observation rather than an absence; dropping them would convert "we looked and
 decided no" into "nobody looked".
 
+### Documentation — harness evolution becomes the preferred path
+
+- **New tutorial** `your-first-governance-change.md` — the Diataxis entry point
+  for changing a harness rule the governed way.
+- **The plugin landing page leads with the loop.** Seven pages added across
+  S0–S5 were reachable through the filesystem-derived nav but linked from none
+  of the curated index lists — they are now, and `harness-evolution.md` is
+  promoted into the numbered first-principles sequence rather than buried in
+  Deep dives. A new **Evolving the harness** how-to section sits above the
+  lifecycle one.
+- **Pages describing the older path now say where it fits.**
+  `the-harness-tuning-loop.md` documented reflection → candidate →
+  `/harness-constrain`, which is the unevidenced path; it now says so, keeps its
+  capture and pattern-recognition stages, and points at the governed path for
+  promotion. `self-improving-harness.md`, `the-harness-lifecycle.md`,
+  `harness-engineering.md` and `how-to/add-a-constraint.md` carry the same
+  pointer.
+- **`/harness-constrain` is repositioned, not deprecated.** It authors the first
+  draft of a harness that does not exist yet; the governed loop changes one that
+  does, and grandfathering (`imported: true`) is the bridge between them.
+- **README and CLAUDE.md** carry the loop and the four properties that make it
+  hard to game.
+- Fixed a stale count: `your-first-sentinels.md` said there were nine sentinels.
+  The roster-parity check derives membership from `role: sentinel` frontmatter
+  but does not read prose counts.
+
 ### Note on the cohort tag
 
 `cohort` remains on the decision record, per the epic's resolution of the source

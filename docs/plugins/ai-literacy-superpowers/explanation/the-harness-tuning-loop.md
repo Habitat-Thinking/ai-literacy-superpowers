@@ -12,6 +12,26 @@ For the broader picture, see [The Harness Lifecycle](the-harness-lifecycle.md).
 This page goes deeper on the part of the lifecycle that turns
 *lessons* into *enforcement*.
 
+> **Where this fits now**
+>
+> This describes the **unevidenced** path: a reflection becomes a candidate,
+> a candidate becomes a constraint, and nothing records what justified it,
+> what it costs, or when it stops being true.
+>
+> For changing a harness that already exists, the governed path in
+> [Harness Evolution](harness-evolution.md) is the one to reach for. It takes
+> the same raw material — what surprised you, what recurred — and adds the
+> four things this loop leaves out: recorded evidence, a declared enforcement
+> level, a cost written by the approver, and an expiry that CI enforces.
+>
+> What follows is still worth reading, and still applies while a harness is
+> being drafted for the first time. The capture and pattern-recognition
+> stages are unchanged; it is the *promotion* stage that has been superseded.
+>
+> A rule promoted this way can be brought under governance later by importing
+> it as a grandfathered decision record — `imported: true`, no expiry, so
+> adoption does not manufacture a cliff of lapses on day ninety.
+
 ## The four stages
 
 ### 1. Capture — write the reflection
