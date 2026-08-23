@@ -28,6 +28,14 @@
     // Reflection fragments legitimately begin `- **Date**:` rather than a
     // heading, so MD041 is structurally wrong for them. REFLECTION_LOG.md is
     // generated from them and lives at the root, where it IS linted.
+    // HDRs and assays are the harness's own append-only record corpus, for the
+    // same reason docs/superpowers/** is excluded: an HDR quotes the verbatim
+    // rule text it is about to write into HARNESS.md, so style rules fight it
+    // by construction — and reformatting an accepted HDR would edit a frozen
+    // record. Note the narrow globs: harness/decisions/README.md and the
+    // generated index.md ARE linted, because those are documents, not records.
+    "harness/decisions/HDR-*.md",
+    "harness/assay/**",
     "reflections/**",
     // Gitignored staging, regenerated on every mining run.
     "REFLECTION_STAGING.md",

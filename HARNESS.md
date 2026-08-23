@@ -552,6 +552,31 @@
   `.github/workflows/gc.yml`)
 - **Scope**: pr
 
+### Harness decision records are well-formed
+
+- **Rule**: Every file in `harness/decisions/` (other than the generated
+  `index.md` and the corpus `README.md`) must be a valid Harness Decision
+  Record, and `harness/surfaces.yaml` must be a valid control-surface
+  capability matrix. The validator is the single source of truth for
+  every refusal: the identifier grammar, the required fields, the
+  classification and enforcement vocabularies, the two body tiers, the
+  four-backtick Rule block, the human-authored `cost`, the two-assay
+  promotion threshold for `harness-loop` changes, the three-per-cycle
+  acceptance cap, and the grandfathering rules for imported constraints.
+  A surface that cannot reach a rule's intended enforcement level is an
+  **enforcement gap**, reported by `/harness-compile` — never a
+  validation failure, because failing here would train authors to
+  declare the weakest enforcement any surface supports. A repository
+  with no `harness/` directory passes; adopting the mechanism stays a
+  choice. See the reference page at
+  `docs/plugins/ai-literacy-superpowers/reference/harness-decision-records.md`
+  and the spec at
+  `docs/superpowers/specs/2026-08-23-harness-evolution-s0-schema-validator-design.md`.
+- **Enforcement**: deterministic
+- **Tool**: `python3 ai-literacy-superpowers/scripts/check-harness-decisions.py`
+  (CI: `.github/workflows/harness.yml`)
+- **Scope**: pr
+
 <!-- Uncomment if using spec-first development:
 
 ### Spec conformance

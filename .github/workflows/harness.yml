@@ -68,6 +68,10 @@ jobs:
         run: |
           bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents
 
+      - name: "Constraint: Harness decision records are well-formed"
+        run: |
+          python3 ai-literacy-superpowers/scripts/check-harness-decisions.py
+
       - name: Summary
         if: always()
         run: echo "Harness constraint check complete. See HARNESS.md for constraint details."
