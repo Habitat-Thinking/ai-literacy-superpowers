@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.74.0 — 2026-08-23
+
+### Added
+
+- **Harness Decision Records** — a new append-only corpus at
+  `harness/decisions/`, governing how `HARNESS.md` and `AGENTS.md`
+  themselves change. Until now the plugin governed the loop and the turn
+  but nothing governed the act of changing a rule: what evidence
+  justified it, who approved it, what it costs the next person, and when
+  it stops being true. First slice of the harness evolution epic (#533,
+  #534).
+- **`check-harness-decisions.py`** — the deterministic validator that
+  holds every governance refusal: identifier grammar, required fields,
+  the classification and enforcement vocabularies, the two body tiers,
+  the four-backtick Rule block, the human-authored `cost`, the two-assay
+  promotion threshold for `harness-loop` changes, the three-per-cycle
+  acceptance cap, and grandfathering for imported constraints. Refusals
+  live here rather than in an agent's prompt because the Harness
+  Registrar is an agent with write authority over governance artifacts —
+  a rule that lives only in a prompt is one a model can talk itself past.
+- **`harness/surfaces.yaml`** — the control-surface capability matrix,
+  declaring what each surface (Claude Code, Codex, Cursor, Copilot,
+  Windsurf, CI) can actually enforce. A rule intending `blocked` on a
+  surface that can only advise is reported as an *enforcement gap*, never
+  silently downgraded: knowing which rules are genuinely enforced and
+  which are merely written down is the point.
+- **Constraint: Harness decision records are well-formed** — deterministic,
+  wired into `.github/workflows/harness.yml` and mirrored into all three
+  convention files.
+- **Reference page** at
+  `docs/plugins/ai-literacy-superpowers/reference/harness-decision-records.md`.
+- **Layer-0 test suite** `test-harness-decisions.sh` (V1–V19), mutation-tested
+  against 30 deliberately broken validators. Two rounds of mutation exposed
+  gaps in the tests themselves: one assertion was passing on a Python
+  traceback that happened to contain the word it grepped for, so
+  `expect_fail` now refuses to accept a crash as a refusal.
+
+### Changed
+
+- `check-harness-decisions.py` validates `surfaces.yaml` whenever it exists,
+  not only when decision records exist — day one of adoption is when the
+  matrix is being authored and most likely to be wrong.
+- Markdownlint now excludes `harness/decisions/HDR-*.md` and `harness/assay/**`
+  for the same reason `docs/superpowers/**` is excluded: an HDR quotes the
+  verbatim rule text it is about to write into `HARNESS.md`, so style rules
+  fight it by construction. The corpus `README.md` and the generated
+  `index.md` remain linted — those are documents, not records.
+
 ## 0.73.3 — 2026-08-14
 
 ### Fixed

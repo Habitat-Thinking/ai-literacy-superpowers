@@ -102,6 +102,12 @@ BASH_TEST_SCRIPTS = [
     # Cadence Sentinels S5 — the consultation-disposition matcher. RED until
     # S5 ships scripts/check-consultation-dispositions.py.
     "test-convene-check",
+    # Harness Evolution S0 — the HDR + surfaces.yaml validator. RED until S0
+    # ships scripts/check-harness-decisions.py. This is the one place every
+    # governance refusal lives: the Registrar is a plugin agent with Write, so
+    # a rule that existed only in its prompt would be a rule it could talk
+    # itself past. Here it turns the build red instead.
+    "test-harness-decisions",
 ]
 
 

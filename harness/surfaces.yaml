@@ -1,0 +1,43 @@
+# Control-surface capability matrix.
+#
+# What each surface CAN actually enforce — not what we wish it could. The
+# Harness Registrar compiles governance against this file, and
+# `harness/enforcement-report.md` states, for every rule on every surface, the
+# enforcement level it INTENDS and the one it ACHIEVES.
+#
+# A rule that intends `blocked` on a surface supporting only `advisory` is an
+# enforcement gap. It is reported, never silently downgraded — knowing which
+# rules are genuinely enforced and which are merely written down is the point.
+#
+# Schema and validation: ai-literacy-superpowers/scripts/check-harness-decisions.py
+# Spec: docs/superpowers/specs/2026-08-23-harness-evolution-s0-schema-validator-design.md §6
+
+surfaces:
+  # The only surface with a hook system, so the only one that can refuse a tool
+  # call before it happens.
+  claude-code:
+    targets: [CLAUDE.md, .claude/agents/, .claude/hooks/, .claude/settings.json]
+    supports: [advisory, validated, blocked]
+
+  # AGENTS.md is read as instruction. Nothing reads it and refuses.
+  codex:
+    targets: [AGENTS.md]
+    supports: [advisory]
+
+  cursor:
+    targets: [.cursor/rules/constraints.mdc, .cursor/rules/conventions.mdc]
+    supports: [advisory]
+
+  copilot:
+    targets: [.github/copilot-instructions.md]
+    supports: [advisory]
+
+  windsurf:
+    targets: [.windsurf/rules/constraints.md, .windsurf/rules/conventions.md]
+    supports: [advisory]
+
+  # The surface that can actually stop a merge. Everything a rule wants to make
+  # non-negotiable has to reach here or admit it is advice.
+  ci:
+    targets: [.github/workflows/]
+    supports: [validated, blocked]
