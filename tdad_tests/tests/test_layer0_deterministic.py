@@ -108,6 +108,12 @@ BASH_TEST_SCRIPTS = [
     # a rule that existed only in its prompt would be a rule it could talk
     # itself past. Here it turns the build red instead.
     "test-harness-decisions",
+    # Harness Evolution S1 — the Registrar's write path. R2 asserts the copied
+    # rule text is byte-identical (the fixture's first line ends in two spaces:
+    # a markdown hard break that a well-meaning .rstrip() destroys). R13 hashes
+    # every file under harness/ before and after each refusal, because "nothing
+    # was written" deserves a measurement rather than a reading of the code.
+    "test-harness-registrar",
 ]
 
 

@@ -1,5 +1,66 @@
 # Changelog
 
+## 0.75.0 — 2026-08-23
+
+### Added
+
+- **`harness-registrar` agent** — keeps the record of how governance itself
+  changes. Applies human-approved decisions and never authors them.
+  Deliberately **not** tagged `role: sentinel`: it holds `Write` and `Edit`, so
+  claiming a read-only trust boundary would be a lie
+  `sentinel-integrity-check.sh` would catch, and the exact category error the
+  two-role separation exists to prevent (#533, #535).
+- **`/harness-propose <assay> <finding>`** — drafts a Harness Decision Record
+  from an assay finding at `status: proposed`, with `cost` left empty for the
+  approver.
+- **`/harness-accept <hdr>`** — the single write transaction. Runs every
+  cost-independent refusal *before* prompting for the cost, then accepts and
+  regenerates the index.
+- **`scripts/harness-registrar.py`** — the deterministic write path behind both
+  commands: `propose`, `precheck`, `accept`, `index`.
+- **The assay-finding contract** — owned by this slice and consumed by the
+  Assayer in a later one, because `/harness-propose` has no input without it.
+  Documented at
+  `docs/plugins/ai-literacy-superpowers/reference/assay-finding-format.md`.
+- **`harness/decisions/index.md`** — generated, sorted by id, byte-identical on
+  re-run so a later drift check can treat any difference as drift.
+- **How-to guide** at
+  `docs/plugins/ai-literacy-superpowers/how-to/record-a-governance-change.md`.
+- **Layer-0 suite** `test-harness-registrar.sh` (R1–R16), mutation-tested
+  against 22 deliberately broken implementations.
+
+### Changed
+
+- The rule-text copy is performed by a **script**, not by the agent. The build
+  spec asks `/harness-propose` to copy proposed rule text verbatim, and a model
+  asked to copy text usually copies it and occasionally improves it — a typo
+  fixed, a bullet tidied, a line rewrapped. Each of those is a silent edit to a
+  rule a human is about to approve believing it to be the Assayer's words.
+  Verbatim by construction, not verbatim by instruction.
+- Acceptance validates a **staged copy of the whole corpus** and writes only on
+  success. Two S0 refusals are corpus-level — the three-per-cycle cap and the
+  two-assay promotion threshold compare records against each other — so neither
+  can be evaluated from the candidate alone. "Nothing is written and the HDR
+  stays proposed" is now a property of the mechanism rather than a promise.
+- The cost is passed as `--cost-file`, never as a command-line argument: it is
+  multi-line prose, and an argument would put the approver's own words into
+  shell history one copy-paste from the next HDR.
+- Assay findings are parsed **lazily**. One malformed finding costs one finding,
+  not the whole report — an assay is written by an agent under a materiality
+  test, not by a compiler.
+
+### Fixed
+
+- Three weaknesses in the S1 tests, all found by mutation testing rather than by
+  review. The rule-text fixture was too clean to catch a copier that strips
+  trailing whitespace, so its first line now ends in two spaces — a markdown
+  hard line break, meaningful syntax that a well-meaning `rstrip()` destroys
+  silently. The `## Cost` section replacement was untested because the
+  assertion grepped the whole file and the frontmatter satisfied it alone. And
+  an assertion for "a finding with no observation is refused" passed against a
+  validator with that check removed, because the refused **filename** —
+  `HDR-…-no-observation-at-all.md` — contained the word being grepped for.
+
 ## 0.74.0 — 2026-08-23
 
 ### Added
