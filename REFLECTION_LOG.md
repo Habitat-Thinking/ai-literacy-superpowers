@@ -666,3 +666,19 @@
   - Model tiers used: most-capable (assessor scan), capable (synthesis)
   - Pipeline stages completed: `/assess` phases 1a–6 and 8; phases 7 and 7b offered rather than run
   - Agent delegation: assessor agent for the Phase 1b scan, single-context by instruction rather than the deep-research path
+
+---
+
+- **Date**: 2026-08-25
+- **Agent**: Claude Opus 5 (1M context), interactive session
+- **Task**: Retired the `template-version` marker mechanism end to end — explored whether it was still needed, filed #601, wrote the spec through four revisions and three adversarial reviews, ran `/choice-cartograph`, disposed twelve objections and eight choice stories, implemented, and merged. PRs #604 (design) and #607 (implementation), plugin v0.90.0. Spun out #603, #605, #606.
+- **Surprise**: The session reproduced the defect it was removing, three times, and each time an adversarial pass caught it rather than I did. The change deletes a mechanism that reported a conclusion it never measured — a version number standing in for template content. Then: (1) spec revision 4 rested the case for deletion on a table of acceptance-criteria counts and objection counts, measuring the mechanism's worth by the expense of specifying it, which is the same substitution §1 objects to one level up — caught by the choice-cartographer, not by me; (2) my "empirical verification" of criterion 14 passed **for the wrong reason**, because this repository is a near-superset of the template, so no exclusion rule was observable and the assertion would have read green with every exclusion deleted — caught by diaboli O4, after I had reported the green result to the user as confirmation; (3) my Status-block rewrite and my own audit note each reintroduced a term the residue test forbids — caught by the test. Working on the subject matter did not inoculate me against the pattern. If anything it primed me to see it everywhere except in my own output.
+- **Proposal**: WORKFLOW — an adversarial review record is input for human disposition, not a to-do list for the author. Revising against every objection is what turned a deletion into a script, a `PATH` shim, an HTML-comment grammar in the governing document, a fourth command disposition and eighteen acceptance criteria across two revisions, each returning a fresh critical. The merge gate is *dispositions filled*, not *objections eliminated*, and objections that are judgement calls about premise or scope were never the author's to resolve. Route the record to the human after the first pass.
+- **Improvement**: Two. (1) Go to the human after review round one. Three rounds of author-side revision reached "delete it" more expensively than one round plus a disposition conversation would have — the option was listed as live in revisions 1 and 2 and taken in revision 3. (2) When adding a guard, run it against the defect it guards before reporting it green. I did this eventually for the C8b heuristic — reintroduced a nudge sentence, confirmed the test caught it, reverted the probe — but only after criterion 14 had already passed for the wrong reason and been reported as verification.
+- **Signal**: workflow
+- **Constraint**: none — the natural rule ("a guard must be shown to fail when its defect is present") is only agent-enforceable, and #605 documents that all three PR-scoped agent constraints have no dispatch path. A fourth would grow the problem this session surfaced. Revisit once #605 lands.
+- **Session metadata**:
+  - Duration: ~5 hours
+  - Model tiers used: capable (100%) — Opus 5 throughout, main loop and all six subagent dispatches
+  - Pipeline stages completed: manual sequence — /harness-assay (abandoned), /diaboli x3, /choice-cartograph, /harness-audit (counting step only); no orchestrator run
+  - Agent delegation: partial
