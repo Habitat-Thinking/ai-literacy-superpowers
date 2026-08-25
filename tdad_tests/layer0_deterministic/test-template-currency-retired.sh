@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Layer 0 test — the template-currency mechanism is retired and leaves no residue.
+
+set -euo pipefail
+
 #
 # Spec: docs/superpowers/specs/2026-08-25-template-currency-measure-content-design.md
 #   criterion 1  — hook script and registration are gone
@@ -19,8 +22,6 @@
 #
 # The search runs over tracked files only (git ls-files). Gitignored build
 # artefacts — .pytest_cache, diagnostic-legibility/output — are not residue.
-
-set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
