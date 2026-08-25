@@ -121,6 +121,28 @@ Both are recorded as raised rather than silently corrected. The disposition
 mechanism exists for exactly this, and an agent editing an adversarial reviewer's
 objections would defeat the gate.
 
+### The approver's calls on all thirty-five objections
+
+Dispositions recorded across the three objection records. No objection remains
+`pending`.
+
+| Record | accepted | rejected | deferred |
+| --- | --- | --- | --- |
+| `command-cli-parity` | 7 | 3 | 2 |
+| `harness-workflow-step-masking` | 4 | 3 | 4 |
+| `harness-reassuring-default` | 11 | 1 | 0 |
+
+**Every `disposition_rationale` is still `null`.** The calls are recorded; the
+reasons are not. That distinction matters more here than the schema suggests —
+*PRs have adjudicated objections* states in its own text that "'Resolved' is a
+judgment call on rationale quality, not a schema check", so the only mechanical
+proxy for adjudication is the count of non-`pending` values, and that count is
+now zero on all three records. A record can therefore read as fully adjudicated
+while carrying no reasoning at all.
+
+The rationale field was left `null` rather than filled with a placeholder for
+exactly that reason: a `TODO` string is content, and content in a field nothing
+checks is the shape objection O11 of the reassuring-default record objects to.
 ### The two outstanding assay-2 findings are now proposed records
 
 `/harness-propose` on `harness/assay/2026-08-25T11-59Z-assay.md` findings 1 and 2,
