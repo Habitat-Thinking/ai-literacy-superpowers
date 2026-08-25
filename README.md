@@ -14,7 +14,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-D97757?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
 [![Copilot CLI](https://img.shields.io/badge/Copilot_CLI-Plugin-000000?style=flat-square&logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
 [![Agent Harness Enabled](https://img.shields.io/badge/Agent_Harness-Enabled-000000?style=flat-square)](HARNESS.md)
-[![AI Literacy](https://img.shields.io/badge/AI_Literacy-Level_5-DAA520?style=flat-square)](assessments/2026-05-11-assessment.md)
+[![AI Literacy](https://img.shields.io/badge/AI_Literacy-Level_4-2E8B57?style=flat-square)](assessments/2026-08-25-assessment.md)
 
 A plugin marketplace for [Claude Code](https://claude.ai/claude-code) and [GitHub Copilot CLI](https://github.com/features/copilot) shipping opinionated tools for the AI Literacy framework — harness engineering, agent orchestration, decision archaeology, governance, and model evaluation.
 
