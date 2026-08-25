@@ -53,6 +53,43 @@ that owns the behaviour cost it acceptance.
 rule binds bash as well as Python, and what the invocation trigger means
 mechanically.
 
+### AI literacy assessment — Level 4, and the badge corrected down from 5
+
+`/assess` run in full. **Level 4 — Governed Collaboration.** Operational axes
+mean 3.75 (Composition 4, Testing 4, Observability 3, Governance 4), Habitat
+Build Gap **+0.25 — Coherent**: ambition and enablement are in line.
+
+The level **fell from the previously claimed 5**, and not because anything
+regressed. L5's markers are organisational — conventions that hold when someone
+else writes the code, governance binding an author who did not design it, drift
+caught by someone other than its author — and this is a single-operator practice
+at 696 of 700 commits. The Level 5 claim was unreachable rather than merely
+stale, and it had been sitting in the README for 106 days beside a
+`Harness Health — Degraded` badge.
+
+**Three of the four clarifying answers described real disciplines that leave no
+trace**, and each changed a placement the scan could not have made:
+
+- TDAD Layers 2 and 3 — 50 scenarios — run **weekly, by hand**, with no artifact.
+  Testing is placed L4 flagged `asked` rather than L3; #583 would convert it to
+  `observed`.
+- The monthly snapshot is the only observability artefact anyone reads. Both
+  dashboards are 106 days stale and unread, which by the rule this repository
+  put in force today is an artefact that looks like assurance and provides none.
+- The 37 missing objection records and 52 missing choice stories are **closed
+  history, not live neglect** — recorded explicitly so a later assessor does not
+  read the gap as decay, and backfilling is recommended against.
+
+**Immediate adjustments applied:** the README AI Literacy badge corrected to
+Level 4 and pointed at this assessment; the `HARNESS.md` Status block corrected
+from "Four constraints failing" to three, since *Output validation checkpoints*
+was repaired in #577 after the block was written.
+
+The assessment's central finding is that one defect class — declared
+verification with no dispatch path — explains most of the operational shortfall,
+and appears three times: ten agent-enforced constraints with no CI path, fifty
+scenarios with no CI path, and six weeks of GC step-masking.
+
 ## 0.86.2 — 2026-08-25
 
 ### Added — /harness-audit now validates the Status block it writes
