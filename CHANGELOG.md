@@ -45,6 +45,46 @@ behaviour, neither can whoever drafts the record thirty seconds later. The perso
 who can decide is the one reading the rule beside its cost, which is what the
 reference said all along.
 
+### /harness-audit run — the Status block now says what is true
+
+The Status block read `Last audit: 2026-08-13`, `Constraints enforced: 33/34`,
+`Drift detected: no`. The tree carries 36 active constraints and four failing.
+
+- **Four constraints fail.** *Release traceability* — `v0.28.1`–`v0.28.5` and
+  `v0.29.1` carry CHANGELOG headings and no git tag, absent locally and on the
+  remote while `v0.28.0` and `v0.29.0` exist. *Output validation checkpoints* —
+  `/harness-audit` writes the Status block, which has three downstream parsers,
+  with no read-back step. *PRs have adjudicated objections* and *PRs have
+  adjudicated choice stories* — 6 of 6 non-exempt PRs in the window, twelve and
+  six missing records respectively.
+- **The enforcement figure is qualified rather than quietly redefined.** It moves
+  33/34 → 35/36 on its existing definition, so it stays comparable, and the block
+  now states plainly why the number overstates what is in force:
+  `grep -rn 'harness-enforcer' .github/workflows/` returns nothing, so all ten
+  agent-enforced constraints have no automated path and cannot fail a build. A
+  green Status line has meant "nobody looked".
+- **One masking defect with a measured cost.** GC run `32712709028` failed at step
+  5 (*Snapshot staleness*) and recorded steps 6–14 `skipped`, including *Release
+  tag completeness* and *Reflection log archival (Path 1)* — the two auto-fix
+  rules that would have closed the tag gap and the archival backlog. Six
+  consecutive scheduled runs have failed the same way since 2026-07-20. The six
+  untagged releases and the fifteen unarchived fragments are the same defect's
+  bill.
+- **Enforcement-surface drift, both directions.** Two active `Scope: pr`
+  constraints name `harness-affordance-check.sh` and no workflow invokes it;
+  inversely, GC rule *Affordance review staleness* runs at `gc.yml:258` while its
+  declaring block sits inside an HTML comment. `dynamic-workflows-firewall.yml`
+  runs on every PR under no declared constraint at all.
+- **Two stale claims in HARNESS.md are now recorded.** `### Stack` says "Test
+  framework: None" against a 150-test pytest suite gated by three constraints, and
+  the markdownlint rule's "same set locally and in CI" claim is false — 511
+  files/91 issues locally against CI's 502/0, all in gitignored paths absent from
+  `.markdownlint-cli2.jsonc`. Committed markdown is genuinely clean; the
+  equivalence claim is not.
+
+The audit changed the Status block and the README badge and nothing else. The
+remediation it argues for is separate work, deliberately not bundled here.
+
 ### Observability snapshot refreshed — and the badge script's green default
 
 The snapshot was 35 days stale against a 30-day cadence. It is also step 5 of
