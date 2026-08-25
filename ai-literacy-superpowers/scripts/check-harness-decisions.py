@@ -519,7 +519,10 @@ def check_hdr(path: str, surfaces: dict, errors: list[str],
         if field not in fm:
             errors.append(f"FAIL: {where}: missing required field '{field}'.")
 
-    if "cost" not in fm:
+    # A rejection carries no cost key. The key exists so a PENDING obligation is
+    # visible while a record is proposed; a rejected record has no pending
+    # obligation, and an empty cost would imply one that will never be met.
+    if "cost" not in fm and fm.get("status") != "rejected":
         errors.append(
             f"FAIL: {where}: missing required field 'cost'. It may be empty "
             "while proposed - the human authors it at the acceptance gate - "
@@ -760,7 +763,44 @@ def _check_acceptance(fm, status, where, errors) -> None:
         )
 
 
+REJECTION_SECTION = "Rejection"
+
+
+def _check_rejection(body, where, errors) -> None:
+    """A rejection costs one section, and that section has to say something.
+
+    Declining must be cheaper than accepting. If a rejected harness-loop record
+    still needed four tier-2 sections and a cost, nobody would record a refusal
+    and the corpus would go on recording only what entered (#555).
+
+    But a rejection with no reason records that someone said no and nothing about
+    why, and the why is the half a later reader needs — particularly a later
+    assay deciding whether a re-found problem is recurring or already adjudicated.
+    """
+    found = sections(body)
+    for heading in ("Finding", REJECTION_SECTION):
+        if heading not in found:
+            errors.append(f"FAIL: {where}: a rejected record requires '## {heading}'.")
+        elif not found[heading].strip():
+            errors.append(
+                f"FAIL: {where}: section '## {heading}' is empty. A rejection with "
+                "no reason records that someone said no and nothing about why."
+            )
+        elif heading == REJECTION_SECTION and found[heading].strip().startswith("_TODO"):
+            errors.append(
+                f"FAIL: {where}: '## {REJECTION_SECTION}' is still a placeholder. "
+                "The approver writes why the finding was declined."
+            )
+
+
 def _check_body(fm, body, classification, is_no_change, is_retirement, where, errors) -> None:
+    # A rejection is not a decision that anything happens, so it is exempt from
+    # the sections that describe what happens. The exemption is keyed on status
+    # and must not leak: an ACCEPTED record still requires everything below.
+    if fm.get("status") == "rejected":
+        _check_rejection(body, where, errors)
+        return
+
     found = sections(body)
     required = list(TIER1_SECTIONS)
     if classification in TIER2_CLASSIFICATIONS:
