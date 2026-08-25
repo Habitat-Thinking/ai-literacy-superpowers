@@ -207,6 +207,49 @@ behaviour and was never dispatched — while the objection's own reading, that
 accepting it turns the finding into a rejected candidate, is explicitly not
 taken: running the audit and writing the check are not alternatives.
 
+### Tier-2 sections written; two records reach the gate, one is refused by it
+
+All twelve tier-2 sections written across the three proposals, in minimal form.
+Eight were assembled from dispositions the approver had already made; four were
+open and are now answered.
+
+**Validation, on all three, says the same thing and says it plainly:** nothing
+will tell us whether the rule helped. There is no measurement separating a
+repository where it worked from one where it was ignored, and each drafted plan
+named a criterion nobody could evaluate. All three stay `provisional`, expiring
+2026-11-23, and the review at expiry is a judgement rather than a reading.
+
+**`reassuring-default` is reclassified `harness-loop` → `agent-instruction`,**
+targeting `ai-literacy-superpowers/skills/advocatus-diaboli/SKILL.md`. The
+assay's reason for the loop layer was reach, and objection O3 established that
+reason does not hold — `HARNESS.md` is the declared target of no surface in the
+matrix. The rule's enforcement is a question an agent asks at a review gate, so
+it belongs in that agent's instructions, where it is loaded on every `/diaboli`
+run rather than read when someone types `/harness-audit` once a quarter. The
+two-assay threshold does not apply at this classification, so the corroboration
+question deferred at O2 no longer gates the record; it stays genuinely unsettled
+and is recorded there rather than resolved by the move.
+
+**`workflow-step-masking` is reclassified `script-validator` → `harness-loop`,
+and the gate now refuses it.** That is the intended outcome of accepting O3,
+not an accident:
+
+```text
+FAIL: a harness-loop change requires evidence from at least two distinct
+      assays, found 1. Either wait for a second assay to corroborate, or
+      reclassify to the layer that owns the behaviour.
+```
+
+Its evidence cites two assays, but assay 1's finding-2 carries an erratum and a
+corrected finding does not corroborate. Choosing the classification that owns
+the behaviour cost the record its acceptance, which is the threshold working
+rather than obstructing.
+
+**Gate status:** `command-cli-parity` and `reassuring-default` pass `precheck`
+with no refusal standing. `workflow-step-masking` is refused until another assay
+observes the masking behaviour independently. What remains for the two that pass
+is the cost, written by the approver at the gate.
+
 ## 0.86.1 — 2026-08-25
 
 ### Fixed — the health badge defaulted to green when it could not tell

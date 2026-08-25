@@ -2,11 +2,12 @@
 id: HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one
 title: Four mechanisms report the reassuring answer when they cannot determine the real one
 status: proposed
-classification: harness-loop
+classification: agent-instruction
 enforcement: advisory
-surfaces: [claude-code, codex, cursor, copilot, windsurf]
+surfaces: [claude-code]
 provisional: true
 expires: 2026-11-23
+target: ai-literacy-superpowers/skills/advocatus-diaboli/SKILL.md
 overfitting_risk: low
 evidence:
   - ai-literacy-superpowers/scripts/update-health-badge.sh
@@ -225,16 +226,16 @@ finding-2.
 
 ## Why this layer
 
-_TODO — why this change belongs at this layer and not one layer down._
+Moved to agent-instruction, targeting the advocatus-diaboli skill file. The assay's reason for harness-loop was reach, and that reason does not hold: HARNESS.md is the declared target of no surface in the matrix and reaches claude-code by no mechanism. This rule's enforcement is a question an agent asks at a review gate, so it belongs in that agent's instructions, where it is loaded on every /diaboli run rather than read when a human types /harness-audit once a quarter. The two-assay threshold does not apply at this classification, so the corroboration question deferred at O2 no longer gates this record - it remains genuinely unsettled and is recorded there rather than resolved here.
 
 ## Enforcement
 
-_TODO — how the rule binds on each listed surface, and where it is only advisory._
+Intended advisory on claude-code. Both halves of the Tool as drafted are unreachable for the class of change the finding is drawn from: harness-enforcer is dispatched by no workflow, and the diaboli spec-mode gate is exempt on the fix and chore labels every PR in the window carried. At agent-instruction the rule is loaded on every /diaboli run, which is the dispatch path the drafted Tool lacked. The rule text still names the wrong tool and is amended in place.
 
 ## Validation
 
-_TODO — how anyone would know later whether this rule helped._
+Nothing will tell us whether this rule helped. There is no measurement that would separate a repository where it worked from one where it was ignored, and the drafted plan named a criterion nobody can evaluate. Provisional on that basis, expiring 2026-11-23. The review at expiry is a judgement, not a reading.
 
 ## Rejected alternatives
 
-_TODO — including the 'no change' option, with the reason it was not taken._
+harness-loop - the reach argument for it does not hold, and an accepted record already governs the instance supplying its corroboration. turn-instructions - AGENTS.md is the declared target of the codex surface alone and is human-curated, so the reach objection applies more sharply there. No change - the existing machinery found and repaired three of the four instances within four hours and no rule was needed for that; rejected because it found them only when a human typed the command, twelve days after the previous run.

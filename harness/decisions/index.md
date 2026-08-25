@@ -8,9 +8,9 @@ One row per Harness Decision Record. Generated from `harness/decisions/`; the fi
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | HDR-2026-08-25-an-epic-s-authority-cited-to-a-document-nobody-else-can-open | rejected | harness-loop | advisory | claude-code, codex, cursor, copilot, windsurf | no | — | rejected |
 | HDR-2026-08-25-command-cli-parity | proposed | script-validator | validated | ci | yes | 2026-11-23 | proposed |
-| HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one | proposed | harness-loop | advisory | claude-code, codex, cursor, copilot, windsurf | yes | 2026-11-23 | proposed |
+| HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one | proposed | agent-instruction | advisory | claude-code | yes | 2026-11-23 | proposed |
 | HDR-2026-08-25-retire-periodic-check-suite-runner | accepted | script-validator | validated | ci | no | — | retirement |
 | HDR-2026-08-25-the-periodic-check-suite-stops-at-its-first-failure-and-reports-the-rest-as-nothing | accepted | script-validator | validated | ci | yes | 2026-11-23 | superseded |
-| HDR-2026-08-25-workflow-step-masking | proposed | script-validator | validated | ci | yes | 2026-11-23 | proposed |
+| HDR-2026-08-25-workflow-step-masking | proposed | harness-loop | validated | ci | yes | 2026-11-23 | proposed |
 
 <!-- END GENERATED: harness-registrar -->
