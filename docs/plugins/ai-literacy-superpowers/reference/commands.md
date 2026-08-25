@@ -297,6 +297,41 @@ step, and a gate with no decision behind it is the shape of approval theatre.
 It does not commit, push, or open a pull request. Three gates exist — drafting,
 accepting, committing — and none is implied by another.
 
+### /harness-board
+
+Usage: `/harness-board` · `/harness-board --timeline`
+
+- **Skills read**: none
+- **Agents dispatched**: none
+
+Renders the evolution loop as a queue — every assay, proposal, accepted record
+and objection in flight, with the concrete next action for each. Read-only, and
+it writes nothing.
+
+Five sections, ordered by closeness to a gate: **ASSAYS**, **PROPOSALS**,
+**IN FORCE**, **ACCEPTED BUT NOT BINDING**, **OBJECTIONS AWAITING DISPOSITION**.
+`--timeline` renders interventions over time instead, from the same feed
+`/harness-timeline` emits.
+
+Three properties are load-bearing rather than incidental:
+
+- **It quotes `precheck`** for a proposed record's blocker instead of
+  reimplementing the refusal. Two implementations diverge, and the divergence
+  favours the board because the board is what someone reads.
+- **It never omits what it cannot classify.** A record with no `status`, or an
+  unrecognised one, appears under `UNCLASSIFIED` with its path — a board that
+  drops what it cannot parse reports a smaller world than it checked.
+- **It distinguishes in force from accepted.** A superseded rule and a retirement
+  are both `accepted` and neither binds anything, so the binding state is read
+  from the registrar's derived `state` rather than from `status`.
+
+There is deliberately no stored `BOARD.md`. A file that must be regenerated
+becomes a file that is stale, and this repository already carries two dashboards
+that went 106 days unread.
+
+It does not propose, accept or dispose anything, and it exits non-zero only on
+its own failure — never on the state of the corpus.
+
 ### /harness-timeline
 
 Usage: `/harness-timeline`
