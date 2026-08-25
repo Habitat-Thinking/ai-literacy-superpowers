@@ -63,6 +63,24 @@ decided no" into "nobody looked".
   The roster-parity check derives membership from `role: sentinel` frontmatter
   but does not read prose counts.
 
+### Harness upgrade to the 0.79.0 template
+
+- **Adopted the optional `## Stakeholders` block** into `HARNESS.md`, commented
+  out as the template ships it. The Convener treats an absent section as
+  not-an-error and flags every derived voice `inferred`; the block is now
+  present as a prompt to fill in, and filling it in is what makes those voices
+  `observed`.
+- **Template-version marker bumped `0.73.2` → `0.79.0`**, clearing the
+  `Template currency` GC rule.
+- Worth recording for whoever runs the next upgrade: the shipped
+  `templates/HARNESS.md` still carries its own `0.57.0` marker, so a version gap
+  against the plugin does not imply new template content. Everything the harness
+  evolution epic added arrived as commands, agents and skills. This repo's own
+  harness leads the template by roughly forty items — including the three
+  harness-evolution constraints (`Sentinel integrity`, `Harness decision records
+  are well-formed`, `Harness governance is applied and undrifted`), which a
+  project adopting 0.79.0 does not get from the template.
+
 ### Note on the cohort tag
 
 `cohort` remains on the decision record, per the epic's resolution of the source
