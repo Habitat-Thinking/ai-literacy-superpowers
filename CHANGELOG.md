@@ -45,6 +45,31 @@ behaviour, neither can whoever drafts the record thirty seconds later. The perso
 who can decide is the one reading the rule beside its cost, which is what the
 reference said all along.
 
+### The second assay, and the first adversarial review of an assay's own findings
+
+The harness-evolution fix wave closed at `b1982b0`, and the loop's next step ran:
+`/harness-assay` over the window, then `/diaboli` on each substantive finding.
+
+- **`harness/assay/2026-08-25T11-59Z-assay.md`** — three findings, two at P1, seven
+  rejected candidates, five unresolved questions. Its headline: the code moved eight
+  times across the wave and the prose that tells an agent how to drive it moved zero
+  times.
+- **Two objection records**, one per substantive finding — `command-cli-parity.md`
+  (12 objections, 2 critical) and `harness-workflow-step-masking.md` (11 objections,
+  3 critical). Both follow the per-finding shape set by `harness-provenance-citation.md`
+  rather than one record per assay.
+- **Every disposition is `pending`.** That is the gate working, not an omission: the
+  human-cognition gate is the point of the record, and 5 of the 23 objections argue
+  their finding should not be proposed at all.
+
+Two objections are worth a reader's attention before the gate. `harness-workflow-step-masking`
+O1 shows the finding re-proposes the narrow scope the approver rejected in writing eight
+hours earlier, in the record it cites as its own precedent. O3 shows the two-assay
+promotion threshold is keyed on `harness-loop` alone, so a `script-validator` routed to
+`HARNESS.md` since #552 reaches that document on one assay's evidence — the threshold
+now guards a classification name rather than the document it was written to protect.
+O3 stands whatever is decided about the finding that surfaced it.
+
 ### /harness-audit run — the Status block now says what is true
 
 The Status block read `Last audit: 2026-08-13`, `Constraints enforced: 33/34`,
