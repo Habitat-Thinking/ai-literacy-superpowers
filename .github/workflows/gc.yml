@@ -43,6 +43,8 @@ jobs:
           fi
 
       - name: "GC: Secret scanner operational"
+        id: gc_secret_scanner_operational
+        if: ${{ !cancelled() }}
         run: |
           # Verify gitleaks is available and the constraint is still deterministic
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz | tar xz
@@ -51,6 +53,8 @@ jobs:
           echo "Secret scanner is operational and scan is clean"
 
       - name: "GC: Snapshot staleness"
+        id: gc_snapshot_staleness
+        if: ${{ !cancelled() }}
         run: |
           if [ ! -d observability/snapshots ]; then
             echo "::error::No observability/snapshots directory found"
@@ -82,10 +86,14 @@ jobs:
           echo "Snapshot is within 30-day freshness window"
 
       - name: "GC: Sentinel integrity"
+        id: gc_sentinel_integrity
+        if: ${{ !cancelled() }}
         run: |
           bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents
 
       - name: "GC: Shell scripts pass syntax check"
+        id: gc_shell_scripts_pass_syntax_check
+        if: ${{ !cancelled() }}
         run: |
           failed=0
           while IFS= read -r f; do
@@ -97,6 +105,8 @@ jobs:
           exit $failed
 
       - name: "GC: Shell scripts use strict mode"
+        id: gc_shell_scripts_use_strict_mode
+        if: ${{ !cancelled() }}
         run: |
           failed=0
           while IFS= read -r f; do
@@ -108,6 +118,8 @@ jobs:
           exit $failed
 
       - name: "GC: Release tag completeness (ai-literacy-superpowers — bare vX.Y.Z)"
+        id: gc_release_tag_completeness_ai_literacy_superpowers_bare_vx_
+        if: ${{ !cancelled() }}
         run: |
           missing=0
           while IFS= read -r version; do
@@ -133,6 +145,8 @@ jobs:
           fi
 
       - name: "GC: Release tag completeness (model-cards — model-cards-vX.Y.Z)"
+        id: gc_release_tag_completeness_model_cards_model_cards_vx_y_z
+        if: ${{ !cancelled() }}
         run: |
           if [ ! -f model-cards/CHANGELOG.md ]; then
             echo "No model-cards/CHANGELOG.md — skipping"
@@ -164,6 +178,8 @@ jobs:
           fi
 
       - name: "GC: Release tag completeness (diagnostic-legibility — diagnostic-legibility-vX.Y.Z)"
+        id: gc_release_tag_completeness_diagnostic_legibility_diagnostic
+        if: ${{ !cancelled() }}
         run: |
           if [ ! -f diagnostic-legibility/CHANGELOG.md ]; then
             echo "No diagnostic-legibility/CHANGELOG.md — skipping"
@@ -195,6 +211,8 @@ jobs:
           fi
 
       - name: "GC: Observability archive"
+        id: gc_observability_archive
+        if: ${{ !cancelled() }}
         run: |
           if [ ! -d observability/snapshots ]; then
             echo "No snapshots directory — skipping"
@@ -228,6 +246,8 @@ jobs:
           fi
 
       - name: "GC: Reflection log archival of promoted entries (Path 1)"
+        id: gc_reflection_log_archival_of_promoted_entries_path_1
+        if: ${{ !cancelled() }}
         run: |
           if [ ! -d reflections/active ] || [ -z "$(ls -A reflections/active/*.md 2>/dev/null)" ]; then
             echo "No reflection fragments in reflections/active — skipping Path 1 archival"
@@ -256,6 +276,8 @@ jobs:
           fi
 
       - name: "GC: Affordance review staleness"
+        id: gc_affordance_review_staleness
+        if: ${{ !cancelled() }}
         run: |
           if [ ! -x ai-literacy-superpowers/scripts/harness-affordance-staleness.sh ]; then
             echo "harness-affordance-staleness.sh missing or not executable — skipping"
@@ -280,5 +302,45 @@ jobs:
           fi
 
       - name: Summary
-        if: always()
-        run: echo "GC run complete. See HARNESS.md for rule details."
+        if: ${{ !cancelled() }}
+        run: |
+          # Every enforcing step above carries its own `if`, so each one produces
+          # an outcome rather than being skipped behind an earlier failure. This
+          # step turns those outcomes into the job conclusion. A step that did
+          # not run is reported as `skipped`, never counted as passing.
+          failed=0
+          notrun=0
+          record() {
+            printf '%-10s %s\n' "$3" "$2"
+            case "$3" in
+              failure) failed=1 ;;
+              success) ;;
+              *)       notrun=1 ;;   # skipped, cancelled, or an outcome we do not know
+            esac
+            return 0
+          }
+          echo "GC rule results:"
+          record 'gc_secret_scanner_operational' 'GC: Secret scanner operational' '${{ steps.gc_secret_scanner_operational.outcome }}'
+          record 'gc_snapshot_staleness' 'GC: Snapshot staleness' '${{ steps.gc_snapshot_staleness.outcome }}'
+          record 'gc_sentinel_integrity' 'GC: Sentinel integrity' '${{ steps.gc_sentinel_integrity.outcome }}'
+          record 'gc_shell_scripts_pass_syntax_check' 'GC: Shell scripts pass syntax check' '${{ steps.gc_shell_scripts_pass_syntax_check.outcome }}'
+          record 'gc_shell_scripts_use_strict_mode' 'GC: Shell scripts use strict mode' '${{ steps.gc_shell_scripts_use_strict_mode.outcome }}'
+          record 'gc_release_tag_completeness_ai_literacy_superpowers_bare_vx_' 'GC: Release tag completeness (ai-literacy-superpowers — bare vX.Y.Z)' '${{ steps.gc_release_tag_completeness_ai_literacy_superpowers_bare_vx_.outcome }}'
+          record 'gc_release_tag_completeness_model_cards_model_cards_vx_y_z' 'GC: Release tag completeness (model-cards — model-cards-vX.Y.Z)' '${{ steps.gc_release_tag_completeness_model_cards_model_cards_vx_y_z.outcome }}'
+          record 'gc_release_tag_completeness_diagnostic_legibility_diagnostic' 'GC: Release tag completeness (diagnostic-legibility — diagnostic-legibility-vX.Y.Z)' '${{ steps.gc_release_tag_completeness_diagnostic_legibility_diagnostic.outcome }}'
+          record 'gc_observability_archive' 'GC: Observability archive' '${{ steps.gc_observability_archive.outcome }}'
+          record 'gc_reflection_log_archival_of_promoted_entries_path_1' 'GC: Reflection log archival of promoted entries (Path 1)' '${{ steps.gc_reflection_log_archival_of_promoted_entries_path_1.outcome }}'
+          record 'gc_affordance_review_staleness' 'GC: Affordance review staleness' '${{ steps.gc_affordance_review_staleness.outcome }}'
+          echo
+          if [ "$failed" -eq 1 ]; then
+            echo "::error::One or more GC rules failed. See the per-rule results above."
+            exit 1
+          fi
+          if [ "$notrun" -eq 1 ]; then
+            # A step that did not run is not a pass. Every enforcing step above
+            # carries its own `if`, so reaching here means something unexpected
+            # stopped one, and "we do not know" must not be reported as health.
+            echo "::error::One or more GC rules did not run. A check that did not run is not a check that passed."
+            exit 1
+          fi
+          echo "All GC rules ran and none failed."

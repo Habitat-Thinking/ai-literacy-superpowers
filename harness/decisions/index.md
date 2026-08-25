@@ -11,6 +11,6 @@ One row per Harness Decision Record. Generated from `harness/decisions/`; the fi
 | HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one | accepted | agent-instruction | advisory | claude-code | yes | 2026-11-23 | in force |
 | HDR-2026-08-25-retire-periodic-check-suite-runner | accepted | script-validator | validated | ci | no | — | retirement |
 | HDR-2026-08-25-the-periodic-check-suite-stops-at-its-first-failure-and-reports-the-rest-as-nothing | accepted | script-validator | validated | ci | yes | 2026-11-23 | superseded |
-| HDR-2026-08-25-workflow-step-masking | proposed | harness-loop | validated | ci | yes | 2026-11-23 | proposed |
+| HDR-2026-08-25-workflow-step-masking-declined | rejected | script-validator | validated | ci | no | — | rejected |
 
 <!-- END GENERATED: harness-registrar -->
