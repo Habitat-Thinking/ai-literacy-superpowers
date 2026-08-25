@@ -1,6 +1,6 @@
 ---
 name: harness-board
-description: Render the harness evolution loop as a queue — every assay, proposal, record and objection in flight, with the concrete next action for each. Read-only; writes nothing. Pass --timeline for interventions over time instead.
+description: Render the harness evolution loop as a queue — every assay, proposal, record and objection in flight, with the concrete next action for each. Read-only. Pass --timeline for interventions over time, or --html for a browser view of the loop as a diagram.
 ---
 
 # /harness-board
@@ -30,6 +30,33 @@ For interventions over time rather than the queue:
 ```bash
 python3 ai-literacy-superpowers/scripts/harness-board.py --timeline
 ```
+
+For a browser view — the loop drawn as a circle with live queue depth at each of
+its eight stages, above the same queue and timeline:
+
+```bash
+python3 ai-literacy-superpowers/scripts/harness-board.py --html
+```
+
+That writes a self-contained page to a temporary file, opens it, and prints the
+path. `--html <path>` writes where you ask instead.
+
+**It refuses a path inside the working tree** unless git already ignores it:
+
+```text
+FAIL: refusing to write BOARD.html inside the working tree.
+A page that can be committed is a page that goes stale: this repository already
+carries observability/governance/governance-dashboard.html and
+assessments/portfolio-dashboard.html, both 106 days old and read by nobody.
+```
+
+That refusal is the design, not a guard rail bolted on. "Do not commit this" as a
+note is a note; a tool that cannot produce a committable file cannot become the
+thing nobody regenerates. The note failed for two dashboards already.
+
+The page carries its own generation timestamp and says it is a snapshot, so
+whoever finds it later knows what they are looking at. Failing to open a browser
+is not an error — the printed path is the result.
 
 ### 2. Read the queue
 
