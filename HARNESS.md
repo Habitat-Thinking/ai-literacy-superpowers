@@ -10,7 +10,7 @@
 
      Inspired by Birgitta Boeckeler's "Harness Engineering":
      https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->
-<!-- template-version: 0.73.2 -->
+<!-- template-version: 0.79.0 -->
 
 ## Context
 
@@ -51,6 +51,23 @@
   include an Overview section. README.md documents the full plugin.
   Bash scripts must have a header comment block explaining purpose
   and behaviour.
+
+<!-- ## Stakeholders
+
+     OPTIONAL. Who this project affects, as roles or groups — never named
+     individuals, and never agents. The Convener reads this section to map the
+     voices a spec touches, flagging a voice it names `observed` rather than
+     `inferred`.
+
+     Who a project affects is a property of the PROJECT, which is why it lives
+     here rather than in a personal file. Leaving this out is not an error: the
+     Convener derives candidates from the change itself and flags every one
+     `inferred`, producing a shorter, less certain list, honestly labelled.
+
+- Support — fields questions about the CLI
+- Docs — owns the published reference
+- PO — disposes behaviour changes
+-->
 
 ---
 
