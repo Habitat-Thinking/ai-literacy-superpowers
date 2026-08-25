@@ -374,6 +374,50 @@ dispositions pending, and two merged specs cite it as their evidence base.
 That is the constraint working, and merging a knowingly-red gate is how a red
 check becomes normal. The adjudication comes first; the promotion follows it.
 
+### Harness health: Degraded → Attention, on work rather than arithmetic
+
+Re-run ahead of Monday's scheduled GC job. Each of the three reasons for
+refusing this upgrade at 16:00 has been answered:
+
+| Held at 16:00 because | Now |
+| --- | --- |
+| the investigative layer was never built out | masking repaired in both workflows; three GC tools that could not fail repaired and fixture-tested. **Partly** — 5 of 19 GC rules still have automation |
+| a manual run is not a cadence | still true, and now *testable*: Monday is the first unassisted run since 2026-07-13 |
+| an open CVE surfaced from a rule that had never run | closed — `pip-audit` reports no known vulnerabilities |
+
+And the enforcement figure stopped overstating: **30/36, every one able to fire**,
+where 35/36 counted ten constraints nothing could dispatch.
+
+**Why not Healthy**, named rather than felt: the scheduled run has not happened —
+every completed GC run today was hand-triggered — and two constraints remain
+`agent` with no dispatch path, blocked behind 12 pending dispositions in
+`harness-provenance-citation.md`.
+
+### The badge writer picked the wrong state, again
+
+Writing the revised Health line surfaced a second defect in
+`update-health-badge.sh`, four commits after #575 fixed the first. Its `case`
+substring-matches the whole line and tests `*Degraded*` first, so:
+
+```markdown
+- Health: **Attention** *(revised twice — held at Degraded at 16:00, upgraded…)*
+```
+
+produced a **`Degraded`** badge. The word appears in an annotation describing the
+*previous* state.
+
+It failed in the safe direction here. Reversed it would not: a line reading
+`- Health: **Degraded** *(was Healthy last month)*` produces a green badge on a
+degraded habitat, because the ordering that saved us is an accident rather than a
+safety property.
+
+Filed as #595. The matcher answers "does this line contain a state word?" rather
+than "what is this line's value?" — the same shape as the three GC tools in #587
+and the parity gate that compares headings but not values. **Fourth instance in a
+day, and the second in this one script.** The snapshot line was rewritten to avoid
+naming other states, which is a workaround in the data and will not survive the
+next person writing a natural sentence.
+
 ## 0.86.2 — 2026-08-25
 
 ### Added — /harness-audit now validates the Status block it writes
