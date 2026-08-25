@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.84.0 — 2026-08-25
+
+### Added — assays can be corrected without being edited
+
+Assays are append-only and never edited, correctly: they record what an agent
+observed at a moment. But nothing carried a **correction**, so an error was
+permanent, uncited, and propagated. See #556.
+
+The first assay contains two confirmed errors, both load-bearing: finding-1 said
+six specs carry a provenance line (four do), and finding-2 said `gc.yml` runs
+nineteen declared GC rules (it carries eleven steps covering five). Both are now
+corrected in `harness/assay/2026-08-25T08-08Z-assay.errata.md`, with the assay
+byte-identical.
+
+- **`correct --assay --finding --correction-file`** writes a sibling errata
+  record. One section per corrected finding; a later correction appends rather
+  than substitutes. Nothing edits either file.
+- **`/harness-propose` refuses** on a corrected finding, quotes the correction,
+  and proceeds only with `--acknowledge-correction`. Not a warning — a warning
+  from a command that just succeeded is a warning nobody reads, and the record it
+  produces is frozen. The record notes the acknowledgement.
+- **The two-assay promotion threshold stops counting a corrected finding.** It
+  exists so a single incident cannot reach the loop layer, and without this a
+  falsified observation could be the second assay that lets a rule through.
+  Corroboration by a finding that was wrong is not corroboration.
+- **The exclusion is per finding, not per assay.** An assay may hold six findings
+  and be wrong about one.
+- **Layer 0 suite** `test-assay-corrections.sh` (E1–E7), fixtured on the two real
+  errors. E3 hashes the assay before and after: "the record was not touched" is a
+  measurable claim, and asserting it by reading the code is not.
+
+### Deliberately not done
+
+There is **no pointer inside the assay**. It cannot be added without editing the
+record, and a mechanism that pressures anyone to edit an append-only document is
+worse than the gap it closes. Discovery is met by a sibling with a predictable
+name and by refusals at the two points where a correction changes what someone
+should do. The trade is stated rather than the requirement quietly redefined.
+
 ## 0.83.1 — 2026-08-25
 
 ### Fixed — a propose no longer leaves the corpus failing its own check

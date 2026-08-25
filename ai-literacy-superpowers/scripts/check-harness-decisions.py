@@ -514,6 +514,9 @@ def check_hdr(path: str, surfaces: dict, errors: list[str],
         return None
 
     fm["__path"] = where
+    # <root>/harness/decisions/HDR-*.md — the promotion threshold needs the root
+    # to find an assay's errata sibling.
+    fm["__root"] = os.path.dirname(os.path.dirname(os.path.dirname(path)))
 
     for field in ALWAYS_REQUIRED:
         if field not in fm:
@@ -841,6 +844,24 @@ def _check_body(fm, body, classification, is_no_change, is_retirement, where, er
         errors.append(f"FAIL: {where}: the '## Rule' block is empty.")
 
 
+def _corrected_findings(root: str, assay_rel: str) -> set:
+    """Finding ids carrying a correction in the assay's errata sibling.
+
+    Read here rather than imported so the validator stays runnable on its own -
+    it is the CI entry point's inner check and must not depend on the registrar.
+    """
+    base = assay_rel[:-3] if assay_rel.endswith(".md") else assay_rel
+    path = os.path.join(root, base + ".errata.md")
+    if not os.path.isfile(path):
+        return set()
+    try:
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        return set()
+    return set(re.findall(r"^## (finding-\d+)\s*$", text, re.M))
+
+
 def _check_promotion_threshold(
     fm, status, classification, imported, where, errors
 ) -> None:
@@ -866,11 +887,22 @@ def _check_promotion_threshold(
     evidence = fm.get("evidence")
     if not isinstance(evidence, list):
         return
-    assays = {
-        str(item).split("#", 1)[0]
-        for item in evidence
-        if str(item).startswith(ASSAY_DIR + os.sep) or str(item).startswith(ASSAY_DIR + "/")
-    }
+    # A CORRECTED finding does not corroborate. The threshold exists so a single
+    # incident cannot reach the loop layer, and it is satisfied by counting
+    # distinct assay files — so without this, a falsified observation could be
+    # the second assay that lets a rule through (#556).
+    #
+    # Deliberately narrow: it excludes the corrected FINDING, not the whole
+    # assay. An assay may hold six findings and be wrong about one.
+    assays = set()
+    for item in evidence:
+        ref = str(item)
+        if not (ref.startswith(ASSAY_DIR + os.sep) or ref.startswith(ASSAY_DIR + "/")):
+            continue
+        assay_rel, _, anchor = ref.partition("#")
+        if anchor and anchor in _corrected_findings(fm.get("__root", ""), assay_rel):
+            continue
+        assays.add(assay_rel)
     if len(assays) < 2:
         errors.append(
             f"FAIL: {where}: a harness-loop change requires evidence from at "
