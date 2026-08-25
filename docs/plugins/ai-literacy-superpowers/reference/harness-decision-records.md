@@ -162,13 +162,35 @@ cohort: b                  # optional
 | `expires` **or** `review_trigger` | `provisional: true` | `provisional: true` |
 | `target` | when the classification has no route | `status: accepted` |
 | `validator` | optional | — |
-| `cohort`, `proposed_cost`, `imported` | optional | — |
+| `cohort`, `imported` | optional | — |
+| `proposed_cost`, `proposed_target`, `proposed_rule` | optional | — |
 | `overfitting_risk` | optional | — |
 
 **`target`** names the artifact the rule text is written into, and is required at
 **acceptance** for `agent-instruction`, `agent-reference`, `regression-test` and
 `new-agent`. `harness-loop`, `turn-instructions` and `script-validator` have
 fixed routes in `surfaces.yaml` and need no target of their own.
+
+### The `proposed_*` pair
+
+Three fields come in pairs, and they exist for one reason: **two people
+contribute to a record, and a reader should be able to tell which part came from
+whom.**
+
+| Assayer's value | Approver's value | Set at | Why the pair exists |
+| --- | --- | --- | --- |
+| `proposed_cost` | `cost` | acceptance | The Assayer estimates; the approver writes what they are taking on, in their own words. A rule enters force on a cost a person wrote |
+| `proposed_target` | `target` | acceptance, via `--target` | The Assayer frequently identifies a behaviour without knowing which artifact should own it. That is the approver's call, made at the gate beside the cost |
+| `proposed_rule` | the `## Rule` block | before acceptance | Rule text is copied verbatim from an append-only assay. Where an accepted objection requires the text to change, the original is preserved here so the amended rule does not read as the Assayer's words |
+
+`proposed_rule` was added on 2026-08-25, when accepted objections required rule
+text to be amended on three records before the gate. Without it an amendment
+diverges silently from the assay it claims to quote — every other place two
+people contribute to a record keeps them distinguishable, and rule text was the
+one that did not.
+
+Only fill a `proposed_*` field when the two values actually differ. A record
+where the Assayer's value stood unchanged carries the value once.
 
 **A target must be a markdown artifact (`.md`).** Rule text is markdown and is
 applied verbatim, so the artifact that *hosts* a rule has to be one that can hold

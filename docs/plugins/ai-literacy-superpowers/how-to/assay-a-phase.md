@@ -66,6 +66,45 @@ overfitting to this project. A finding killed here stays in the report as a
 rejected candidate, which is exactly where it belongs: the next assay can see
 that it was considered and why it lost.
 
+## 3b. Correcting an assay you have already written
+
+Assays are append-only and are never edited — they record what an agent observed
+at a moment, and editing one destroys the thing that makes it evidence. When a
+finding turns out to be wrong, the correction goes in a **sibling errata record**:
+
+```bash
+python3 ai-literacy-superpowers/scripts/harness-registrar.py correct \
+  --assay harness/assay/<timestamp>-assay.md \
+  --finding finding-N \
+  --correction-file <path>
+```
+
+That writes `harness/assay/<timestamp>-assay.errata.md`. One section per
+corrected finding; a later correction to the same finding is appended, never
+substituted. Neither file is edited.
+
+Three consequences worth knowing before you need them:
+
+1. **`/harness-propose` refuses on a corrected finding.** It quotes the
+   correction and proceeds only with `--acknowledge-correction`. That is a
+   refusal rather than a warning, because a warning from a command that just
+   succeeded is a warning nobody reads, and the record it produces is frozen.
+2. **A corrected finding stops counting toward the two-assay threshold.** The
+   threshold exists so a single incident cannot reach the loop layer, and
+   corroboration by an observation that was wrong is not corroboration.
+3. **The exclusion is per finding, not per assay.** An assay may hold six
+   findings and be wrong about one.
+
+Point 2 is load-bearing and has already decided an outcome in this repository: a
+`harness-loop` record could not clear the threshold because one of its two cited
+assays carried an erratum on the finding it cited.
+
+**There is deliberately no pointer inside the assay.** Adding one would require
+editing the record, and a mechanism that pressures anyone to edit an append-only
+document is worse than the gap it closes. Discovery is met by a sibling with a
+predictable name and by refusals at the two points where a correction changes what
+you should do.
+
 ## 4. Propose the ones you want
 
 ```bash

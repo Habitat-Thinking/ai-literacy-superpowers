@@ -374,6 +374,47 @@ dispositions pending, and two merged specs cite it as their evidence base.
 That is the constraint working, and merging a knowingly-red gate is how a red
 check becomes normal. The adjudication comes first; the promotion follows it.
 
+### Docs — the evolution loop ran a full cycle and the docs catch up
+
+Five gaps, closed. See #597.
+
+- **`proposed_rule` documented.** Added to the schema on 2026-08-25 and written
+  down nowhere. `reference/harness-decision-records.md` now carries it in the
+  fields table and in a new **`proposed_*` pair** section naming all three
+  instances — `proposed_cost`/`cost`, `proposed_target`/`target`,
+  `proposed_rule`/`## Rule` — with the reason they exist stated once: two people
+  contribute to a record and a reader should be able to tell which part came from
+  whom.
+- **The fields table listed one provenance key when there were three.** Fixed;
+  `proposed_target` was previously only in prose.
+- **The decline path is in the how-to.** `--reject --reason-file` produced 2 of
+  the 6 records in this corpus and appeared in no page a reader follows.
+  `record-a-governance-change.md` now has a step for it, including why the reason
+  is supplied up front and never as a placeholder, and why a rejection matters to
+  a *later* assay: without it, a recurring problem and an already-adjudicated one
+  are indistinguishable.
+- **The errata channel is in `assay-a-phase.md`.** Corrections go in a sibling
+  record, `/harness-propose` refuses on a corrected finding until acknowledged,
+  and a corrected finding stops counting toward the two-assay threshold. That
+  third point decided an outcome today and was documented only in reference.
+
+### And the thing the day actually taught
+
+`explanation/harness-evolution.md` gains a section on the incentive the two-assay
+threshold creates:
+
+> A repaired defect cannot be re-observed. So the cheapest route to promoting any
+> finding is: observe a defect, do not fix it, observe it again next cycle.
+
+Raised as an objection against one record on 2026-08-25 and decisive on a
+different one the same day. The section carries the worked example — a masking
+defect repaired directly and its rule declined, because fixing it foreclosed the
+only route to corroboration — and what to take from it: fix the defect, say in the
+record why the rule was declined, and let a rule earn its place when a repair
+*fails to hold* rather than when a defect is held open to satisfy a threshold.
+
+`mkdocs build --strict` passes.
+
 ### Harness health: Degraded → Attention, on work rather than arithmetic
 
 Re-run ahead of Monday's scheduled GC job. Each of the three reasons for

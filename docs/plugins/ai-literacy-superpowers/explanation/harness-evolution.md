@@ -92,6 +92,59 @@ cannot win a slot twice running probably was not worth a rule.
 resolves to `no-change` is a successful assay. Without this, the mechanism
 rewards finding something, and an agent that must find something will.
 
+## The incentive the threshold creates, and what to do about it
+
+The two-assay threshold makes a rule hard to add: a change to `HARNESS.md` needs
+evidence from two distinct assays, so a single incident cannot reach the layer
+that governs the loop. That is the right shape, and it has a consequence nobody
+designed.
+
+**A repaired defect cannot be re-observed.** So the cheapest route to promoting
+any finding is: observe a defect, *do not fix it*, observe it again next cycle,
+cite both assays. The threshold starts rewarding unrepaired defects over repaired
+ones — the exact inversion of what a harness is for.
+
+This is not hypothetical. It was raised as an objection against one record on
+2026-08-25 and decided the outcome of a different one the same day.
+
+### The worked example
+
+A defect in this repository's own CI made a failing step discard every step after
+it. Six consecutive weekly runs reported one failure and up to nine unknowns, and
+two auto-fix rules sat behind the failure for six weeks.
+
+An assay found it. A rule was proposed requiring every enforcing step to report,
+classified `harness-loop` because that is the layer that owns the behaviour. It
+held evidence from one countable assay against a threshold of two, because the
+other assay that had observed the same defect carried an erratum on that finding.
+
+The route to a second observation was a fourth assay finding the masking **still
+present**. Which meant: to get the rule, leave the defect standing.
+
+The defect was repaired instead, and the rule declined. The rejection record says
+why, and states the cost rather than hiding it — *there is no regression guard;
+nothing prevents a future workflow adding an unguarded step*.
+
+### What to take from it
+
+**Fixing the defect is almost always right.** A rule is a claim about the future;
+a repair is a change to the present. Trading a present repair for a future
+guarantee is a bad trade when the guarantee costs you the repair.
+
+**Say so in the record.** A finding declined because its defect was fixed is not
+the same as a finding declined because it was wrong, and a later assay reading the
+corpus needs to tell them apart. The rejection is where that distinction lives.
+
+**The precedent is older than the mechanism.** The first assay this repository ran
+declined its own finding-1 while the underlying defect was fixed anyway. The next
+assay recorded the outcome plainly: *"the transcription fix travelled and the rule
+did not need to."*
+
+**A rule earns its place when the defect recurs after a repair.** That is the
+honest corroboration — not a defect held open to satisfy a threshold, but a fix
+that did not hold. If the repair sticks, the rule was never needed. If it does
+not, the second assay has something real to say.
+
 ## The enforcement gap is the point
 
 `harness/enforcement-report.md` states, for every rule on every surface, the

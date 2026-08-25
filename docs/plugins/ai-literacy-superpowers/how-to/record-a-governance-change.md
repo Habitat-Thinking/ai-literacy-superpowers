@@ -51,6 +51,39 @@ bureaucracy: a change that reaches beyond a single agent has to argue why it
 belongs at that layer, and neither the Assayer nor the Registrar is entitled to
 make that argument for you.
 
+## 2b. Or decline it
+
+A finding does not have to become a rule. Declining is a first-class outcome
+with its own record, and it is the right one whenever the finding is real but the
+rule is not — pointed at the wrong problem, owned by a constraint that already
+exists, or aimed at a defect you are about to repair directly.
+
+```bash
+/harness-propose <assay-path> <finding-id> --reject --reason-file <path>
+```
+
+The reason is supplied **up front, in a file, and never as a placeholder**. A
+rejection has no later gate — it is written at `rejected` and never accepted — so
+a `TODO` would sit in the corpus permanently recording that someone said no and
+nothing about why.
+
+A rejection costs one section. It carries `## Finding` and a non-empty
+`## Rejection`, and nothing else: no `## Rule` because nothing enters force, no
+`cost` key because nothing is demanded, and no tier-2 sections because no layer
+is being argued for.
+
+It reaches no artifact, consumes no cycle slot, and stays out of
+`/harness-timeline`. It appears in `harness/decisions/index.md` with state
+`rejected`.
+
+**Why this matters more than tidiness.** A later assay reads prior assays and
+will re-find the same class of problem. Without a rejection record it cannot
+distinguish a recurring problem from one already adjudicated — which is the
+distinction the two-assay promotion threshold turns on. Corroboration by a
+finding that was already refused is not corroboration.
+
+Two of the six records in this repository's own corpus are rejections.
+
 ## 3. Accept
 
 ```bash
