@@ -18,9 +18,28 @@ if [ ! -f "$README_FILE" ]; then
   exit 0
 fi
 
-# Determine health status from snapshot
-health_status="Healthy"
-health_colour="2E8B57"  # green
+# Determine health status from snapshot.
+#
+# The default is Degraded, deliberately (#575). It used to be Healthy, and the
+# entire detection block sits behind a check that a snapshot file was supplied
+# — so an argument-less call skipped every line that reads a snapshot and wrote
+# a green badge, including over a snapshot whose Meta section said Degraded.
+# Every safety net in this script lived inside the branch that never ran.
+#
+# A status of Healthy is now reachable only from a snapshot that was actually
+# read. When this script cannot tell, it says Degraded: absence of evidence is
+# not evidence of health, and a badge that fails toward the reassuring answer
+# is worse than no badge.
+health_status="Degraded"
+health_colour="DC143C"  # crimson
+
+# No snapshot named — discover the most recent one rather than assuming.
+if [ -z "$SNAPSHOT_FILE" ]; then
+  SNAPSHOT_DIR="${PROJECT_DIR}/observability/snapshots"
+  if [ -d "$SNAPSHOT_DIR" ]; then
+    SNAPSHOT_FILE=$(find "$SNAPSHOT_DIR" -maxdepth 1 -name '*-snapshot.md' | sort -r | head -1)
+  fi
+fi
 
 if [ -n "$SNAPSHOT_FILE" ] && [ -f "$SNAPSHOT_FILE" ]; then
   # The /harness-health skill already computes the aggregate health status
@@ -57,6 +76,13 @@ if [ -n "$SNAPSHOT_FILE" ] && [ -f "$SNAPSHOT_FILE" ]; then
       elif [ "$attention_signals" -ge 1 ]; then
         health_status="Attention"
         health_colour="DAA520"
+      else
+        # A snapshot was read and shows no attention signals. This is the one
+        # path to Healthy that does not come from an explicit Health line, and
+        # it is set here rather than inherited from the initial value so that
+        # nothing reaches Healthy without a snapshot behind it.
+        health_status="Healthy"
+        health_colour="2E8B57"
       fi
       ;;
   esac
@@ -72,22 +98,23 @@ if [ -n "$SNAPSHOT_FILE" ] && [ -f "$SNAPSHOT_FILE" ]; then
       health_colour="DC143C"
     fi
   fi
-else
-  # No snapshot provided — check if any snapshot exists
-  SNAPSHOT_DIR="${PROJECT_DIR}/observability/snapshots"
-  if [ ! -d "$SNAPSHOT_DIR" ] || [ -z "$(ls -A "$SNAPSHOT_DIR" 2>/dev/null)" ]; then
-    health_status="Degraded"
-    health_colour="DC143C"
-  fi
 fi
+# No readable snapshot was found, by argument or by discovery. The initial
+# Degraded stands.
 
 # Build badge URL
 encoded_status="${health_status// /%20}"
 badge_url="https://img.shields.io/badge/Harness_Health-${encoded_status}-${health_colour}?style=flat-square"
 
-# Determine snapshot link target
+# Determine snapshot link target.
+#
+# Normalised to a repo-relative path. Discovery runs `find "$PROJECT_DIR"`, so
+# a project dir of "." yields "./observability/..." and an absolute project dir
+# yields an absolute path — neither of which belongs in a README link. Both
+# reduce to the same relative form an explicitly-passed path already produces.
 if [ -n "$SNAPSHOT_FILE" ]; then
-  link_target="$SNAPSHOT_FILE"
+  link_target="${SNAPSHOT_FILE#"$PROJECT_DIR"/}"
+  link_target="${link_target#./}"
 else
   link_target="observability/snapshots/"
 fi
