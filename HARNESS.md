@@ -10,7 +10,6 @@
 
      Inspired by Birgitta Boeckeler's "Harness Engineering":
      https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->
-<!-- template-version: 0.79.0 -->
 
 ## Context
 
@@ -756,17 +755,6 @@ Use /governance-constrain for guided authoring of governance constraints.
 - **Enforcement**: deterministic
 - **Tool**: `scripts/check-redirect-sunsets.sh docs/plugins`
 - **Auto-fix**: false (curator decides whether to extend or remove)
-
-### Template currency
-
-- **What it checks**: Whether the HARNESS.md template-version marker
-  matches the installed plugin version, indicating new template content
-  is available that hasn't been reviewed
-- **Frequency**: weekly
-- **Enforcement**: deterministic
-- **Tool**: compare template-version comment in HARNESS.md against
-  plugin.json version
-- **Auto-fix**: false
 
 ### Dependency currency
 
