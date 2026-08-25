@@ -28,6 +28,49 @@ never ran, because the next reader stops looking.
 - `/harness-audit` added to CLAUDE.md's checkpoint list, where its absence is
   why the omission went unnoticed rather than being a regression.
 
+### The third assay, and the first rule proposed at the loop layer
+
+`/harness-assay` over the audit-and-health wave (#574, #572, #571, #576, #577).
+Four findings — two proposing rules, two `no-change` — seven rejected
+candidates, five unresolved questions. `lint-assay` passes; S1–S6 checked by
+hand.
+
+- **`harness/assay/2026-08-25T14-31Z-assay.md`** — its headline finding is that
+  four separate mechanisms in this repository report the reassuring answer when
+  they cannot determine the real one, and the principle forbidding it is
+  written down exactly once, in a code comment added yesterday. The four: the
+  health badge's `Healthy` default (#575), the `## Status` block's
+  `Drift detected: no` against four failing constraints, a GC step that did not
+  run being recorded `skipped`, and *Release tag completeness* passing 110 of
+  117 versions because a same-named tag happens to exist.
+- **`HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one`**
+  — proposed, `harness-loop`, advisory across all five surfaces. The first
+  record to reach the loop layer, and the first to satisfy the two-assay
+  promotion threshold: its evidence cites assay 2's finding-2 and assay 3's
+  finding-1, two distinct assay files. Assay 1's finding-2 observed the same
+  masking instance and is **deliberately not cited**, because it carries an
+  erratum and a corrected finding does not corroborate.
+- **Four tier-2 sections and the cost are placeholders.** They are the
+  approver's to write, at the gate, and `precheck` refuses acceptance until
+  they are.
+
+### Corrected — a claim in the 2026-08-25 snapshot, and in #573
+
+The snapshot states the GC job "failed on every run since 2026-07-20 … so no
+rule after step 5 has produced a result in 36 days". Assay 3 finding-3 falsifies
+it against per-step conclusions this repository could have read at the time: on
+run `29739302793` steps 6 and 7 are `success` with the failure at step 8, and on
+`32015897112` steps 6–8 are `success` with the failure at step 9. Only the
+2026-08-24 run failed at step 5.
+
+The consequence is not cosmetic. Five of the six runs blocked at *Release tag
+completeness*, so refreshing the snapshot returns the next scheduled run to that
+step rather than clearing the path. *Reflection log archival (Path 1)* stays
+masked, the fifteen archivable fragments stay unarchived, and #573's closing
+claim that "the two auto-fix rules can run again on the next scheduled sweep" is
+wrong. The generalisation was made from a single run's conclusions without
+reading the other five — the same shape as the finding proposed above.
+
 ## 0.86.1 — 2026-08-25
 
 ### Fixed — the health badge defaulted to green when it could not tell
