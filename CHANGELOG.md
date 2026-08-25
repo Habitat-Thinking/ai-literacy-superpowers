@@ -90,6 +90,49 @@ verification with no dispatch path — explains most of the operational shortfal
 and appears three times: ten agent-enforced constraints with no CI path, fifty
 scenarios with no CI path, and six weeks of GC step-masking.
 
+### First on-demand garbage-collection run, and what six weeks of masking actually cost
+
+`/harness-gc` Mode 2. The scheduled `gc.yml` workflow has failed six consecutive
+runs since 2026-07-20, and because only its `Summary` step carries
+`if: always()`, every step after the failure recorded `skipped`. Running the
+rules on demand does not have that property — the rules execute independently.
+
+**Reflection log archival (Path 1) — applied.** 15 fragments moved to
+`reflections/archive/2026.md`; `reflections/active/` falls 57 → 42;
+`REFLECTION_LOG.md` regenerated from the remainder. Two fragments are held back
+because their `Promoted` lines fail `verify_rhs`, unchanged since 2026-08-13 —
+the script reports and keeps them rather than editing or silently archiving,
+which is the behaviour worth having. This backlog existed only because the rule
+is step 13 of a job that never reached step 13. Running it by hand took four
+seconds.
+
+**Release tag completeness — applied, at the approver's direction.** The six
+imported versions `v0.28.1`–`v0.28.5` and `v0.29.1` now carry annotated tags at
+`2517102e`, the commit that brought their CHANGELOG entries into this
+repository. The declared auto-fix could not have created them: its
+`git log --grep` searches commit messages for a version string that appears only
+in the diff, so it has always hit its error branch. Each annotation records that
+the release was made upstream, that this repository's first commit postdates it,
+and that #578 remains open. The rule now passes 118/118 — 110 by coincidence of
+numbering, 6 by explicit annotation, 0 by verified correspondence. See #578,
+updated rather than closed.
+
+**Observability archive — nothing to do, correctly.** The cutoff is 2026-02-23
+and the oldest snapshot is 2026-04-06. All eleven stay. The rule will first have
+work around 2026-10-06.
+
+### A correction to yesterday's account of the masking cost
+
+The 2026-08-25 snapshot and issue #573 both state that two `Auto-fix: true`
+rules were masked with work waiting. That overstates it. Of the three auto-fix
+rules behind the failures, **one** had work: reflection archival, 15 fragments.
+*Release tag completeness* had six tags its own search could never have found,
+and *Observability archive* had nothing and will have nothing until October.
+
+The masking defect is real and its cost is narrower than the count of blocked
+rules implied. Recorded here rather than left standing, because the more
+dramatic version is the one already written down.
+
 ## 0.86.2 — 2026-08-25
 
 ### Added — /harness-audit now validates the Status block it writes
