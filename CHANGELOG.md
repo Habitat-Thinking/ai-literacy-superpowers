@@ -265,6 +265,54 @@ governed decision rather than a repair, so the over-firing is recorded and left.
 Four objection records also have no date-prefixed spec and the rule is silent on
 them by construction.
 
+### Fixed — step masking, in both workflows; and the rule about it declined
+
+The defect assay 2 finding-2 named is repaired. Every enforcing step now produces
+an outcome instead of being discarded behind an earlier failure, and each job
+derives its conclusion from the collected results.
+
+- **`gc.yml`** — eleven GC steps under `if: ${{ !cancelled() }}`, not `always()`.
+  That distinction is objection **O6**, accepted: the job holds `contents: write`
+  and five steps that commit and push, and `always()` runs on cancellation.
+- **`harness.yml`** — eight constraint steps under `if: always()`. The job is
+  read-only, so cancellation is not a hazard. These are the steps that mattered
+  most: on runs `32836457544` (#552) and `32839441437` (#561) a ShellCheck failure
+  skipped the two governance validators on the very PRs rewriting them.
+- **Three-state aggregation in both.** The summary fails the job when any step
+  failed, and *separately* when any step did not run. Objection **O5**, accepted,
+  said `if: always()` yields two values where the rule demanded three — and the
+  first draft of this fix proved it, printing a skipped step in its list and then
+  reporting "all constraints reported a result". A check that did not run is now
+  reported as not run and fails the job.
+
+Verified by substituting outcomes into the aggregation and running it: all-success
+exits 0, one failure exits 1 naming the constraint, one skipped exits 1 with "a
+check that did not run is not a check that passed".
+
+### And the rule declined, deliberately
+
+`HDR-2026-08-25-workflow-step-masking-declined` — `rejected`.
+
+Repairing the defect closed the rule's only route to acceptance. It is
+`harness-loop`, holds one countable assay against a threshold of two, and the
+second could only have come from a fourth assay observing the masking **still
+present**.
+
+The alternative was to leave a known defect standing so an assay could corroborate
+a rule about it. That is the incentive objection **O2** of
+`harness-reassuring-default.md` named this morning — "the cheapest way to promote
+any future finding becomes observe a defect, do not fix it, observe it again next
+cycle" — arriving live on a different record four hours later.
+
+Precedent: assay 1 finding-1, declined on evidence while its defect was fixed
+anyway. That assay's own words: "the transcription fix travelled and the rule did
+not need to."
+
+**The cost is stated in the record and is not zero:** there is no regression
+guard. Nothing prevents a future workflow adding an unguarded enforcing step, and
+nothing notices if someone removes the aggregation. The repair rests on two files
+and on whoever edits them next reading why the comments are there.
+
 ## 0.86.2 — 2026-08-25
 
 ### Added — /harness-audit now validates the Status block it writes

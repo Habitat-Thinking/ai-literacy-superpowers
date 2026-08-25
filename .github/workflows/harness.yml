@@ -30,14 +30,20 @@ jobs:
           fi
 
       - name: "Constraint: Consistent markdown formatting"
+        id: constraint_consistent_markdown_formatting
+        if: always()
         uses: DavidAnson/markdownlint-cli2-action@ce4853d43830c74c1753b39f3cf40f71c2031eb9  # v23.0.0
 
       - name: "Constraint: No secrets in source"
+        id: constraint_no_secrets_in_source
+        if: always()
         run: |
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz | tar xz
           ./gitleaks detect --source . --no-banner --exit-code 1
 
       - name: "Constraint: Shell scripts pass syntax check"
+        id: constraint_shell_scripts_pass_syntax_check
+        if: always()
         run: |
           failed=0
           while IFS= read -r f; do
@@ -49,6 +55,8 @@ jobs:
           exit $failed
 
       - name: "Constraint: Shell scripts use strict mode"
+        id: constraint_shell_scripts_use_strict_mode
+        if: always()
         run: |
           failed=0
           while IFS= read -r f; do
@@ -60,22 +68,68 @@ jobs:
           exit $failed
 
       - name: "Constraint: ShellCheck compliance"
+        id: constraint_shellcheck_compliance
+        if: always()
         run: |
           sudo apt-get -qq install -y shellcheck
           find . -name "*.sh" -not -path "./.git/*" -exec shellcheck {} +
 
       - name: "Constraint: Sentinel integrity"
+        id: constraint_sentinel_integrity
+        if: always()
         run: |
           bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents
 
       - name: "Constraint: Harness decision records are well-formed"
+        id: constraint_harness_decision_records_are_well_formed
+        if: always()
         run: |
           python3 ai-literacy-superpowers/scripts/check-harness-decisions.py
 
       - name: "Constraint: Harness governance is applied and undrifted"
+        id: constraint_harness_governance_is_applied_and_undrifted
+        if: always()
         run: |
           python3 ai-literacy-superpowers/scripts/harness-registrar.py check
 
       - name: Summary
         if: always()
-        run: echo "Harness constraint check complete. See HARNESS.md for constraint details."
+        run: |
+          # Every constraint step above carries `if: always()`, so each produces an
+          # outcome instead of being skipped behind an earlier failure. The two
+          # governance validators are the last steps in this job and were therefore
+          # the most maskable: on runs 32836457544 and 32839441437 a ShellCheck
+          # failure skipped them on the very PRs rewriting them.
+          failed=0
+          notrun=0
+          record() {
+            printf '%-10s %s\n' "$3" "$2"
+            case "$3" in
+              failure) failed=1 ;;
+              success) ;;
+              *)       notrun=1 ;;   # skipped, cancelled, or an outcome we do not know
+            esac
+            return 0
+          }
+          echo "Constraint results:"
+          record 'constraint_consistent_markdown_formatting' 'Constraint: Consistent markdown formatting' '${{ steps.constraint_consistent_markdown_formatting.outcome }}'
+          record 'constraint_no_secrets_in_source' 'Constraint: No secrets in source' '${{ steps.constraint_no_secrets_in_source.outcome }}'
+          record 'constraint_shell_scripts_pass_syntax_check' 'Constraint: Shell scripts pass syntax check' '${{ steps.constraint_shell_scripts_pass_syntax_check.outcome }}'
+          record 'constraint_shell_scripts_use_strict_mode' 'Constraint: Shell scripts use strict mode' '${{ steps.constraint_shell_scripts_use_strict_mode.outcome }}'
+          record 'constraint_shellcheck_compliance' 'Constraint: ShellCheck compliance' '${{ steps.constraint_shellcheck_compliance.outcome }}'
+          record 'constraint_sentinel_integrity' 'Constraint: Sentinel integrity' '${{ steps.constraint_sentinel_integrity.outcome }}'
+          record 'constraint_harness_decision_records_are_well_formed' 'Constraint: Harness decision records are well-formed' '${{ steps.constraint_harness_decision_records_are_well_formed.outcome }}'
+          record 'constraint_harness_governance_is_applied_and_undrifted' 'Constraint: Harness governance is applied and undrifted' '${{ steps.constraint_harness_governance_is_applied_and_undrifted.outcome }}'
+          echo
+          if [ "$failed" -eq 1 ]; then
+            echo "::error::One or more constraints failed. See the per-constraint results above."
+            exit 1
+          fi
+          if [ "$notrun" -eq 1 ]; then
+            # A step that did not run is not a pass. Every enforcing step above
+            # carries its own `if`, so reaching here means something unexpected
+            # stopped one, and "we do not know" must not be reported as health.
+            echo "::error::One or more constraints did not run. A check that did not run is not a check that passed."
+            exit 1
+          fi
+          echo "All constraints ran and none failed."
