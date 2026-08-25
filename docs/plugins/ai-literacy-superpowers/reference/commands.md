@@ -124,14 +124,12 @@ output files to confirm the Observatory contract is satisfied.
 - **Skills read**: none
 - **Agents dispatched**: none
 
-Adopt new template content after a plugin upgrade. Compares the
-`<!-- template-version: X.Y.Z -->` marker in your `HARNESS.md` against
-the installed plugin version. Categorises changes as New (items in the
-template not in your HARNESS.md), Updated (changed items), and Removed
-(items you have that the template no longer includes). Each item can be
-accepted or dismissed individually. Dismissing writes a
-`.claude/.harness-upgrade-dismissed` marker so the SessionStart hook
-does not re-prompt until the next plugin update.
+Adopt new template content after a plugin upgrade. Compares your
+`HARNESS.md` against the plugin's template directly, categorising changes
+as New (items in the template not in your HARNESS.md), Updated (changed
+items), and Removed (items you have that the template no longer
+includes). Each item can be accepted or skipped individually. Skipping
+writes nothing — the item is offered again on the next run.
 
 ### /harness-affordance
 

@@ -20,7 +20,7 @@ Run the command:
 /harness-upgrade
 ```
 
-The command compares the `<!-- template-version: X.Y.Z -->` marker in your HARNESS.md against the installed plugin version. If versions match, no upgrade is needed. If they differ, the command displays a summary of changes.
+The command compares your HARNESS.md against the plugin's template directly and displays a summary of what differs. If nothing differs, it says so.
 
 ---
 
@@ -47,11 +47,11 @@ After you accept or skip all items, the template version marker in your HARNESS.
 
 ---
 
-## 4. Dismiss for later
+## 4. Skip for later
 
-If you're not ready to upgrade, dismiss the prompt. A `.claude/.harness-upgrade-dismissed` marker is created. The SessionStart hook won't ask again until the next plugin update.
+If you're not ready to adopt an item, skip it. Nothing is written, and the item is offered again the next time you run `/harness-upgrade`.
 
-To force the upgrade later, delete the marker file and run `/harness-upgrade` again.
+Nothing prompts you between runs — `/harness-upgrade` is on-demand.
 
 ---
 

@@ -10,25 +10,13 @@ template content into your HARNESS.md after each update.
 
 ## How you find out an update is available
 
-You don't need to check manually. Three signals surface new versions:
+Nothing tells you automatically. Run `/harness-upgrade` after upgrading
+the plugin and it compares your harness against the template directly.
 
-**SessionStart hook.** When you start a Claude Code session in a
-project that has a HARNESS.md, the hook compares the `template-version`
-marker in your file against the installed plugin version. If they differ
-it emits:
-
-```text
-Plugin template has been updated (your harness: vX.Y.Z, plugin: vA.B.C).
-Run /harness-upgrade to see what's new.
-```
-
-This fires once per plugin upgrade and goes silent after you run
-`/harness-upgrade`.
-
-**Weekly GC rule.** The `Template currency` GC rule checks the same
-marker on its weekly schedule and reports the mismatch in the
-`/harness-health` snapshot, giving it visibility in the observability
-loop even if you dismissed the SessionStart nudge.
+There used to be a session-start nudge and a weekly GC rule. Both were
+retired: they compared plugin release numbers, which move on every
+release whether or not the template changed, so the nudge fired on
+releases that had nothing to adopt.
 
 **Manual check.** Compare your installed version against the latest
 release at any time:
@@ -94,8 +82,8 @@ adopted explicitly:
 /harness-upgrade
 ```
 
-The command compares the `<!-- template-version: X.Y.Z -->` marker in
-your HARNESS.md against the installed plugin version. It presents each
+The command compares your HARNESS.md against the plugin's template
+directly, item by item. It presents each
 new or changed item with a summary of what it does and lets you accept
 or skip each one individually.
 

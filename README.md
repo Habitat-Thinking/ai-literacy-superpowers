@@ -68,14 +68,12 @@ You can install one, the other, or both. Once installed, each plugin's skills, a
 
 #### Check if an update is available
 
-Three signals surface new versions without manual polling:
+New template content is found by running `/harness-upgrade`, which compares
+your harness against the plugin's template directly. Nothing nudges you
+automatically: the marker that used to drive a session-start nudge tracked the
+plugin version rather than template content, so it fired on every release
+whether or not the template had changed.
 
-- **SessionStart hook** — if your project has a HARNESS.md, the hook compares
-  its `template-version` marker against the installed plugin version and emits
-  a nudge if they differ. This fires once per upgrade and goes silent after you
-  run `/harness-upgrade`.
-- **Weekly GC rule** — the `Template currency` rule checks the same marker on
-  its weekly schedule and includes any mismatch in the `/harness-health` report.
 - **Manual check** — compare installed vs latest at any time:
 
 ```bash
@@ -368,7 +366,6 @@ All hooks are registered in `hooks/hooks.json` and active in every Claude Code s
 - **Stop rotating GC check** — runs one deterministic GC rule per session (rotating by day), catching entropy between weekly CI runs
 - **Stop curation nudge** — detects unpromoted reflections in `REFLECTION_LOG.md` and nudges curation into `AGENTS.md`
 - **Stop governance drift check** — detects governance-related file changes and audit staleness, nudges `/governance-audit`
-- **SessionStart template currency check** — detects when the HARNESS.md template version is behind the installed plugin version, nudges `/harness-upgrade`
 
 ---
 
@@ -481,10 +478,8 @@ ADVISORY LOOP (edit time — warn, do not block)
 │   │                                    rotating by day-of-year
 │   ├── Stop curation nudge            Detects unpromoted reflections, nudges
 │   │                                    curation into AGENTS.md
-│   ├── Stop governance drift check    Detects governance file changes, nudges
-│   │                                    /governance-audit
-│   └── SessionStart template currency Detects HARNESS.md template-version drift,
-│                                        nudges /harness-upgrade
+│   └── Stop governance drift check    Detects governance file changes, nudges
+│                                        /governance-audit
 ├── Context (read by agents at session start)
 │   ├── CLAUDE.md                       Workflow rules, conventions, disciplines
 │   ├── AGENTS.md                       Compound learning memory (human-curated)
