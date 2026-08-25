@@ -202,10 +202,17 @@ class FindingError(Exception):
 
 
 class Finding:
-    def __init__(self, fid, title, observation, meta, rule_block, cost_estimate):
+    def __init__(self, fid, title, observation, meta, rule_block, cost_estimate,
+                 reasoning=""):
         self.id = fid
         self.title = title
         self.observation = observation
+        # The Assayer's argument for its own finding. Carried verbatim and kept
+        # STRUCTURALLY SEPARATE from the human's tier-2 sections, exactly as
+        # `proposed_cost` is kept separate from `cost`: pre-filled reasoning
+        # reads precisely like considered reasoning, and nothing downstream
+        # could tell them apart.
+        self.reasoning = reasoning
         self.meta = meta
         self.rule_block = rule_block
         self.cost_estimate = cost_estimate
@@ -301,6 +308,23 @@ def _parse_finding(path: str, fid: str, title: str, block: str) -> Finding:
             "block. A finding must say what was observed."
         )
 
+    # The Assayer's reasoning: prose between the end of the metadata block and
+    # the first `#### ` subsection. A POSITIONAL rule, not a semantic one — it
+    # takes whatever was written there and makes no judgement about which
+    # paragraph is load-bearing.
+    #
+    # Before this existed, `observation` stopped at the first fence and the rest
+    # of the preamble was discarded, so the "why this layer", overfitting and
+    # validation-plan paragraphs never reached the record. A human then wrote
+    # those sections from scratch beside a file that already held a better
+    # version (#554).
+    reasoning = ""
+    fence_end = preamble.find("```", preamble.find("```") + 3)
+    if fence_end != -1:
+        nl = preamble.find("\n", fence_end)
+        if nl != -1:
+            reasoning = preamble[nl + 1:].strip()
+
     if "Proposed rule" not in subsections:
         raise FindingError(f"{where}: no '#### Proposed rule' section.")
     if "Cost estimate" not in subsections:
@@ -324,7 +348,8 @@ def _parse_finding(path: str, fid: str, title: str, block: str) -> Finding:
             )
         rule_block = blocks[0]
 
-    return Finding(fid, title.strip(), observation, meta, rule_block, cost_estimate)
+    return Finding(fid, title.strip(), observation, meta, rule_block,
+                   cost_estimate, reasoning)
 
 
 # --------------------------------------------------------------------------- #
@@ -379,6 +404,12 @@ def render_hdr(hdr_id: str, finding: Finding, assay_path: str, assay_fm: dict,
     # and left for the human at the acceptance gate when it is not.
     if meta.get("target"):
         lines.append(f"target: {meta['target']}")
+    # A claim the Assayer made about its own finding, and exactly what a reviewer
+    # at the acceptance gate should weigh. Carried when present, omitted when
+    # not; deliberately NOT added to FINDING_REQUIRED_KEYS, because making it
+    # mandatory changes the assay contract and deserves its own evidence.
+    if meta.get("overfitting_risk"):
+        lines.append(f"overfitting_risk: {meta['overfitting_risk']}")
     lines.append("evidence:")
     for item in evidence:
         lines.append(f"  - {item}")
@@ -398,6 +429,20 @@ def render_hdr(hdr_id: str, finding: Finding, assay_path: str, assay_fm: dict,
     lines.append("")
     lines.append(finding.observation)
     lines.append("")
+
+    # Omitted entirely when the finding carries none, rather than emitted empty.
+    # An empty section invites someone to fill it, and this one is not theirs to
+    # fill — the whole point is that these words are the Assayer's and the four
+    # tier-2 sections below are the approver's.
+    if finding.reasoning:
+        lines.append("## Assayer's reasoning")
+        lines.append("")
+        lines.append("_Written by the Assayer, carried verbatim. Not the "
+                     "approver's words, and not a substitute for the sections "
+                     "below._")
+        lines.append("")
+        lines.append(finding.reasoning)
+        lines.append("")
 
     lines.append("## Rule")
     lines.append("")

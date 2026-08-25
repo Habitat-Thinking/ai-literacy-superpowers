@@ -143,6 +143,7 @@ cohort: b                  # optional
 | `target` | when the classification has no route | `status: accepted` |
 | `validator` | optional | — |
 | `cohort`, `proposed_cost`, `imported` | optional | — |
+| `overfitting_risk` | optional | — |
 
 **`target`** names the artifact the rule text is written into, and is required at
 **acceptance** for `agent-instruction`, `agent-reference`, `regression-test` and
@@ -196,6 +197,27 @@ classifications whose reach extends beyond a single agent — `## Why this layer
 
 Every required section must be non-empty. A heading with nothing under it is a
 missing section that looks present, which is worse than an absent one.
+
+### `## Assayer's reasoning` — optional, and never the approver's
+
+Emitted by `/harness-propose` when the finding carries prose between its metadata
+block and its first `####` subsection — conventionally the Assayer's "why this
+layer", overfitting assessment and validation plan. Carried **verbatim** and
+labelled, so a reader cannot mistake it for the approver's words.
+
+It is **not** a substitute for the tier-2 sections and does not satisfy them.
+Those stay `_TODO` placeholders and acceptance is still refused until a human
+writes them.
+
+The split mirrors `proposed_cost` and `cost`, and exists for the same reason:
+pre-filled reasoning reads exactly like considered reasoning, and nothing
+downstream could tell them apart. Before it existed, extraction stopped at the
+first fence and this prose was discarded, so a human wrote the four sections from
+scratch beside a file that already held a better version (#554).
+
+The section is **omitted entirely** when a finding carries no such prose, rather
+than emitted empty — an empty heading invites someone to fill it, and this one is
+not theirs to fill.
 
 ### The Rule block
 

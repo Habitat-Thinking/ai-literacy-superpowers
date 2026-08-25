@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.81.0 — 2026-08-25
+
+### Fixed — the Assayer's reasoning reaches the record
+
+`/harness-propose` took the observation as everything before the first fence
+(`_parse_finding`), so the Assayer's "why this layer", overfitting assessment and
+validation plan — which conventionally sit *after* the YAML metadata block — were
+discarded. The record then arrived with four `_TODO` placeholders while a better
+argument sat one directory away. Reconstructing those sections by hand is how an
+error ("no enforcement gap", where the generated report said `gap`) got into a
+record that is now accepted and frozen. See #554.
+
+- **New optional `## Assayer's reasoning` section**, carrying that prose verbatim
+  and labelled as the Assayer's. Extraction is positional — the text between the
+  metadata block and the first `####` subsection — so it takes whatever was
+  written there and makes no judgement about which paragraph matters.
+- **It does not satisfy the tier-2 sections.** `## Why this layer`,
+  `## Enforcement`, `## Validation` and `## Rejected alternatives` stay `_TODO`
+  placeholders, and acceptance is still refused until a human writes them. The
+  split mirrors `proposed_cost` and `cost` and exists for the same reason:
+  pre-filled reasoning reads exactly like considered reasoning, and nothing
+  downstream could tell them apart. Pre-filling those sections was considered and
+  rejected as the cost-rule failure one section over.
+- **Omitted entirely when a finding carries no such prose**, rather than emitted
+  empty. An empty heading invites someone to fill it, and this one is not theirs.
+- **`overfitting_risk` now reaches the HDR frontmatter** when the finding declares
+  it. Not added to `FINDING_REQUIRED_KEYS` — making it mandatory changes the assay
+  contract and deserves its own evidence.
+- **`## Finding` and `## Rule` are unchanged.** The rule block is still
+  byte-identical to the assay's four-backtick block, nested fences intact; that
+  guarantee is asserted directly rather than assumed, because this change touches
+  the same parser.
+- **Layer 0 suite** `test-assayer-reasoning.sh` (R1–R9), fixtured on finding-2 of
+  `2026-08-25T08-08Z-assay.md` — the finding the defect was found on.
+
 ## 0.80.0 — 2026-08-25
 
 ### Fixed — the harness evolution write path
