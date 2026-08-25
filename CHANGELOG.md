@@ -133,6 +133,39 @@ The masking defect is real and its cost is narrower than the count of blocked
 rules implied. Recorded here rather than left standing, because the more
 dramatic version is the one already written down.
 
+### The health field had a reason to move, and was held
+
+The 2026-08-25 snapshot is revised in place with the end-of-day state. Two of the
+four grounds for `Degraded` closed during the day — the snapshot cadence lapse and
+the outer-loop overdue on `/assess` — and cadence compliance reached 5/5. On the
+format reference's own rule that arithmetic points at **Attention**.
+
+It is held at **Degraded**, on evidence gathered after the arithmetic:
+
+- **The investigative layer was not one degraded layer; it was largely unbuilt.**
+  5 of 19 declared rules have any automation, 14 ran for the first time on
+  2026-08-25, and 9 of those 14 produced findings. Three of the ten deterministic
+  rules cannot report a failure as declared (#587).
+- **A manual run is not a cadence.** It happened because someone typed a command
+  once, and the scheduled job will fail again at *Release tag completeness*.
+- **An open CVE surfaced from a rule that had never run** (#586). A habitat that
+  finds that on its first sweep should not improve its health the same day.
+
+Recording a refused upgrade is the point: this is the first time the health field
+has had a reason to move and been held.
+
+### Two morning claims falsified by the evening, corrected in place
+
+Both corrections show the original and the correction rather than overwriting:
+
+- *"No rule after step 5 has produced a result in 36 days"* — false, and
+  generalised from the 2026-08-24 run alone. Per-step conclusions show 07-20
+  failing at step 8 and 08-17 at step 9, both with steps 5–7 `success`. Five of
+  six blocked at *Release tag completeness*. Falsified by assay 3 finding-3.
+- *"Two auto-fix rules had work waiting"* — one did. Reflection archival had
+  fifteen fragments; *Release tag completeness* had six tags its own search could
+  never have created; *Observability archive* had nothing until October.
+
 ## 0.86.2 — 2026-08-25
 
 ### Added — /harness-audit now validates the Status block it writes
