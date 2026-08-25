@@ -131,10 +131,23 @@ Do not regenerate the snapshot. Fix the output directly.
 
 Run the `update-health-badge` command (a plugin `bin/` shim, on PATH; do
 not use a `${CLAUDE_PLUGIN_ROOT}` path — that variable is unset outside
-hooks) to update:
+hooks), **passing the snapshot you just wrote**:
+
+```bash
+update-health-badge . observability/snapshots/YYYY-MM-DD-snapshot.md
+```
+
+It updates:
 
 - The health badge colour and text
 - The health icon link target (point to the new snapshot)
+
+The snapshot argument is optional — the script discovers the latest
+snapshot when it is omitted — but pass it anyway. You know which file you
+just wrote; discovery only infers it. Before #575 the argument-less form
+skipped snapshot reading entirely and wrote a green badge over a Degraded
+snapshot, and this step documented that form. Passing the path keeps the
+badge correct even if discovery is ever broken again.
 
 ### 9. Print Summary
 

@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.86.1 — 2026-08-25
+
+### Fixed — the health badge defaulted to green when it could not tell
+
+`update-health-badge.sh` reads the snapshot path from `$2`, and its entire
+detection block sits behind a check that the argument was supplied. Line 22
+initialised `health_status="Healthy"`. Called with no argument it skipped every
+line that reads a snapshot and wrote that hardcoded green straight to the
+badge. See #575.
+
+`/harness-health` **step 8 documented exactly that call**, so the documented way
+to run the command always produced a green badge. Observed on 2026-08-25: an
+argument-less run wrote `Healthy` over a snapshot whose Meta section reads
+`Health: **Degraded**`, and repointed the link from the snapshot to the
+directory.
+
+Every safety net in the script — the sub-70% enforcement override, the signal
+heuristic, the explicit `Health:` line reader — lived inside the branch that
+never ran.
+
+- **The argument-less path now discovers the latest snapshot**, using the same
+  `sort -r | head -1` idiom `gc.yml` uses for its own staleness check. The
+  documented invocation becomes correct rather than merely tolerated.
+- **The default is Degraded.** Healthy is now reachable only from a snapshot
+  that was actually read — either an explicit `Health:` line or a snapshot with
+  no attention signals. When the script cannot tell, it says so.
+- **The link target is normalised** to a repo-relative path. Discovery runs
+  `find "$PROJECT_DIR"`, so `.` yielded `./observability/…` and an absolute
+  project dir yielded an absolute path; neither belongs in a README link.
+- **Layer 0 coverage for the path that had none.** `test-update-health-badge.sh`
+  exercised the detection logic thoroughly and every case passed a snapshot
+  file — the documented invocation was untested. Four new assertions: an
+  argument-less run over a Degraded snapshot reports Degraded (this fails on
+  the old code), the discovered link is repo-relative, discovery picks the
+  newest snapshot, and no snapshots at all is Degraded rather than Healthy.
+- **Step 8 now passes the snapshot path explicitly** and says why: you know
+  which file you just wrote, discovery only infers it.
+
+### Why a default matters more than it looks
+
+This is the same shape as the GC masking defect recorded in 0.86.0's snapshot
+refresh: when the mechanism cannot determine an answer, it reported the one
+that looks best. A green badge meaning "nobody passed an argument" is worse
+than no badge, because it is read as a measurement. The fix is not the
+discovery — it is that absence of evidence now resolves to Degraded.
+
 ## 0.86.0 — 2026-08-25
 
 ### Fixed — the target can now be set where the reference always said it was
