@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.83.1 — 2026-08-25
+
+### Fixed — a propose no longer leaves the corpus failing its own check
+
+`/harness-propose` wrote a record and returned. `harness/decisions/index.md` is
+part of the compile plan and `render_index` lists every record, `proposed`
+included, so the index went stale and `/harness-check` reported a build failure
+until someone ran `/harness-compile`. `/harness-accept` was unaffected because it
+runs the compile step inside its transaction. See #564.
+
+That window is not brief. The gates are deliberately separate, and a proposal is
+*supposed* to sit at `proposed` and carry forward when it does not win a slot —
+the cycle cap assumes exactly that. So the CI entry point was red for the whole
+normal mid-cycle state of a corpus, which is how people learn to ignore a red
+check. This repository spent six weeks demonstrating that with the GC workflow.
+
+The failure also misdirected: "Run `/harness-compile` to repair, or supersede the
+decision if the change was intended" describes a hand-edited generated region.
+Nothing had been hand-edited and there was nothing to supersede.
+
+- **`propose` now regenerates the index** after a successful write, with and
+  without `--reject`. There is no decision in regenerating an index — the same
+  reason applying and compiling are not gates.
+- **Only the index.** A proposed record reaches no artifact and is absent from the
+  enforcement report, so nothing else moves. Asserted rather than assumed.
+- **D10** in `test-declined-findings.sh` covers it, including that a plain propose
+  and a `--reject` both leave `/harness-check` passing.
+
 ## 0.83.0 — 2026-08-25
 
 ### Added — a finding a human declines is now recorded

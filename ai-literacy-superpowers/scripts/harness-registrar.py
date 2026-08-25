@@ -617,6 +617,18 @@ def cmd_propose(args) -> int:
     os.makedirs(os.path.dirname(target), exist_ok=True)
     with open(target, "w", encoding="utf-8") as handle:
         handle.write(text)
+
+    # The index lists every record, `proposed` included, so writing one leaves it
+    # stale and `/harness-check` red until someone compiles. The gates are
+    # deliberately separate and a proposal is SUPPOSED to sit at `proposed` and
+    # carry forward, so that window is not brief — it is the normal state of a
+    # corpus mid-cycle, and a CI entry point that fails throughout it teaches
+    # people to ignore a red check (#564).
+    #
+    # There is no decision in regenerating an index, which is the same reason
+    # applying and compiling are not gates. Only the index: a proposed record
+    # reaches no artifact and is absent from the enforcement report.
+    write_index(root)
     if getattr(args, "reject", False):
         print(f"rejected {rel}")
         return 0
