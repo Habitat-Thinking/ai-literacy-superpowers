@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.86.2 — 2026-08-25
+
+### Added — /harness-audit now validates the Status block it writes
+
+`/harness-audit` writes `HARNESS.md`'s `## Status` section — structured output
+with three downstream parsers (`/harness-status`, `harness-auditor` on its next
+run, `harness-gc`) — and had no read-back step. It was the one command missing
+from CLAUDE.md's checkpoint list, and its own constraint *Output validation
+checkpoints* was failing because of it.
+
+The cost was measurable rather than theoretical: the block sat reading
+`Last audit: 2026-08-13`, `Constraints enforced: 33/34`, `Drift detected: no`
+for twelve days, against a tree with 36 active constraints and four failing.
+An audit that records "no drift" while drift exists is worse than one that
+never ran, because the next reader stops looking.
+
+- **Step 5 is a mandatory validation checkpoint.** Five assertions: the four
+  fields present and ordered, `Last audit` is today, `Constraints enforced`
+  counted from the tree rather than carried forward, `Drift detected: yes`
+  whenever the enforcer reported a failure, and the enforcement figure
+  qualified wherever agent-enforced constraints have no dispatch path.
+- **The enforcer results win any disagreement.** They were observed; the Status
+  block is a summary of them.
+- **Fix in place, do not re-dispatch.** A second opinion on a number you can
+  count yourself is slower and no more reliable.
+- `/harness-audit` added to CLAUDE.md's checkpoint list, where its absence is
+  why the omission went unnoticed rather than being a regression.
+
 ## 0.86.1 — 2026-08-25
 
 ### Fixed — the health badge defaulted to green when it could not tell
