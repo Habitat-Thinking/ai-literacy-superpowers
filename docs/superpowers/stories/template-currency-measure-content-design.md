@@ -7,43 +7,43 @@ stories:
   - id: 1
     lens: [defaults, patterns]
     title: Retiring a GC rule outside the governed loop
-    disposition: pending
-    disposition_rationale: null
+    disposition: promoted
+    disposition_rationale: "The feature-PR channel stands, but the finding under it is bigger than this spec: the evolution loop has no retirement path for a GC rule, and /harness-review and /harness-propose do not mention garbage collection at all. Promoted to its own issue. The spec gains a sentence recording that the channel was chosen deliberately, so the next person retiring a GC rule inherits a decision rather than a precedent."
   - id: 2
     lens: [alternatives, patterns]
     title: A bespoke predicate beside a general bucket
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Keep the single predicate and say so: section 5 states it deliberately covers both the marker and the rule, is one-shot, and is deleted alongside the habitat-discovery reader. Splitting it would mean promoting the removed bucket from advisory to actionable, which is a larger change to /harness-upgrade than this migration should carry."
   - id: 3
     lens: [patterns, consequences]
     title: Deletion as the honest-status rule's converse
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Cite the HDR for the deletion itself, not only for the report format, and add the alarm-rationalisation test as the defence: removal is legitimate where the alarm has no defined operator action, which is true here since the nudge's only response was a command the README already recommends after every plugin upgrade. That is a stronger argument than the cost table and it fences the cheap version of 'delete it' at the same time."
   - id: 4
     lens: [coherence, forces]
     title: A spec against proxies, argued by proxy
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The decision stands; the argument for it does not. Section 2.1's objection-count table stops being the load-bearing justification, replaced by story 3's alarm test and a direct price comparison against section 7's alternative. Also record that revisions 1 and 2 were heading-comparison designs, so their review outcomes are not evidence about an alternative that shares none of their mechanism."
   - id: 5
     lens: [consequences, forces]
     title: A trigger only the deleted sensor could pull
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Say plainly that this is permanent. Sections 2.2 and 7 state that the decision is one-way and that no mechanism remains which would report the reopening condition, so a future reader does not read silence as nobody having complained. A conditional recorded without an observer is a permanent decision in provisional language, and the record should not pretend otherwise."
   - id: 6
     lens: [consequences, alternatives]
     title: Three residues, none of them on a clock
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Put a sunset marker on the retained habitat-discovery reader so check-redirect-sunsets.sh surfaces it monthly under the Redirect sunset GC rule. The repository already has the idiom, and 'once the marker is rare' is unmeasurable after this change deletes the surfaces that could have counted markers in the wild. The gitignore entry and the marker in unmigrated projects are genuinely inert and are left."
   - id: 7
     lens: [alternatives, consequences]
     title: The test becomes the inventory
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The allow-list lives in one declared location that the test reads and the spec points at, rather than as prose in section 6 and a shell array in the test. Test-as-source-of-truth is the right call, but a no-widening rule written where the test cannot read it is an unenforced lint rule, and a one-line array edit that turns CI green would not draw a reviewer's eye."
   - id: 8
     lens: [coherence, defaults]
     title: Two counts, two standards of proof
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Extend criterion 8's Layer 0 test to assert the four hard-coded observatory totals match the number of signal rows. Section 6's own argument is that hand enumeration in this tree needs a machine behind it; applying that to terms and not to counts, in a document that cites the hooks parity test as the reason one count must move, is an inconsistency worth closing rather than recording."
 ---
 
 # Choice stories — Retire the template-currency nudge

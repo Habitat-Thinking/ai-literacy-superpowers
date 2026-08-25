@@ -1,6 +1,6 @@
 # Retire the template-currency nudge — design
 
-**Status:** proposed (revision 4)
+**Status:** proposed (revision 5)
 **Date:** 2026-08-25
 **Issue:** #601
 **Provenance:** `docs/superpowers/specs/2026-04-15-harness-upgrade-design.md`
@@ -11,7 +11,10 @@ comparison; revision 2 filtered the compared set; revision 3 deleted the
 mechanism instead. Each was reviewed adversarially. Revision 4 implements the
 dispositions written against revision 3's objection record
 (`docs/superpowers/objections/template-currency-measure-content-design.md`, all
-twelve disposed: 7 accepted, 4 rejected, 1 amend). §9 maps each.
+twelve disposed: 7 accepted, 4 rejected, 1 amend). Revision 5 implements the
+choice-story dispositions at
+`docs/superpowers/stories/template-currency-measure-content-design.md` (eight
+stories: 7 accepted, 1 promoted to #606). §9 maps both sets.
 **Scope:** deletion of the marker, the `Template currency` GC rule, the
 SessionStart hook and the dismissal file, across the plugin, this repository,
 and — by prompted migration — consuming projects. `/harness-upgrade` survives as
@@ -101,8 +104,43 @@ because it ran against this repository, which already contains every heading the
 exclusions were meant to suppress.
 
 Two revisions spent increasing mechanism defending a notifier, and each returned
-a critical. That is the argument. A correct notifier remains buildable and
-§7 records how.
+a critical.
+
+**That table is not the load-bearing argument, and revision 4 wrongly made it
+one.** Acceptance-criteria counts and objection counts measure specs and review
+sessions, not the mechanism — the same substitution §1 objects to, one level up.
+They are also mis-attributed: revisions 1 and 2 were *heading-comparison*
+designs, and §7's surviving alternative shares none of their mechanism, so their
+review outcomes are not evidence about it.
+
+**The argument that does bear weight is §2.3.** The cost table stands only as
+what it is: a record that two attempts to keep this notifier grew, which is
+context rather than justification.
+
+### 2.3 The alarm has no defined operator action
+
+Safety engineering has a settled test for retiring a nuisance annunciator, and
+it is the right one here: removal is legitimate when the alarm has **no defined
+operator action** distinct from what the operator would do anyway. The nudge's
+only response was running `/harness-upgrade`, which `README.md:99` already
+directs people to do after every plugin upgrade. The alarm asked for nothing that
+was not already asked for.
+
+That test is also the correct citation for the decision under the record in force
+until 2026-11-23,
+`HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one`.
+Revision 4 cited that record only for §4.3's report format, leaving the larger
+decision uncited. The record's remedy vocabulary is *report unknown and name the
+input you could not read*; deletion also satisfies it, and this is the
+repository's first instance of that move.
+
+**Deletion is the cheapest compliance move that record will ever admit** —
+vacuously satisfying, needing no unknown-state design and no approver's cost
+statement. It is correct here because the no-operator-action test is met. It
+should not be reached for where that test fails, and the fence is stated here
+rather than left to the next reader to infer.
+
+A correct notifier remains buildable and §7 records how, priced.
 
 ### 2.2 What is lost, stated plainly
 
@@ -125,7 +163,31 @@ Four capabilities go, not one:
 marker as one signal that a project has a harness at all. It is a *reader*, not
 a writer; it is harmless; and per §5 most consuming projects will keep carrying
 the marker for a long time. Deleting the reader before the data is gone would be
-backwards. It stays, and is removed in a later release once the marker is rare.
+backwards. It stays, and carries a sunset marker so its removal is on a clock
+rather than on memory:
+
+```html
+<!-- redirect-sunset: 2027-02-25 — retained reader for the template-version
+     marker (spec 2026-08-25-template-currency-measure-content-design §2.2).
+     Remove once consuming projects have migrated. -->
+```
+
+`scripts/check-redirect-sunsets.sh` surfaces it monthly under the `Redirect
+sunset` GC rule. This matters because "once the marker is rare" is unmeasurable
+after this change: the surfaces that could have counted markers in the wild are
+the ones being deleted. A date someone must actively renew is the honest
+substitute. The `.gitignore` entry and the marker left in unmigrated projects are
+genuinely inert and carry no clock.
+
+**This decision is permanent, not conditional.** §7 keeps the buildable correct
+notifier on record and §5.3 prices reopening honestly, but nothing that would
+report the reopening condition survives this change: the four surfaces that could
+have shown unadopted template content are the four being deleted. The only user
+positioned to notice is one who runs `/harness-upgrade` regularly — precisely the
+user who loses nothing here. So a future reader must not read silence as evidence
+that nobody minded; the tree will generate no evidence in either direction, which
+is the same reasoning §1.1 applies to the past, applied forward. Reopening will
+come from someone deciding to, not from being told.
 
 **A transitional cost, accepted rather than mitigated.** A project whose marker
 has been removed, opened on a machine with an *older* plugin, gets the old hook
@@ -228,6 +290,16 @@ So `/harness-upgrade` step 6 offers a migration. On any run it looks for:
 - a `### Template currency` GC rule whose **Tool** field references the
   template-version comment.
 
+**The predicate is deliberately narrow and one-shot.** It covers both objects in
+one place even though only the marker strictly needs it — the marker is an HTML
+comment that no existing parse can see, while the GC rule is a `###` block under
+`## Garbage Collection` that step 2 already matches by heading name. Handling the
+rule through the existing **removed** bucket instead would mean promoting that
+bucket from advisory to actionable, which is a larger change to `/harness-upgrade`
+than this migration should carry. The predicate is deleted alongside the
+habitat-discovery reader at the sunset date in §2.2, not kept as a permanent
+special case.
+
 **Each finding is presented for the user to accept or skip**, in the same
 per-item form step 4 uses for every other change (`commands/harness-upgrade.md:104`,
 "Ask the user to choose for each item"). Nothing is removed from a project's
@@ -316,11 +388,32 @@ Stated rather than left implied:
    the test file itself (whose filename and search patterns necessarily contain
    the terms). `habitat-discovery.md` is exempt per §2.2 until the marker is rare.
 
-   The two exemptions are named individually and deliberately. An implementer
-   must not widen the allow-list further to make the test pass; if a new file
-   legitimately needs an exemption, that is a spec change.
+   **The allow-list lives in one place.** It is declared once, in a data file the
+   Layer 0 test reads — `tdad_tests/layer0_deterministic/fixtures/template-currency-residue-allowlist.txt`
+   — rather than as prose here and again as a shell array in the test. Revision 4
+   stated the list in §6 and forbade widening it, which put the prohibition
+   somewhere the test cannot read: a one-line array edit turning CI green would
+   have satisfied the letter and drawn no reviewer's eye. That is an unenforced
+   lint rule, which is the shape this whole spec exists to remove.
 
-Criteria 1, 2 and 8 are Layer 0 deterministic tests at
+   Each entry in that file carries a one-line reason. Adding one is a reviewable
+   diff to a file whose only purpose is exemptions, and remains a spec change in
+   intent — but it is now visible as one.
+
+9. **Count guards.** The four hard-coded observatory totals
+   (`observatory-signals.md:157`, `observatory-verify.md:3`, `:17`, `:89`) equal
+   the number of signal rows in `observatory-signals.md`.
+
+   §3.2 moves this count by hand while citing `test-hooks-doc-parity.sh` as the
+   reason the *hooks* count must move — which means revision 4 read one guard and
+   never asked why the neighbouring count has none
+   (`test_phase2_observatory_verify.py:67` asserts only that there are at least
+   ten snapshot signals). §6's own argument is that hand enumeration in this tree
+   needs a machine behind it; applying that to terms and not to counts, in the
+   same document, is an inconsistency worth closing rather than recording. It is a
+   `grep -c` and a comparison, in a test file this spec already creates.
+
+Criteria 1, 2, 8 and 9 are Layer 0 deterministic tests at
 `tdad_tests/layer0_deterministic/test-template-currency-retired.sh`. Criteria
 3–7 are behavioural — model-executed command behaviour, which does not belong in
 a Layer 0 file.
@@ -352,8 +445,15 @@ alternative: add a CI assertion that any diff touching `templates/HARNESS.md`
 also moves its `<!-- template-version -->`, and have the hook compare that marker
 rather than `plugin.json`. It measures the right property and costs one CI check.
 
-Rejected on §2.1's cost argument rather than on §1.1: it is a cheap way to build
-a correct version of a mechanism whose value is unevidenced in either direction.
+**Priced directly, since §2.1's counts do not bear on it.** Build: one CI
+assertion that a diff touching `templates/HARNESS.md` also moves its marker, plus
+one line changed in the hook to read that marker instead of `plugin.json`.
+Running cost: near zero — a marker discipline maintainers must keep, enforced by
+the assertion. Against that: keeping it means the nudge survives, and §2.3's test
+says an alarm with no defined operator action should not.
+
+Rejected on §2.3 rather than on cost: it is a cheap way to build a correct
+version of an alarm that asks for nothing the README does not already ask for.
 **If §2.2's losses prove to matter, this is the option to reopen on** — though
 per §5.3, doing so costs a second migration, not merely re-reading this section.
 
@@ -397,6 +497,39 @@ Against `docs/superpowers/objections/template-currency-measure-content-design.md
 | O10 | rejected | §2.2 — mixed-version cost stated and accepted; §3.3 tracks the docs defect separately |
 | O11 | accepted | §5.1 — near misses reported, three outcomes distinguished |
 | O12 | accepted | §3 regenerated from the broadened grep with line numbers dropped; §3.1 adds the prose surfaces; §3.2 adds the hook arithmetic |
+
+Against `docs/superpowers/stories/template-currency-measure-content-design.md`:
+
+| ID | Disposition | Where |
+| --- | --- | --- |
+| #1 | promoted | §9.1 records the channel choice; the loop gap is **#606** |
+| #2 | accepted | §5 — the predicate is narrow, one-shot, and deleted at §2.2's sunset date |
+| #3 | accepted | §2.3 — the HDR cited for the deletion, with the no-operator-action test as the defence and the cheap-compliance fence stated |
+| #4 | accepted | §2.1 demoted to context, §2.3 carries the argument, §7 prices the alternative directly |
+| #5 | accepted | §2.2 — the decision is stated as permanent, with no observer for the reopening condition |
+| #6 | accepted | §2.2 — sunset marker on the retained reader, surfaced monthly by the `Redirect sunset` GC rule |
+| #7 | accepted | §6 — the allow-list moves to one data file the test reads |
+| #8 | accepted | §6 criterion 9 — the four observatory totals are guarded |
+
+## 9.1 Retiring a GC rule: the channel, chosen deliberately
+
+This spec retires the `Template currency` GC rule from this repository's own
+`HARNESS.md` through a feature PR, not through
+`/harness-assay → /harness-propose → /harness-accept`.
+
+That is a choice, and it is recorded here so the next person retiring a GC rule
+inherits a decision rather than a precedent. The loop's vocabulary is
+constraints: `commands/harness-propose.md` and `commands/harness-review.md` do
+not mention garbage collection, HDR classifications route to `HARNESS.md`'s
+constraint section, `AGENTS.md` or an agent skill file, and this rule predates
+the loop so there is no record to expire. Every governed retirement path assumes
+the rule entered through a governed door; this one did not.
+
+The consequence is real: `harness/decisions/index.md` and `/harness-timeline`
+will show `Garbage collection active:` moving 19 → 18 with no entry saying why.
+**That gap is #606**, promoted from story #1 of the choice-story record. It is
+not a blocker for this change — it is the finding this change surfaced, and it
+is bigger than this change.
 
 ## 10. The Status block
 
