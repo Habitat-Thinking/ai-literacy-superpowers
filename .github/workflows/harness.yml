@@ -74,6 +74,11 @@ jobs:
           sudo apt-get -qq install -y shellcheck
           find . -name "*.sh" -not -path "./.git/*" -exec shellcheck {} +
 
+      - name: "Constraint: All frontmatter has name and description"
+        id: constraint_all_frontmatter_has_name_and_description
+        if: always()
+        run: python3 scripts/check-component-frontmatter.py
+
       - name: "Constraint: Sentinel integrity"
         id: constraint_sentinel_integrity
         if: always()
@@ -117,6 +122,7 @@ jobs:
           record 'constraint_shell_scripts_pass_syntax_check' 'Constraint: Shell scripts pass syntax check' '${{ steps.constraint_shell_scripts_pass_syntax_check.outcome }}'
           record 'constraint_shell_scripts_use_strict_mode' 'Constraint: Shell scripts use strict mode' '${{ steps.constraint_shell_scripts_use_strict_mode.outcome }}'
           record 'constraint_shellcheck_compliance' 'Constraint: ShellCheck compliance' '${{ steps.constraint_shellcheck_compliance.outcome }}'
+          record 'constraint_all_frontmatter_has_name_and_description' 'Constraint: All frontmatter has name and description' '${{ steps.constraint_all_frontmatter_has_name_and_description.outcome }}'
           record 'constraint_sentinel_integrity' 'Constraint: Sentinel integrity' '${{ steps.constraint_sentinel_integrity.outcome }}'
           record 'constraint_harness_decision_records_are_well_formed' 'Constraint: Harness decision records are well-formed' '${{ steps.constraint_harness_decision_records_are_well_formed.outcome }}'
           record 'constraint_harness_governance_is_applied_and_undrifted' 'Constraint: Harness governance is applied and undrifted' '${{ steps.constraint_harness_governance_is_applied_and_undrifted.outcome }}'
