@@ -113,8 +113,8 @@
 - **Rule**: Every `.agent.md`, `SKILL.md`, and command `.md` file in
   the plugin must have YAML frontmatter containing both `name` and
   `description` fields
-- **Enforcement**: agent
-- **Tool**: harness-enforcer agent
+- **Enforcement**: deterministic
+- **Tool**: `python3 scripts/check-component-frontmatter.py` (CI: `.github/workflows/harness.yml`)
 - **Scope**: pr
 
 ### Shell scripts use strict mode
@@ -138,8 +138,8 @@
   spec. Bug fixes, dependency updates, and other maintenance changes do
   not require a spec but should still be coherently scoped — one concern
   per PR. PRs that bundle unrelated changes must be decomposed.
-- **Enforcement**: agent
-- **Tool**: harness-enforcer (reviews against The Human Pace)
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ### Spec-first commit ordering
@@ -158,8 +158,8 @@
 - **Rule**: The spec file in a feature PR must describe the problem
   being solved, the chosen approach, and the expected outcome. The
   implementation in the PR should trace back to what the spec describes.
-- **Enforcement**: agent
-- **Tool**: harness-enforcer agent
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ### Version consistency
@@ -260,8 +260,8 @@
   onboarding documents) must include a validation checkpoint step
   that reads the output, checks structure against the format spec
   reference, and fixes deviations in place
-- **Enforcement**: agent
-- **Tool**: harness-enforcer agent
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ### Docs site kept current
@@ -271,8 +271,8 @@
   explanation pages, reference material) must be reviewed and updated in the
   same PR. A PR that changes plugin behaviour without a docs review note in the
   PR description is incomplete.
-- **Enforcement**: agent
-- **Tool**: harness-enforcer agent
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ### PRs have adjudicated objections
@@ -500,8 +500,8 @@
   PR #257 → #258 cycle (2026-05-07): `/harness-sync` shipped in #257,
   but #258 had to clean up consistency gaps across 10 docs pages
   immediately afterwards. Effective from 2026-05-07.
-- **Enforcement**: agent
-- **Tool**: harness-enforcer (when the PR's diff touches
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
   `ai-literacy-superpowers/commands/`, `ai-literacy-superpowers/skills/`,
   or `ai-literacy-superpowers/agents/` with a new file, grep
   `docs/plugins/<plugin>/` for references to the same domain that the
@@ -1170,9 +1170,9 @@ Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-08-25
-Constraints enforced: 35/36
+Constraints enforced: 30/36
 Garbage collection active: 19/19
-Drift detected: yes (36 active constraints — 25 deterministic + 10 agent + 1 unverified. The 35/36 figure counts DECLARED enforcement and should be read with the qualification below, because this audit established that it overstates what is in force.
+Drift detected: yes (36 active constraints — 26 deterministic + 4 agent + 6 unverified. **The figure is now honest.** It read 35/36 until 2026-08-25, counting ten constraints declared `agent` that no workflow could dispatch. One was promoted to `deterministic` with a real check, five were demoted to `unverified`, and the two remaining agent constraints run on paths that exist (`advocatus-diaboli` via `/diaboli`, and a manual-scope rule). Every one of the 30 can now fire.
 
 **Read the enforcement figure narrowly.** `grep -rn 'harness-enforcer' .github/workflows/` returns nothing. No CI workflow dispatches the enforcer, so all 10 agent-enforced constraints have no automated path and cannot fail a build; they run only when a human types `/harness-audit`. That is a mechanism gap, not a cadence gap. This Status block is itself written by a command that carries no validation checkpoint — one of the four failures below — so a green line here has historically meant "nobody looked", not "nothing is wrong". The 2026-08-13 audit recorded `Drift detected: no` against a tree that already carried every failure listed here.
 

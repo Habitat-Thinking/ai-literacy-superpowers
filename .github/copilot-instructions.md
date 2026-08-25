@@ -45,11 +45,11 @@ a header comment block explaining purpose and behaviour.
 
 ### Consistent markdown formatting
 
-Every markdown file in the repository must pass markdownlint with the project's `.markdownlint.json` configuration, **except the append-only record corpora** (`docs/superpowers/**`, `reflections/**`), the gitignored `REFLECTION_STAGING.md`, and untracked local artefacts under `.claude/**`. Records carry human dispositions and quote markdown as evidence, so style rules fight them by construction. Globs and ignores live in `.markdownlint-cli2.jsonc`, so a bare local run checks exactly what CI does. Enforcement: deterministic (`npx markdownlint-cli2 "**/*.md"`). Scope: commit + pr.
+Every markdown file in the repository must pass markdownlint with the project's `.markdownlint.json` configuration, **except the append-only record corpora** (`docs/superpowers/**`, `reflections/**`), the gitignored `REFLECTION_STAGING.md`, and untracked local artefacts under `.claude/**`. Records carry human dispositions and quote markdown as evidence, so style rules fight them by construction. Globs and ignores live in `.markdownlint-cli2.jsonc`, so a bare local run checks exactly what CI does. Enforcement: deterministic. Scope: commit + pr.
 
 ### No secrets in source
 
-No API keys, tokens, passwords, or private keys may appear in committed source files. Enforcement: deterministic (`gitleaks detect --source . --no-banner --exit-code 1`). Scope: commit.
+No API keys, tokens, passwords, or private keys may appear in committed source files. Enforcement: deterministic. Scope: commit.
 
 ### Shell scripts pass syntax check
 
@@ -57,7 +57,7 @@ All `.sh` files must pass `bash -n` without errors. Enforcement: deterministic. 
 
 ### All frontmatter has name and description
 
-Every `.agent.md`, `SKILL.md`, and command `.md` file must have YAML frontmatter containing both `name` and `description` fields. Enforcement: agent (harness-enforcer). Scope: pr.
+Every `.agent.md`, `SKILL.md`, and command `.md` file must have YAML frontmatter containing both `name` and `description` fields. Enforcement: deterministic. Scope: pr.
 
 ### Shell scripts use strict mode
 
@@ -69,23 +69,23 @@ All `.sh` files must pass ShellCheck with no errors. Enforcement: deterministic.
 
 ### Spec-scoped changes
 
-Each feature or behaviour-change PR should trace to a single spec. Bug fixes, dependency updates, and other maintenance changes do not require a spec but should still be coherently scoped — one concern per PR. PRs that bundle unrelated changes must be decomposed. Enforcement: agent (harness-enforcer reviews against The Human Pace). Scope: pr.
+Each feature or behaviour-change PR should trace to a single spec. Bug fixes, dependency updates, and other maintenance changes do not require a spec but should still be coherently scoped — one concern per PR. PRs that bundle unrelated changes must be decomposed. Enforcement: unverified. Scope: pr.
 
 ### Spec-first commit ordering
 
-For feature and behaviour-change PRs, the first commit on the branch must contain only a spec file in `docs/superpowers/specs/`. No implementation code may appear in that commit. Bug-fix, dependency, and maintenance PRs (labelled `bug`, `fix`, `chore`, `maintenance` or branch-prefixed `fix/`, `chore/`) are exempt. Enforcement: deterministic (`.github/workflows/spec-first-check.yml`). Scope: pr.
+For feature and behaviour-change PRs, the first commit on the branch must contain only a spec file in `docs/superpowers/specs/`. No implementation code may appear in that commit. Bug-fix, dependency, and maintenance PRs (labelled `bug`, `fix`, `chore`, `maintenance` or branch-prefixed `fix/`, `chore/`) are exempt. Enforcement: deterministic. Scope: pr.
 
 ### Spec captures intent
 
-The spec file in a feature PR must describe the problem being solved, the chosen approach, and the expected outcome. The implementation in the PR should trace back to what the spec describes. Enforcement: agent (harness-enforcer). Scope: pr.
+The spec file in a feature PR must describe the problem being solved, the chosen approach, and the expected outcome. The implementation in the PR should trace back to what the spec describes. Enforcement: unverified. Scope: pr.
 
 ### Version consistency
 
-plugin.json version, README badge version, and CHANGELOG heading must all match. Changes to files inside `ai-literacy-superpowers/` (skills, agents, commands, hooks, config) require a version bump. Changes outside the plugin directory do not. Trivial formatting-only fixes to plugin files can skip the bump with the `no-bump` PR label. Enforcement: deterministic (`.github/workflows/version-check.yml`). Scope: pr.
+plugin.json version, README badge version, and CHANGELOG heading must all match. Changes to files inside `ai-literacy-superpowers/` (skills, agents, commands, hooks, config) require a version bump. Changes outside the plugin directory do not. Trivial formatting-only fixes to plugin files can skip the bump with the `no-bump` PR label. Enforcement: deterministic. Scope: pr.
 
 ### Marketplace plugin version sync
 
-`marketplace.json` top-level `plugin_version` must match `plugin.json` `version`. When the plugin version is bumped, the marketplace pointer must be updated in the same PR. Enforcement: deterministic (`.github/workflows/version-check.yml`). Scope: pr.
+`marketplace.json` top-level `plugin_version` must match `plugin.json` `version`. When the plugin version is bumped, the marketplace pointer must be updated in the same PR. Enforcement: deterministic. Scope: pr.
 
 ### Release traceability
 
@@ -93,31 +93,31 @@ Every version of every plugin in this marketplace must have a matching `## X.Y.Z
 
 ### Docs site builds in strict mode
 
-All PRs that change `docs/**`, `mkdocs.yml`, or `requirements.txt` must pass `mkdocs build --strict` without aborting. The strict build catches broken internal links, missing pages, and other issues that the post-merge Pages deploy would otherwise fail on. Enforcement: deterministic (`.github/workflows/docs-build-check.yml`). Scope: pr.
+All PRs that change `docs/**`, `mkdocs.yml`, or `requirements.txt` must pass `mkdocs build --strict` without aborting. The strict build catches broken internal links, missing pages, and other issues that the post-merge Pages deploy would otherwise fail on. Enforcement: deterministic. Scope: pr.
 
 ### Output validation checkpoints
 
-Every command that produces structured output parsed by downstream consumers (snapshots, assessments, audit reports, reflections, cost snapshots, HARNESS.md sections, habitat files, onboarding documents) must include a validation checkpoint step that reads the output, checks structure against the format spec reference, and fixes deviations in place. Enforcement: agent (harness-enforcer). Scope: pr.
+Every command that produces structured output parsed by downstream consumers (snapshots, assessments, audit reports, reflections, cost snapshots, HARNESS.md sections, habitat files, onboarding documents) must include a validation checkpoint step that reads the output, checks structure against the format spec reference, and fixes deviations in place. Enforcement: unverified. Scope: pr.
 
 ### Docs site kept current
 
-When a PR adds, removes, or substantially changes a skill, agent, or command, the corresponding docs pages in `docs/` (how-to guides, explanation pages, reference material) must be reviewed and updated in the same PR. A PR that changes plugin behaviour without a docs review note in the PR description is incomplete. Enforcement: agent (harness-enforcer). Scope: pr.
+When a PR adds, removes, or substantially changes a skill, agent, or command, the corresponding docs pages in `docs/` (how-to guides, explanation pages, reference material) must be reviewed and updated in the same PR. A PR that changes plugin behaviour without a docs review note in the PR description is incomplete. Enforcement: unverified. Scope: pr.
 
 ### PRs have adjudicated objections
 
-Every feature or behaviour-change PR must have (a) a spec-mode objection record at `docs/superpowers/objections/<spec-slug>.md` with all dispositions resolved (no `pending` values), and (b) a code-mode objection record at `docs/superpowers/objections/<spec-slug>-code.md` with all dispositions resolved. Bug-fix, dependency, and maintenance PRs are exempt on the same terms as spec-first-commit-ordering. Specs created before 2026-04-19 are exempt. Enforcement: agent (harness-enforcer). Scope: pr.
+Every feature or behaviour-change PR must have (a) a spec-mode objection record at `docs/superpowers/objections/<spec-slug>.md` with all dispositions resolved (no `pending` values), and (b) a code-mode objection record at `docs/superpowers/objections/<spec-slug>-code.md` with all dispositions resolved. Bug-fix, dependency, and maintenance PRs are exempt on the same terms as spec-first-commit-ordering. Specs created before 2026-04-19 are exempt. Enforcement: agent. Scope: pr.
 
 ### PRs have adjudicated choice stories
 
-Every non-exempt PR must have either (a) at least one spec in `docs/superpowers/specs/` with a corresponding choice-story record at `docs/superpowers/stories/<spec-slug>.md` whose every story has `disposition` set to one of `accepted`, `revisit`, or `promoted` — no `pending` values; or (b) one of the exempt labels: `bug`, `fix`, `chore`, `maintenance`, `cross-repo`, or a branch prefixed `fix/` or `chore/`. Per-spec exemptions: specs with filename date before 2026-04-27 are exempt; specs with `cartographer: exempt-pre-existing` in their frontmatter are exempt individually. Enforcement: agent (harness-enforcer). Scope: pr.
+Every non-exempt PR must have either (a) at least one spec in `docs/superpowers/specs/` with a corresponding choice-story record at `docs/superpowers/stories/<spec-slug>.md` whose every story has `disposition` set to one of `accepted`, `revisit`, or `promoted` — no `pending` values; or (b) one of the exempt labels: `bug`, `fix`, `chore`, `maintenance`, `cross-repo`, or a branch prefixed `fix/` or `chore/`. Per-spec exemptions: specs with filename date before 2026-04-27 are exempt; specs with `cartographer: exempt-pre-existing` in their frontmatter are exempt individually. Enforcement: agent. Scope: pr.
 
 ### PRs have disposed consultation voices
 
-Every consultation record under `docs/superpowers/consultations/` must have every voice disposed: `consulted` or `deliberately-not-consulted`, each with a one-line `outcome`, and **no two voices in one record may carry the same outcome**. Complete-if-present — a PR whose spec has no consultation record passes, and running `/convene` remains a choice. The check reads the current state of each record chain (`records_latest`), so a `.resolved.md` supersedes its pending predecessor. It never judges a reason: "no time; the docs owner is on leave" passes. It refuses one string standing for several decisions. Enforcement: deterministic (`ai-literacy-superpowers/scripts/check-consultation-dispositions.py`). Scope: pr.
+Every consultation record under `docs/superpowers/consultations/` must have every voice disposed: `consulted` or `deliberately-not-consulted`, each with a one-line `outcome`, and **no two voices in one record may carry the same outcome**. Complete-if-present — a PR whose spec has no consultation record passes, and running `/convene` remains a choice. The check reads the current state of each record chain (`records_latest`), so a `.resolved.md` supersedes its pending predecessor. It never judges a reason: "no time; the docs owner is on leave" passes. It refuses one string standing for several decisions. Enforcement: deterministic. Scope: pr.
 
 ### Specs cite the source of a claimed convention
 
-A spec that asserts an existing repo convention — "the pattern here is X", "all N of these do Y", "this has always been Z" — must cite the file that **defines** the convention, by path. A table built from the examples that fit is not a citation: the S6, S7 and #499 gates each falsified such a claim by opening the defining file, and two of the three had already been put to a human as a gate decision, so the human decided on a false input. The obligation is the spec author's; the diaboli verifying it afterwards is the backstop, not the mechanism. Enforcement: agent (advocatus-diaboli, spec-mode gate). Scope: pr.
+A spec that asserts an existing repo convention — "the pattern here is X", "all N of these do Y", "this has always been Z" — must cite the file that **defines** the convention, by path. A table built from the examples that fit is not a citation: the S6, S7 and #499 gates each falsified such a claim by opening the defining file, and two of the three had already been put to a human as a gate decision, so the human decided on a false input. The obligation is the spec author's; the diaboli verifying it afterwards is the backstop, not the mechanism. Enforcement: agent. Scope: pr.
 
 ### Tests must pass
 
@@ -125,31 +125,31 @@ The project's test suite must pass with zero failures before any code is merged.
 
 ### Spec redaction markers must be visible
 
-When a spec is amended, superseded prose must be marked with a visible blockquote prefix (`> **SUPERSEDED by Amendment N §X.Y**: <reason>`) above the original text. HTML-comment redaction markers are forbidden in `docs/superpowers/specs/` because they vanish in every rendered markdown surface — the redaction signal is invisible to the audience the marker claims to serve. Enforcement: deterministic (`.github/workflows/spec-redaction-marker-check.yml`). Scope: pr.
+When a spec is amended, superseded prose must be marked with a visible blockquote prefix (`> **SUPERSEDED by Amendment N §X.Y**: <reason>`) above the original text. HTML-comment redaction markers are forbidden in `docs/superpowers/specs/` because they vanish in every rendered markdown surface — the redaction signal is invisible to the audience the marker claims to serve. Enforcement: deterministic. Scope: pr.
 
 ### TDAD fast-suite passes (Layers 0 + 1)
 
-Layer 0 (deterministic bash plumbing tests) and Layer 1 (structural tests for plugin components and scenario corpus) of the TDAD test suite must pass on every PR that touches plugin code, `tdad_tests/`, `HARNESS.md`, or `AGENTS.md`. Both layers run offline (no API key required) and complete in under ten seconds. Layers 2 (trigger) and 3 (behavioural) are NOT covered by this gate. Enforcement: deterministic (`.github/workflows/tdad-tests-fast.yml`). Scope: pr.
+Layer 0 (deterministic bash plumbing tests) and Layer 1 (structural tests for plugin components and scenario corpus) of the TDAD test suite must pass on every PR that touches plugin code, `tdad_tests/`, `HARNESS.md`, or `AGENTS.md`. Both layers run offline (no API key required) and complete in under ten seconds. Layers 2 (trigger) and 3 (behavioural) are NOT covered by this gate. Enforcement: deterministic. Scope: pr.
 
 ### Layer 0 bash tests run on macOS and Linux
 
-The Layer 0 deterministic bash tests must pass on both a macOS (BSD coreutils) and an Ubuntu (GNU coreutils) CI runner — the plugin's deterministic check scripts use `grep`, `date`, `sort`, and `stat`, which diverge between BSD and GNU and are masked on a macOS dev machine. Enforcement: deterministic (`.github/workflows/tdad-tests-fast.yml` — the `layer0-macos` job runs Layer 0 on macOS, the `fast-suite` job on Ubuntu). Scope: pr.
+The Layer 0 deterministic bash tests must pass on both a macOS (BSD coreutils) and an Ubuntu (GNU coreutils) CI runner — the plugin's deterministic check scripts use `grep`, `date`, `sort`, and `stat`, which diverge between BSD and GNU and are masked on a macOS dev machine. Enforcement: deterministic. Scope: pr.
 
 ### New plugin components must ship with a TDAD scenario
 
-When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>/SKILL.md`, `ai-literacy-superpowers/agents/<name>.agent.md`, or `ai-literacy-superpowers/commands/<name>.md`, the same PR must include at least one scenario file at `tdad_tests/scenarios/<type>/<name>/<aspect>.md` whose YAML frontmatter declares `tier` as one of `structural`, `trigger`, or `behavioural`. Files with `tier: finding` do NOT satisfy the constraint. Modifications to existing components are NOT gated. Enforcement: deterministic (`.github/workflows/tdad-scenario-check.yml`). Scope: pr.
+When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>/SKILL.md`, `ai-literacy-superpowers/agents/<name>.agent.md`, or `ai-literacy-superpowers/commands/<name>.md`, the same PR must include at least one scenario file at `tdad_tests/scenarios/<type>/<name>/<aspect>.md` whose YAML frontmatter declares `tier` as one of `structural`, `trigger`, or `behavioural`. Files with `tier: finding` do NOT satisfy the constraint. Modifications to existing components are NOT gated. Enforcement: deterministic. Scope: pr.
 
 ### New plugin components must ship with a reference-page entry
 
-When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>/SKILL.md`, `ai-literacy-superpowers/agents/<name>.agent.md`, or `ai-literacy-superpowers/commands/<name>.md`, the same PR must add an `### <name>` heading to the matching Diataxis reference page (`docs/plugins/ai-literacy-superpowers/reference/skills.md`, `.../agents.md`, or `.../commands.md`). For commands the heading is `### /<name>` (with the leading slash). Modifications to existing components are NOT gated. Effective from 2026-05-26. Enforcement: deterministic (`.github/workflows/docs-reference-parity-check.yml`). Scope: pr.
+When a PR adds a new file matching one of `ai-literacy-superpowers/skills/<name>/SKILL.md`, `ai-literacy-superpowers/agents/<name>.agent.md`, or `ai-literacy-superpowers/commands/<name>.md`, the same PR must add an `### <name>` heading to the matching Diataxis reference page (`docs/plugins/ai-literacy-superpowers/reference/skills.md`, `.../agents.md`, or `.../commands.md`). For commands the heading is `### /<name>` (with the leading slash). Modifications to existing components are NOT gated. Effective from 2026-05-26. Enforcement: deterministic. Scope: pr.
 
 ### Every marketplace plugin appears in the docs index pages
 
-Every plugin listed in `.claude-plugin/marketplace.json` `plugins[]` must appear in both marketplace-level docs index pages: the homepage table (`docs/index.md`) and the canonical available-plugins table (`docs/plugins/index.md`). "Appears" means the plugin's landing-page link `<name>/index.md` is present in each file. Marketplace-scoped analogue of the per-plugin reference-page constraint; a whole-repo invariant checked on HEAD. Effective from 2026-06-01. Enforcement: deterministic (`.github/workflows/marketplace-docs-coverage-check.yml`). Scope: pr.
+Every plugin listed in `.claude-plugin/marketplace.json` `plugins[]` must appear in both marketplace-level docs index pages: the homepage table (`docs/index.md`) and the canonical available-plugins table (`docs/plugins/index.md`). "Appears" means the plugin's landing-page link `<name>/index.md` is present in each file. Marketplace-scoped analogue of the per-plugin reference-page constraint; a whole-repo invariant checked on HEAD. Effective from 2026-06-01. Enforcement: deterministic. Scope: pr.
 
 ### Objection records use the canonical taxonomy
 
-Every objection record in `docs/superpowers/objections/` must use the canonical advocatus-diaboli taxonomy — categories one of `premise`, `scope`, `implementation`, `risk`, `alternatives`, `specification quality`, and severities one of `critical`, `high`, `medium`, `low` — in both spec and code mode. Records dated on or before the 2026-04-19 taxonomy migration are grandfathered. Enforcement: deterministic (`.github/workflows/objection-taxonomy-check.yml`). Scope: pr.
+Every objection record in `docs/superpowers/objections/` must use the canonical advocatus-diaboli taxonomy — categories one of `premise`, `scope`, `implementation`, `risk`, `alternatives`, `specification quality`, and severities one of `critical`, `high`, `medium`, `low` — in both spec and code mode. Records dated on or before the 2026-04-19 taxonomy migration are grandfathered. Enforcement: deterministic. Scope: pr.
 
 ### Reflections via PR workflow
 
@@ -157,32 +157,32 @@ Every addition to `REFLECTION_LOG.md` must be committed on a branch and merged t
 
 ### Label PRs at creation time
 
-When creating a PR with `gh pr create` that requires a label (`chore`, `fix`, `cross-repo`) to bypass a CI gate, always pass `--label <label>` in the `gh pr create` command itself. Labels added after the initial push are invisible to already-queued CI runs and require an empty-commit retrigger. Enforcement: agent (harness-enforcer). Scope: manual.
+When creating a PR with `gh pr create` that requires a label (`chore`, `fix`, `cross-repo`) to bypass a CI gate, always pass `--label <label>` in the `gh pr create` command itself. Labels added after the initial push are invisible to already-queued CI runs and require an empty-commit retrigger. Enforcement: agent. Scope: manual.
 
 ### Docs propagation when shipping new commands
 
-When a PR adds a new command, skill, or agent in `ai-literacy-superpowers/` that consolidates or replaces existing functionality, the same PR must update every reference in `docs/plugins/<plugin>/` to the commands or skills the new one composes or replaces. A `See also` callout pattern is insufficient when the new artefact is meant to be the canonical entry point — the older pages must explicitly frame the existing artefacts as primitives or alternatives, not as first-class equivalents. Effective from 2026-05-07. Enforcement: agent (harness-enforcer). Scope: pr.
+When a PR adds a new command, skill, or agent in `ai-literacy-superpowers/` that consolidates or replaces existing functionality, the same PR must update every reference in `docs/plugins/<plugin>/` to the commands or skills the new one composes or replaces. A `See also` callout pattern is insufficient when the new artefact is meant to be the canonical entry point — the older pages must explicitly frame the existing artefacts as primitives or alternatives, not as first-class equivalents. Effective from 2026-05-07. Enforcement: unverified. Scope: pr.
 
 ### Affordances have matching permissions
 
-Every non-example, non-hook affordance declared in the `## Affordances` section must have a `Permission` pattern that appears verbatim (string equality) in the permissions allowlist (`.claude/settings.json` or `.claude/settings.local.json`). An affordance without a matching permission is a tool the agent has declared but cannot invoke — a safety gap. Enforcement: deterministic (`bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=blocking`). Scope: pr.
+Every non-example, non-hook affordance declared in the `## Affordances` section must have a `Permission` pattern that appears verbatim (string equality) in the permissions allowlist (`.claude/settings.json` or `.claude/settings.local.json`). An affordance without a matching permission is a tool the agent has declared but cannot invoke — a safety gap. Enforcement: deterministic. Scope: pr.
 
 ### Permissions have declared affordances
 
-Every entry in the permissions allowlist should have a matching affordance in the `## Affordances` section. An ungoverned permission is paperwork debt, not a safety violation — flag it, do not block. Enforcement: deterministic (`bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory`). Scope: pr.
+Every entry in the permissions allowlist should have a matching affordance in the `## Affordances` section. An ungoverned permission is paperwork debt, not a safety violation — flag it, do not block. Enforcement: deterministic. Scope: pr.
 
 ### Convention parity
 
-Every active constraint heading in HARNESS.md's Constraints section must appear verbatim in all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`). These files are generated from HARNESS.md by `/convention-sync` and can drift by whole constraints (content drift, not a stale mtime). This PR-time gate complements the weekly "Convention file sync" GC rule. Headings alone are not enough: a change to a constraint's **body** passes the heading check untouched. Where a rule enumerates a closed set of valid values, every member must also appear in all three mirrors — a mirror listing five of six does not omit prose, it misleads about what is allowed. Mirrors may abridge explanation; they may not abridge a vocabulary. Enforcement: deterministic (`python3 scripts/check-convention-parity.py`, CI `.github/workflows/convention-parity-check.yml`). Scope: pr.
+Every active constraint heading in HARNESS.md's Constraints section must appear verbatim in all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`). These files are generated from HARNESS.md by `/convention-sync` and can drift by whole constraints (content drift, not a stale mtime). This PR-time gate complements the weekly "Convention file sync" GC rule. Headings alone are not enough: a change to a constraint's **body** passes the heading check untouched. Where a rule enumerates a closed set of valid values, every member must also appear in all three mirrors — a mirror listing five of six does not omit prose, it misleads about what is allowed. Mirrors may abridge explanation; they may not abridge a vocabulary. Enforcement: deterministic. Scope: pr.
 
 ### Sentinel integrity
 
-Any agent whose frontmatter declares `role: sentinel` MUST NOT be granted `Write` or `Edit` tools — a sentinel's object of care is the human's understanding and judgement, and criterion S1 of the sentinel signature is a read-only trust boundary (`Bash` is permitted for read-only inspection such as `git log`). The same check also rejects any `role:` value outside the enum `{sentinel}`, so a typo fails loudly rather than silently exempting the agent. Enforcement: deterministic (`bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents`, CI `.github/workflows/harness.yml`; also weekly in `.github/workflows/gc.yml`). Scope: pr.
+Any agent whose frontmatter declares `role: sentinel` MUST NOT be granted `Write` or `Edit` tools — a sentinel's object of care is the human's understanding and judgement, and criterion S1 of the sentinel signature is a read-only trust boundary (`Bash` is permitted for read-only inspection such as `git log`). The same check also rejects any `role:` value outside the enum `{sentinel}`, so a typo fails loudly rather than silently exempting the agent. Enforcement: deterministic. Scope: pr.
 
 ### Harness decision records are well-formed
 
-Every file in `harness/decisions/` (other than the generated `index.md` and the corpus `README.md`) must be a valid Harness Decision Record, and `harness/surfaces.yaml` must be a valid control-surface capability matrix. The validator is the single source of truth for every refusal: the identifier grammar, the required fields, the classification and enforcement vocabularies, the two body tiers, the four-backtick Rule block, the human-authored `cost`, the two-assay promotion threshold for `harness-loop` changes, the three-per-cycle acceptance cap, and the grandfathering rules for imported constraints. A surface that cannot reach a rule's intended enforcement level is an **enforcement gap**, reported by `/harness-compile` — never a validation failure, because failing here would train authors to declare the weakest enforcement any surface supports. A repository with no `harness/` directory passes; adopting the mechanism stays a choice. Enforcement: deterministic (`python3 ai-literacy-superpowers/scripts/check-harness-decisions.py`, CI `.github/workflows/harness.yml`). Scope: pr.
+Every file in `harness/decisions/` (other than the generated `index.md` and the corpus `README.md`) must be a valid Harness Decision Record, and `harness/surfaces.yaml` must be a valid control-surface capability matrix. The validator is the single source of truth for every refusal: the identifier grammar, the required fields, the classification and enforcement vocabularies, the two body tiers, the four-backtick Rule block, the human-authored `cost`, the two-assay promotion threshold for `harness-loop` changes, the three-per-cycle acceptance cap, and the grandfathering rules for imported constraints. A surface that cannot reach a rule's intended enforcement level is an **enforcement gap**, reported by `/harness-compile` — never a validation failure, because failing here would train authors to declare the weakest enforcement any surface supports. A repository with no `harness/` directory passes; adopting the mechanism stays a choice. Enforcement: deterministic. Scope: pr.
 
 ### Harness governance is applied and undrifted
 
-Every generated region compiled from the Harness Decision Record corpus must match what the corpus produces, every accepted record must be applied to the artifact its classification routes it to, and no accepted record may differ from its content at the commit that accepted it. Compilation writes only between `<!-- BEGIN GENERATED: harness-registrar -->` and `<!-- END GENERATED: harness-registrar -->`; content outside the markers is never touched, and an ambiguous marker pair is refused rather than guessed at. The frozen-record check is git-backed because region drift alone cannot see a rule reworded in the accepted record and then recompiled — the region would match the corpus and every byte-identity check would pass. An accepted record that has never been committed is skipped with a note rather than failed. A rule past its `expires` date and still in force **fails**, so retiring a rule is never contingent on anyone remembering to reflect; an evidence reference naming a repository path that no longer exists fails, while a reference carrying a URI scheme is named as skipped rather than passed in silence. A repository with no `harness/` directory passes. Enforcement: deterministic (`python3 ai-literacy-superpowers/scripts/harness-registrar.py check`, CI `.github/workflows/harness.yml`). Scope: pr.
+Every generated region compiled from the Harness Decision Record corpus must match what the corpus produces, every accepted record must be applied to the artifact its classification routes it to, and no accepted record may differ from its content at the commit that accepted it. Compilation writes only between `<!-- BEGIN GENERATED: harness-registrar -->` and `<!-- END GENERATED: harness-registrar -->`; content outside the markers is never touched, and an ambiguous marker pair is refused rather than guessed at. The frozen-record check is git-backed because region drift alone cannot see a rule reworded in the accepted record and then recompiled — the region would match the corpus and every byte-identity check would pass. An accepted record that has never been committed is skipped with a note rather than failed. A rule past its `expires` date and still in force **fails**, so retiring a rule is never contingent on anyone remembering to reflect; an evidence reference naming a repository path that no longer exists fails, while a reference carrying a URI scheme is named as skipped rather than passed in silence. A repository with no `harness/` directory passes. Enforcement: deterministic. Scope: pr.

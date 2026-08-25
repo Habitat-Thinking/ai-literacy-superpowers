@@ -7,28 +7,28 @@
 
 - **Rule**: Every markdown file in the repository must pass markdownlint with the project's `.markdownlint.json` configuration, **except the append-only record corpora** (`docs/superpowers/**`, `reflections/**`), the gitignored `REFLECTION_STAGING.md`, and untracked local artefacts under `.claude/**`. Records carry human dispositions and quote markdown as evidence, so style rules fight them by construction. Globs and ignores live in `.markdownlint-cli2.jsonc`, so a bare local run checks exactly what CI does
 - **Enforcement**: deterministic
-- **Tool**: `npx markdownlint-cli2 "**/*.md"`
+- **Tool**: `npx markdownlint-cli2` (globs and ignores come from
 - **Scope**: commit + pr
 
 ## No secrets in source
 
 - **Rule**: No API keys, tokens, passwords, or private keys may appear in committed source files
 - **Enforcement**: deterministic
-- **Tool**: `gitleaks detect --source . --no-banner --exit-code 1`
+- **Tool**: gitleaks detect --source . --no-banner --exit-code 1
 - **Scope**: commit
 
 ## Shell scripts pass syntax check
 
 - **Rule**: All `.sh` files must pass `bash -n` without errors
 - **Enforcement**: deterministic
-- **Tool**: `find . -name "*.sh" -exec bash -n {} +`
+- **Tool**: find . -name "*.sh" -exec bash -n {} +
 - **Scope**: commit
 
 ## All frontmatter has name and description
 
 - **Rule**: Every `.agent.md`, `SKILL.md`, and command `.md` file in the plugin must have YAML frontmatter containing both `name` and `description` fields
-- **Enforcement**: agent
-- **Tool**: harness-enforcer agent
+- **Enforcement**: deterministic
+- **Tool**: `python3 scripts/check-component-frontmatter.py` (CI: `.github/workflows/harness.yml`)
 - **Scope**: pr
 
 ## Shell scripts use strict mode
@@ -41,42 +41,42 @@
 
 - **Rule**: All `.sh` files must pass ShellCheck with no errors
 - **Enforcement**: deterministic
-- **Tool**: `find . -name "*.sh" -not -path "./.git/*" -exec shellcheck {} +`
+- **Tool**: find . -name "*.sh" -not -path "./.git/*" -exec shellcheck {} +
 - **Scope**: commit + pr
 
 ## Spec-scoped changes
 
 - **Rule**: Each feature or behaviour-change PR should trace to a single spec. Bug fixes, dependency updates, and other maintenance changes do not require a spec but should still be coherently scoped — one concern per PR. PRs that bundle unrelated changes must be decomposed.
-- **Enforcement**: agent
-- **Tool**: harness-enforcer (reviews against The Human Pace)
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ## Spec-first commit ordering
 
 - **Rule**: For feature and behaviour-change PRs, the first commit on the branch must contain only a spec file in `docs/superpowers/specs/`. No implementation code may appear in that commit. Bug-fix, dependency, and maintenance PRs (labelled `bug`, `fix`, `chore`, `maintenance` or branch-prefixed `fix/`, `chore/`) are exempt.
 - **Enforcement**: deterministic
-- **Tool**: `.github/workflows/spec-first-check.yml`
+- **Tool**: .github/workflows/spec-first-check.yml
 - **Scope**: pr
 
 ## Spec captures intent
 
 - **Rule**: The spec file in a feature PR must describe the problem being solved, the chosen approach, and the expected outcome. The implementation in the PR should trace back to what the spec describes.
-- **Enforcement**: agent
-- **Tool**: harness-enforcer agent
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ## Version consistency
 
 - **Rule**: plugin.json version, README badge version, and CHANGELOG heading must all match. Changes to files inside `ai-literacy-superpowers/` (skills, agents, commands, hooks, config) require a version bump. Changes outside the plugin directory do not. Trivial formatting-only fixes to plugin files can skip the bump with the `no-bump` PR label.
 - **Enforcement**: deterministic
-- **Tool**: `.github/workflows/version-check.yml`
+- **Tool**: .github/workflows/version-check.yml
 - **Scope**: pr
 
 ## Marketplace plugin version sync
 
 - **Rule**: `marketplace.json` top-level `plugin_version` must match `plugin.json` `version`. When the plugin version is bumped, the marketplace pointer must be updated in the same PR.
 - **Enforcement**: deterministic
-- **Tool**: `.github/workflows/version-check.yml`
+- **Tool**: .github/workflows/version-check.yml
 - **Scope**: pr
 
 ## Release traceability
@@ -90,21 +90,21 @@
 
 - **Rule**: All PRs that change `docs/**`, `mkdocs.yml`, or `requirements.txt` must pass `mkdocs build --strict` without aborting. The strict build catches broken internal links, missing pages, and other issues that the post-merge Pages deploy would otherwise fail on.
 - **Enforcement**: deterministic
-- **Tool**: `.github/workflows/docs-build-check.yml`
+- **Tool**: .github/workflows/docs-build-check.yml (runs
 - **Scope**: pr
 
 ## Output validation checkpoints
 
 - **Rule**: Every command that produces structured output parsed by downstream consumers (snapshots, assessments, audit reports, reflections, cost snapshots, HARNESS.md sections, habitat files, onboarding documents) must include a validation checkpoint step that reads the output, checks structure against the format spec reference, and fixes deviations in place
-- **Enforcement**: agent
-- **Tool**: harness-enforcer agent
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ## Docs site kept current
 
 - **Rule**: When a PR adds, removes, or substantially changes a skill, agent, or command, the corresponding docs pages in `docs/` (how-to guides, explanation pages, reference material) must be reviewed and updated in the same PR. A PR that changes plugin behaviour without a docs review note in the PR description is incomplete.
-- **Enforcement**: agent
-- **Tool**: harness-enforcer agent
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ## PRs have adjudicated objections
@@ -159,7 +159,7 @@
 
 - **Rule**: The Layer 0 deterministic bash tests must pass on both a macOS (BSD coreutils) and an Ubuntu (GNU coreutils) CI runner. The plugin's deterministic check scripts use `grep`, `date`, `sort`, and `stat`, which diverge between BSD and GNU and are masked on a macOS dev machine.
 - **Enforcement**: deterministic
-- **Tool**: `.github/workflows/tdad-tests-fast.yml` (the `layer0-macos` job runs Layer 0 on `macos-latest`; `fast-suite` runs it on `ubuntu-latest`)
+- **Tool**: `.github/workflows/tdad-tests-fast.yml` (the `layer0-macos` job
 - **Scope**: pr
 
 ## New plugin components must ship with a TDAD scenario
@@ -194,7 +194,7 @@
 
 - **Rule**: Every addition to `REFLECTION_LOG.md` must be committed on a branch and merged to `main` via a PR with CI passing. Direct commits to `main` that modify `REFLECTION_LOG.md` are prohibited. Applies to all `/reflect` invocations. Effective from 2026-04-20 — commits before that date are exempt.
 - **Enforcement**: deterministic
-- **Tool**: `git log --no-merges --format="%H %s" --since="2026-04-20" origin/main -- REFLECTION_LOG.md | grep -v "#[0-9]" | grep -q .`
+- **Tool**: `! git log --no-merges --format="%H %s" --since="2026-04-20"
 - **Scope**: weekly
 
 ## Label PRs at creation time
@@ -207,48 +207,48 @@
 ## Docs propagation when shipping new commands
 
 - **Rule**: When a PR adds a new command, skill, or agent in `ai-literacy-superpowers/` that consolidates or replaces existing functionality, the same PR must update every reference in `docs/plugins/<plugin>/` to the commands or skills the new one composes or replaces. A `See also` callout pattern is insufficient when the new artefact is meant to be the canonical entry point — the older pages must explicitly frame the existing artefacts as primitives or alternatives, not as first-class equivalents. Effective from 2026-05-07.
-- **Enforcement**: agent
-- **Tool**: harness-enforcer
+- **Enforcement**: unverified
+- **Tool**: none — no dispatch path exists. Declared `agent` from April to 2026-08-25 while no workflow dispatched `harness-enforcer`; demoted to `unverified` rather than left claiming an enforcement that could not fire
 - **Scope**: pr
 
 ## Affordances have matching permissions
 
 - **Rule**: Every non-example, non-hook affordance declared in the `## Affordances` section must have a `Permission` pattern that appears verbatim (string equality) in the permissions allowlist (`.claude/settings.json` or `.claude/settings.local.json`). An affordance without a matching permission is a tool the agent has declared but cannot invoke — a safety gap.
 - **Enforcement**: deterministic
-- **Tool**: `bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=blocking`
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=blocking
 - **Scope**: pr
 
 ## Permissions have declared affordances
 
 - **Rule**: Every entry in the permissions allowlist should have a matching affordance in the `## Affordances` section. An ungoverned permission is paperwork debt, not a safety violation — flag it, do not block.
 - **Enforcement**: deterministic
-- **Tool**: `bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory`
+- **Tool**: bash ai-literacy-superpowers/scripts/harness-affordance-check.sh --direction=advisory
 - **Scope**: pr
 
 ## Convention parity
 
 - **Rule**: Every active constraint heading in HARNESS.md's `## Constraints` section must appear verbatim in all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`). These files are generated from HARNESS.md by `/convention-sync` and can drift by whole constraints (content drift, not a stale mtime). This PR-time gate complements the weekly "Convention file sync" GC rule. Headings alone are not enough: a change to a constraint's **body** passes the heading check untouched. Where a rule enumerates a closed set of valid values, every member must also appear in all three mirrors — a mirror listing five of six does not omit prose, it misleads about what is allowed. Mirrors may abridge explanation; they may not abridge a vocabulary.
 - **Enforcement**: deterministic
-- **Tool**: `python3 scripts/check-convention-parity.py` and `python3 scripts/check-constraint-enum-parity.py` (CI: `.github/workflows/convention-parity-check.yml`)
+- **Tool**: `python3 scripts/check-convention-parity.py` and
 - **Scope**: pr
 
 ## Sentinel integrity
 
 - **Rule**: Any agent whose frontmatter declares `role: sentinel` MUST NOT be granted `Write` or `Edit` tools — a sentinel's object of care is the human's understanding and judgement, and criterion S1 of the sentinel signature is a read-only trust boundary (`Bash` is permitted for read-only inspection such as `git log`). The same check also rejects any `role:` value outside the enum `{sentinel}`, so a typo fails loudly rather than silently exempting the agent.
 - **Enforcement**: deterministic
-- **Tool**: `bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents` (CI: `.github/workflows/harness.yml`; also runs weekly in `.github/workflows/gc.yml`)
+- **Tool**: `bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents`
 - **Scope**: pr
 
 ## Harness decision records are well-formed
 
 - **Rule**: Every file in `harness/decisions/` (other than the generated `index.md` and the corpus `README.md`) must be a valid Harness Decision Record, and `harness/surfaces.yaml` must be a valid control-surface capability matrix. The validator is the single source of truth for every refusal: the identifier grammar, the required fields, the classification and enforcement vocabularies, the two body tiers, the four-backtick Rule block, the human-authored `cost`, the two-assay promotion threshold for `harness-loop` changes, the three-per-cycle acceptance cap, and the grandfathering rules for imported constraints. A surface that cannot reach a rule's intended enforcement level is an **enforcement gap**, reported by `/harness-compile` — never a validation failure, because failing here would train authors to declare the weakest enforcement any surface supports. A repository with no `harness/` directory passes; adopting the mechanism stays a choice.
 - **Enforcement**: deterministic
-- **Tool**: `python3 ai-literacy-superpowers/scripts/check-harness-decisions.py` (CI: `.github/workflows/harness.yml`)
+- **Tool**: `python3 ai-literacy-superpowers/scripts/check-harness-decisions.py`
 - **Scope**: pr
 
 ## Harness governance is applied and undrifted
 
 - **Rule**: Every generated region compiled from the Harness Decision Record corpus must match what the corpus produces, every accepted record must be applied to the artifact its classification routes it to, and no accepted record may differ from its content at the commit that accepted it. Compilation writes only between `<!-- BEGIN GENERATED: harness-registrar -->` and `<!-- END GENERATED: harness-registrar -->`; content outside the markers is never touched, and an ambiguous marker pair is refused rather than guessed at. The frozen-record check is git-backed because region drift alone cannot see a rule reworded in the accepted record and then recompiled — the region would match the corpus and every byte-identity check would pass. An accepted record that has never been committed is skipped with a note rather than failed. A rule past its `expires` date and still in force **fails**, so retiring a rule is never contingent on anyone remembering to reflect; an evidence reference naming a repository path that no longer exists fails, while a reference carrying a URI scheme is named as skipped rather than passed in silence. A repository with no `harness/` directory passes.
 - **Enforcement**: deterministic
-- **Tool**: `python3 ai-literacy-superpowers/scripts/harness-registrar.py check` (CI: `.github/workflows/harness.yml`)
+- **Tool**: `python3 ai-literacy-superpowers/scripts/harness-registrar.py check`
 - **Scope**: pr
