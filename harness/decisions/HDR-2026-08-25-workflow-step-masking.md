@@ -8,6 +8,20 @@ surfaces: [ci]
 provisional: true
 expires: 2026-11-23
 overfitting_risk: low
+proposed_rule: |
+  - **Rule**: In a workflow that enforces declared constraints or
+    garbage-collection rules, every enforcing step carries `if: always()`, and
+    the job's conclusion is derived from the collected step results rather than
+    from the first failure. A check that did not run is reported as not run —
+    never omitted, and never counted as passing. This binds
+    `.github/workflows/harness.yml` and `.github/workflows/gc.yml`. On the PR
+    gate the two harness-governance checks are the last two steps, so any
+    earlier constraint failure hides them; on the weekly job the whole value is
+    the weeks nobody reads it. A run that stops partway reports a smaller world
+    than it declared it would check.
+  - **Enforcement**: deterministic
+  - **Tool**: `.github/workflows/harness.yml` and `.github/workflows/gc.yml`
+  - **Scope**: pr
 evidence:
   - .github/workflows/harness.yml
   - .github/workflows/gc.yml
@@ -126,14 +140,11 @@ than the defect and would satisfy (a) and nothing else.
 
 ````markdown
 - **Rule**: In a workflow that enforces declared constraints or
-  garbage-collection rules, every enforcing step carries `if: always()`, and
+  garbage-collection rules, every enforcing step carries `if: ${{ !cancelled() }}`, and
   the job's conclusion is derived from the collected step results rather than
   from the first failure. A check that did not run is reported as not run —
   never omitted, and never counted as passing. This binds
-  `.github/workflows/harness.yml` and `.github/workflows/gc.yml`. On the PR
-  gate the two harness-governance checks are the last two steps, so any
-  earlier constraint failure hides them; on the weekly job the whole value is
-  the weeks nobody reads it. A run that stops partway reports a smaller world
+  `.github/workflows/harness.yml` and `.github/workflows/gc.yml`. A run that stops partway reports a smaller world
   than it declared it would check.
 - **Enforcement**: deterministic
 - **Tool**: `.github/workflows/harness.yml` and `.github/workflows/gc.yml`

@@ -8,6 +8,25 @@ surfaces: [ci]
 provisional: true
 expires: 2026-11-23
 overfitting_risk: low
+proposed_rule: |
+  - **Rule**: Every long option and every subcommand that a script accepts must
+    appear verbatim in at least one file under
+    `ai-literacy-superpowers/commands/`, when that script is invoked by a
+    command in that directory. A capability the code exposes and no command
+    prompt names is a capability the agent driving that command cannot reach,
+    and a validation checkpoint written against an older interface reports a
+    correct artifact as a defect — which is worse than silence, because the
+    command instructs the agent to report rather than patch. An option whose
+    only caller is another script is exempt by carrying an `# undocumented:`
+    comment on the line above its `add_argument` call, so the exemption is
+    visible where the option is declared rather than in a list somewhere else.
+    This does not reach reference or how-to pages; those are governed by
+    *Docs site kept current*, whose trigger is a change to a command, skill or
+    agent file.
+  - **Enforcement**: deterministic
+  - **Tool**: `python3 ai-literacy-superpowers/scripts/check-command-cli-parity.py`
+    (CI: `.github/workflows/harness.yml`)
+  - **Scope**: pr
 evidence:
   - ai-literacy-superpowers/commands/harness-propose.md
   - ai-literacy-superpowers/commands/harness-accept.md
@@ -132,9 +151,7 @@ is not reading what it claims to read and should be refused.
 
 ````markdown
 - **Rule**: Every long option and every subcommand that a script accepts must
-  appear verbatim in at least one file under
-  `ai-literacy-superpowers/commands/`, when that script is invoked by a
-  command in that directory. A capability the code exposes and no command
+  appear verbatim in the command file that invokes that script. A capability the code exposes and no command
   prompt names is a capability the agent driving that command cannot reach,
   and a validation checkpoint written against an older interface reports a
   correct artifact as a defect — which is worse than silence, because the

@@ -1,5 +1,58 @@
 # Changelog
 
+## 0.87.0 — 2026-08-25
+
+### The first rule enters force through the governed loop
+
+`HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one`
+is `accepted` and applied. Three assays, two adversarial reviews, thirty-five
+dispositions and one reclassification after it was first observed, the loop has
+produced a rule that is in force — and the corpus is no longer three records of
+governance being examined with nothing surviving the examination.
+
+- **Rule text amended before the gate**, on the accepted objections: the Tool
+  retargeted to the skill that actually dispatches it (O5), and the duplicated
+  "weaker property" clause dropped so it no longer legislates what assay 3's
+  finding-2 already covers (O9). Each record now carries `proposed_rule` beside
+  its amended text — the fourth application of the `proposed_cost` / `cost`
+  pattern, added here because rule text had no provenance pair and an amendment
+  would otherwise have read as the Assayer's words.
+- **Applied to `skills/advocatus-diaboli/SKILL.md`**, where it is loaded on every
+  `/diaboli` run. Enforcement report: intended advisory, achieved advisory,
+  **0 gaps of 1 rule-surface pair**. At the classification the assay proposed it
+  would have compiled to achieved `none`.
+- **The cost is the approver's, in their own words**: the team does the work; the
+  recurring cost is probably tighter than the Assayer estimated; retirement at
+  2026-11-23 unless it has fired and protected something.
+- **Validation was rewritten twice.** It first said nothing could measure the
+  rule. The approver's own retirement test then supplied the measurement: the
+  rule fires as an objection, objections carry dispositions, and that is the
+  evidence trail. A criterion that only exists because of the reclassification.
+
+### Fixed — the compiler emitted markdown that failed the project's own lint
+
+`enforcement_summary` rendered its one-line account as an underscore-emphasised
+line, which trips MD036 (emphasis used instead of a heading) and MD049
+(emphasis style). So the first rule this loop put in force wrote a generated
+region into `skills/advocatus-diaboli/SKILL.md` that failed *Consistent
+markdown formatting* — and the region carries "do not edit by hand", so it
+could not be fixed where it landed.
+
+Now rendered as a blockquote. A generated region that cannot satisfy the
+constraints of the project it is generated into is a defect in the generator,
+and it took putting a rule in force to find it.
+
+### Not accepted
+
+`workflow-step-masking` is reclassified to `harness-loop` on its own accepted
+objection and is now **refused by the threshold** — one countable assay against
+two, because assay 1's finding-2 carries an erratum. Choosing the classification
+that owns the behaviour cost it acceptance.
+
+`command-cli-parity` is gate-ready with two amendments still open: whether the
+rule binds bash as well as Python, and what the invocation trigger means
+mechanically.
+
 ## 0.86.2 — 2026-08-25
 
 ### Added — /harness-audit now validates the Status block it writes

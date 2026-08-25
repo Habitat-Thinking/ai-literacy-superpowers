@@ -1,7 +1,7 @@
 ---
 id: HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one
 title: Four mechanisms report the reassuring answer when they cannot determine the real one
-status: proposed
+status: accepted
 classification: agent-instruction
 enforcement: advisory
 surfaces: [claude-code]
@@ -9,6 +9,23 @@ provisional: true
 expires: 2026-11-23
 target: ai-literacy-superpowers/skills/advocatus-diaboli/SKILL.md
 overfitting_risk: low
+proposed_rule: |
+  - **Rule**: A mechanism that reports a status — a badge, a `## Status`
+    block, a check result, a snapshot field, a summary line — must have a
+    defined value for the case where it could not determine the answer, and
+    that value may not be the passing one. Where an input is missing,
+    unreadable or not supplied, the mechanism reports the degraded or unknown
+    state and names the input it could not read. A reachable code path that
+    reaches a passing value without reading the thing it reports on is a
+    defect, not a default. Separately, a check may not report a pass on the
+    strength of a property weaker than the one it names: if the check is
+    called "release tag completeness" it verifies that the release has a tag,
+    not that a string exists. Absence of evidence is not evidence of health,
+    and a mechanism that fails toward the reassuring answer is worse than an
+    absent one, because the next reader stops looking.
+  - **Enforcement**: agent
+  - **Tool**: advocatus-diaboli (spec-mode gate) and harness-enforcer
+  - **Scope**: pr
 evidence:
   - ai-literacy-superpowers/scripts/update-health-badge.sh
   - HARNESS.md
@@ -52,11 +69,24 @@ proposed_cost: |
   finding-2.
 
   ---
-cost: ""
+cost: |
+  The team does the work.
+
+  The recurring cost is probably tighter than the estimate the Assayer wrote in
+  proposed_cost: five minutes per PR to answer what a reporting mechanism does
+  when it cannot tell, and rarely the thirty minutes to two hours where the
+  answer turns out to be the passing value and something has to change. Most PRs
+  add no reporting mechanism and pay nothing.
+
+  On retirement I am not sure. Likely kept if it has fired and protected
+  something, with the evidence being the dispositions on objection records
+  written since acceptance; retired at 2026-11-23 if there is no such evidence.
 proposer:
   agent: harness-assayer
   model: claude-opus-5
   assay: harness/assay/2026-08-25T14-31Z-assay.md
+approver: Russ Miles <russ@russmiles.com>
+approved_at: 2026-08-25T16:00Z
 supersedes: null
 superseded_by: null
 ---
@@ -172,57 +202,28 @@ should be refused rather than softened.
   unreadable or not supplied, the mechanism reports the degraded or unknown
   state and names the input it could not read. A reachable code path that
   reaches a passing value without reading the thing it reports on is a
-  defect, not a default. Separately, a check may not report a pass on the
-  strength of a property weaker than the one it names: if the check is
-  called "release tag completeness" it verifies that the release has a tag,
-  not that a string exists. Absence of evidence is not evidence of health,
+  defect, not a default.
+  Absence of evidence is not evidence of health,
   and a mechanism that fails toward the reassuring answer is worse than an
   absent one, because the next reader stops looking.
 - **Enforcement**: agent
-- **Tool**: advocatus-diaboli (spec-mode gate) and harness-enforcer
+- **Tool**: `ai-literacy-superpowers/skills/advocatus-diaboli/SKILL.md`
 - **Scope**: pr
 ````
 
 ## Cost
 
-_Proposed by the Assayer. To be replaced at acceptance by the approver's own words:_
+The team does the work.
 
-Per PR that adds or changes a reporting mechanism: one question the author must
-answer in the spec or the PR body — what does this report when it cannot tell,
-and which code path reaches that value — plus, where the answer is "the passing
-one", the work to change it. Five minutes to answer, thirty to two hours to
-fix. Most PRs add no reporting mechanism and pay nothing.
+The recurring cost is probably tighter than the estimate the Assayer wrote in
+proposed_cost: five minutes per PR to answer what a reporting mechanism does
+when it cannot tell, and rarely the thirty minutes to two hours where the
+answer turns out to be the passing value and something has to change. Most PRs
+add no reporting mechanism and pay nothing.
 
-The heavy cost is honest and the approver should price it before the per-PR
-one. **This becomes the eleventh agent-enforced constraint in a tree where the
-2026-08-25 audit established that none of them can fire.** `grep -rn
-'harness-enforcer' .github/workflows/` returns nothing (`observed`, and
-recorded in the Status block). An agent-enforced constraint runs when a human
-types `/harness-audit`, which happened once in the twelve days before this
-window. So the realistic sequence after acceptance is: `HARNESS.md` gains a P1
-rule; it is not dispatched by anything; and it is next read at the following
-`/harness-audit`, which may be a quarter away. An approver who wants this to
-bite is buying the dispatch path, not the rule text, and the cost they write
-should say who builds it and when. An approver who does not want to buy that
-should decline this finding rather than accept a rule they know cannot fire —
-that is a legitimate outcome and I would rather it be chosen deliberately than
-arrived at.
-
-Three ways it can be gamed, in descending order of likelihood. **Declaring an
-`Unknown` state and never routing to it** — the branch exists, the reviewer
-sees it, nothing reaches it. This is the likely evasion; the rule's phrase
-"reachable code path" is the only defence and it depends on a reviewer asking
-what makes the branch reachable, which is exactly the kind of question that
-does not get asked at 17:00. **Renaming the passing value** — shipping
-`Healthy (unverified)` in green, which satisfies the letter and produces the
-same badge. **Arguing the mechanism does not report a status** — available for
-anything that only returns an exit code, and the second sentence about weaker
-properties is what closes it for checks, at the cost of being the vaguest
-clause in the rule. I could not tighten "weaker property" into something
-mechanical without narrowing it to release tags, which would overfit it to
-finding-2.
-
----
+On retirement I am not sure. Likely kept if it has fired and protected
+something, with the evidence being the dispositions on objection records
+written since acceptance; retired at 2026-11-23 if there is no such evidence.
 
 ## Why this layer
 
@@ -234,7 +235,7 @@ Intended advisory on claude-code. Both halves of the Tool as drafted are unreach
 
 ## Validation
 
-Nothing will tell us whether this rule helped. There is no measurement that would separate a repository where it worked from one where it was ignored, and the drafted plan named a criterion nobody can evaluate. Provisional on that basis, expiring 2026-11-23. The review at expiry is a judgement, not a reading.
+At expiry, read the objection records written since acceptance and look for objections this rule produced and dispositions that acted on them. The rule lives in the advocatus-diaboli skill file, so when it fires it fires as an objection, and every objection carries a disposition and a rationale - that is the evidence trail. No such objections by 2026-11-23 means it did not fire, and it is retired. This criterion only exists because of the reclassification; at harness-loop there was no trail and the honest answer would have been that nothing could tell us.
 
 ## Rejected alternatives
 
