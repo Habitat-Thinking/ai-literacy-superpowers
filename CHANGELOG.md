@@ -121,6 +121,30 @@ Both are recorded as raised rather than silently corrected. The disposition
 mechanism exists for exactly this, and an agent editing an adversarial reviewer's
 objections would defeat the gate.
 
+### The two outstanding assay-2 findings are now proposed records
+
+`/harness-propose` on `harness/assay/2026-08-25T11-59Z-assay.md` findings 1 and 2,
+which had objection records but had never been drafted into the corpus.
+
+- **`HDR-2026-08-25-command-cli-parity`** — `script-validator`, routed to
+  `HARNESS.md`, naming no target.
+- **`HDR-2026-08-25-workflow-step-masking`** — `script-validator`, same routing.
+  This is the re-proposal the retirement record deferred: "Re-propose immediately
+  with `HARNESS.md` as the target. Deferred, not rejected." The route now carries
+  the target, so the deadlock that retired the original does not recur.
+
+The corpus holds six records — three historical, three `proposed` — and
+`/harness-check` reports OK.
+
+All three proposals fail `precheck` on exactly one thing, and it is the same
+thing for each: the four tier-2 sections are placeholders. Nothing else stands
+in the way — routing resolves, the two-assay threshold is satisfied where it
+applies, and the cycle cap is not reached.
+
+Those sections, the 35 objection dispositions across the three records, and the
+cost at the gate are the approver's work and no agent's. They are listed rather
+than drafted.
+
 ## 0.86.1 — 2026-08-25
 
 ### Fixed — the health badge defaulted to green when it could not tell
