@@ -179,10 +179,10 @@ consumers must include a validation checkpoint step. The pattern:
 3. Check structure against the format spec reference
 4. Fix deviations in place (do not re-dispatch the agent)
 
-Commands with checkpoints: `/harness-health`, `/assess`, `/reflect`,
-`/cost-capture`, `/cost-estimate`, `/harness-constrain`, `/harness-init`,
-`/superpowers-init`, `/governance-audit`, `/harness-onboarding`,
-`/diagnose`, `/pipeline-map`.
+Commands with checkpoints: `/harness-health`, `/harness-audit`, `/assess`,
+`/reflect`, `/cost-capture`, `/cost-estimate`, `/harness-constrain`,
+`/harness-init`, `/superpowers-init`, `/governance-audit`,
+`/harness-onboarding`, `/diagnose`, `/pipeline-map`.
 
 When adding a new command that writes structured markdown, add a
 validation step following this pattern. Reference the format spec
