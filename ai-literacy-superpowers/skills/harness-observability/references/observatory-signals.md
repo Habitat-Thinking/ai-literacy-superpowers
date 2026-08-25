@@ -124,7 +124,6 @@ or when the Observatory's expectations change.
 | Constraints enforced | `Constraints enforced: N/M` | yes |
 | GC active | `Garbage collection active: N/M` | yes |
 | Drift detected | `Drift detected: yes/no` | yes |
-| Template version | `<!-- template-version: X.Y.Z -->` | yes |
 
 ---
 
@@ -152,6 +151,6 @@ or when the Observatory's expectations change.
 | Snapshot sections | 39 |
 | Governance summary | 9 |
 | Reflection entries | 12 |
-| HARNESS.md structure | 15 |
+| HARNESS.md structure | 14 |
 | Assessment document | 7 |
-| **Total** | **82** |
+| **Total** | **81** |

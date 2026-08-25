@@ -115,7 +115,6 @@ automatically):
 - `ONBOARDING.md`
 - Most recent snapshot in `observability/snapshots/`
 - HARNESS.md Status section accuracy
-- Template version drift
 - Constraint regressions (deterministic constraints whose tool fails)
 - Recurring reflection patterns (the `Reflection-driven regression detection` GC rule's findings)
 - CI / CD (informational only)
@@ -135,7 +134,6 @@ Surface / Finding                              Status      Action on apply
 ONBOARDING.md                                  drifted     /harness-onboarding    [manual]
 Snapshot staleness (last: 2026-04-15)          drifted     /harness-health        [auto]
 HARNESS.md Status section accuracy             drifted     /harness-audit         [auto]
-Template version (HARNESS: 0.31, plugin: 0.34) drifted     /harness-upgrade       [manual]
 Constraint regression: ShellCheck unverified   drifted     /harness-constrain     [manual]
 Reflection pattern: Output validation x3       candidate   /harness-constrain     [manual]
 CI / CD (constraint scope)                     managed     handled at runtime
@@ -203,11 +201,6 @@ items. The `managed` row never appears as a selectable option.
       "selected": false
     },
     {
-      "id": "template",
-      "label": "Template drift  [manual: /harness-upgrade]",
-      "selected": false
-    },
-    {
       "id": "regression",
       "label": "Constraint regression  [manual: /harness-constrain]",
       "selected": false
@@ -268,8 +261,6 @@ For each `[manual]` selected finding, do NOT invoke the action command.
 Instead, print a "next step" line:
 
 ```text
-Manual remediation suggested for: Template version drift
-Run: /harness-upgrade
 ```
 
 The user runs these separately. `/harness-sync` does not invoke them
@@ -291,7 +282,6 @@ Surface / Finding                              Before      After
 ONBOARDING.md                                  drifted     drifted (manual — see suggestion above)
 Snapshot staleness                             drifted     in sync ✓
 HARNESS.md Status accuracy                     drifted     in sync ✓
-Template drift                                 drifted     drifted (manual — see suggestion above)
 ```
 
 If any selected `[auto]` finding is _not_ now `in sync`, mark it as

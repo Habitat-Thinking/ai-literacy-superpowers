@@ -1,6 +1,6 @@
 ---
 name: observatory-verify
-description: Verify that all data signals the Habitat Observatory expects are present and correctly formatted — runs the 82-signal checklist against the latest output files
+description: Verify that all data signals the Habitat Observatory expects are present and correctly formatted — runs the 81-signal checklist against the latest output files
 ---
 
 # /observatory-verify
@@ -14,7 +14,7 @@ expects to read.
 ### 1. Read the Signal Checklist
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/harness-observability/references/observatory-signals.md`.
-This is the authoritative list of all signals to verify — 82 signals
+This is the authoritative list of all signals to verify — 81 signals
 across 5 sources.
 
 ### 2. Find Latest Output Files
@@ -86,7 +86,7 @@ Print a table to the session grouped by source:
 | Reflections | N | N | N | N | 12 |
 | HARNESS.md | N | N | N | N | 15 |
 | Assessment | N | N | N | N | 7 |
-| **Total** | **N** | **N** | **N** | **N** | **82** |
+| **Total** | **N** | **N** | **N** | **N** | **81** |
 ```
 
 If any signals are PARTIAL or MISSING, list them with a brief note

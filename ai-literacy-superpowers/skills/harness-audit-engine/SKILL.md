@@ -1,6 +1,6 @@
 ---
 name: harness-audit-engine
-description: Use when running the shared drift-detection logic that backs /harness-audit and /harness-sync — produces a structured drift report covering convention files, ONBOARDING.md, snapshot staleness, template drift, constraint regressions, recurring reflection patterns, and HARNESS.md Status section accuracy.
+description: Use when running the shared drift-detection logic that backs /harness-audit and /harness-sync — produces a structured drift report covering convention files, ONBOARDING.md, snapshot staleness, constraint regressions, recurring reflection patterns, and HARNESS.md Status section accuracy.
 ---
 
 # Harness Audit Engine
@@ -30,7 +30,6 @@ with `HARNESS.md`. The current scan covers:
 | Onboarding | `ONBOARDING.md` matches HARNESS.md + AGENTS.md + REFLECTION_LOG.md | manual — `/harness-onboarding` |
 | Observability | Most recent snapshot in `observability/snapshots/` is < 30 days old | yes — `/harness-health` |
 | Status section | `HARNESS.md` Status block matches actual constraint enforcement counts | yes — `/harness-audit` (audit updates Status as a side-effect) |
-| Template currency | `<!-- template-version: X -->` in HARNESS.md matches installed plugin version | manual — `/harness-upgrade` |
 | Constraint regression | Any constraint marked `deterministic` whose tool no longer succeeds | manual — `/harness-constrain` |
 | Reflection pattern | Recurring failure pattern in REFLECTION_LOG.md (2+ similar entries, not yet a constraint) | manual — `/harness-constrain` |
 | CI / CD | Constraint scope handled at runtime by harness-enforcer | informational — handled at runtime |
