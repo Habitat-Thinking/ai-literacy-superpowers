@@ -988,22 +988,80 @@ def target_of(record: Record, routes: dict[str, str]) -> str | None:
     return str(target) if target else None
 
 
-def has_validator(record: Record, root: str) -> bool:
-    """A validator counts only if the file it names actually exists.
+# Suffixes we treat as plausibly runnable. A SHAPE test, not a guarantee: it
+# exists to exclude documents, which is the observed failure, not to prove that
+# anything executes.
+RUNNABLE_SUFFIXES = (".py", ".sh", ".bash", ".js", ".rb")
 
-    A declared-but-absent validator is the failure the report is built to catch,
-    so believing the declaration would defeat the mechanism at the one point it
-    is supposed to bite.
+
+def validator_state(record: Record, root: str) -> tuple[bool, str]:
+    """(counts, reason). Existence alone is not evidence of enforcement.
+
+    `validator` is the ENTIRE link between a written rule and the code that
+    enforces it — `render_region` only ever emits prose, so governance never
+    edits code — and `achieved_for` gates the top of the ladder on this one
+    result. Before #553 the test was `any(os.path.exists(...))`, so
+    `validator: README.md` reported a rule as `validated`, and a list passed when
+    one entry resolved while the real checker was missing.
+
+    Three conditions, each closing an observed row of that table:
+
+    1. EVERY listed path resolves. `all`, not `any`.
+    2. Each looks runnable — executable bit, or a known script suffix.
+    3. At least one names this record's id.
+
+    (3) is the one that makes the claim falsifiable. A runnable, invoked script
+    that checks something else is still not enforcement of THIS rule, and nothing
+    short of a binding can tell the difference. The binding is one-directional
+    and cheap — a comment naming the record is enough — and it makes the
+    validator self-describing, which is worth having on its own.
+
+    Deliberately NOT checked: whether anything invokes the validator. The obvious
+    test is a reference from a workflow, and `README.md` is referenced by two of
+    this repository's workflows because they grep its contents — so the test
+    passes the archetypal bad validator while wrongly downgrading any validator
+    invoked from inside another script.
     """
     value = record.fm.get("validator")
     if not value:
-        return False
-    items = value if isinstance(value, list) else [value]
-    return any(os.path.exists(os.path.join(root, str(item))) for item in items)
+        return False, "no validator declared"
+    items = [str(i) for i in (value if isinstance(value, list) else [value])]
+
+    # Existence across every path first, THEN runnability. A missing validator is
+    # a harder failure than a present-but-unrunnable one, and reporting the
+    # second while the first is also true sends someone to fix the wrong thing.
+    for item in items:
+        if not os.path.exists(os.path.join(root, item)):
+            return False, f"validator not found: {item}"
+    for item in items:
+        path = os.path.join(root, item)
+        if not (item.endswith(RUNNABLE_SUFFIXES) or os.access(path, os.X_OK)):
+            return False, f"validator is not runnable: {item}"
+
+    for item in items:
+        try:
+            with open(os.path.join(root, item), encoding="utf-8", errors="replace") as fh:
+                if record.id in fh.read():
+                    return True, ""
+        except OSError:
+            continue
+    return False, (f"validator does not name {record.id}, so it cannot be shown "
+                   "to enforce this rule")
 
 
-def achieved_for(intended: str, supports: list[str], validated: bool) -> tuple[str, str]:
-    """(achieved, reason). See the spec's §5.1 ladder."""
+def has_validator(record: Record, root: str) -> bool:
+    return validator_state(record, root)[0]
+
+
+def achieved_for(intended: str, supports: list[str], validated: bool,
+                 why: str = "no validator declared or resolvable") -> tuple[str, str]:
+    """(achieved, reason). See the spec's §5.1 ladder.
+
+    `why` is passed through rather than synthesised, because "nobody declared a
+    validator" and "one was declared and it is missing" are different failures
+    with different remedies, and collapsing them is the same class of defect the
+    enforcement report exists to prevent (#553).
+    """
     supports = [s for s in supports if s in LADDER]
     if intended in supports:
         candidate, reason = intended, ""
@@ -1015,19 +1073,19 @@ def achieved_for(intended: str, supports: list[str], validated: bool) -> tuple[s
         reason = f"surface supports at most {candidate}"
     if LADDER[candidate] >= LADDER["validated"] and not validated:
         if "advisory" in supports:
-            return "advisory", "no validator declared or resolvable"
-        return "none", "no validator declared or resolvable"
+            return "advisory", why
+        return "none", why
     return candidate, reason
 
 
 def enforcement_rows(record: Record, surfaces: dict, root: str) -> list[dict]:
     intended = str(record.fm.get("enforcement") or "advisory")
-    validated = has_validator(record, root)
+    validated, why = validator_state(record, root)
     rows = []
     for name in record.surfaces:
         entry = surfaces.get(name) or {}
         supports = [str(s) for s in (entry.get("supports") or [])]
-        achieved, reason = achieved_for(intended, supports, validated)
+        achieved, reason = achieved_for(intended, supports, validated, why)
         if not supports:
             achieved, reason = "none", f"surface '{name}' is not declared"
         rows.append({

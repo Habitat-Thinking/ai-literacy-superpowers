@@ -412,12 +412,23 @@ achieved, why = rows.get("claude-code", ("?", "?"))
 assert achieved == "advisory", (
     "C12b: a declared-but-ABSENT validator lifted the degradation; "
     f"claude-code achieved {achieved!r}")
-assert "no validator" in why, f"C12b: the reason should name the validator, got {why!r}"
+# Since #553 the reason is specific per state rather than one collapsed string,
+# so this asserts the stronger contract: the ABSENT PATH ITSELF is named. The
+# previous message ("no validator declared or resolvable") covered four distinct
+# situations and named none of them.
+assert "ghost-that-does-not-exist.sh" in why, (
+    f"C12b: the reason must name the absent validator path, got {why!r}")
+assert "not found" in why, (
+    f"C12b: an absent validator must be distinguishable from an undeclared one, "
+    f"got {why!r}")
 PYEOF
 echo "C12b ok (an absent validator does not lift the degradation)"
 
 # === C13: a resolvable validator lifts the degradation ======================
-printf '#!/usr/bin/env bash\nset -euo pipefail\nexit 0\n' \
+# Since #553 a validator must NAME the record it enforces: existing, runnable and
+# unrelated is not evidence of enforcement. The binding is one comment, and this
+# fixture is what that convention costs an adopter.
+printf '#!/usr/bin/env bash\nset -euo pipefail\n# Enforces HDR-2026-08-21-blocked-everywhere\nexit 0\n' \
   > "$TMP/.github/workflows/enforce.sh"
 rm -f "$DEC/HDR-2026-08-21-blocked-everywhere.md"
 mkhdr <<'EOF'

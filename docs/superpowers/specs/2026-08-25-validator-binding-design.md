@@ -130,7 +130,11 @@ collapsing them is the same class of defect as the one being fixed.
 - **A4** — a runnable script that names the record **does** reach `validated`.
 - **A5** — the executable bit qualifies a path with no recognised suffix.
 - **A6** — each state produces its own reason string in the enforcement report.
-- **A7** — a record with no `validator` still reports `advisory`, unchanged.
+- **A7** — a record with no `validator` behaves exactly as before: the ladder
+  decides the downgrade, so it reports `advisory` on a surface that supports
+  advisory and `none` on one that does not. (Corrected during implementation —
+  the original wording said "still reports `advisory`", which is only true on
+  surfaces supporting it; `ci` supports `validated` and `blocked` only.)
 - **A8** — the existing corpus is unaffected: `/harness-check` passes and the
   enforcement report is byte-identical before and after.
 - **A9** — Layer 0 coverage using the #553 evidence table as fixtures, so the
