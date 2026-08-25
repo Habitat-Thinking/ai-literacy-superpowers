@@ -1,6 +1,6 @@
 # Retire the template-currency nudge — design
 
-**Status:** proposed (revision 5)
+**Status:** Approved (revision 5, post-cartographer)
 **Date:** 2026-08-25
 **Issue:** #601
 **Provenance:** `docs/superpowers/specs/2026-04-15-harness-upgrade-design.md`
