@@ -34,6 +34,27 @@ anticipated this outcome and no command reached it.
   because a leak would let a rule enter force with no rule text and no cost.
 - **Layer 0 suite** `test-declined-findings.sh` (D1–D9).
 
+### The first declined finding is on the record
+
+`HDR-2026-08-25-an-epic-s-authority-cited-to-a-document-nobody-else-can-open`
+records the disposition of finding-1 from the first assay: proposed by the
+Assayer as a `harness-loop` rule, adversarially reviewed, investigated against
+the transcribed build spec, and declined by the approver.
+
+The reason is the approver's, written in their own words and copied verbatim:
+
+> My feeling was that the rule was pointed at the wrong problem.
+
+Worth noting what the record contains, because it is the first artifact to
+exercise two changes made today: the finding as observed, the Assayer's own
+argument for the layer (carried by 0.81.0, which would previously have discarded
+it), and the human's disposition. Read together they are the whole decision —
+what was seen, what was argued, and what a person concluded.
+
+The corpus now holds one rejection, one retirement and one superseded rule, and
+nothing in force. That is an honest state rather than an embarrassing one: three
+records of governance being examined, and no rule that survived the examination.
+
 ### Why it matters beyond tidiness
 
 A later assay reads prior assays and will re-find the same class of problem.
