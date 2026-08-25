@@ -15,8 +15,10 @@
 # Where a rule's TEXT goes, by classification. Two have a fixed home; the rest
 # name their own `target`, because nothing in the schema can infer which of four
 # agent files a given agent instruction belongs in.
-# NOTE: a `routes:` block REPLACES the defaults rather than merging with them
-# (`effective_routes`), so every route this project relies on must be listed here.
+# A `routes:` block MERGES with the plugin's defaults (`effective_routes`), so a
+# default this file does not mention stays in force. Map one to an empty value to
+# suppress it, which makes records of that classification name their own target.
+# The entries below are explicit so this project pins them even if a default moves.
 routes:
   harness-loop: HARNESS.md
   turn-instructions: AGENTS.md

@@ -324,8 +324,22 @@ un-evidenced legacy rules ever did.
 
 ## `surfaces.yaml`
 
-A `routes:` block **replaces** the defaults rather than merging with them, so
-every route a project relies on must be listed in its own file:
+A `routes:` block **merges** with the plugin's defaults, so a default this file
+does not mention stays in force. Map a classification to an empty value to
+suppress its default — records of that classification then name their own
+`target`, as they already must for the classifications that have no default:
+
+```yaml
+routes:
+  turn-instructions:      # suppressed: this project has no AGENTS.md
+```
+
+Suppression exists because `target_of` prefers a route over any `target` a record
+names. Without it, a default pointing at an artifact a project does not have
+would leave records of that classification refused at compile and impossible to
+redirect (#559).
+
+A project's own entries override defaults of the same name:
 
 ```yaml
 routes:
