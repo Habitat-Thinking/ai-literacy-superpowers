@@ -166,6 +166,53 @@ Both corrections show the original and the correction rather than overwriting:
   fifteen fragments; *Release tag completeness* had six tags its own search could
   never have created; *Observability archive* had nothing until October.
 
+### Security — pymdown-extensions CVEs closed by relaxing the mkdocs-material pin
+
+`pymdown-extensions` 10.21.3 carried two known advisories, and the fixed version
+was unreachable at the old pin. See #586.
+
+- **PYSEC-2026-3609** — path traversal in `pymdownx/b64.py::repl_path`. A `src`
+  containing `../` or an absolute path escaped `base_path` with no containment
+  check, base64-inlining any readable file with an image extension into rendered
+  output.
+- **PYSEC-2026-3654** — exponential-backtracking ReDoS (CWE-1333, proposed CVSS
+  3.1 7.5 High) in four inline processors — `caret`, `tilde`, `betterem`,
+  `magiclink` — all reachable in **default** configuration. Both `pages.yml` and
+  `docs-build-check.yml` render this repository's Markdown through them, so on
+  the PR gate the input was any Markdown file in a contributor's branch.
+
+`pymdown-extensions` is transitive and unpinned; `mkdocs-material==9.5.42`
+constrained it to `~=10.2`, so no update to the transitive package alone could
+have reached the fix.
+
+```diff
+-mkdocs-material==9.5.42
++mkdocs-material==9.7.7
+-mkdocs-redirects==1.2.2
++mkdocs-redirects==1.2.3
+```
+
+**Verified rather than assumed**, in a clean venv:
+
+| Check | Before | After |
+| --- | --- | --- |
+| `pip-audit -r requirements.txt` | 2 vulnerabilities in 1 package | **No known vulnerabilities found** |
+| resolved `pymdown-extensions` | 10.21.3 | **11.0.2** |
+| `mkdocs build --strict` | exit 0, 312 pages | exit 0, 312 pages |
+
+The two-minor jump in mkdocs-material changes the rendered output not at all —
+identical page count, identical strict-build result. It does introduce one
+non-fatal MkDocs 2 deprecation notice, which `--strict` does not treat as an
+error and which is suppressible with `DISABLE_MKDOCS_2_WARNING=true` if it
+becomes noise.
+
+**How this was found is the part worth keeping.** *Dependency currency* is an
+agent-enforced GC rule with no workflow step, declared since April and never
+run. There is no `dependabot.yml` and no scheduled dependency scan. Both
+advisories were published against a package this repository has been rendering
+untrusted Markdown through on every pull request, and the first thing that ever
+looked was a garbage-collection sweep someone ran by hand on 2026-08-25.
+
 ## 0.86.2 — 2026-08-25
 
 ### Added — /harness-audit now validates the Status block it writes
