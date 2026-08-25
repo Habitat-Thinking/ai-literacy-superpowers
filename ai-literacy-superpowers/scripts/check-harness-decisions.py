@@ -86,6 +86,10 @@ VALID_CLASSIFICATION = {
 DEFAULT_ROUTES = {
     "harness-loop": "HARNESS.md",
     "turn-instructions": "AGENTS.md",
+    # A rule about a validator is still a rule about how work proceeds here, and
+    # its text is prose. Before this route existed the classification named a
+    # script as its target, and the compiler appended markdown to it (#551).
+    "script-validator": "HARNESS.md",
 }
 
 # The classifications whose reach extends beyond a single agent. Process burden

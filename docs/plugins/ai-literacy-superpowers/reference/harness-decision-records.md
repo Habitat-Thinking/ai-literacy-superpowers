@@ -145,9 +145,19 @@ cohort: b                  # optional
 | `cohort`, `proposed_cost`, `imported` | optional | — |
 
 **`target`** names the artifact the rule text is written into, and is required at
-**acceptance** for `agent-instruction`, `agent-reference`, `script-validator`,
-`regression-test` and `new-agent`. `harness-loop` and `turn-instructions` have
+**acceptance** for `agent-instruction`, `agent-reference`, `regression-test` and
+`new-agent`. `harness-loop`, `turn-instructions` and `script-validator` have
 fixed routes in `surfaces.yaml` and need no target of their own.
+
+**A target must be a markdown artifact (`.md`).** Rule text is markdown and is
+applied verbatim, so the artifact that *hosts* a rule has to be one that can hold
+markdown. The artifact a rule is *about* belongs in the rule's `**Tool**` field —
+those are different things, and conflating them is what put a generated markdown
+region into a YAML workflow and left it unparseable (#551).
+
+This is an allowlist rather than a list of known-bad types, because a denylist
+answers "is this one of the types we thought of?" — which is exactly the question
+nobody had asked about `.yml`.
 
 It binds at acceptance rather than at proposal because the Assayer frequently
 identifies a behaviour without knowing which of four agent files should own it.
@@ -228,6 +238,7 @@ itself past.
 | **Attribution** | An accepted HDR without `approver` and `approved_at`. |
 | **Surfaces** | An HDR naming a surface not declared in `surfaces.yaml`. |
 | **Target** | An accepted HDR whose classification has no route and which names no `target`. |
+| **Target type** | A `target` that is not a markdown artifact. Checked before routing, so a routed classification cannot silently discard a target its author named. |
 | **Derived state** | A record storing `status: superseded` or `expired`, or a non-null `superseded_by`. |
 | **Broken chain** | `supersedes` naming a record that does not exist, itself, or one already superseded by a different record. |
 | **Contradiction** | `provisional: false` alongside an `expires` date — a rule not on trial has no trial date. |
@@ -250,6 +261,16 @@ People then learn to ignore a red check, which costs far more than the
 un-evidenced legacy rules ever did.
 
 ## `surfaces.yaml`
+
+A `routes:` block **replaces** the defaults rather than merging with them, so
+every route a project relies on must be listed in its own file:
+
+```yaml
+routes:
+  harness-loop: HARNESS.md
+  turn-instructions: AGENTS.md
+  script-validator: HARNESS.md
+```
 
 ```yaml
 surfaces:

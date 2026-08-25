@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.80.0 — 2026-08-25
+
+### Fixed — the harness evolution write path
+
+Found by running the loop end to end for the first time (#548, PR #550), where
+accepting a record whose `target` was `.github/workflows/gc.yml` appended a
+markdown region to a YAML file and left the workflow unparseable. `/harness-check`
+then reported `OK`. See #551 and
+`docs/superpowers/specs/2026-08-25-harness-write-path-integrity-design.md`.
+
+- **A target must be a markdown artifact.** Rule text is markdown and is applied
+  verbatim, so the artifact that *hosts* a rule must be able to hold markdown. The
+  artifact a rule is *about* goes in its `**Tool**` field. `/harness-accept`,
+  `/harness-compile` and `/harness-check` all refuse a target that cannot hold the
+  text, and the refusal names the target and directs the author to `**Tool**`.
+- **Checked before routing.** A routed classification would otherwise silently
+  ignore a target its author named, and quietly discarding what someone wrote is
+  the failure shape this mechanism exists to refuse.
+- **An allowlist, not a denylist.** A denylist answers "is this one of the types we
+  thought of?", which is the question nobody had asked about `.yml`.
+- **`script-validator` gains a fixed route to `HARNESS.md`.** A rule about a
+  validator is still a rule about how work proceeds here, and its text is prose.
+  The classification was previously unusable: its targets are code files by
+  definition, and the compiler emits only markdown.
+- **Superseded and retirement records stay exempt**, so an existing corpus that
+  already resolved this by supersession — as this one did — still passes.
+- **Layer 0 suite** `test-harness-write-path.sh` (W1–W8), covering the refusal at
+  accept, compile and check, the routed case, the superseded exemption, and four
+  file types beyond the one that failed. This is the coverage the original Phase 2
+  acceptance criteria never had: both fixed routes were markdown, so no test ever
+  pointed a record at another file type.
+
+### Known limitation
+
+A `routes:` block in `surfaces.yaml` **replaces** the defaults rather than merging
+with them, despite `effective_routes`' docstring claiming otherwise. A project that
+declares any custom route silently loses every default, including
+`harness-loop: HARNESS.md`. Documented in the reference and left for its own
+change rather than widened into this one.
+
 ## 0.79.0 — 2026-08-23
 
 ### Added
