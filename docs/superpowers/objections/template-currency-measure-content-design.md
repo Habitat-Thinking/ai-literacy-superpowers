@@ -5,673 +5,625 @@ mode: spec
 diaboli_model: claude-opus-5[1m]
 objections:
   - id: O1
-    category: implementation
-    severity: critical
-    claim: "A default /harness-init run produces a HARNESS.md that is missing template headings by design, so the new hook nudges on the very next session — reproducing the cry-wolf defect the spec exists to remove."
-    evidence: "§4.1 'missing = tpl_headings - proj_headings - declined'; commands/harness-init.md step 3 'Affordances ... opt-in (default off)' and step 7 'For each unselected feature, replace the section body with the placeholder marker'; templates/HARNESS.md:519-557 declares '### gh-cli', '### honeycomb-mcp', '### shell-write-to-tmp', '### sync-to-global-cache-hook', each tagged '<!-- affordance-example -->'."
+    category: premise
+    severity: high
+    claim: "The spec retains a nudge it admits has zero recorded successes, and compares the retained option against deletion using a cost figure ('two greps at session start') that omits the shared script, the bin shim, the new HARNESS.md grammar, the new command disposition, the eighteen acceptance criteria and the twelve-file migration the same spec specifies."
+    evidence: "§3.3 'there is no recorded instance of this nudge producing a useful adoption. Six runs are recorded; five adopted nothing, and the sixth cannot be attributed'; §3.3 'a correctly filtered comparison costs two greps at session start'; §6 'Delete the nudge entirely … Still live, and strengthened by §1.1 removing the evidence that favoured keeping it.'"
     disposition: pending
     disposition_rationale: null
   - id: O2
     category: implementation
-    severity: high
-    claim: "Case-insensitive, whitespace-trimmed matching does not match the template's commented section headings, which carry instructional parentheticals on the heading line; the design produces a permanent false positive on the repository used to verify it."
-    evidence: "§4.1 'Matching is case-insensitive and whitespace-trimmed'; templates/HARNESS.md:630 '<!-- ## Cognitive reservoir  (OPTIONAL — to opt in, remove this `<!--` line and the closing `-->` below)' versus HARNESS.md:1126 '## Cognitive reservoir'."
+    severity: critical
+    claim: "The filter does not exclude commented-out opt-in template blocks, and §5.1 criterion 4 mandates including them, so a default-initialised project is told on day one that it is missing 'Stakeholders' and 'Cognitive reservoir' — content the template itself labels OPTIONAL. This is the day-one false positive §3.4 exists to eliminate."
+    evidence: "§4.1 'tpl_headings = ## and ### headings of tpl, including inside HTML comments' with exclusions only for affordance-example and ^\\[.*\\]$; §5.1 criterion 4 'A template heading that appears only inside an HTML comment is treated like any other'; templates/HARNESS.md:39 '<!-- ## Stakeholders' with ':41 OPTIONAL.'; templates/HARNESS.md:630 '<!-- ## Cognitive reservoir  (OPTIONAL — to opt in …)'; §3.4 'An unfiltered heading comparison fires on the default install, on day one.'"
     disposition: pending
     disposition_rationale: null
   - id: O3
-    category: specification quality
+    category: implementation
     severity: high
-    claim: "The declined block is called load-bearing but has no grammar: the stated one-line-per-entry rule is contradicted by the spec's own example, and nothing defines continuation lines, duplicate entries, headings containing a colon, or reason text containing the comment terminator."
-    evidence: "§3.4 'One line per declined heading, `Heading: reason`' immediately below an example whose single entry wraps across three indented lines; §4.3 step 4 'Declining prompts for a one-line reason and writes it to the declined block'; §3.4 'The reason text is never parsed.'"
+    claim: "The affordance-example exclusion, as specified, matches nothing: the tag sits on the line after each heading in the real template, not on the heading line."
+    evidence: "§4.1 excludes 'a heading whose line carries <!-- affordance-example -->'; §3.4 cites 'four headings tagged <!-- affordance-example --> (templates/HARNESS.md:520,535,546,557)'. In the file, the headings are at :519 '### gh-cli', :534 '### honeycomb-mcp', :545 '### shell-write-to-tmp', :556 '### sync-to-global-cache-hook'; lines 520/535/546/557 are the standalone comment lines beneath them."
     disposition: pending
     disposition_rationale: null
   - id: O4
     category: scope
     severity: high
-    claim: "The surfaces table is incomplete: /harness-sync computes and reports 'Template version drift' in three places and is not listed, so a mechanism that reports drift will survive the input it reads being deleted."
-    evidence: "§4.6 lists seven files, none of them commands/harness-sync.md, which carries 'Template version drift' (line 118), the drift-table row 'Template version (HARNESS: 0.31, plugin: 0.34) drifted /harness-upgrade [manual]' (line 138), and the JSON item '\"id\": \"template\", \"label\": \"Template drift  [manual: /harness-upgrade]\"' (lines 206-208). docs/contributing/index.md:195 and docs/plugins/ai-literacy-superpowers/how-to/sync-harness.md (six references) are also absent from §4.6 and §8."
+    claim: "No acceptance criterion runs the algorithm against a default-initialised project, and the one real-input criterion runs against a repository that is a superset of the template — an input on which every exclusion rule is unobservable, so O2 and O3 both ship green."
+    evidence: "§5.2 criterion 14 'Run against this repository's committed HARNESS.md and templates/HARNESS.md, the missing set is empty'; §5.2 'This criterion exists because revision 1 never ran its own algorithm.' This repository's HARNESS.md already contains '### gh-cli' (:1014), '### honeycomb-mcp' (:1032), '### shell-write-to-tmp' (:1043), '### sync-to-global-cache-hook' (:1054) and '### [Governance constraint name]' (:639), so criteria 5 and 6 pass on this input whether or not the exclusions fire. Criteria 5–7 are fixture tests authored from the same rule text they are meant to check."
     disposition: pending
     disposition_rationale: null
   - id: O5
-    category: premise
-    severity: medium
-    claim: "The only affirmative evidence for keeping a nudge at all is a case the spec admits cannot be settled, while the spec's hard evidence records no instance of the nudge ever producing a useful adoption."
-    evidence: "§1 'Five of the last six marker advances adopted nothing'; §1 'This cannot be settled now — the 0.73.2 plugin cache is no longer on the machine that ran it'; §3.3 'Rejected because the ## Stakeholders case suggests the failure mode that actually costs something is not being told.'"
+    category: scope
+    severity: high
+    claim: "Replacing /harness-upgrade step 2's parse with harness-template-diff silently deletes two of the command's three finding buckets: the script computes only the missing set, while the command today also produces 'Updated items' and 'Removed items'."
+    evidence: "§4.4 'Step 2 invokes harness-template-diff --format=json rather than restating the matching rules'; §4.1's contract yields only 'missing'. commands/harness-upgrade.md:74 'Sort items into three buckets', :79 '**Updated items** — present in both files, but the template content differs', :86 '**Removed items** — present in the user's HARNESS.md but absent from the current template.' §4.4 lists changes to steps 1, 2, 3, 4, 6 and 7 and never mentions either bucket."
     disposition: pending
     disposition_rationale: null
   - id: O6
-    category: implementation
+    category: risk
     severity: high
-    claim: "The spec asserts the hook and the command can never disagree, but they are two independent implementations of one parser — a bash script and a prose instruction executed by a model — and the repository already carries a GC rule because that exact drift happens here."
-    evidence: "§4.1 'identical to /harness-upgrade step 2, so the hook and the command never disagree about what is new'; §4.4 'Both the hook and the command extract headings from inside HTML comments at every level'; HARNESS.md:690 '### Command-prompt sync'."
+    claim: "Migration deletes the marker from every consuming project's HARNESS.md while leaving the `Template currency` GC rule that reads it in place, converting a noisy-but-explicable signal into a permanently failing one — and, per O5, removing the only path by which the command would have surfaced the orphan."
+    evidence: "§4.5 'The marker becomes inert on the release that ships this. Nothing reads it, so a project that still has one is not broken' and '/harness-upgrade removes it when it next runs'; §4.5 scopes rule removal to 'This repository removes its own in this PR, along with the Template currency GC rule.' templates/HARNESS.md:335-342 shipped the rule to every project ('Tool: compare template-version comment in HARNESS.md against …'). Under the pre-existing semantics a missing marker is 0.0.0 (hooks/scripts/template-currency-check.sh:32-34), i.e. permanently drifted."
     disposition: pending
     disposition_rationale: null
   - id: O7
-    category: risk
+    category: alternatives
     severity: high
-    claim: "The hook reaches the passing, silent outcome on a path where it never read the thing it reports on, which the in-force harness decision record names as a defect rather than a default."
-    evidence: "§4.1 'exit 0 if either file is unreadable (unchanged: advisory, never blocks)'; §5 criterion 9 'The hook never blocks and never exits non-zero'; HDR-2026-08-25 (compiled into skills/advocatus-diaboli/SKILL.md): 'A reachable code path that reaches a passing value without reading the thing it reports on is a defect, not a default.'"
+    claim: "The template's own content marker is rejected for being unmaintained and unread — both fixable properties, and this spec already demonstrates the fix it declines to apply. A Layer 0 assertion that a change to templates/HARNESS.md moves its marker, plus a hook that compares that marker instead of plugin.json, measures the stated property with one CI check and no new script, grammar, shim or declined-item mechanism."
+    evidence: "§6 'Compare the template's own content marker. Unmaintained — d867c7c changed the template without moving it — and nothing reads it.' §4.2 adds exactly this class of guard for a different defect: 'A Layer 0 test asserts no heading line in templates/HARNESS.md carries a trailing parenthetical, so the class cannot return.' §6's other rejection, 'reintroduces per-project state that drifts', does not apply: the marker lives in the plugin's template, not per project."
     disposition: pending
     disposition_rationale: null
   - id: O8
-    category: scope
-    severity: medium
-    claim: "The design removes the only way to silence the nudge without acting on it, so any item the user skips re-fires every session forever, and the spec never states this consequence."
-    evidence: "§4.5 '.claude/.harness-upgrade-dismissed is no longer written or read'; §4.3 step 4 'Skip remains what it is today: not now, ask again next time'; §4.1 subtracts only 'declined' from the missing set."
+    category: implementation
+    severity: high
+    claim: "The skip semantics reason about sessions, but SessionStart re-fires on resume, clear and compact; with the dismissal file removed and no startup guard specified, a project with one genuinely new template item gets the nudge re-injected repeatedly within a single working session."
+    evidence: "§4.4 'Skip means not now, ask again next session … being reminded of those each session is the intended behaviour'; §4.5 '.claude/.harness-upgrade-dismissed is no longer written or read.' hooks/hooks.json:106 registers the hook under SessionStart with matcher '*'. The sibling hook on the same rail guards for this explicitly — hooks/scripts/wip-check.sh:28-29 'STARTUP ONLY. SessionStart re-fires on resume, clear and compact, and a breach report re-injected mid-session is the thrash this exists to name' and :47 '[ \"$source_field\" = \"startup\" ] || exit 0'. §4.1 and §4.4 specify no equivalent."
     disposition: pending
     disposition_rationale: null
   - id: O9
-    category: specification quality
-    severity: medium
-    claim: "The test plan assigns command behaviour to a hook test file and leaves the write path of the load-bearing declined block with no acceptance criterion at all."
-    evidence: "§5 'Criteria 1-7 and 9 are Layer 0 deterministic tests at tdad_tests/layer0_deterministic/test-template-currency-check.sh' where criterion 6 is '/harness-upgrade removes it and reports having done so' and criterion 7 covers 'both the hook and the command'; no criterion covers §4.3 step 4/6 writing a declined entry."
+    category: scope
+    severity: high
+    claim: "The §4.7/§8 inventories are again presented as complete and are again incomplete, and the spec adds no acceptance criterion asserting that no live reference to the marker survives — so the only defence against a third recurrence is a third hand-made list."
+    evidence: "§4.7 'Revision 1's table listed seven files and presented the inventory as complete; it found seven of ten.' Unlisted live references: skills/harness-observability/references/observatory-signals.md:157 '| **Total** | **82** |'; commands/observatory-verify.md:3 '82-signal checklist' and :17 '82 signals across 5 sources'; README.md:77 'the Template currency rule checks the same marker'; docs/plugins/ai-literacy-superpowers/reference/hooks.md:277 '### Template currency check'; docs/plugins/ai-literacy-superpowers/reference/commands.md:133 '.claude/.harness-upgrade-dismissed marker'; commands/harness-upgrade.md:152 'Template version updated from X.Y.Z to A.B.C'. §5 contains no criterion of the form 'grep finds no remaining reference outside CHANGELOG and archives'."
     disposition: pending
     disposition_rationale: null
   - id: O10
-    category: alternatives
+    category: specification quality
     severity: medium
-    claim: "The rejected-alternatives section weighs four ways to compare but never weighs narrowing what is compared, which would remove most false positives without inventing per-project declined state at all."
-    evidence: "§6 rejects the template's own marker, hashing, full-text diff, and a separate file — all four vary the comparison method, none varies the item set; §4.1 compares '## and ###, incl. commented' with no exclusion for placeholders, examples, or opt-in blocks."
+    claim: "The comparison rule specifies HTML-comment handling for the template side and is silent for the project side, and this repository's own file makes the two readings give opposite results for criterion 14."
+    evidence: "§4.1 'tpl_headings = ## and ### headings of tpl, including inside HTML comments' — the corresponding proj_headings term is used undefined in 'skip if normalise(h) is in normalise(proj_headings)'. This repository's HARNESS.md:55 carries '<!-- ## Stakeholders' inside a comment. Under a comment-excluding read of the project side, criterion 14's missing set is not empty; under a comment-including read it is."
     disposition: pending
     disposition_rationale: null
   - id: O11
-    category: implementation
+    category: specification quality
     severity: medium
-    claim: "The spec never states which copy of the template is authoritative, and in this repository the copy it names is rsynced from the working tree on every Stop, so editing the template nudges the editor about their own unfinished edit."
-    evidence: "§4.1 'tpl = $CLAUDE_PLUGIN_ROOT/templates/HARNESS.md'; CLAUDE.md 'sync-to-global-cache.sh — rsyncs plugin content into the versioned plugin cache (runs on every Stop)'; §1's ## Stakeholders timeline turns on which copy 89b46f9 compared against and the spec does not say."
+    claim: "Criterion 10 is filed under §5.1 as a Layer 0 test of harness-template-diff, but the script has no write path — the `--` rejection is a behaviour of the model-executed command, which is exactly the misfiling §5.3 says revision 1 committed."
+    evidence: "§5.1 heading 'harness-template-diff — Layer 0 deterministic', criterion 10 'A declined reason containing -- is rejected on write.' §4.1's interface is 'harness-template-diff [--format=text|json]' with read-only inputs and four outcomes, none of which write. §4.4 assigns the behaviour elsewhere: 'Step 4 … Declining prompts for a reason and writes it per §3.5's grammar, rejecting a reason containing --.' §5.3 'Not Layer 0; these are model-executed … Revision 1 assigned them to the hook's test file in error.'"
     disposition: pending
     disposition_rationale: null
   - id: O12
     category: risk
     severity: medium
-    claim: "The PR knowingly merges a governing document whose Status block overstates its own coverage, and removes a signal the observatory reference marks required."
-    evidence: "§4.6 'HARNESS.md's Status block references the marker. It is owned by /harness-audit and is corrected by running it, not by hand-editing this PR'; HARNESS.md:760-769 declares 'Template currency' with 'Enforcement: deterministic'; HARNESS.md:1174 'Garbage collection active: 19/19'; §4.6 'observatory-signals.md:127 | Template version is marked required; remove the row'."
+    claim: "§4.3 states an absolute contract — silence never means could-not-check — but only one input failure is covered. The hook's own failure modes (script absent from a partial or stale plugin install, non-zero exit under strict mode, the 10s timeout) all produce silence, which the spec has just defined as the reassuring answer."
+    evidence: "§4.3 'Silence means checked-and-current. It never means could-not-check', citing the harness decision record 'a mechanism that could not determine the answer reports the degraded state and names the input it could not read.' §4.1 defines exactly two non-missing outcomes: 'proj absent -> exit 0, emit nothing' and 'tpl absent/unreadable -> exit 0, emit DEGRADED'. §4.7 specifies the hook only as 'Rewritten to call harness-template-diff'; hooks/hooks.json:107 sets 'timeout: 10', and the current hook runs under 'set -euo pipefail' (hooks/scripts/template-currency-check.sh:11)."
     disposition: pending
     disposition_rationale: null
 ---
 
-## O1 — implementation — critical
+# Objections — template currency measures content (revision 2)
+
+## O1 — premise — high
 
 ### Claim
 
-A default `/harness-init` run produces a `HARNESS.md` that is missing template
-headings by design. Under the proposed set difference, that project is nudged on
-its very next session — naming, among other things, example affordances it was
-never meant to adopt. The replacement signal cries wolf on day one, for the
-default user, which is the defect the spec exists to remove.
+The spec retains the nudge on a judgement it states honestly, and then prices
+that judgement wrongly. The comparison offered to the reviewer is "two greps at
+session start" versus deleting the hook. The actual retained option is a new
+shared script, a `bin/` shim, a new grammar embedded in the governing document,
+a fourth disposition in `/harness-upgrade`, fifteen Layer 0 criteria, three
+behavioural criteria, a twelve-file migration and eight documentation edits — in
+service of a mechanism with no recorded instance of ever having worked.
 
 ### Evidence
 
-The algorithm is a plain set difference over headings:
+> §3.3: "there is no recorded instance of this nudge producing a useful
+> adoption. Six runs are recorded; five adopted nothing, and the sixth cannot
+> be attributed."
 
-> `missing = tpl_headings - proj_headings - declined` (§4.1)
+> §3.3: "a correctly filtered comparison costs two greps at session start."
 
-`/harness-init` is documented to produce a project file that is *not* a superset
-of the template:
+> §6: "**Delete the nudge entirely, keeping `/harness-upgrade` on demand.**
+> Still live, and strengthened by §1.1 removing the evidence that favoured
+> keeping it."
 
-> **Affordances** is opt-in: if **unselected** (the default), replace the
-> `## Affordances` section body with the placeholder marker like any other
-> unselected feature. (`commands/harness-init.md`, step 7)
-
-and, generally:
-
-> For each unselected feature, replace the section body with the placeholder
-> marker. (`commands/harness-init.md`, step 7)
-
-The template's `## Affordances` body contains four headings, each explicitly
-tagged as an example:
-
-```text
-templates/HARNESS.md:519  ### gh-cli                    <!-- affordance-example -->
-templates/HARNESS.md:534  ### honeycomb-mcp             <!-- affordance-example -->
-templates/HARNESS.md:545  ### shell-write-to-tmp        <!-- affordance-example -->
-templates/HARNESS.md:556  ### sync-to-global-cache-hook <!-- affordance-example -->
-```
-
-The template also carries a literal placeholder heading no project should ever
-have: `templates/HARNESS.md:194  ### [Governance constraint name]`.
-
-A user who deselects Garbage collection loses roughly twenty-five `###` headings
-in one step. The spec verified its algorithm against one repository — this one —
-whose `HARNESS.md` happens to be a near-superset of the template, including the
-`[Governance constraint name]` placeholder at line 639 and all four affordance
-examples. That is the single least representative sample available.
+The spec is candid that this is a judgement and that a reviewer may reject it.
+The objection is not to the candour; it is that the two options are not
+presented in commensurable terms, so the reviewer is choosing between "two
+greps" and "delete the hook" rather than between the real build and the real
+saving. §6's own description of the deletion option — "deletes the hook, the
+shared script, the declined block and §5.1 entirely" — states the true cost of
+the retained option more accurately than §3.3 does.
 
 ### Why this matters
 
-§1's charge against the marker is that it "asserts `Plugin template has been
-updated` on evidence that cannot establish it". The replacement asserts
-`Template has 4 item(s) your harness does not: "gh-cli", "honeycomb-mcp", ...`
-on evidence that is technically true and semantically false — those are examples,
-not items. The message §4.2 is proud of ("A reader can falsify it against their
-own file") is worse here, not better: the reader falsifies it, finds it correct,
-and concludes the mechanism is stupid rather than wrong.
+This is the highest-leverage decision in the spec and every other objection
+here is downstream of it. If the nudge goes, O2 through O6, O8, O10 and O12
+evaporate with it. A premise this thinly evidenced deserves the comparison
+stated in like terms before the build proceeds.
 
-§3.4 anticipates the *class* of this problem and answers it with the declined
-block. But that answer has a cost the spec does not budget: the only way to
-populate the declined block is to run `/harness-upgrade` and decline each item.
-The nudge whose purpose is to sell `/harness-upgrade` can only be silenced by
-running `/harness-upgrade` — on a fresh project, before the user has any reason
-to trust it, for four items that were never content. Either the template must
-mark non-adoptable headings so the comparison can exclude them, or `/harness-init`
-must seed the declined block from what it chose not to write.
-
-## O2 — implementation — high
+## O2 — implementation — critical
 
 ### Claim
 
-The specified normalisation — case-insensitive and whitespace-trimmed — does not
-match the template's commented section headings, because those headings carry
-instructional parentheticals on the heading line itself. The result is a
-permanent false positive on the very repository the spec used to verify the
-design.
+The filtered item set does not exclude the template's commented-out opt-in
+blocks, and §5.1 criterion 4 explicitly requires including them. A
+default-initialised project has neither `## Stakeholders` nor
+`## Cognitive reservoir`, because both are shipped commented out and are
+labelled OPTIONAL in the template. On day one, such a project is told its
+harness is missing two items it was never meant to have. This is precisely the
+failure mode §3.4 asserts the filter removes.
 
 ### Evidence
 
-> Matching is case-insensitive and whitespace-trimmed, identical to
-> `/harness-upgrade` step 2, so the hook and the command never disagree about
-> what is new. (§4.1)
+The template's two opt-in blocks:
 
-The template's opt-in section heading:
+> `templates/HARNESS.md:39` — `<!-- ## Stakeholders`
+> `templates/HARNESS.md:41` — "OPTIONAL. Who this project affects…"
 
-```text
-templates/HARNESS.md:630
-<!-- ## Cognitive reservoir  (OPTIONAL — to opt in, remove this `<!--` line and the closing `-->` below)
-```
+> `templates/HARNESS.md:630` — `<!-- ## Cognitive reservoir  (OPTIONAL — to opt in, remove this `<!--` line and the closing `-->` below)`
 
-This repository's adopted version:
+The rule includes them:
 
-```text
-HARNESS.md:1126
-## Cognitive reservoir
-```
+> §4.1: "tpl_headings = ## and ### headings of tpl, **including inside HTML
+> comments**, EXCLUDING: a heading whose line carries `<!-- affordance-example -->`;
+> a heading matching `^\[.*\]$`"
 
-Extracted per §4.4 ("extract headings from inside HTML comments at every level"),
-the template heading is `Cognitive reservoir  (OPTIONAL — to opt in, remove this
-` + backtick-quoted markup + `line and the closing ... below)`. Trimming and
-case-folding do not reduce that to `Cognitive reservoir`. The heading is reported
-missing, every session, on a repository that adopted it months ago.
+> §5.1 criterion 4: "A template heading that appears only inside an HTML comment
+> is treated like any other; criteria 1–3 hold for it unchanged."
 
-Acceptance criterion 4 covers commented headings and criterion 7 covers case and
-whitespace. Neither covers a parenthetical suffix, so a conforming implementation
-passes the whole suite and still fires this every session.
+The unconfigured-section skip does not reach them: it fires when "h's owning
+`##` section is unconfigured in proj", and these headings *are* the `##`
+sections. A project that never adopted them has no section body to carry the
+placeholder marker.
+
+The spec came within one line of noticing. §3.4's own trial run reported
+`Cognitive reservoir  (OPTIONAL — …)` as a false positive, and §4.2 diagnosed
+that as a trailing-parenthetical matching failure. That diagnosis is correct for
+*this* repository, which has an uncommented `## Cognitive reservoir`
+(`HARNESS.md:1126`). It is the wrong diagnosis for a default project, which does
+not have the heading at all and will be reported regardless of §4.2's fix. And
+§4.3's exemplar message — `Template has 1 item your harness does not:
+"Stakeholders"` — uses one of the two OPTIONAL blocks as the illustration of a
+legitimately missing item.
 
 ### Why this matters
 
-The spec's §1 does its verification work well — `diff`, exit codes, commit
-hashes, dates. §5 does not extend that discipline to the new algorithm. Nothing
-in the spec records the output of running the proposed comparison against this
-repository's real `HARNESS.md` and the real template. Had that been run, this
-would have surfaced before review, along with whatever else it turns up. The
-missing artefact is one paragraph: *here is the missing set the new rule produces
-today, and here is why each entry is correct.*
+§3 states the case for revision 2 as "The filter is what makes the mechanism
+quiet; the declined-item record handles only the residue." If the filter leaves
+two OPTIONAL blocks in, the mechanism is not quiet on a default install, and the
+only silencing route available to a new user is the one §3.4 already identified
+as unacceptable: "silenceable only by running the command the nudge advertises."
+The central claim of the revision does not hold as specified.
 
-## O3 — specification quality — high
+## O3 — implementation — high
 
 ### Claim
 
-§3.4 calls the declined-item record load-bearing and then gives it no grammar.
-The stated format contradicts the spec's own example, and nothing defines
-continuation lines, duplicates, headings containing a colon, or the one input
-that can corrupt the file it lives in.
+The `affordance-example` exclusion excludes nothing, because in the real
+template the tag is on the line *following* each heading, not on the heading
+line.
 
 ### Evidence
 
-The rule:
+> §4.1: "EXCLUDING: — a heading whose line carries `<!-- affordance-example -->`"
 
-> One line per declined heading, `Heading: reason`. (§3.4)
+> §3.4: "The template's `## Affordances` body carries four headings tagged
+> `<!-- affordance-example -->` (`templates/HARNESS.md:520,535,546,557`)."
 
-The example, directly above it:
+The cited lines are the tags, not the headings:
 
-```html
-<!-- template-declined
-     Consistent formatting: specialised here as "Consistent markdown
-       formatting" (deterministic, markdownlint, commit + pr). Adopting the
-       template's unverified placeholder would be a downgrade.
--->
+```text
+519  ### gh-cli
+520  <!-- affordance-example -->
+...
+534  ### honeycomb-mcp
+535  <!-- affordance-example -->
+...
+545  ### shell-write-to-tmp
+546  <!-- affordance-example -->
+...
+556  ### sync-to-global-cache-hook
+557  <!-- affordance-example -->
 ```
 
-That is one declined heading occupying three lines with two distinct indentation
-levels. A parser written to the rule reads three entries: `Consistent formatting`,
-`formatting" (deterministic, markdownlint, commit + pr). Adopting the` (no
-colon — dropped or malformed), and one more. A parser written to the example
-needs a continuation convention the spec never states.
-
-The reason text is user-supplied and machine-written:
-
-> Declining prompts for a one-line reason and writes it to the declined block.
-> (§4.3, step 4)
-
-> The reason text is never parsed. (§3.4)
-
-Never parsed is not the same as harmless. The block is an HTML comment. A reason
-containing `-->` terminates it early, uncommenting whatever follows — in a file
-whose commented blocks are semantically load-bearing, since §4.1 and the
-`## Cognitive reservoir` opt-in both turn on comment state.
+An implementer following §4.1 literally writes a predicate over the heading
+line and it never matches. An implementer who infers the intent writes a
+lookahead — and the two implementations disagree on any future entry where a
+blank line or a schema comment intervenes.
 
 ### Why this matters
 
-This block is the only thing standing between the new comparison and the old
-defect — §3.4 says so plainly: "Heading comparison alone reproduces the original
-defect in a new coat." It is read by a bash script and written by a model
-following prose. A silent parse failure does not fail loudly; it re-admits the
-declined item to the missing set, and the mechanism resumes crying wolf about
-the exact item three humans already declined on the record. That failure is
-indistinguishable, from the user's seat, from the bug being fixed.
-
-Specify the grammar as strictly as the `## Cognitive reservoir` value lines are
-specified — that block already carries a written warning about exactly this class
-of parser fragility (`HARNESS.md:1145-1148`), which is the precedent to follow.
+This is the exclusion §3.4 identifies as the primary day-one false-positive
+source for a project that opted out of Affordances, and it is one of the two
+mechanisms §9 claims resolves the critical objection O1 from the previous
+review. As written it is inert, and per O4 nothing in §5 would reveal that.
 
 ## O4 — scope — high
 
 ### Claim
 
-The §4.6 surfaces table is incomplete. `/harness-sync` reads and reports
-`Template version drift` in three separate places and does not appear in the
-table, so after this ships a drift-reporting mechanism will be reporting on an
-input that no longer exists.
+The acceptance criteria never run the algorithm against a default-initialised
+project, and the single real-input criterion runs against a repository that is a
+near-superset of the template — an input on which no exclusion rule is
+observable. Both O2 and O3 pass every criterion in §5.
 
 ### Evidence
 
-§4.6 lists seven files. `commands/harness-sync.md` is not among them, and it
-carries:
+> §5.2 criterion 14: "Run against this repository's committed `HARNESS.md` and
+> `templates/HARNESS.md`, the missing set is **empty** …"
+>
+> "This criterion exists because revision 1 never ran its own algorithm; §3.4
+> records what happened when it finally was."
+
+This repository already contains every heading the exclusions are supposed to
+suppress:
 
 ```text
-line 118  - Template version drift                            (surface list)
-line 138  Template version (HARNESS: 0.31, plugin: 0.34) drifted  /harness-upgrade  [manual]
-line 207  "label": "Template drift  [manual: /harness-upgrade]"    (checkbox JSON, id: "template")
-line 271  Manual remediation suggested for: Template version drift
+HARNESS.md:1014  ### gh-cli
+HARNESS.md:1032  ### honeycomb-mcp
+HARNESS.md:1043  ### shell-write-to-tmp
+HARNESS.md:1054  ### sync-to-global-cache-hook
+HARNESS.md:639   ### [Governance constraint name]
+HARNESS.md:1126  ## Cognitive reservoir
 ```
 
-Also absent from §4.6 and from §8's docs list:
+So criteria 5 and 6 are satisfied by the project side of the comparison, not by
+the exclusion logic. Criterion 14 will read green with the exclusions removed
+entirely. Criteria 5, 6 and 7 are fixture tests, and the fixtures will be
+authored from the same rule text that carries the defect in O3.
 
-- `docs/contributing/index.md:195` — "**Template currency** — detects when the
-  HARNESS.md template version is behind the installed plugin version."
-- `docs/plugins/ai-literacy-superpowers/how-to/sync-harness.md` — six references,
-  including a worked drift-table row and a "Template drift" remediation section.
-
-§4.6 does list `skills/harness-audit-engine/SKILL.md:33`, which is the drift
-surface table row — correctly. The point is not that the spec was careless; it is
-that the enumeration method found seven of ten and the spec presents it as
-complete.
+What is absent is the case the design exists for: run the tool against the
+output of a default `/harness-init` — Affordances off, Stakeholders and
+Cognitive reservoir not adopted — and assert an empty missing set.
 
 ### Why this matters
 
-`/harness-sync` is one of the two monthly operations in `CLAUDE.md`. After this
-merges, its drift scan has a row whose input has been deleted. It will either
-error, or report `drifted` forever, or — most likely, and worst — report
-`in sync`, because "no marker found" collapses to "nothing to compare". That is
-the failure HDR-2026-08-25 names: a status mechanism reaching the reassuring
-answer without reading the thing it reports on. The spec removes the marker on
-the strength of an inventory that missed the mechanism most likely to fail that
-way.
+§5.2 presents criterion 14 as the guard against shipping an unrun algorithm a
+second time. On the input chosen it is a weak guard: it validates that this
+repository is a superset, which was already known, and it is structurally
+incapable of detecting a broken exclusion. The one population the filter was
+designed for — new adopters — is the one population no criterion covers.
 
-## O5 — premise — medium
+## O5 — scope — high
 
 ### Claim
 
-The spec's own evidence records no instance of this nudge ever producing a useful
-adoption, and the single case offered in its favour is one the spec states cannot
-be settled. On that basis the design keeps the nudge and adds new per-project
-governance state to it.
+Step 2 of `/harness-upgrade` currently parses both files into three buckets.
+`harness-template-diff` computes one. Substituting the script for the parse
+deletes the "Updated items" and "Removed items" buckets, and §4.4 does not
+mention either.
 
 ### Evidence
 
-Against:
+> §4.4: "**Step 2** invokes `harness-template-diff --format=json` rather than
+> restating the matching rules."
 
-> Five of the last six marker advances adopted nothing. (§1)
+§4.1's contract emits `missing` and nothing else.
 
-> The 2026-08-25 run reached the same conclusion about the same item a third
-> time. (§1)
+The command today:
 
-In favour, in full:
+> `commands/harness-upgrade.md:74`: "Sort items into three buckets:"
+> `:79`: "**Updated items** — present in both files, but the template content
+> differs. Only flag items the user has not customised…"
+> `:86`: "**Removed items** — present in the user's HARNESS.md but absent from
+> the current template. Advisory only."
 
-> `d867c7c` added a commented-out `## Stakeholders` section ... `89b46f9` ran six
-> hours later, reported "byte-identical … nothing to adopt" ... This cannot be
-> settled now — the `0.73.2` plugin cache is no longer on the machine that ran
-> it. (§1)
-
-And the decision that rests on it:
-
-> Rejected because the `## Stakeholders` case *suggests* the failure mode that
-> actually costs something is *not being told*. (§3.3, emphasis added)
+§4.4 enumerates changes to steps 1, 2, 3, 4, 6 and 7. Step 3's new **Previously
+declined** group is described; the two disappearing groups are not. §6 offers a
+rationale for choosing heading sets over full-text diff — "The property worth
+surfacing is a *missing item*, not a reworded one" — which is a defensible
+answer for the *hook*, but "Updated items" is a `/harness-upgrade` feature about
+content, and dropping it is a decision the spec does not record as one.
 
 ### Why this matters
 
-§3.3 is the right question asked once and answered from the weaker of the two
-available bodies of evidence. Six recorded runs adopting nothing is data; one
-unattributable miss is an anecdote whose cause §4.4 guesses at (see O11 for a
-third candidate cause). The cost of being wrong here is not the hook — it is
-§3.4's declined block, a new durable governance artefact in every project that
-adopts the plugin, kept alive to serve a signal with no recorded success.
+A user who runs `/harness-upgrade` after this change will no longer be shown
+that a constraint they never customised has been rewritten in the template, nor
+that their harness carries items the template has dropped. Both are silent
+regressions in a command whose stated job is bringing a harness in line with the
+template. The second one has a direct consequence — see O6.
 
-I am not asserting the nudge is worthless; §3.3 may well be right that *not being
-told* is the expensive failure. I am objecting that the spec does not know, says
-so, and proceeds as though the question were closed. The honest form of §3.3 is
-either evidence that someone was ever usefully told, or an explicit statement
-that the nudge is being retained on judgement rather than data.
-
-## O6 — implementation — high
+## O6 — risk — high
 
 ### Claim
 
-The spec asserts an invariant its architecture cannot supply. The hook and the
-command are two independent implementations of one parser — one bash, one prose
-executed by a model — and this repository already runs a GC rule because that
-exact drift is a known local failure class.
+Migration deletes the `template-version` marker from consuming projects while
+leaving the `Template currency` GC rule that reads it. Under the pre-existing
+"missing marker means 0.0.0" semantics, that rule then reports drift on every
+run, forever, in every project that ever ran `/harness-init`. Nothing in the
+spec removes it, and per O5 the one bucket that would have flagged it is being
+removed in the same change.
 
 ### Evidence
 
-> Matching is case-insensitive and whitespace-trimmed, identical to
-> `/harness-upgrade` step 2, so the hook and the command never disagree about
-> what is new. (§4.1)
+> §4.5: "The marker becomes inert on the release that ships this. Nothing reads
+> it, so a project that still has one is not broken."
+> "`/harness-upgrade` removes it when it next runs, and says so in its report."
+> "This repository removes its own in this PR, along with the `Template
+> currency` GC rule."
 
-> Both the hook and the command extract headings from inside HTML comments at
-> every level. (§4.4)
+The rule was shipped to every adopter by the template:
 
-`hooks/scripts/template-currency-check.sh` is bash. `commands/harness-upgrade.md`
-is a markdown prompt: "Match items by heading name (case-insensitive, trimmed)"
-(step 2). The second is an instruction to a model, not an implementation.
+> `templates/HARNESS.md:335` `### Template currency`
+> `:337` "**What it checks**: Whether the HARNESS.md template-version marker…"
+> `:342` "**Tool**: compare template-version comment in HARNESS.md against…"
 
-The repository's own position on this class:
+The failure semantics are already established in the code being replaced:
+
+> `hooks/scripts/template-currency-check.sh:32-34`
+> ```bash
+> if [ -z "$harness_version" ]; then
+>   harness_version="0.0.0"
+> fi
+> ```
+
+§4.7's row for the rule is scoped to `templates/HARNESS.md:337-342` and
+`HARNESS.md:760-769` — the plugin's copy and this repository's copy. A consuming
+project's copy is its own file and is reached by no listed change.
+
+### Why this matters
+
+The spec's problem statement is a mechanism that "asserts `Plugin template has
+been updated` on evidence that cannot establish it", and whose "false signal
+reached the governing document" (§1). This migration reproduces that outcome
+exactly, in every project except this one: a GC rule declared in the governing
+document, comparing a value that no longer exists, reporting drift that cannot
+be cleared. It is the defect being fixed, exported to the install base.
+
+## O7 — alternatives — high
+
+### Claim
+
+The template's own content marker is rejected on two grounds — unmaintained, and
+unread — that are both properties of the current state rather than of the
+mechanism, and this spec already demonstrates the repair for the first one on
+another defect three sections later. A hook that compares the template's content
+marker against the project's, plus a Layer 0 assertion that any change to
+`templates/HARNESS.md` moves that marker, measures the property §2 names and
+needs no script, shim, grammar, declined-item record or new command disposition.
+
+### Evidence
+
+> §6: "**Compare the template's own content marker.** Unmaintained — `d867c7c`
+> changed the template without moving it — and nothing reads it. Substitutes one
+> unreliable signal for another."
+
+The repair pattern is already in the spec:
+
+> §4.2: "A Layer 0 test asserts no heading line in `templates/HARNESS.md`
+> carries a trailing parenthetical, so the class cannot return."
+
+The same sentence shape applies: *a Layer 0 test asserts that a diff touching
+`templates/HARNESS.md` also moves `<!-- template-version -->`, so the class
+cannot return.* "Nothing reads it" is answered by having the hook read it, which
+is one line's change from the code in `template-currency-check.sh:29`.
+
+§6's other stored-state objection does not transfer:
+
+> "**Hash the template and store the hash.** … reintroduces per-project state
+> that drifts, which is the class of defect being removed."
+
+The template's marker is not per-project state. It ships in the plugin, is
+authored by the maintainer, and is enforceable in this repository's CI — which
+is where §4.2 is already putting an assertion.
+
+### Why this matters
+
+Spec time is when alternatives are still cheap. The rejected option is roughly
+one CI check and one `sed` expression against a design that adds a script, a
+`PATH` shim, an HTML-comment grammar in the governing document, a fourth
+disposition in a command, eighteen acceptance criteria and a twelve-file
+migration. The rejection is one sentence, and the sentence relies on a fact the
+spec's own method dissolves.
+
+## O8 — implementation — high
+
+### Claim
+
+`SessionStart` fires on startup, resume, clear and compact. §4.4 reasons about
+skip semantics in units of "session", removes the only time-boxed silence, and
+specifies no startup guard — so a project with one genuinely new template item
+receives the nudge repeatedly inside one working session.
+
+### Evidence
+
+> §4.4: "Skip means *not now, ask again next session*. Revision 1 removed the
+> dismissal file, which was the only time-boxed silence, without saying so. This
+> revision states it: … being reminded of those each session is the intended
+> behaviour."
+
+> §4.5: "`.claude/.harness-upgrade-dismissed` is no longer written or read."
+
+The hook's registration:
+
+> `hooks/hooks.json:100-108` — `"SessionStart"`, `"matcher": "*"`,
+> `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/template-currency-check.sh`
+
+The project has already learned this lesson on the same rail:
+
+> `hooks/scripts/wip-check.sh:28-29`: "STARTUP ONLY. SessionStart re-fires on
+> resume, clear and compact, and a breach report re-injected mid-session is the
+> thrash this exists to name."
+> `:47`: `[ "$source_field" = "startup" ] || exit 0`
+
+`parked-resume-check.sh:13` carries the same note. Neither §4.1, §4.3 nor §4.4
+specifies the equivalent gate, and no acceptance criterion covers it.
+
+### Why this matters
+
+The dismissal file was doing more work than §4.4 credits: it suppressed re-fires
+within a version, not just across sessions. Removing it while keeping the nudge
+on a `*` matcher turns a once-per-upgrade message into a per-compaction one on
+exactly the population the nudge is meant to serve — a project that really is
+missing template content and has not yet acted. Alarm fatigue on the only true
+positives the mechanism has is the worst available distribution of noise.
+
+## O9 — scope — high
+
+### Claim
+
+The §4.7 and §8 inventories are again presented as authoritative and are again
+incomplete, and no acceptance criterion asserts that no live reference survives.
+The correction mechanism for a defect that has now recurred twice is a third
+hand-made list.
+
+### Evidence
+
+> §4.7: "Revision 1's table listed seven files and presented the inventory as
+> complete; it found seven of ten (O4)."
+
+Live references absent from both §4.7 and §8:
 
 ```text
-HARNESS.md:690  ### Command-prompt sync
+skills/harness-observability/references/observatory-signals.md:157  | **Total** | **82** |
+commands/observatory-verify.md:3    "…runs the 82-signal checklist against the latest output files"
+commands/observatory-verify.md:17   "This is the authoritative list of all signals to verify — 82 signals"
+README.md:77                        "the `Template currency` rule checks the same marker on…"
+docs/plugins/…/reference/hooks.md:277               "### Template currency check"
+docs/plugins/…/reference/commands.md:133            ".claude/.harness-upgrade-dismissed marker so the SessionStart hook"
+commands/harness-upgrade.md:152                     "Template version updated from X.Y.Z to A.B.C"
 ```
 
+The observatory count is the same enforcement surface §4.7 itself flags as
+load-bearing: "**The observatory row is enforced.**" Removing row 127 without
+moving 82 → 81 in three places leaves the reference internally inconsistent with
+the command that reads it.
+
+§5 contains no criterion of the form "a repository-wide search for
+`template-version` returns only CHANGELOG entries, archived snapshots and
+historical spec/objection records."
+
 ### Why this matters
 
-"Never disagree" is doing load-bearing work in this design. §4.3 has the command
-subtract declined headings and present a *Previously declined* group; §4.1 has
-the hook subtract the same set. If they diverge, the user is nudged about an item
-the command will not show them, or shown an item the hook never mentions —
-either of which reads as the mechanism being broken, because it is.
+The spec's method for this class is enumeration by hand, and enumeration by hand
+is what produced seven-of-ten last time. The fix that would end the recurrence —
+one grep assertion in the Layer 0 suite — costs less than the table and is the
+same technique §4.2 and §5.2 already reach for elsewhere in this spec.
 
-The single-implementation alternative is available and unweighed: have step 2
-invoke `template-currency-check.sh` (or a shared extraction script) and consume
-its output, rather than restating its rules in prose. That would make the
-invariant structural instead of asserted, and would collapse §4.4's "both the
-hook and the command" into one change instead of two that must agree.
-
-## O7 — risk — high
+## O10 — specification quality — medium
 
 ### Claim
 
-The hook reaches its silent, passing outcome on a code path where it has not read
-the thing it reports on. The harness decision record in force names that a defect
-rather than a default, and the spec carries the behaviour forward marked
-"unchanged".
+The comparison rule states HTML-comment handling for the template side and
+leaves it undefined for the project side. This repository's own file makes the
+two readings produce opposite outcomes for criterion 14.
 
 ### Evidence
 
-> `exit 0 if either file is unreadable          (unchanged: advisory, never blocks)`
-> (§4.1)
+> §4.1: "tpl_headings = ## and ### headings of tpl, **including inside HTML
+> comments**, EXCLUDING: …"
 
-> 9. The hook never blocks and never exits non-zero. (§5)
+`proj_headings` then appears undefined:
 
-Against HDR-2026-08-25, compiled into
-`ai-literacy-superpowers/skills/advocatus-diaboli/SKILL.md` and in force until
-2026-11-23:
+> "skip if normalise(h) is in normalise(proj_headings)"
 
-> A mechanism that reports a status ... must have a defined value for the case
-> where it could not determine the answer, and that value may not be the passing
-> one. Where an input is missing, unreadable or not supplied, the mechanism
-> reports the degraded or unknown state and names the input it could not read.
+> `HARNESS.md:55` — `<!-- ## Stakeholders`
 
-The unreadable case is not hypothetical for this hook: `$CLAUDE_PLUGIN_ROOT` is
-unset outside a plugin context, and the current script already exits 0 in three
-such places (lines 19-26, 38-40).
+Under a comment-excluding read of the project side, `Stakeholders` is missing
+from this repository and criterion 14 fails. Under a comment-including read it
+is present and criterion 14 passes. Since the template side is explicitly
+specified and the project side is not, the asymmetry reads as deliberate to at
+least one reasonable implementer.
 
 ### Why this matters
 
-There is no tension between the HDR and "never blocks" — a `systemMessage` naming
-the unreadable input satisfies both, and §4.2 already establishes the message
-channel. What the spec has done is carry an old behaviour forward under the word
-"unchanged", which is precisely how a mechanism that fails toward the reassuring
-answer survives a rewrite that was otherwise willing to delete everything.
+Criterion 14 is the spec's headline guard and its pass/fail depends on an
+unstated rule. Worse, the two readings differ in meaning: "you have adopted this
+in commented form" and "you have not adopted this" are different states, and the
+spec has not decided which one counts as having the item.
 
-The consequence is specific: a project whose plugin root is misconfigured gets
-silence, reads silence as "my harness is current", and stops looking. That is the
-same failure §1 describes, arrived at from the other direction — §1's mechanism
-lied loudly, this path lies quietly.
-
-## O8 — scope — medium
+## O11 — specification quality — medium
 
 ### Claim
 
-The design removes the only mechanism for silencing the nudge without acting on
-it, leaving *skip* as a disposition that guarantees the item re-fires every
-session forever. The spec does not state this consequence.
+Criterion 10 tests a write behaviour against a component that has no write path,
+in the section §5.3 was added to stop exactly that misfiling.
 
 ### Evidence
 
-> `.claude/.harness-upgrade-dismissed` is no longer written or read. (§4.5)
+> §5.1, "`harness-template-diff` — Layer 0 deterministic", criterion 10:
+> "A declined reason containing `--` is rejected on write."
 
-> **Skip** remains what it is today: not now, ask again next time. (§4.3, step 4)
+The script's contract (§4.1) is `harness-template-diff [--format=text|json]`
+with two file inputs and four read-only outcomes. The behaviour belongs to the
+command:
 
-> `missing = tpl_headings - proj_headings - declined` (§4.1)
+> §4.4: "**Step 4** … Declining prompts for a reason and writes it per §3.5's
+> grammar, rejecting a reason containing `--`."
 
-Skipped items are not in `declined`, so they remain in `missing`. Under the old
-design, the dismissal file silenced the hook until the next plugin version — a
-skip bought the user weeks. Under the new one, "ask again next time" means the
-next session, and the one after that.
+And the section immediately following states the principle being violated:
 
-### Why this matters
-
-The spec's central charge is alert fatigue: an item declined three times on
-recorded reasoning kept coming back. §3.4 solves that for *decline* and leaves
-*skip* with strictly worse ergonomics than it has today. A user who wants to
-consider an item next month has exactly two options: adopt it, or record a formal
-decline they do not mean. The predictable outcome is that people decline things
-to make the nudge stop, which converts §3.4's "declining is a considered act
-rather than a suppression" into its opposite.
-
-Either skip needs a time-boxed silence, or the spec should say plainly that skip
-now means "nudge me every session until you decide" and accept that as the design.
-
-## O9 — specification quality — medium
-
-### Claim
-
-The test plan assigns command behaviour to a hook test file, and leaves the write
-path of the declined block — the mechanism §3.4 calls load-bearing — with no
-acceptance criterion at all.
-
-### Evidence
-
-> Criteria 1-7 and 9 are Layer 0 deterministic tests at
-> `tdad_tests/layer0_deterministic/test-template-currency-check.sh` (§5)
-
-Criterion 6 is:
-
-> Given a `HARNESS.md` with a `template-version` marker, `/harness-upgrade`
-> removes it and reports having done so.
-
-That is a model-executed command, not the hook script named as its test location.
-Criterion 7 spans "both the hook and the command", so at most half of it can live
-there. Criterion 8, correctly, is excluded from the deterministic list — which
-shows the boundary was noticed for one criterion and not the neighbouring two.
-
-Every declined-block criterion is a *read* criterion. Criterion 3 assumes a
-correctly formed block already exists; criterion 8 assumes the command can read
-one. Nothing tests that §4.3 step 4 and step 6 *write* a block that criterion 3
-can read.
+> §5.3: "Not Layer 0; these are model-executed and belong in a behavioural
+> scenario, not in the hook's test file. Revision 1 assigned them to the hook's
+> file in error."
 
 ### Why this matters
 
-Given O3, the write path is where this design is most likely to fail, and it is
-the one path with neither a specified format nor a test. The round trip is the
-thing worth pinning: decline an item via the command, then run the hook and
-observe silence. Written as a Layer 0 fixture pair, that single test would catch
-every grammar ambiguity in O3 without the spec having to resolve them in prose
-first.
-
-## O10 — alternatives — medium
-
-### Claim
-
-§6 weighs four alternative ways to *compare*, and never weighs narrowing *what*
-is compared. Excluding placeholders, examples, and opt-in blocks from the item
-set removes most of the false-positive load without inventing per-project
-declined state at all.
-
-### Evidence
-
-All four rejected alternatives vary the comparison method:
-
-> **Compare the template's own content marker** ... **Hash the template and store
-> the hash** ... **Full-text diff instead of heading sets** ... **Record declines
-> in a separate file.** (§6)
-
-The item set is fixed by one parenthetical and never revisited:
-
-> `tpl_headings   = headings of tpl             (## and ###, incl. commented)` (§4.1)
-
-The template already distinguishes the categories that would be excluded, in
-machine-readable form: `<!-- affordance-example -->` (lines 520, 535, 546, 557),
-`<!-- Uncomment if ... -->` wrappers (lines 147, 181, 192, 372, 406, 446), and a
-bracketed placeholder heading (`### [Governance constraint name]`, line 194).
-`/harness-upgrade` step 2 already keys on the `<!-- Uncomment if...` pattern
-today.
-
-### Why this matters
-
-§3.4's declined block exists because "heading comparison alone reproduces the
-original defect in a new coat". That is true of an *unfiltered* heading
-comparison. A filtered one — active constraints and GC rules, excluding examples
-and placeholders — reduces the standing false-positive set from O1's dozens to
-approximately the one case §3.4 actually cites (`Consistent formatting` versus
-`Consistent markdown formatting`), which is a genuine specialisation and the only
-case where a recorded human decision is really needed.
-
-That is a materially cheaper design: it drops a new durable per-project artefact,
-its grammar (O3), its write path (O9), and the new `decline` disposition, in
-exchange for a filter over a set the template already tags. §6 should say why it
-is worse, or take it.
-
-## O11 — implementation — medium
-
-### Claim
-
-The spec never states which copy of the template is authoritative. The path it
-names is, in this repository, rsynced from the working tree on every `Stop` —
-which both creates a self-referential false positive during template development
-and supplies a third, simpler explanation for §1's `## Stakeholders` case than
-the parsing asymmetry §4.4 fixes.
-
-### Evidence
-
-> `tpl      = $CLAUDE_PLUGIN_ROOT/templates/HARNESS.md` (§4.1)
-
-`CLAUDE.md`, Marketplace Cache Auto-Sync:
-
-> `ai-literacy-superpowers/scripts/sync-to-global-cache.sh` — rsyncs plugin
-> content into the versioned plugin cache (runs on every `Stop`)
-
-So in this repository the hook compares the project's `HARNESS.md` against a
-template copy that tracks the working tree within one session. And §1's timeline:
-
-> `d867c7c` added a commented-out `## Stakeholders` section to the template on
-> 2026-08-13 at 09:11. `89b46f9` ran six hours later, reported "byte-identical …
-> nothing to adopt". (§1)
-
-Whether that report was wrong depends entirely on which copy `89b46f9` read — and
-the spec does not say, while §4.4 proceeds as though parsing were the cause:
-
-> This is the parsing half of the `## Stakeholders` case in §1. (§4.4)
-
-### Why this matters
-
-Two distinct consequences. First, operationally: a maintainer who adds a heading
-to `templates/HARNESS.md` gets nudged, in their next session, that their own
-harness is missing the thing they just wrote. That is a new failure the current
-version-based hook does not have.
-
-Second, epistemically: if `89b46f9` compared against a cache copy that predated
-`d867c7c`, then the comparison was *correct*, §4.4 fixes a bug that was not the
-cause, and the one piece of evidence sustaining §3.3's decision to keep the nudge
-(O5) evaporates. §4.4 is worth doing regardless — commented headings should parse
-uniformly — but it should not be presented as the explanation of a case the spec
-has not attributed. Naming the authoritative copy, and what happens when it is
-the working tree, closes both.
+An implementer building the Layer 0 suite from §5.1 will either add a write path
+to a read-only tool to satisfy criterion 10, or quietly drop the criterion. The
+first widens the script's surface beyond §4.1's contract; the second loses the
+only check on the `--` rule that §3.5 calls "semantically load-bearing".
 
 ## O12 — risk — medium
 
 ### Claim
 
-The PR knowingly merges a governing document whose Status block overstates its own
-coverage, and removes a row the observatory reference marks required, without
-saying what either consequence is.
+§4.3 makes an absolute claim about what silence means, and the design honours it
+for one input only. The hook's own failure modes all produce silence, which this
+spec has just defined as the reassuring answer.
 
 ### Evidence
 
-> `HARNESS.md`'s Status block references the marker. It is owned by
-> `/harness-audit` and is corrected by running it, not by hand-editing this PR.
-> (§4.6)
+> §4.3: "Silence means checked-and-current. It never means could-not-check. This
+> follows the harness decision record in force until 2026-11-23 … a mechanism
+> that could not determine the answer reports the degraded state and names the
+> input it could not read."
 
-The rule being removed is deterministic and counted:
+§4.1 defines exactly one degraded outcome — `tpl absent/unreadable`. It defines
+none for the hook that wraps it. §4.7 specifies the wrapper only as
+`hooks/scripts/template-currency-check.sh` "Rewritten to call
+`harness-template-diff`". The surrounding conditions:
 
-```text
-HARNESS.md:760-769   ### Template currency ... **Enforcement**: deterministic
-HARNESS.md:1174      Garbage collection active: 19/19
-```
+> `hooks/hooks.json:107` — `"timeout": 10`
+> `hooks/scripts/template-currency-check.sh:11` — `set -euo pipefail`
 
-After the removal, 19/19 describes eighteen rules. And:
-
-> `skills/harness-observability/references/observatory-signals.md:127` |
-> `Template version` is marked **required**; remove the row (§4.6)
+A stale marketplace cache or partial install in which
+`scripts/harness-template-diff.sh` is absent, a non-zero exit propagating under
+strict mode, or a timeout, all yield no `systemMessage` — indistinguishable from
+"checked and current".
 
 ### Why this matters
 
-§4.6's reasoning is right about ownership — `/harness-audit` owns the Status
-block, and hand-editing it is worse than leaving it. But the choice presented is
-false: the third option is to run `/harness-audit` as part of this change, which
-the repository's own convention supports, and which turns "the governing document
-is wrong until someone notices" into "the governing document is correct at merge".
-Leaving it stale is the same fail-toward-reassuring pattern as O7, in the document
-that is supposed to be the source of truth for all the others — and this
-repository's Status block already carries a written record of exactly this
-happening before ("The 2026-08-13 audit recorded `Drift detected: no` against a
-tree that already carried every failure listed here", `HARNESS.md:1177`).
-
-On the observatory signal: the spec says to remove a row marked **required**
-without stating whether `required` is enforced, what reads it, or what happens to
-archived snapshots that carry the field. If nothing enforces it, say so; if
-something does, this is a schema change and belongs in §4.6 with its consumers
-named.
+The decision record cited in §4.3 is enforced against this plugin and names this
+exact shape: "A reachable code path that reaches a passing value without reading
+the thing it reports on is a defect, not a default." The spec invokes the record
+correctly for the template-unreadable case and then stops one layer short of the
+component that actually decides whether the user sees anything.
 
 ## Explicitly not objecting to
 
-- **§1's evidence quality**: the problem statement is the strongest part of this
-  spec — byte-level `diff` results, commit hashes, dates, and a stated
-  verification date. It establishes the marker is a bad proxy beyond argument,
-  and I am not challenging that conclusion anywhere in this record.
-- **Retiring the marker rather than making it optional (§3.1)**: the reasoning is
-  correct and well argued — opting out of a broken signal is not fixing it, and
-  the projects most in need of a nudge are exactly the ones that would go quiet.
-- **Rejecting the `none` sentinel (§3.2)**: "Retiring the signal is cheaper than
-  governing it" is the right call, and the spec correctly identifies that it is
-  trading against a local declare-don't-infer preference rather than a rule.
-- **Keeping the declined record in `HARNESS.md` rather than a new file (§6)**:
-  the "two committed dashboards went 106 days unread" argument is concrete,
-  local, and decisive. My objections to the declined block (O3, O9) are about its
-  grammar and its tests, never its location.
-- **The minor version bump and the five CI-checked locations (§7)**: correct per
-  `CLAUDE.md`, correctly scoped as behavioural, and nothing here warrants a
-  challenge.
-- **Rejecting full-text diff (§6)**: "The property worth surfacing is a *missing
-  item*, not a reworded one" is exactly right, and it is the sentence that keeps
-  the message in §4.2 honest about what it compared.
-- **The TDAD constraint analysis (§5)**: the spec correctly reasons that the
-  *New plugin components must ship with a TDAD scenario* constraint does not gate
-  this work, and adds the Layer 0 test anyway with a stated reason. That is the
-  right relationship to a constraint and I am not going to punish it.
-- **Leaving the `.gitignore` entry in place (§4.5)**: the reasoning — the file
-  exists on machines that ran the old command, and removing the ignore surfaces
-  it as untracked — is a small, correct piece of migration thinking that many
-  specs would have missed.
-- **The out-of-scope boundary**: excluding adoption mechanics, the evolution
-  loop, and the `/harness-propose` routing question is a defensible line. My
-  scope objections (O4, O8) are about surfaces inside the declared scope that the
-  spec missed, not about where the line was drawn.
+- **The core premise that the marker measures the wrong property**: §1's
+  evidence is independently checkable and holds — `templates/HARNESS.md` last
+  changed at `d867c7c` (2026-08-13), the repository marker reads `0.79.0`
+  (`HARNESS.md:13`) against `plugin.json` `0.89.0`, and `HARNESS.md:1185`
+  records the resulting false claim in the governing document. Retiring
+  version-as-proxy is right.
+- **Heading sets over full-text diff**: §6's reasoning is correct — the property
+  worth surfacing is a missing item, not a reworded one — and a full-text diff
+  would fire on every prose edit.
+- **Fixing the template rather than the parser in §4.2**: the right layer, and
+  the justification checks out — `templates/HARNESS.md:463` and `:476` carry
+  `(LOCAL — per-machine only)` parentheticals that appear identically on both
+  sides and would be collapsed by a general normalisation.
+- **Keeping the declined record in `HARNESS.md` rather than a new file**: the
+  "two committed dashboards went 106 days unread" evidence is the strongest
+  argument in §6, and it is applied correctly.
+- **Running `/harness-audit` in this PR (§4.8)**: this is a genuine improvement
+  over revision 1, and `HARNESS.md:1177`'s record of the 2026-08-13 audit
+  reporting `Drift detected: no` against a failing tree is the right evidence
+  for it.
+- **§1.1's withdrawal of the Stakeholders attribution**: naming three candidate
+  causes and attributing none, rather than keeping a convenient one, is
+  intellectually honest and I have no basis to challenge it.
+- **The declined-block grammar's strictness (§3.5)**: the `::` separator, the
+  no-continuation rule, the `--` prohibition and "reported, never skipped" are
+  well specified; my only objection touching it is where criterion 10 was filed,
+  not what it says.
+- **The version bump, docs list and Layer 0 platform conventions (§7, §8)**:
+  these follow the repository's existing conventions and I found nothing wrong
+  with them beyond the completeness point in O9.
+- **The `New plugin components must ship with a TDAD scenario` reasoning in
+  §5.3**: the constraint genuinely names skills, agents and commands, a script
+  is none of those, and the spec adds the tests anyway.
+- **Not objecting to the `/harness-upgrade`-routes-through-`/harness-propose`
+  question**: explicitly out of scope per the header, and legitimately so.
