@@ -382,6 +382,11 @@ def check_routes(doc: dict, errors: list[str]) -> dict[str, str]:
                 f"FAIL: {SURFACES_FILE}: 'no-change' cannot be routed — a "
                 "no-change decision has no rule text to place."
             )
+        # An empty value is not a malformed route: it SUPPRESSES the default
+        # for that classification, which is how a project without the default's
+        # target artifact keeps records of that class acceptable (#559).
+        if target is None or (isinstance(target, str) and not target.strip()):
+            continue
         if not isinstance(target, str) or not target.strip():
             errors.append(
                 f"FAIL: {SURFACES_FILE}: route for '{classification}' must be a "
@@ -462,7 +467,27 @@ def check_surfaces(root: str, errors: list[str]) -> dict[str, dict]:
 
 
 def effective_routes(root: str) -> dict[str, str]:
-    """The routing table in force, defaults included."""
+    """The routing table in force: the defaults, overlaid with the project's.
+
+    This MERGES rather than replaces. It used to return only the project's
+    routes, so declaring one custom route silently dropped every default -
+    including `harness-loop: HARNESS.md` - and the failure surfaced late, at
+    acceptance, on a record someone had already argued and costed. It also meant
+    a route added in a new plugin release could never reach a project that had
+    customised the file it lives in (#559).
+
+    A default is SUPPRESSED by mapping it to an empty value:
+
+        routes:
+          turn-instructions:      # this project has no AGENTS.md
+
+    The escape hatch is not decoration. `target_of` prefers a route over any
+    `target` a record names, so a merged-back default pointing at a file the
+    project does not have would leave records of that classification refused at
+    compile and impossible to redirect. Suppression keeps that case reachable,
+    and a suppressed classification simply behaves as unrouted: the record names
+    its own target, as it already must for the classifications with no default.
+    """
     path = os.path.join(root, SURFACES_FILE)
     if not os.path.isfile(path):
         return dict(DEFAULT_ROUTES)
@@ -474,7 +499,15 @@ def effective_routes(root: str) -> dict[str, str]:
     routes = doc.get("routes")
     if not isinstance(routes, dict) or not routes:
         return dict(DEFAULT_ROUTES)
-    return {k: v for k, v in routes.items() if isinstance(v, str) and v.strip()}
+
+    merged = dict(DEFAULT_ROUTES)
+    for key, value in routes.items():
+        if isinstance(value, str) and value.strip():
+            merged[key] = value
+        else:
+            # Declared with no value: suppress the default rather than inherit it.
+            merged.pop(key, None)
+    return merged
 
 
 def check_hdr(path: str, surfaces: dict, errors: list[str],

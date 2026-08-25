@@ -1,5 +1,56 @@
 # Changelog
 
+## 0.85.0 — 2026-08-25
+
+### Fixed — a project's routing table merges with the defaults instead of replacing them
+
+`effective_routes`' docstring said "defaults included" and the function returned
+only the project's routes, so declaring one custom route silently dropped every
+default — `harness-loop: HARNESS.md` included. The failure surfaced late, at
+acceptance, on a record someone had already read, argued and costed, and the
+cause was a line in `surfaces.yaml` that reads as additive. See #559.
+
+It also meant a route shipped in a new plugin release could never reach a project
+that had customised the file it lives in — the same shape as the template-currency
+problem in #547. Adding `script-validator` to the defaults in 0.80.0 had no effect
+on this repository until the route was written into `harness/surfaces.yaml` by
+hand.
+
+- **`routes:` now merges**: the plugin's defaults, overlaid with the project's.
+  The docstring is true, and future defaults propagate.
+- **A default is suppressed by mapping it to an empty value**, and a suppressed
+  classification behaves as unrouted — the record names its own `target`, as it
+  already must for classifications with no default.
+- **The `surfaces.yaml` validator accepts an empty route value** as suppression
+  rather than rejecting it as malformed.
+- **Layer 0 suite** `test-routes-merge.sh` (M1–M7).
+
+### Why suppression is not decoration
+
+`target_of` prefers a route over any `target` a record names. So merging a
+default back for a project that lacks its target artifact — `AGENTS.md`, say —
+would leave records of that classification refused at compile **and impossible to
+redirect**, because the route wins. Today such a project omits the route and names
+targets explicitly; a merge without an escape hatch would take that away and offer
+nothing in its place. M6 covers the case.
+
+### Adopter impact
+
+A project declaring a partial `routes:` block will find the omitted defaults back
+in force. This is a fix rather than a change of mind — the documented contract was
+always "defaults included", so those projects were getting behaviour that
+contradicted the documentation. One blank line per route restores the old effect,
+and the refusal that would otherwise appear names the classification.
+
+This repository's routes resolve identically and its enforcement report is
+byte-identical.
+
+### Also corrected
+
+The `surfaces.yaml` comment and the reference page added in 0.80.0 both stated
+that a `routes:` block replaces the defaults. Both now describe merging. A comment
+that contradicts behaviour is the defect this release exists to fix, one level up.
+
 ## 0.84.0 — 2026-08-25
 
 ### Added — assays can be corrected without being edited
