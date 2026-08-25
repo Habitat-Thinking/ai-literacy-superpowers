@@ -45,6 +45,50 @@ behaviour, neither can whoever drafts the record thirty seconds later. The perso
 who can decide is the one reading the rule beside its cost, which is what the
 reference said all along.
 
+### Observability snapshot refreshed — and the badge script's green default
+
+The snapshot was 35 days stale against a 30-day cadence. It is also step 5 of
+the GC job, so its failure had been skipping every rule after it for six
+consecutive weeks — including the two `Auto-fix: true` rules that would have
+closed the release-tag gap and the reflection archival backlog.
+
+- **`observability/snapshots/2026-08-25-snapshot.md`** — full quick-mode
+  snapshot, all 16 sections, generated straight after the `/harness-audit`
+  run so the enforcement figures are observed rather than re-derived. Health:
+  **Degraded**, on four grounds — the investigative loop has not completed a
+  run in 36 days, the snapshot cadence had lapsed, four constraints fail, and
+  `/assess` is 106 days overdue against a 90-day target.
+- **Two GC findings recorded**, both discovered by the audit rather than by
+  the GC job: six untagged releases and fifteen archivable reflection
+  fragments.
+- **The health badge now reads Degraded** and links to the new snapshot.
+
+### Fixed — `update-health-badge` defaulted to a green badge
+
+`update-health-badge.sh` reads the snapshot path from `$2`. Called with no
+argument it skips the entire detection block and falls through to
+`health_status="Healthy"`, hardcoded, and points the link at the snapshots
+directory rather than a snapshot.
+
+`/harness-health` step 8 documents exactly that argument-less invocation, so
+**the documented way to run it always wrote a green badge** regardless of what
+the snapshot said. Observed directly: the argument-less call wrote `Healthy`
+over a snapshot whose Meta section reads `Health: **Degraded**`.
+
+The script is not changed here — the defect is recorded and the badge written
+correctly by passing the snapshot path. A default that fails toward the most
+reassuring value is the same shape as the masking defect this snapshot
+documents, and the fix belongs with its own evidence rather than bundled into
+a snapshot refresh.
+
+### Also recorded
+
+The `Compound Learning` count basis is now stated in the snapshot. The format
+reference says to count `GOTCHA:` and `ARCH_DECISION:` lines; neither string
+exists in `AGENTS.md`, which uses `##` headings with top-level bullets. The
+26 -> 22 delta against the previous snapshot is a change of counting basis,
+not a removal of entries, and the reference is what needs correcting.
+
 ## 0.85.0 — 2026-08-25
 
 ### Fixed — a project's routing table merges with the defaults instead of replacing them
