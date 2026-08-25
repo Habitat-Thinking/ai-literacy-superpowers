@@ -63,6 +63,52 @@ decided no" into "nobody looked".
   The roster-parity check derives membership from `role: sentinel` frontmatter
   but does not read prose counts.
 
+### The harness evolution loop, run for the first time
+
+The loop was exercised end to end against this repository on 2026-08-25. What it
+produced is committed here as the record, including the parts that went wrong.
+
+- **First assay** — `harness/assay/2026-08-25T08-08Z-assay.md`. Three findings,
+  five rejected candidates, four unresolved questions. Two of its factual claims
+  are wrong and are corrected elsewhere in this commit rather than in the record,
+  because assays are append-only.
+- **Adversarial pass** — `docs/superpowers/objections/harness-provenance-citation.md`.
+  Twelve objections on finding-1, four critical. Three were verified by hand
+  before being acted on. Dispositions remain `pending`; finding-1 was resolved by
+  evidence rather than by the gate.
+- **The build spec is now in the repository** —
+  `docs/superpowers/harness-evolution-build-spec.md`, with every claim the S0–S5
+  specs make about it checked against it in
+  `harness-evolution-build-spec-claims.md`. All four recorded deviations hold.
+  The specs departed from their source honestly; what was missing was any way for
+  a reader to confirm that.
+- **One rule accepted and retired the same day.** `HDR-2026-08-25-the-periodic-
+  check-suite-...` was accepted with a human-authored cost, applied to
+  `.github/workflows/gc.yml`, and left the file invalid YAML — the compiler
+  appends a markdown region to whatever artifact a record targets.
+  `HDR-2026-08-25-retire-periodic-check-suite-runner` supersedes it. The
+  Observatory feed records the pair as an intervention of zero duration.
+
+### Defects this surfaced, none yet fixed
+
+Recorded here so they are not rediscovered:
+
+- `/harness-check` validates the corpus, not the artifacts it writes. It reported
+  `OK` against a workflow file the acceptance had made unloadable.
+- `script-validator` targets code files while the compiler emits only markdown,
+  so the classification corrupts its target on acceptance. The fixed routes
+  (`harness-loop`, `turn-instructions`) are both markdown, and nothing in the
+  Phase 2 acceptance criteria exercises a non-markdown target.
+- The cost rule refuses a cost identical to the **Assayer's** proposal and is
+  blind to one supplied by an assistant in the same conversation.
+- `target` is copied verbatim from an append-only assay and `/harness-accept` has
+  no override, so a mis-targeted finding cannot be corrected through the loop.
+- Assays have no supersession or errata path, and no CI validation.
+- A finding a human declines leaves no trace in the corpus.
+- `/harness-propose` drops the finding's reasoning: the Assayer's "why this
+  layer", overfitting note and validation plan sit after the metadata fence and
+  are not carried into the record.
+
 ### Note on the cohort tag
 
 `cohort` remains on the decision record, per the epic's resolution of the source
