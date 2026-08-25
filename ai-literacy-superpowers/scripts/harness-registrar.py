@@ -905,6 +905,34 @@ def load_matrix(root: str) -> tuple[dict[str, str], dict[str, dict]]:
     return S0.effective_routes(root), surfaces
 
 
+# A rule's text is markdown, applied verbatim. The artifact that HOSTS it must
+# therefore be one that can hold markdown; the artifact a rule is ABOUT is named
+# in its `**Tool**` field, and those are different things.
+#
+# On 2026-08-25 a record targeting `.github/workflows/gc.yml` was accepted, the
+# region was appended to a YAML file, the workflow stopped parsing, and
+# `/harness-check` reported OK against it. The two fixed routes were both
+# markdown, so no test had ever pointed a record at another file type.
+#
+# An ALLOWLIST, deliberately. A denylist answers "is this one of the types we
+# thought of?", which is exactly the question nobody asked about `.yml`.
+PROSE_SUFFIXES = (".md",)
+
+
+def hosts_prose(path: str) -> bool:
+    return str(path).endswith(PROSE_SUFFIXES)
+
+
+def target_refusal(where: str, target: str) -> str:
+    return (
+        f"FAIL: {where}: target '{target}' cannot hold this rule. Rule text is "
+        "markdown and is applied verbatim, so the target must be a markdown "
+        f"artifact ({', '.join(PROSE_SUFFIXES)}). Name a markdown artifact as the "
+        f"target and put '{target}' in the rule's **Tool** field, which is where "
+        "the artifact a rule is ABOUT belongs."
+    )
+
+
 def target_of(record: Record, routes: dict[str, str]) -> str | None:
     if record.classification == "no-change":
         return None
@@ -1058,12 +1086,23 @@ def compile_plan(root: str, records: list[Record]) -> tuple[dict[str, str], list
         # mechanism, not its residue - but neither reaches an artifact.
         if record.id in retired or record.is_retirement:
             continue
+        # Checked BEFORE routing. A routed classification would otherwise
+        # silently ignore a declared target, and quietly discarding what an
+        # author wrote is the shape of failure this whole mechanism exists to
+        # refuse.
+        declared = record.fm.get("target")
+        if declared and not hosts_prose(str(declared)):
+            errors.append(target_refusal(record.rel, str(declared)))
+            continue
         target = target_of(record, routes)
         if not target:
             errors.append(
                 f"FAIL: {record.rel}: classification '{record.classification}' "
                 "has no route and the HDR names no 'target'."
             )
+            continue
+        if not hosts_prose(target):
+            errors.append(target_refusal(record.rel, target))
             continue
         by_target.setdefault(target, []).append(record)
 

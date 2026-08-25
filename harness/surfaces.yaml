@@ -15,9 +15,15 @@
 # Where a rule's TEXT goes, by classification. Two have a fixed home; the rest
 # name their own `target`, because nothing in the schema can infer which of four
 # agent files a given agent instruction belongs in.
+# NOTE: a `routes:` block REPLACES the defaults rather than merging with them
+# (`effective_routes`), so every route this project relies on must be listed here.
 routes:
   harness-loop: HARNESS.md
   turn-instructions: AGENTS.md
+  # A rule about a validator is still a rule about how work proceeds here, and
+  # its text is prose. Before this route existed the classification named a
+  # script as its target and the compiler appended markdown to it (#551).
+  script-validator: HARNESS.md
 
 # Who is TOLD about a rule, and how strongly it binds there. Compilation does not
 # write into these files: `.github/copilot-instructions.md`, `.cursor/rules/` and
