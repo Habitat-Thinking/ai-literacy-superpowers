@@ -168,8 +168,9 @@ R3="$(probe HDR-2026-08-25-none)";        rm -f harness/decisions/HDR-2026-08-25
 printf '%s' "$R1" | grep -qi 'runnable'   || fail "V6: non-runnable needs its own reason: $R1"
 printf '%s' "$R2" | grep -qi 'not found'  || fail "V6: missing needs its own reason: $R2"
 printf '%s' "$R3" | grep -qi 'no validator declared' || fail "V6: absent field needs its own reason: $R3"
-[ "$R1" != "$R2" ] && [ "$R2" != "$R3" ] \
-  || fail "V6: states must not collapse to one reason"
+if [ "$R1" = "$R2" ] || [ "$R2" = "$R3" ] || [ "$R1" = "$R3" ]; then
+  fail "V6: states must not collapse to one reason: $R1 / $R2 / $R3"
+fi
 echo "V6 ok (four states, four reasons)"
 
 # === V7: an undeclared validator behaves exactly as before ===================
