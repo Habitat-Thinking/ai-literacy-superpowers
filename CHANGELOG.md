@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.83.0 — 2026-08-25
+
+### Added — a finding a human declines is now recorded
+
+The corpus recorded what **entered** and had no way to record what a human
+weighed and refused. During the first loop run, finding-1 of
+`2026-08-25T08-08Z-assay.md` was read, adversarially reviewed and declined on
+evidence, and nothing in the corpus shows it. See #555.
+
+`rejected` was already a **storable** status that nothing produced — the schema
+anticipated this outcome and no command reached it.
+
+- **`/harness-propose --reject --reason-file <path>`** writes a record at
+  `status: rejected`, carrying `## Finding` and a non-empty `## Rejection`.
+- **Declining costs one section.** No `## Rule` (nothing enters force), no `cost`
+  key (nothing is demanded, and an empty cost would imply an obligation that will
+  never be met), no tier-2 sections (no layer is being argued for). Friction on
+  the path we want people to take means the path is not taken.
+- **The reason is supplied up front, never a placeholder.** A rejection has no
+  later gate — it is written at `rejected` and never accepted — so a placeholder
+  would either block the write, since `propose` validates before writing, or sit
+  in the corpus permanently recording that someone said no and nothing about why.
+  `--reason-file` is a file rather than an argument for the same reason
+  `--cost-file` is.
+- **It reaches no artifact, consumes no cycle slot, and stays out of
+  `/harness-timeline`.** The `no-change` precedent argues the other way, but a
+  `no-change` record is *accepted* and carries `approved_at`; a rejection was
+  never in force. It is not an intervention of size zero — it is not an
+  intervention. It appears in `harness/decisions/index.md` with state `rejected`.
+- **The relaxation is keyed on status and does not leak.** An accepted record
+  still requires `## Rule`, `## Cost` and its tier-2 sections; asserted directly,
+  because a leak would let a rule enter force with no rule text and no cost.
+- **Layer 0 suite** `test-declined-findings.sh` (D1–D9).
+
+### Why it matters beyond tidiness
+
+A later assay reads prior assays and will re-find the same class of problem.
+Nothing told it a human had already considered and declined one, so it could not
+distinguish a recurring problem from one already adjudicated — the distinction the
+two-assay promotion threshold turns on. Corroboration by a finding that was
+already refused is not corroboration.
+
 ## 0.82.0 — 2026-08-25
 
 ### Fixed — a validator must be shown to enforce the rule that claims it

@@ -101,9 +101,19 @@ rather than of what was in force.
 
 ## 5. Decision — how a rejection is produced
 
-`/harness-propose --reject <assay> <finding>` writes the record at
-`status: rejected` with `## Rejection` as a placeholder for the human to fill,
-mirroring how tier-2 sections are left for a human today.
+`/harness-propose --reject <assay> <finding> --reason-file <path>` writes the
+record at `status: rejected`, complete.
+
+**The reason is supplied up front, not left as a placeholder.** (Corrected during
+implementation.) The first design left `## Rejection` as `_TODO`, mirroring the
+tier-2 sections — but those survive because they are checked at the *acceptance*
+gate, and a rejection has no later gate. A placeholder would either block the
+write, since `propose` validates before writing, or sit in the corpus permanently
+recording that someone said no and nothing about why.
+
+`--reason-file` is a file rather than an argument for the same reason
+`--cost-file` is: it is prose, and shell history is one copy-paste from the next
+rejection.
 
 It is on `propose` rather than `accept` because nothing is being accepted, and
 routing a refusal through the acceptance gate would make the gate mean two
@@ -117,8 +127,10 @@ asserted rather than assumed.
 ## 6. Acceptance criteria
 
 - **A1** — `/harness-propose --reject` writes a record at `status: rejected`.
-- **A2** — the record carries `## Finding` and a `## Rejection` placeholder.
-- **A3** — validation fails while `## Rejection` is a placeholder or empty.
+- **A2** — the record carries `## Finding` and a `## Rejection` holding the
+  supplied reason, and never a placeholder.
+- **A3** — `--reject` without a reason, or with an empty one, refuses and writes
+  nothing.
 - **A4** — validation passes with `## Finding` and `## Rejection` alone: no
   `## Rule`, no `## Cost`, no tier-2 sections, whatever the classification.
 - **A5** — a rejected record reaches no artifact: `compile_plan` ignores it and

@@ -367,6 +367,64 @@ def block_scalar(value: str, indent: str = "  ") -> str:
     return "\n".join(indent + line if line.strip() else "" for line in lines)
 
 
+def render_rejection(hdr_id: str, finding: Finding, assay_path: str,
+                     assay_fm: dict, today: datetime.date, reason: str) -> str:
+    """A record of what a human weighed and refused.
+
+    The corpus records what ENTERED. Without this it has no way to record what
+    was considered and declined, so a later assay re-finding the same class
+    cannot tell a recurring problem from one already adjudicated — which is the
+    distinction the two-assay promotion threshold turns on (#555).
+
+    Deliberately cheap. No rule, because nothing enters force; no cost, because
+    nothing is demanded of anyone; no tier-2 sections, because no layer is being
+    argued for. Friction on the path we want people to take means the path is not
+    taken, and then the corpus goes on recording only what entered.
+
+    The reason is supplied up front rather than left as a placeholder. A
+    rejection has no later gate — it is written at `rejected` and never accepted
+    — so a placeholder would either block the write, or sit in the corpus
+    permanently recording that someone said no and nothing about why.
+    """
+    meta = finding.meta
+    evidence = [str(i) for i in (meta.get("evidence") or [])]
+    anchor = f"{assay_path}#{finding.id}"
+    if anchor not in evidence:
+        evidence.append(anchor)
+
+    lines = ["---",
+             f"id: {hdr_id}",
+             f"title: {finding.title}",
+             "status: rejected",
+             f"classification: {meta['classification']}",
+             f"enforcement: {meta['enforcement']}",
+             "surfaces: [" + ", ".join(str(s) for s in (meta.get("surfaces") or [])) + "]",
+             "provisional: false",
+             "evidence:"]
+    lines += [f"  - {item}" for item in evidence]
+    lines += ["proposer:",
+              f"  agent: {assay_fm['agent']}",
+              f"  model: {assay_fm['model']}",
+              f"  assay: {assay_path}",
+              "supersedes: null",
+              "superseded_by: null",
+              "---",
+              "",
+              "## Finding",
+              "",
+              finding.observation,
+              ""]
+    if finding.reasoning:
+        lines += ["## Assayer's reasoning",
+                  "",
+                  "_Written by the Assayer, carried verbatim._",
+                  "",
+                  finding.reasoning,
+                  ""]
+    lines += ["## Rejection", "", reason.strip(), ""]
+    return "\n".join(lines)
+
+
 def render_hdr(hdr_id: str, finding: Finding, assay_path: str, assay_fm: dict,
                today: datetime.date) -> str:
     meta = finding.meta
@@ -534,7 +592,22 @@ def cmd_propose(args) -> int:
     if os.path.exists(target):
         die(f"{rel} already exists — pass --slug to give this one a distinct name.")
 
-    text = render_hdr(hdr_id, match, args.assay, assay_fm, today)
+    if getattr(args, "reject", False):
+        reason_rel = getattr(args, "reason_file", None)
+        if not reason_rel:
+            die("--reject needs --reason-file: a rejection with no reason records "
+                "that someone said no and nothing about why.")
+        reason_abs = os.path.join(root, reason_rel)
+        if not os.path.isfile(reason_abs):
+            die(f"reason file not found at {reason_rel}")
+        with open(reason_abs, encoding="utf-8") as handle:
+            reason = handle.read().strip()
+        if not reason:
+            die("the reason is empty. The approver writes why the finding was "
+                "declined.")
+        text = render_rejection(hdr_id, match, args.assay, assay_fm, today, reason)
+    else:
+        text = render_hdr(hdr_id, match, args.assay, assay_fm, today)
 
     code, output = validate_staged(root, rel, text)
     if code != 0:
@@ -544,6 +617,9 @@ def cmd_propose(args) -> int:
     os.makedirs(os.path.dirname(target), exist_ok=True)
     with open(target, "w", encoding="utf-8") as handle:
         handle.write(text)
+    if getattr(args, "reject", False):
+        print(f"rejected {rel}")
+        return 0
     print(f"proposed {rel}")
     if match.meta["classification"] in S0.TIER2_CLASSIFICATIONS:
         print("  tier-2 classification: four sections are placeholders and must "
@@ -1621,6 +1697,14 @@ def main(argv: list[str]) -> int:
     p.add_argument("--finding", required=True)
     p.add_argument("--slug")
     p.add_argument("--today", help="YYYY-MM-DD; injected so nothing races the clock")
+    p.add_argument("--reject", action="store_true",
+                   help="record the finding as DECLINED rather than proposed: no "
+                        "rule, no cost, one section for the reason")
+    p.add_argument("--reason-file",
+                   help="with --reject: a FILE holding why the finding was "
+                        "declined. A file, never an argument, for the same reason "
+                        "--cost-file is: it is prose, and shell history is one "
+                        "copy-paste from the next rejection")
     p.set_defaults(func=cmd_propose)
 
     p = sub.add_parser("precheck", help="report every refusal that does not need a cost")

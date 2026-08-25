@@ -73,6 +73,26 @@ reworded — and it removes a second place for the same fact to be wrong.
 
 ### A retirement says `Withdrawn.`
 
+### `rejected` — a finding a human weighed and declined
+
+Written by `/harness-propose --reject --reason-file <path>`. It carries
+`## Finding` and a non-empty `## Rejection`, and **nothing else**: no `## Rule`
+because nothing enters force, no `cost` key because nothing is demanded, and no
+tier-2 sections because no layer is being argued for.
+
+Declining has to be cheaper than accepting. If a rejected `harness-loop` record
+needed four tier-2 sections and a cost, nobody would record a refusal, and the
+corpus would go on recording only what entered (#555).
+
+The reason is supplied when the record is written rather than left as a
+placeholder: a rejection has no later gate, so a placeholder would sit in the
+corpus permanently recording that someone said no and nothing about why.
+
+A rejection reaches no artifact, consumes no cycle slot, and is **absent from
+`/harness-timeline`** — the feed records when a rule entered force and when it
+stopped, and a rejection was never in force. It appears in
+`harness/decisions/index.md` with state `rejected`.
+
 A record that withdraws a rule carries the literal `Withdrawn.` in its `## Rule`
 section, with no fenced block, and must name a non-null `supersedes`. Retiring
 nothing is not a decision.
