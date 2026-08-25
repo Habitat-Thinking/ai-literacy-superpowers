@@ -10,84 +10,84 @@ objections:
     claim: "The rule's two sentences cover three of the four instances between them and the fourth not at all — and the uncovered instance is the only one that appears in a second assay, so the four-instance pattern and the two-assay corroboration rest on disjoint evidence."
     evidence: "Rule sentence 1 binds a mechanism that 'must have a defined value for the case where it could not determine the answer, and that value may not be the passing one' — this covers the badge and the Status block. Sentence 2 is introduced as 'Separately' and covers the release-tag check. Instance 3 is covered by neither: the finding itself says 'A `skipped` conclusion is not a failure and is not a pass; the run reports one red step and between five and nine unknowns, and a reader asking \"did GC pass?\" sees the single failure.' A defined non-passing value that a reader misreads is not indeterminacy resolved to the passing value. Instance 3 is the only one carried by `harness/assay/2026-08-25T11-59Z-assay.md#finding-2`."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: the four-instance pattern and the two-assay corroboration rest on disjoint evidence. The rule as drafted does not hold up here. Amended in place as proposed, rather than rejected and re-derived from a corrected finding."
   - id: O2
     category: risk
     severity: critical
     claim: "The two-assay threshold is satisfied by re-observing one unrepaired artifact in a second window, which is a single incident counted twice by a check that can only count filenames — and accepting it establishes that any open defect becomes threshold-eligible by surviving one assay cycle."
     evidence: "`_check_promotion_threshold` docstring: 'A single incident cannot reach the loop layer... Distinctness is by assay FILE, not by evidence entry - two anchors into one assay are one assay, and letting them count twice would make the threshold satisfiable by anyone willing to cite the same finding twice.' The same assay states: 'The masking defect that both assays observed is unrepaired: `harness.yml` and `gc.yml` each still carry exactly one `if: always()`, on `Summary` (`observed`, counted).' Nothing changed the artifact between the two observations."
-    disposition: rejected
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Deferred rather than rejected. The second sighting is a verification observation, not the same one counted twice, and the precedent this objection warns about - an unrepaired defect becoming the cheapest route into HARNESS.md - is right but acceptable. What is unsettled is the question accepting O1 raises: whether corroboration drawn from the one instance the rule text does not cover should count toward the threshold at all. I'm not sure it does. Deferred until that is answered."
   - id: O3
     category: implementation
     severity: critical
     claim: "The reason given for choosing `harness-loop` over `turn-instructions` — that AGENTS.md reaches one surface and is silent where the work happens — applies with equal force to HARNESS.md, which reaches three of the five surfaces the record declares and neither `claude-code` nor `codex` by any mechanism."
     evidence: "Record: 'I rejected it because `harness/surfaces.yaml` gives `AGENTS.md` as the target of `codex` alone, so the rule would reach one surface and be silent on the one where the work happens.' `harness/surfaces.yaml`: `claude-code: targets: [CLAUDE.md, .claude/agents/, .claude/hooks/, .claude/settings.json]`; `codex: targets: [AGENTS.md]`. HARNESS.md appears in no surface's `targets`. *Convention parity* generates 'all three generated convention files (`.cursor/rules/constraints.mdc`, `.github/copilot-instructions.md`, `.windsurf/rules/constraints.md`)'. `commands/harness-sync.md:15`: 'It does _not_ write to `AGENTS.md`... `AGENTS.md` and `REFLECTION_LOG.md` are curated by humans.' The record declares `surfaces: [claude-code, codex, cursor, copilot, windsurf]`."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: the reach argument given against turn-instructions applies equally against HARNESS.md. The rule as drafted does not hold up here. Amended in place as proposed, rather than rejected and re-derived from a corrected finding."
   - id: O4
     category: specification quality
     severity: critical
     claim: "The repaired script the finding holds up as the principle's only written statement still reaches the passing value when it cannot read the input it names, so either the rule flags its own exemplar at HEAD or 'a reachable code path that reaches a passing value' has no determinable meaning — and the validation plan's fixtures are chosen so neither horn can surface."
     evidence: "Rule: 'Where an input is missing, unreadable or not supplied, the mechanism reports the degraded or unknown state and names the input it could not read. A reachable code path that reaches a passing value without reading the thing it reports on is a defect, not a default.' `update-health-badge.sh:54-88`: when `grep -iE '^- Health:'` matches nothing, the `*)` branch counts keyword signals and, at zero signals, sets `health_status=\"Healthy\"` — commented 'the one path to Healthy that does not come from an explicit Health line'. Validation plan: 'Reconstruct the tree at `b1982b0` and assert the rule flags `update-health-badge.sh`' — the pre-repair tree only. Cost estimate names the same shape as the likely evasion: 'Declaring an `Unknown` state and never routing to it.'"
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted for the point beneath it, not the claim as written. The claim does not hold: under set -euo pipefail the grep assignment fails before the fallback branch is reached, so the script exits 1 with the badge untouched and that path is unreachable. What is accepted is the underlying point - a reporting mechanism should not carry a fallback that reaches the passing value without reading the thing it reports on, reachable or not."
   - id: O5
     category: implementation
     severity: critical
     claim: "Both halves of the declared Tool are unreachable for the evidence class: `harness-enforcer` is dispatched by no workflow, and the advocatus-diaboli spec-mode gate is exempt on exactly the labels all five PRs in the window carried — so the rule would have fired on none of its own four instances."
     evidence: "Cost estimate: '`grep -rn 'harness-enforcer' .github/workflows/` returns nothing.' HARNESS.md *PRs have adjudicated objections*: 'Bug fixes, dependency updates, and maintenance PRs (labelled `bug`, `fix`, `chore`, `maintenance` or branch-prefixed `fix/`, `chore/`) are exempt.' Same assay: 'Every PR in the window merged under a spec-first exemption. #571 and #572 carry `chore`; #574 `chore`; #576 and #577 `fix`... No spec was written.' #576 is the PR that changed the badge's indeterminate value. `skills/advocatus-diaboli/SKILL.md`: 'Deprioritise at spec time: `risk` objections that require examining concrete code or runtime behaviour to ground — including every embedded assumption... before the artefact exists there is nothing to read it out of.'"
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: neither half of the declared Tool can reach the class of change the finding is drawn from. The rule as drafted does not hold up here. Amended in place as proposed, rather than rejected and re-derived from a corrected finding."
   - id: O6
     category: scope
     severity: high
     claim: "The instance supplying the second assay is already the subject of an accepted decision whose approver wrote its cost and whose retirement withdrew only where it was pointed, and of an unproposed finding-2 that is a live competing proposal — none of which the 'why no existing owner absorbs it' section discloses."
     evidence: "`HDR-2026-08-25-the-periodic-check-suite-stops-at-its-first-failure-and-reports-the-rest-as-nothing`, status `accepted`, cost in the approver's words: 'We will implement the fourteen absent checks rather than demote them.' Its retirement: 'Withdrawing where the rule was pointed, not the rule itself', and 'Re-propose immediately with `HARNESS.md` as the target. Deferred, not rejected.' The record's 'Why no existing owner absorbs it' names only *Output validation checkpoints*, *Docs site kept current*, *Command-prompt sync* and `/harness-audit`; it names no HDR."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: an accepted record already governs the corroborating instance, and the record discloses none of it. A rule should exist here, but not this one."
   - id: O7
     category: premise
     severity: high
     claim: "The headline claim that motivates elevation — the principle is written down exactly once, in a code comment — is false: it is stated in an accepted HDR's rule text with an approver's cost against it, and in the governance validator's own documentation."
     evidence: "Finding: 'That comment is the only place in the repository the principle is written.' Executive summary: 'the principle that says they must not was written down exactly once, in a code comment.' Counter-evidence: the accepted (now superseded) masking HDR's rule text — 'A rule that did not run is reported as not run — never omitted, and never counted as passing' — and `check-harness-decisions.py`'s `sections()` docstring — 'An empty section is a missing section that looks present, and that is worse than an absent one: it reads as done.' The narrower claim the finding also makes, that HARNESS.md's 36 constraints and AGENTS.md's six gotchas contain no equivalent, is not disputed."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: the principle is written in more than the one place the finding claims. The rule as drafted does not hold up here. Amended in place as proposed, rather than rejected and re-derived from a corrected finding."
   - id: O8
     category: alternatives
     severity: high
     claim: "Exactly one alternative classification was weighed, and it is not the one the record's own Tool field points at: `agent-instruction` targeting the advocatus-diaboli skill would reach the surface where the work happens, need no two-assay threshold, and be dispatched by something that actually runs."
     evidence: "Record: 'I considered `turn-instructions`... I rejected it because...' — no other classification is named. Rule: '**Tool**: advocatus-diaboli (spec-mode gate) and harness-enforcer.' `check-harness-decisions.py`: `_check_promotion_threshold` returns early unless `classification == \"harness-loop\"`; `agent-instruction` has no default route and names its own `target`, which `_check_target` requires only at acceptance. `skills/advocatus-diaboli/SKILL.md` is loaded on every `/diaboli` run; `.github/prompts/diaboli.prompt.md` exists as a second dispatch path."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: one alternative classification was weighed and it was not the one the record's own Tool field points at. A rule should exist here, but not this one."
   - id: O9
     category: scope
     severity: high
     claim: "The 'weaker property' sentence legislates the same claim as finding-2's proposed rule from the same assay, so accepting both writes one normative claim into HARNESS.md twice with no supersession relationship, and spends two of the three cycle slots on it."
     evidence: "finding-1: 'Separately, a check may not report a pass on the strength of a property weaker than the one it names: if the check is called \"release tag completeness\" it verifies that the release has a tag, not that a string exists.' finding-2: 'A check named for a property verifies that property; passing on a weaker one is worse than failing, because 110 green rows are read as coverage.' Neither rule mentions the other. `check_cycle_cap`: 'At most three accepted HDRs may share one assay.' The finding's own cost estimate concedes the clause is unmechanical: 'I could not tighten \"weaker property\" into something mechanical without narrowing it to release tags, which would overfit it to finding-2.'"
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: the weaker-property clause legislates the same claim as finding-2 from the same assay. A rule should exist here, but not this one."
   - id: O10
     category: specification quality
     severity: high
     claim: "The validation plan presupposes something that runs, and the record declares `enforcement: advisory` with an agent tool — so the refusal criterion the record sets for itself can never be evaluated by anyone, and the rule ships carrying a falsification test that cannot be performed."
     evidence: "Validation plan: 'Reconstruct the tree at `b1982b0` and assert the rule flags `update-health-badge.sh`, the `## Status` block and `gc.yml`'s release-tag step. Then assert it does not flag `check-harness-decisions.py` or `harness-registrar.py check`... If the rule cannot separate those two sets without an author's cooperation, it is not falsifiable and should be refused rather than softened.' Frontmatter: `enforcement: advisory`; rule block: '**Enforcement**: agent'; cost estimate: 'An agent-enforced constraint runs when a human types `/harness-audit`, which happened once in the twelve days before this window.'"
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: the validation plan names a refusal criterion nobody can evaluate. The rule as drafted does not hold up here. Amended in place as proposed, rather than rejected and re-derived from a corrected finding."
   - id: O11
     category: risk
     severity: high
     claim: "The proposed record's four tier-2 sections are placeholders, and the corpus validator passes them — it checks non-emptiness everywhere and placeholder text only in `## Rejection` — so a harness-loop rule can be accepted with no layer argument, no enforcement statement, no validation and no rejected alternatives."
     evidence: "`HDR-2026-08-25-four-mechanisms-...md` body: '## Why this layer\\n\\n_TODO — why this change belongs at this layer and not one layer down._' and the same for Enforcement, Validation and Rejected alternatives. `check-harness-decisions.py` `_check_body`: `elif not found[heading].strip():` — a `_TODO` line is non-empty. The `startswith(\"_TODO\")` guard exists only in `_check_rejection`, for `## Rejection`. The record's own rule: 'A reachable code path that reaches a passing value without reading the thing it reports on is a defect, not a default.'"
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted for the point beneath it, not the claim as written. The claim does not hold: /harness-accept runs precheck, which refuses _TODO sections by name, so a harness-loop rule cannot be accepted carrying them. What is accepted is the underlying point - the corpus validator does pass placeholder text, so /harness-check reports OK on an unfinished proposal, and a gate that checks shape is not checking substance."
   - id: O12
     category: alternatives
     severity: high
     claim: "The existing machinery found and repaired three of the four instances inside four hours with no new rule, and 'run the audit on a cadence' is not weighed as an alternative anywhere in the record — the same disposal O9 of the previous review argued for and which the assay records as having been borne out."
     evidence: "Finding: '`/harness-audit` **found** three of these four instances, which is why they are not rejected candidates for it.' Executive summary: 'three separate mechanisms were repaired within four hours (`observed`, `gh pr list` merge times 14:05–14:30Z).' 'What worked': 'One of them, `command-cli-parity.md` O9, argues finding-1 should be routed to `/harness-audit` instead of becoming a rule... The gate's prediction and events agree.' The record's counter — 'it has no rule to cite when the next mechanism ships with the same default, and it found them because a human typed the command, twelve days after the previous run' — argues for a cadence, which the proposal does not contain."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: the existing machinery found and repaired three of the four instances in four hours with no new rule, and no-change went unweighed. A rule should exist here, but not this one."
 ---
 
 # Objections — assay 3 finding-1, mechanisms that report the reassuring answer

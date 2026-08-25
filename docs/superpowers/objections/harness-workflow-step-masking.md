@@ -9,78 +9,78 @@ objections:
     severity: critical
     claim: "The finding re-proposes the narrow reading that this rule's own approver rejected in writing eight hours earlier, while presenting itself as carrying forward a retirement that deferred the wide one."
     evidence: "HDR-2026-08-25-the-periodic-check-suite... Rejected alternatives: 'The narrow reading — `if: always()` only. Rejected, and this is the closest call in the record ... It was rejected because it would leave fourteen declared rules unscheduled while making the workflow *look* complete ... That is a better-disguised version of the defect being fixed.' The finding proposes exactly `if: always()` plus aggregation and states 'Nothing currently checks a declared GC rule against a workflow step, and this rule does not add that.' The retirement it cites deferred 'Re-propose immediately with `HARNESS.md` as the target' — the same rule, not a narrower one."
-    disposition: rejected
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted. I stand corrected - not rejecting this. The scope this re-proposes is the narrow reading already rejected in writing at the acceptance of the record this supersedes, and the finding does not say so."
   - id: O2
     category: implementation
     severity: critical
     claim: "`enforcement: validated` is unreachable for this record by construction: `cmd_propose` emits no `validator` key, and the only artefacts the finding names are `.yml` files, which `validator_state` refuses as not runnable — so the rule compiles to achieved `none` on the one surface it targets."
     evidence: "harness-registrar.py `RUNNABLE_SUFFIXES = ('.py', '.sh', '.bash', '.js', '.rb')` and `validator_state`: 'if not (item.endswith(RUNNABLE_SUFFIXES) or os.access(path, os.X_OK)): return False, f\"validator is not runnable: {item}\"'. `cmd_propose` (lines 455–483) never emits a `validator:` line. `harness/surfaces.yaml`: `ci: supports: [validated, blocked]` — no `advisory`, so `achieved_for` returns 'none'. The finding declares `enforcement: validated` with `**Tool**: .github/workflows/harness.yml and .github/workflows/gc.yml`."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: cmd_propose emits no validator key and no .yml can satisfy the runnability test, so the rule compiles to achieved none on its only surface. The rule as drafted is not fit. Amended in place as proposed."
   - id: O3
     category: implementation
     severity: critical
     claim: "Classifying as `script-validator` writes rule text into HARNESS.md while bypassing the two-assay corroboration threshold that exists to protect HARNESS.md — the precise move the retired record refused, now available for free because the route was hand-edited."
     evidence: "check-harness-decisions.py `_check_promotion_threshold`: 'if status != \"accepted\" or classification != \"harness-loop\" or imported: return'. `harness/surfaces.yaml` routes `script-validator: HARNESS.md`. The retired record: 'The two-assay threshold would also refuse it, and reclassifying to clear a threshold is the failure this corpus exists to prevent.' The finding: 'script-validator now has a fixed route to HARNESS.md (#552 ...), so the rule text lands in a document that can hold it.' The same assay's Unresolved questions: the routes table 'was hand-edited in 91cd510 (#552) ... with no decision record'."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: script-validator writes rule text into HARNESS.md while skipping the two-assay threshold that exists to protect it. The redraft reclassifies to harness-loop and takes the threshold with it."
   - id: O4
     category: premise
     severity: high
     claim: "The half of the finding that is new — binding `harness.yml` — rests on two runs with no demonstrated harm, and the finding concedes the harm did not occur; on a blocking gate, first-failure masking costs a round trip, not safety."
     evidence: "Finding: 'Both PRs later merged with every check pass, so nothing shipped unverified — but that was a re-push, not the gate working.' No evidence is offered that any PR merged while a governance check was `skipped`, nor that the checks are or are not required statuses. Meanwhile the same assay routes the PR gate's real coverage gap elsewhere: 'harness.yml runs eight deterministic constraints and none of the agent-enforced ones' → Owner: /harness-audit."
-    disposition: rejected
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted, broadly - not confined to the harness.yml half the objection is scoped to. The demonstrated-harm standard it argues for applies to the finding generally."
   - id: O5
     category: implementation
     severity: high
     claim: "`if: always()` cannot produce the three-valued reporting the rule text demands — it collapses 'did not run' into 'failed' — and the aggregation the rule mandates has no mechanism in the finding, only two mechanisms that each reintroduce a failure the rule forbids."
     evidence: "Rule text: 'A check that did not run is reported as not run — never omitted, and never counted as passing.' `if: always()` yields only `success`/`failure` for a step that executes; a step running after a failed `actions/checkout` reports `failure`, not 'did not run'. No step in either workflow carries an `id:`, which `steps.<id>.outcome` requires; the alternative, `contains(toJSON(steps), 'failure')`, is a substring scan over step output. Cost estimate: 'perhaps forty minutes, once.'"
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: if: always() yields two values where the rule text demands three, and the aggregation it mandates has no mechanism in the finding. The rule as drafted is not fit. Amended in place as proposed."
   - id: O6
     category: risk
     severity: high
     claim: "The rule mandates `if: always()` verbatim on a workflow that holds `contents: write` and five steps that commit and push, so a cancelled run keeps mutating the repository — and the cost estimate describes the masked steps as though they only report."
     evidence: "`gc.yml`: `permissions: contents: write`; three `Release tag completeness` steps run `git push origin \"$tag\"`, `Observability archive` runs `git commit`/`git push`, `Reflection log archival` runs `git commit`/`git push`. `always()` in GitHub Actions evaluates true when a run is cancelled. Cost estimate: 'On the weekly job it converts one failure into between one and ten' — no mention of writes."
-    disposition: rejected
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted. Correct, and to be addressed in the redraft: gc.yml holds contents: write and five steps that commit and push, and always() evaluates true on cancellation."
   - id: O7
     category: specification quality
     severity: high
     claim: "The validation plan names the wrong assertion as its falsification criterion: assertion (c) is vacuous once every step carries an explicit `if:`, and the gaming mode the finding says (c) catches is caught only by (b)."
     evidence: "Validation plan: '(c) no step reports `skipped` for a reason other than an explicit `if:` condition. The third assertion is the one that matters: a fix that makes the job green by tolerating failures ... would satisfy (a) and nothing else.' A green-by-tolerance implementation skips nothing, so it satisfies (a) and (c) and fails only (b) — 'the job still concludes `failure`'. After the fix every enforcing step carries `if: always()`, an explicit condition, so (c) cannot fail."
     disposition: accepted
-    disposition_rationale: null
+    disposition_rationale: "Accepted: assertion (c) is vacuous once every step carries an explicit if:, so the plan names a falsification criterion that cannot fail. The rule as drafted is not fit. Amended in place as proposed."
   - id: O8
     category: scope
     severity: high
     claim: "The rule states a general property of enforcement workflows but binds two files by name; at least two other workflows enforcing declared HARNESS.md constraints have the identical defect and are exempt by construction, as is any workflow created tomorrow."
     evidence: "Rule text: 'In a workflow that enforces declared constraints or garbage-collection rules, every enforcing step carries `if: always()` ... This binds `.github/workflows/harness.yml` and `.github/workflows/gc.yml`.' `.github/workflows/version-check.yml` runs four sequential enforcing steps and `.github/workflows/convention-parity-check.yml` two, neither with `if: always()`; the repository holds nineteen workflows. Overfitting-risk claim: 'The rule states a property of any enforcement workflow.'"
-    disposition: deferred
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted, and to be addressed in the redraft. The rule states a general property of enforcement workflows and binds two files by name, leaving version-check.yml and convention-parity-check.yml with the same defect and exempt by construction."
   - id: O9
     category: alternatives
     severity: high
     claim: "One job per check — the native GitHub Actions mechanism for independent conclusions — is not weighed anywhere, and it makes the finding's own likeliest gaming mode structurally impossible rather than merely forbidden in prose."
     evidence: "The finding's only alternatives discussion is 'Two ways it can be gamed', both failure modes rather than designs. Its named risk — 'Making the job green rather than complete — collecting results and then not failing on them ... This is the likely failure' — exists only because a single job's conclusion is computed by hand. Separate jobs (or a `matrix`) give each check its own conclusion with no aggregation step, and each becomes independently requireable in branch protection. `if: ${{ !cancelled() }}` is likewise unweighed against `always()`."
-    disposition: deferred
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted, and to be addressed in the redraft. One job per check is the native mechanism for independent conclusions and makes the rule's own likeliest failure mode structurally impossible; it was not weighed."
   - id: O10
     category: specification quality
     severity: medium
     claim: "'Every enforcing step' is undefined against the two files the rule binds, and the rule text bakes a positional fact about today's file layout into a constraint that will outlive it."
     evidence: "Rule text: 'every enforcing step carries `if: always()`' and 'On the PR gate the two harness-governance checks are the last two steps.' `harness.yml` holds `actions/checkout` and a `Check HARNESS.md exists` guard alongside eight `Constraint:` steps; `gc.yml` holds eleven `GC:` steps of which `GC: Affordance review staleness` is 'Report-only: ... always exits 0'. The cost estimate says 'eight steps in harness.yml and eleven in gc.yml', which resolves the ambiguity in the estimate but not in the rule."
-    disposition: deferred
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted, and to be addressed in the redraft. Every enforcing step is undefined against the two files the rule binds, and the rule text bakes in a positional fact about today's step order."
   - id: O11
     category: risk
     severity: medium
     claim: "The rule's own recurring cost makes its named second gaming mode the cheapest available response, and the finding states that nothing detects it — so the most likely outcome of acceptance is a complete-looking pass over a smaller set."
     evidence: "Cost estimate: 'The moment of maximum temptation is the first Monday after the fix, and the tempting move is to demote whichever rule is loudest' and 'Deleting a chronically failing step from the workflow instead of retiring the rule from HARNESS.md — the rule stays declared, nothing runs it ... Nothing currently checks a declared GC rule against a workflow step, and this rule does not add that.' The loudest rule is already known unsatisfiable: gc.yml prints 'Cannot find commit for v$version — manual tag needed'."
-    disposition: deferred
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted, and to be addressed in the redraft. The rule's recurring cost makes deleting a chronically failing step the cheapest response, and nothing detects that."
 ---
 
 # Objections — assay finding-2, workflow step masking

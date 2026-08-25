@@ -143,6 +143,7 @@ while carrying no reasoning at all.
 The rationale field was left `null` rather than filled with a placeholder for
 exactly that reason: a `TODO` string is content, and content in a field nothing
 checks is the shape objection O11 of the reassuring-default record objects to.
+
 ### The two outstanding assay-2 findings are now proposed records
 
 `/harness-propose` on `harness/assay/2026-08-25T11-59Z-assay.md` findings 1 and 2,
@@ -166,6 +167,45 @@ applies, and the cycle cap is not reached.
 Those sections, the 35 objection dispositions across the three records, and the
 cost at the gate are the approver's work and no agent's. They are listed rather
 than drafted.
+
+### Rationales written for all thirty-five objections
+
+Every disposition now carries the approver's reasoning in their own words,
+transcribed rather than drafted. Three dispositions changed during the pass as
+the reasoning was worked through, which is the gate doing its job rather than a
+correction to it.
+
+| Record | accepted | rejected | deferred |
+| --- | --- | --- | --- |
+| `command-cli-parity` | 7 | 3 | 2 |
+| `harness-workflow-step-masking` | 11 | 0 | 0 |
+| `harness-reassuring-default` | 11 | 0 | 1 |
+
+**What moved.** `reassuring-default` O2 went from rejected to deferred: the
+approver holds that the second sighting is a verification observation and that
+the precedent the objection warns about is "right but acceptable", but is not
+sure that corroboration drawn from the one instance the rule text does not
+cover should count at all. That record does not go to the gate until the
+question is answered. On `workflow-step-masking`, O1 and O4 went from rejected
+to accepted — "I stand corrected" on the first — and O8 through O11 from
+deferred to accepted.
+
+**Two consequences worth stating plainly.**
+
+`workflow-step-masking` now concedes all eleven objections, including that it
+re-proposes a scope already rejected in writing. Its O3 rationale commits the
+redraft to reclassifying from `script-validator` to `harness-loop`, which takes
+the two-assay threshold with it. That reclassification makes the record
+**unacceptable as it stands**: its evidence cites two assays, but assay 1's
+finding-2 carries an erratum and a corrected finding does not corroborate, so
+one countable assay remains against a threshold of two. Choosing the honest
+classification costs the record its acceptance until another assay observes the
+behaviour.
+
+`command-cli-parity` survives. O9 is accepted — an existing constraint owns the
+behaviour and was never dispatched — while the objection's own reading, that
+accepting it turns the finding into a rejected candidate, is explicitly not
+taken: running the audit and writing the check are not alternatives.
 
 ## 0.86.1 — 2026-08-25
 
