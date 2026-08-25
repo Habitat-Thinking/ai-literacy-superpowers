@@ -184,4 +184,33 @@ val
 [ "$VRC" -eq 0 ] || fail "D8: rejections consumed a cycle slot. Out: $VOUT"
 echo "D8 ok (rejections do not count against the cap)"
 
-echo "declined findings: all checks passed (D1-D9)"
+# === D10: a propose leaves the corpus checkable ==============================
+# The gates are deliberately separate and a proposal is SUPPOSED to sit at
+# `proposed` and carry forward. If check fails for that whole interval, the CI
+# entry point is red whenever anyone uses the loop as documented, and people
+# learn to ignore it (#564).
+#
+# D8 and D9 build fixtures by copying files directly, which legitimately leaves
+# the index stale. Sync first, so what D10 measures is whether PROPOSE
+# introduces drift, not whether `cp` does.
+reg index
+[ "$RC" -eq 0 ] || fail "D10 setup: index regeneration failed. Out: $OUT"
+reg check
+[ "$RC" -eq 0 ] || fail "D10 setup: corpus is not clean before the test. Out: $OUT"
+
+reg propose --assay "$A" --finding finding-1 --today 2026-08-25 --slug plainprop
+[ "$RC" -eq 0 ] || fail "D10b setup: propose failed. Out: $OUT"
+reg check
+[ "$RC" -eq 0 ] || fail "D10b: check must pass after a plain propose. Out: $OUT"
+grep -q 'HDR-2026-08-25-plainprop' harness/decisions/index.md   || fail "D10b: the proposed record is missing from the index"
+echo "D10 ok (check passes straight after a propose, rejected or not)"
+
+# Only the index moves: a proposed record reaches no artifact and is absent from
+# the enforcement report.
+grep -q 'HDR-2026-08-25-plainprop' harness/enforcement-report.md 2>/dev/null \
+  && fail "D10c: a proposed record reached the enforcement report"
+grep -q 'BEGIN GENERATED' HARNESS.md \
+  && fail "D10c: a proposed record reached HARNESS.md"
+echo "D10c ok (only the index moved)"
+
+echo "declined findings: all checks passed (D1-D10)"
