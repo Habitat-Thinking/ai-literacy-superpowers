@@ -12,6 +12,40 @@ extracts an HDR from.
 Assays live in `harness/assay/<ISO8601>-assay.md` and are append-only. They are
 never edited after they are written.
 
+## Corrections
+
+A correction goes in a sibling, never in the assay:
+
+```text
+harness/assay/<ISO8601>-assay.md          the assay, never edited
+harness/assay/<ISO8601>-assay.errata.md   corrections, append-only
+```
+
+Written by `harness-registrar.py correct --assay <path> --finding <id>
+--correction-file <path>`, one `## finding-<n>` section per corrected finding. A
+later correction to the same finding is appended, never substituted.
+
+Two things consume it, because those are the two places a wrong finding
+propagated (#556):
+
+- **`/harness-propose` refuses** on a corrected finding, quotes the correction,
+  and proceeds only with `--acknowledge-correction`. Not a warning: a warning
+  from a command that just succeeded is a warning nobody reads, and the record it
+  produced is frozen. The resulting record notes that a correction was
+  acknowledged.
+- **The two-assay promotion threshold stops counting it.** A corrected finding
+  does not corroborate a `harness-loop` rule. The exclusion is per *finding*, not
+  per assay — an assay may hold six findings and be wrong about one.
+
+The override exists because a correction is not automatically fatal. A miscount
+whose underlying observation still stands should not make a finding permanently
+un-actionable, and refusing outright would give someone a reason not to record
+corrections at all.
+
+**There is no pointer inside the assay**, deliberately. Adding one means editing
+the record, and a mechanism that pressures anyone to edit an append-only document
+is worse than the gap it closes.
+
 ## Who owns this contract
 
 The contract is owned by the Registrar slice and consumed by the Assayer. That

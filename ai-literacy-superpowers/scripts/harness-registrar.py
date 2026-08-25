@@ -426,7 +426,7 @@ def render_rejection(hdr_id: str, finding: Finding, assay_path: str,
 
 
 def render_hdr(hdr_id: str, finding: Finding, assay_path: str, assay_fm: dict,
-               today: datetime.date) -> str:
+               today: datetime.date, acknowledged: bool = False) -> str:
     meta = finding.meta
     classification = meta["classification"]
     is_no_change = classification == "no-change"
@@ -485,6 +485,10 @@ def render_hdr(hdr_id: str, finding: Finding, assay_path: str, assay_fm: dict,
 
     lines.append("## Finding")
     lines.append("")
+    if acknowledged:
+        lines.append("_This finding carries a correction in the assay's errata, "
+                     "acknowledged by the proposer. Read it beside this record._")
+        lines.append("")
     lines.append(finding.observation)
     lines.append("")
 
@@ -577,6 +581,19 @@ def cmd_propose(args) -> int:
     except FindingError as exc:
         die(str(exc))
 
+    # A corrected finding must not reach a frozen record silently. Not a
+    # warning: a warning printed by a command that just succeeded is a warning
+    # nobody reads, and the record it produced cannot be edited afterwards. The
+    # override exists because a correction is not automatically fatal — one of
+    # the two real errors was a miscount whose underlying observation stood.
+    correction = corrections_for(root, args.assay).get(args.finding)
+    if correction and not getattr(args, "acknowledge_correction", False):
+        print(f"FAIL: {args.assay} finding '{args.finding}' carries a correction:")
+        for line in correction.split("\n"):
+            print(f"    {line}" if line.strip() else "")
+        die("read the correction, then re-run with --acknowledge-correction if "
+            "the finding still stands.")
+
     today = datetime.date.fromisoformat(args.today) if args.today \
         else datetime.date.today()
     slug = args.slug or slugify(match.title)
@@ -607,7 +624,8 @@ def cmd_propose(args) -> int:
                 "declined.")
         text = render_rejection(hdr_id, match, args.assay, assay_fm, today, reason)
     else:
-        text = render_hdr(hdr_id, match, args.assay, assay_fm, today)
+        text = render_hdr(hdr_id, match, args.assay, assay_fm, today,
+                          acknowledged=bool(correction))
 
     code, output = validate_staged(root, rel, text)
     if code != 0:
@@ -927,6 +945,89 @@ def write_index(root: str) -> str:
     with open(path, "w", encoding="utf-8") as handle:
         handle.write(render_index(load_records(root)))
     return path
+
+
+# --------------------------------------------------------------------------- #
+# Assay corrections                                                            #
+# --------------------------------------------------------------------------- #
+#
+# Assays are append-only and never edited, correctly: they record what an agent
+# observed at a moment. But nothing carried a CORRECTION, so an error was
+# permanent and propagated — `/harness-propose` copies findings byte for byte by
+# design, so a wrong finding is copied faithfully into a frozen record, and the
+# two-assay threshold would let a falsified observation corroborate a rule (#556).
+#
+# The correction lives in a sibling file. Nothing here edits either document.
+
+
+def errata_path(assay_rel: str) -> str:
+    base = assay_rel[:-3] if assay_rel.endswith(".md") else assay_rel
+    return base + ".errata.md"
+
+
+def corrections_for(root: str, assay_rel: str) -> dict[str, str]:
+    """{finding-id: correction text} from the assay's errata, if any."""
+    path = os.path.join(root, errata_path(assay_rel))
+    if not os.path.isfile(path):
+        return {}
+    with open(path, encoding="utf-8") as handle:
+        body = handle.read()
+    out: dict[str, str] = {}
+    for heading, block in split_on_heading(body, "## "):
+        fid = heading.strip()
+        if re.fullmatch(r"finding-\d+", fid):
+            # Later corrections append, so the accumulated text is what a reader
+            # needs — not just the most recent one.
+            out[fid] = (out.get(fid, "") + "\n\n" + block.strip()).strip()
+    return out
+
+
+def cmd_correct(args) -> int:
+    root = args.root
+    assay_abs = os.path.join(root, args.assay)
+    if not os.path.isfile(assay_abs):
+        die(f"assay not found at {args.assay}")
+
+    _, raw_findings = parse_assay(assay_abs)
+    known = [r[0] for r in raw_findings]
+    if args.finding not in known:
+        die(f"finding '{args.finding}' is not in {args.assay} "
+            f"(found: {', '.join(known) or 'none'})")
+
+    corr_abs = os.path.join(root, args.correction_file)
+    if not os.path.isfile(corr_abs):
+        die(f"correction file not found at {args.correction_file}")
+    with open(corr_abs, encoding="utf-8") as handle:
+        correction = handle.read().strip()
+    if not correction:
+        die("the correction is empty. A correction with no content records that "
+            "something was wrong and nothing about what.")
+
+    rel = errata_path(args.assay)
+    path = os.path.join(root, rel)
+    if not os.path.isfile(path):
+        header = [
+            "---",
+            f"errata_for: {args.assay}",
+            "---",
+            "",
+            f"# Errata — {os.path.basename(args.assay)}",
+            "",
+            "Corrections to findings in this assay. The assay itself is "
+            "append-only and is never edited; this file is the channel.",
+            "",
+            "One section per corrected finding. A later correction to the same "
+            "finding is appended, never substituted.",
+            "",
+        ]
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write("\n".join(header))
+
+    with open(path, "a", encoding="utf-8") as handle:
+        handle.write(f"## {args.finding}\n\n{correction}\n\n")
+
+    print(f"corrected {rel} ({args.finding})")
+    return 0
 
 
 def cmd_lint_assay(args) -> int:
@@ -1712,6 +1813,9 @@ def main(argv: list[str]) -> int:
     p.add_argument("--reject", action="store_true",
                    help="record the finding as DECLINED rather than proposed: no "
                         "rule, no cost, one section for the reason")
+    p.add_argument("--acknowledge-correction", action="store_true",
+                   help="proceed although the finding carries a correction in "
+                        "the assay's errata")
     p.add_argument("--reason-file",
                    help="with --reject: a FILE holding why the finding was "
                         "declined. A file, never an argument, for the same reason "
@@ -1732,6 +1836,13 @@ def main(argv: list[str]) -> int:
     p.add_argument("--approver", required=True)
     p.add_argument("--now", required=True, help="ISO timestamp; injected, not read")
     p.set_defaults(func=cmd_accept)
+
+    p = sub.add_parser("correct", help="record a correction to an assay finding")
+    p.add_argument("--assay", required=True)
+    p.add_argument("--finding", required=True)
+    p.add_argument("--correction-file", required=True,
+                   help="a FILE, never an argument: a correction is prose")
+    p.set_defaults(func=cmd_correct)
 
     p = sub.add_parser("index", help="regenerate harness/decisions/index.md")
     p.set_defaults(func=cmd_index)
