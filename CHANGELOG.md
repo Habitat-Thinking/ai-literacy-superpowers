@@ -2,6 +2,32 @@
 
 ## 0.89.0 — 2026-08-25
 
+### Design — retire the template-currency nudge (spec only, #601)
+
+The `template-version` marker claims to track template content and tracks the
+plugin version. The templates shipped at plugin `0.79.0` and `0.89.0` are
+byte-identical (`diff`, exit 0); `templates/HARNESS.md` last changed at
+`d867c7c` on 2026-08-13, twelve days *before* the marker was stamped to
+`0.79.0`. The plugin moved ten minors, the template moved zero bytes — so the
+SessionStart hook asserted `Plugin template has been updated` on evidence that
+cannot establish it, and the false claim reached `HARNESS.md`'s Status block.
+
+Spec at
+`docs/superpowers/specs/2026-08-25-template-currency-measure-content-design.md`
+retires the marker, the `Template currency` GC rule, the SessionStart hook and
+the dismissal file. `/harness-upgrade` survives on demand, losing only its
+version gate and keeping its three-bucket parse.
+
+Reached at revision 4 after three adversarial reviews. Revisions 1 and 2 tried
+to keep a nudge and measure the right property, and each grew — a shared script,
+a `PATH` shim, a grammar in the governing document, a fourth command
+disposition — while each returned a critical objection. The case for deletion is
+cost and escalating complexity, not absence of value; a correct notifier remains
+buildable and the spec records how.
+
+No plugin files change in this PR, so no version bump. Implementation follows
+separately.
+
 ### Added — `/harness-board --html`, a browser view of the loop
 
 The queue view is terminal text, and the thing that answers *"where is the
