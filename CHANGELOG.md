@@ -71,6 +71,56 @@ claim that "the two auto-fix rules can run again on the next scheduled sweep" is
 wrong. The generalisation was made from a single run's conclusions without
 reading the other five — the same shape as the finding proposed above.
 
+### Adversarial review of the first loop-layer proposal
+
+`/diaboli` on `harness/assay/2026-08-25T14-31Z-assay.md#finding-1`, the
+reassuring-default finding proposed as
+`HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one`.
+
+**Twelve objections, five critical** — more criticals than either prior review,
+evenly spread across all six categories. The reviewer explicitly does not
+dispute that the behaviour happened; it disputes that the four instances are
+four instances of one pattern, that the corroboration is two incidents, that
+`HARNESS.md` is the layer, and that the rule as drafted would have caught any
+of it.
+
+The two objections most likely to decide the disposition:
+
+- **O2** — the two-assay threshold is satisfied by re-observing one *unrepaired*
+  artifact twelve hours later. The validator counts filenames and cannot ask
+  whether the second sighting was a second event. If accepted on this basis, the
+  cheapest route to `HARNESS.md` becomes: observe a defect, do not fix it,
+  observe it again next cycle. Three of the finding's four instances were
+  repaired within four hours and are therefore threshold-ineligible; the one
+  nobody fixed is the one carrying the record.
+- **O1** — the rule's two sentences cover three instances and the fourth not at
+  all, and the uncovered one is the only instance appearing in a second assay.
+  The four-instance pattern and the two-assay corroboration rest on disjoint
+  evidence.
+
+### Two critical objections checked and found wrong
+
+Dispositions belong to the approver and the record is written verbatim, but two
+of the five criticals were verified mechanically and do not hold:
+
+- **O4** claims the repaired `update-health-badge.sh` still reaches `Healthy`
+  when it cannot read a snapshot's `- Health:` line. It does not. Under
+  `set -euo pipefail` the assignment `health_line=$(… | grep …)` fails when grep
+  matches nothing, so the script exits 1 before the `*)` fallback. Verified: on a
+  snapshot with no `Health:` line the badge is left untouched and the exit code
+  is 1. The `*)` branch is unreachable dead code. A real adjacent defect does
+  exist — a silent non-zero exit leaving a stale badge — but it is not the
+  defect O4 describes.
+- **O11** claims a `harness-loop` rule "can be accepted" with `_TODO` tier-2
+  sections. `/harness-accept` runs `precheck`, which refuses them by name.
+  What O11 gets right is narrower and still worth knowing: the *corpus*
+  validator passes placeholder text, so `/harness-check` reports OK on a corpus
+  containing an unfinished proposal.
+
+Both are recorded as raised rather than silently corrected. The disposition
+mechanism exists for exactly this, and an agent editing an adversarial reviewer's
+objections would defeat the gate.
+
 ## 0.86.1 — 2026-08-25
 
 ### Fixed — the health badge defaulted to green when it could not tell
