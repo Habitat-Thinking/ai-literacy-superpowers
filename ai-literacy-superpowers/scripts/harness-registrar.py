@@ -1348,6 +1348,13 @@ def enforcement_summary(record: Record, surfaces: dict, root: str) -> str:
     A rule declaring `blocked` that is merely advisory on the surface someone is
     actually reading should admit that there, not only in a report they may
     never open.
+
+    Rendered as a blockquote rather than an emphasised line. A standalone
+    emphasised line trips MD036 (emphasis used instead of a heading) and, with
+    underscores, MD049 — so the first rule this compiler put in force emitted
+    markdown that failed the repository's own *Consistent markdown formatting*
+    constraint. A generated region that cannot satisfy the constraints of the
+    project it is generated into is a defect in the generator.
     """
     parts = [f"Intended: {record.fm.get('enforcement')}"]
     for row in enforcement_rows(record, surfaces, root):
@@ -1356,7 +1363,7 @@ def enforcement_summary(record: Record, surfaces: dict, root: str) -> str:
     if record.fm.get("provisional") is True:
         expiry = record.fm.get("expires") or record.fm.get("review_trigger")
         parts.append(f"provisional until {expiry}")
-    return "_" + " · ".join(parts) + "_"
+    return "> " + " · ".join(parts)
 
 
 def render_region(records: list[Record], surfaces: dict, root: str) -> str:

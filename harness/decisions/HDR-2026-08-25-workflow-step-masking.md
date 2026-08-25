@@ -2,12 +2,26 @@
 id: HDR-2026-08-25-workflow-step-masking
 title: A failing step still cancels every check after it, and on 2026-08-25 it cancelled the two that govern governance
 status: proposed
-classification: script-validator
+classification: harness-loop
 enforcement: validated
 surfaces: [ci]
 provisional: true
 expires: 2026-11-23
 overfitting_risk: low
+proposed_rule: |
+  - **Rule**: In a workflow that enforces declared constraints or
+    garbage-collection rules, every enforcing step carries `if: always()`, and
+    the job's conclusion is derived from the collected step results rather than
+    from the first failure. A check that did not run is reported as not run —
+    never omitted, and never counted as passing. This binds
+    `.github/workflows/harness.yml` and `.github/workflows/gc.yml`. On the PR
+    gate the two harness-governance checks are the last two steps, so any
+    earlier constraint failure hides them; on the weekly job the whole value is
+    the weeks nobody reads it. A run that stops partway reports a smaller world
+    than it declared it would check.
+  - **Enforcement**: deterministic
+  - **Tool**: `.github/workflows/harness.yml` and `.github/workflows/gc.yml`
+  - **Scope**: pr
 evidence:
   - .github/workflows/harness.yml
   - .github/workflows/gc.yml
@@ -126,14 +140,11 @@ than the defect and would satisfy (a) and nothing else.
 
 ````markdown
 - **Rule**: In a workflow that enforces declared constraints or
-  garbage-collection rules, every enforcing step carries `if: always()`, and
+  garbage-collection rules, every enforcing step carries `if: ${{ !cancelled() }}`, and
   the job's conclusion is derived from the collected step results rather than
   from the first failure. A check that did not run is reported as not run —
   never omitted, and never counted as passing. This binds
-  `.github/workflows/harness.yml` and `.github/workflows/gc.yml`. On the PR
-  gate the two harness-governance checks are the last two steps, so any
-  earlier constraint failure hides them; on the weekly job the whole value is
-  the weeks nobody reads it. A run that stops partway reports a smaller world
+  `.github/workflows/harness.yml` and `.github/workflows/gc.yml`. A run that stops partway reports a smaller world
   than it declared it would check.
 - **Enforcement**: deterministic
 - **Tool**: `.github/workflows/harness.yml` and `.github/workflows/gc.yml`
@@ -174,16 +185,16 @@ than widening the proposal to cover it.
 
 ## Why this layer
 
-_TODO — why this change belongs at this layer and not one layer down._
+script-validator writes rule text into HARNESS.md while skipping the two-assay threshold that exists to protect it. Reclassified to harness-loop so the threshold applies. That makes this record unacceptable as it stands - assay 1's finding-2 carries an erratum and does not corroborate, leaving one countable assay against a threshold of two - and the classification is chosen for what owns the behaviour rather than for what clears.
 
 ## Enforcement
 
-_TODO — how the rule binds on each listed surface, and where it is only advisory._
+Intended validated on ci. Achieved is none: the proposer emits no validator key and no .yml can satisfy the runnability test, so no amount of editing the workflows moves this up the ladder. Reaching validated needs a runnable checker that reads both workflows and asserts the property.
 
 ## Validation
 
-_TODO — how anyone would know later whether this rule helped._
+Nothing will tell us whether this rule helped. There is no measurement that would separate a repository where it worked from one where it was ignored, and the drafted plan named a criterion nobody can evaluate. Provisional on that basis, expiring 2026-11-23. The review at expiry is a judgement, not a reading.
 
 ## Rejected alternatives
 
-_TODO — including the 'no change' option, with the reason it was not taken._
+The narrow reading, if: always() only - this record re-proposes it, and it is the reading already rejected in writing when the record it supersedes was accepted. Conceded rather than defended. One job per check - the native mechanism for independent conclusions, which makes the likeliest failure mode structurally impossible; not weighed by the finding, and to be weighed in the redraft. No change - rejected: six consecutive failing runs with two auto-fix rules masked behind them.

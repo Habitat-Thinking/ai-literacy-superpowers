@@ -9,85 +9,85 @@ objections:
     severity: critical
     claim: "The harm the finding leads with is a prompt asserting output structure the code no longer produces; the proposed check compares option strings and cannot detect it, so the check goes green on one added string while the false-defect report still fires."
     evidence: "Finding: 'An agent following the checkpoint as written against a correctly-formed rejection would report a defect that is not there.' Rule: options 'must appear verbatim in at least one file under ai-literacy-superpowers/commands/'. Cost estimate concedes: 'a bare --reject mentioned in a code fence satisfies a literal-string check while the prompt still never tells the agent when to use it.' harness-propose.md P1 and P5 are unchanged by adding that string."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "Rejected. The harm is real and a parity check is a reasonable thing to want. The check not detecting the specific harm the finding leads with does not make the harm imaginary."
   - id: O2
     category: premise
     severity: high
     claim: "The rule's stated harm — a capability the driving agent cannot reach — is falsified inside the assay's own What worked section: --reject was exercised in the same phase it landed, with no command prompt naming it."
     evidence: "Proposed rule: 'A capability the code exposes and no command prompt names is a capability the agent driving that command cannot reach.' Assay, What worked: 'A declined finding is now a record ... It carries no cost key and no tier-2 sections, which is the shape #562 specified.' harness/decisions/HDR-2026-08-25-an-epic-s-authority-cited-to-a-document-nobody-else-can-open.md exists in exactly the shape --reject produces."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "Rejected. The harm is real and a parity check is a reasonable thing to want. A capability being reached once by a person who knew it existed does not make it discoverable."
   - id: O3
     category: implementation
     severity: high
     claim: "The rule binds subcommands but its exemption is anchored to add_argument and its detection is a verbatim string match; the two subcommands genuinely absent from every command file are ordinary English words that already appear there, so the check passes on precisely the capabilities that are unreachable."
     evidence: "harness-registrar.py:1902 `sub.add_parser(\"correct\", ...)`, :1909 `sub.add_parser(\"index\", ...)`. harness-accept.md:60 'or correct the target'; harness-accept.md:118 'harness/decisions/index.md lists the HDR'. Rule's exemption: 'carrying an `# undocumented:` comment on the line above its add_argument call' — a subparser has no add_argument call."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "Rejected. The harm is real and a parity check is a reasonable thing to want. The subcommand detection and its exemption are broken as drafted; that is a defect in the draft, not a reason to abandon the check."
   - id: O4
     category: implementation
     severity: high
     claim: "The rule says 'a script' but the proposed tool is an argparse walk; five of the six scripts named in command files are bash, one of them already violates the rule, and the exemption is inexpressible for any of them."
     evidence: "Cost estimate: 'an argparse walk over each script named in a command file'. Command files name next-action-hint.sh, ai-literacy-check.sh, regenerate-reflection-log.sh, sentinel-integrity-check.sh and harness-affordance-staleness.sh alongside harness-registrar.py. harness-affordance-staleness.sh accepts --max-age-days and --today; commands/harness-affordance.md names neither."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted: the rule says a script while the proposed tool reads only argparse, and five of the six scripts named in command files are bash. The rule as drafted is not fit. Amended in place as proposed."
   - id: O5
     category: scope
     severity: high
     claim: "The remediation backlog is priced at four capabilities when the finding's own enumeration contains six undocumented options plus two undocumented subcommands, and two of them are hermeticity injections that no prompt should ever name."
     evidence: "Finding enumerates '--root ... --today' among accepted options. harness-registrar.py:1863 `parser.add_argument(\"--root\", default=\".\")`, :1870/:1920/:1929 `--today`, help='YYYY-MM-DD; injected so nothing races the clock'. Neither string appears in any file under commands/. Cost estimate: 'the four capabilities already divergent must be written into harness-propose.md and harness-accept.md'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted: the remediation backlog is larger than four capabilities and includes options no prompt should name. The rule as drafted is not fit. Amended in place as proposed."
   - id: O6
     category: specification quality
     severity: medium
     claim: "The trigger 'when that script is invoked by a command in that directory' has no mechanical definition, and the two available readings produce different violation sets on files already in the repository."
     evidence: "Rule: 'when that script is invoked by a command in that directory'. commands/harness-affordance.md:189 mentions scripts/harness-affordance-staleness.sh in a parenthetical attributing it to a GC rule, not in a fenced invocation. commands/harness-timeline.md:32, harness-check.md:53 and others use fenced `python3 ... harness-registrar.py <subcommand>` invocations."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted: the trigger has no mechanical definition and the two readings disagree on files already in the repository. The rule as drafted is not fit. Amended in place as proposed."
   - id: O7
     category: specification quality
     severity: medium
     claim: "The quantifier is per-repository rather than per-command, so an option can satisfy the rule from a command file that could never pass it — which is the exact shape of the observed defect the rule is written against."
     evidence: "Rule: 'must appear verbatim in at least one file under ai-literacy-superpowers/commands/'. --target is only ever passed by `harness-registrar.py accept`, which only commands/harness-accept.md invokes (line 91); naming --target in any other command file satisfies the rule while /harness-accept stays silent."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted: the quantifier ranges over the directory when the observed defect is per-command. The rule as drafted is not fit. Amended in place as proposed."
   - id: O8
     category: alternatives
     severity: high
     claim: "The repository already owns an idempotent generator that writes marked regions into prose artefacts; generating the option inventory is strictly stronger than checking for a string, and the finding weighs neither generation nor no-change."
     evidence: "harness-registrar.py apply_region / render_region and the `compile` subcommand exist and are driven by commands/harness-compile.md:40. Assay, What worked: 'the transcription fix travelled and the rule did not need to' — the precedent in which the previous assay's finding-1 was declined and the defect fixed anyway."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted: the repository already owns an idempotent generator, and generation dominates a string check on every axis the finding measures. The proposal survives; this shapes the redraft rather than ending it."
   - id: O9
     category: alternatives
     severity: critical
     claim: "An existing constraint already owns this behaviour and was never run: Output validation checkpoints requires a checkpoint to check structure against the format spec reference, the reference is current, and it is harness-propose.md's checkpoint that diverges from it."
     evidence: "HARNESS.md:255 'must include a validation checkpoint step that reads the output, checks structure against the format spec reference'. docs/plugins/ai-literacy-superpowers/reference/harness-decision-records.md:76-94 documents `/harness-propose --reject --reason-file` and the '## Finding and a non-empty ## Rejection, and nothing else' shape; :188 documents `/harness-accept <hdr> --target`. Assay, Rejected candidates: 'harness.yml runs eight deterministic constraints and none of the agent-enforced ones'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted: Output validation checkpoints already owns this behaviour and had never been dispatched. The proposal survives nonetheless - the objection's own reading, that accepting it turns the finding into a rejected candidate, is not taken. Running the audit and writing the check are not alternatives to each other."
   - id: O10
     category: implementation
     severity: high
     claim: "The enforcement outcome is understated: with ci supporting no advisory rung and no validator resolvable, the rule achieves `none` rather than a downgraded level on its only declared surface, and nothing in the loop schedules the script that would change that."
     evidence: "harness/surfaces.yaml:62-64 `ci: supports: [validated, blocked]`. harness-registrar.py achieved_for:1321-1324 — when the candidate is at or above validated and not validated, 'advisory' in supports else return 'none'. validator_state:1291 requires `record.id in fh.read()`. Finding: 'the first /harness-compile after acceptance should report an enforcement gap on ci rather than validated'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Accepted: with ci supporting no advisory rung and no validator resolvable, the rule achieves none rather than a downgraded level. The rule as drafted is not fit. Amended in place as proposed."
   - id: O11
     category: scope
     severity: medium
     claim: "Three of the rule's five cited evidence paths lie outside anything the rule can bind, including the errata blindness the finding presents as its sharpest observation."
     evidence: "evidence list names skills/harness-assay/SKILL.md and docs/.../reference/harness-decision-records.md. Rule: 'This does not reach reference or how-to pages'. Assay: 'The Assayer's own evidence pool does not know that corrections exist ... contains no occurrence of \"errata\" or \"correction\".'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Deferred to the redraft. The evidence list should name only artefacts the rule can act on."
   - id: O12
     category: specification quality
     severity: medium
     claim: "The exemption's stated criterion — an option whose only caller is another script — does not cover the population that most obviously needs exempting, which is options injected by tests for hermeticity."
     evidence: "Rule: 'An option whose only caller is another script is exempt'. harness-registrar.py:1870 --today help='injected so nothing races the clock'; :1863 --root default='.'. docs/superpowers/specs/2026-06-17-affordance-runtime-recorder-design.md:130 'Hermetic — --today fixes \"now\"; the analyzer is deterministic.' Neither is called by another script; both are called by tests."
-    disposition: pending
-    disposition_rationale: null
+    disposition: deferred
+    disposition_rationale: "Deferred to the redraft. The exemption criterion needs to name the exempt classes rather than the caller."
 ---
 
 ## O1 — premise — critical
