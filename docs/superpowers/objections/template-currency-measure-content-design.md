@@ -9,85 +9,85 @@ objections:
     severity: high
     claim: "The load-bearing claim that the mechanism has no recorded successes is a survivorship artefact — in five of six recorded runs the template had not changed, so 'adopted nothing' is a true negative rather than a failure."
     evidence: "§1: 'The plugin moved ten minor versions across that window. The template moved zero bytes.' §1.1: 'There is therefore no recorded instance of this nudge producing a useful adoption.' §2.2 rests acceptance of the loss on 'the mechanism being removed has never demonstrably provided it.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "The survivorship point is taken and the decision stands. The justification is rewritten: deletion rests on cost and complexity — three revisions of escalating mechanism, two criticals — not on 'it never worked'. Note the reviewer's 'true negative' framing is itself wrong: the hook fires whenever versions differ, so it nudged all six times and was wrong five. But the surviving point holds — that history damns the broken notifier and cannot tell us whether a correct one would earn its keep."
   - id: O2
     category: implementation
     severity: critical
     claim: "Criterion 6's four search terms cannot match the phrasing that actually carries this mechanism across the tree, so the residue assertion returns the passing answer over a tree that still advertises the deleted hook in at least eleven places."
     evidence: "§6 criterion 6 searches for `template-version`, `Template currency`, `template-currency`, `harness-upgrade-dismissed`. None of these match `hooks/hooks.json:2` ('template currency check ... (SessionStart) nudge on plugin upgrade'), `README.md:371` ('SessionStart template currency check'), `commands/harness-sync.md:118,138,207,271,294` ('Template version drift' / 'Template drift'), `skills/harness-audit-engine/SKILL.md:3`, `CLAUDE.md:284`, `templates/CLAUDE.md:220`, `docs/plugins/ai-literacy-superpowers/reference/skills.md:46`, `.../tutorials/first-time-tour.md:558`, `.../explanation/the-harness-lifecycle.md:161`, `.../explanation/the-loops-that-learn.md:36`, `.../reference/output-validation.md:33`."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Broaden the residue assertion: add 'template drift' and 'template version drift', and make the search case-insensitive. The assertion was sold as the reason a complete table was no longer needed; blind to the phrasings in use, it would have certified the incomplete table instead."
   - id: O3
     category: specification quality
     severity: high
     claim: "Criterion 6's allow-list omits the two files that must contain the forbidden strings by construction — the migration command and the test that implements the criterion — so the Layer 0 test fails on its own implementation."
     evidence: "§6 criterion 6 permits matches 'only in: CHANGELOG.md, REFLECTION_LOG.md, reflections/, assessments/, harness/assay/, docs/superpowers/{specs,plans,objections}/, observability/snapshots/, and the .gitignore line.' §5 requires `/harness-upgrade` step 6 to detect 'a `<!-- template-version: … -->` marker' and 'a `### Template currency` GC rule', and §6 places the test at `tdad_tests/layer0_deterministic/test-template-currency-retired.sh` — a filename containing `template-currency`."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Exempt commands/harness-upgrade.md and the test file by name, with the reason stated, so the exemption is deliberate and narrow rather than a widening someone applied to get CI green."
   - id: O4
     category: implementation
     severity: critical
     claim: "Step 6's migration deletes content from a project's governing document unconditionally and without asking, inside a command whose entire design is per-item consent."
     evidence: "§5: 'On any run, if the project's HARNESS.md contains: a `<!-- template-version: … -->` marker, it is removed; a `### Template currency` GC rule … it is removed'. `commands/harness-upgrade.md:104` — 'Ask the user to choose for each item' — and step 4 offers 'accept, skip, or customise' for every other change the command makes. CLAUDE.md: 'hand edits are how a governing document becomes the least governed thing in the repository.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Step 6 prompts per item, matching the command's existing consent design. Nothing in a project's HARNESS.md is deleted without a recorded decision — a project may have specialised that rule, which is exactly what this repository did with Consistent formatting."
   - id: O5
     category: scope
     severity: high
     claim: "The spec applies its own Status-block standard to this repository and not to the projects it migrates, so every migrated project is left with a governing document that overstates its GC coverage."
     evidence: "§10: 'Removing the `Template currency` GC rule changes the `Garbage collection active:` count in HARNESS.md's Status block … This PR runs `/harness-audit` … rather than merging a governing document that misstates its own coverage.' §5 performs the identical edit in consuming projects with no equivalent step. `skills/harness-audit-engine/SKILL.md:32` makes Status-block accuracy a tracked drift surface."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "Out of scope. Status-block accuracy is /harness-audit's tracked drift surface and its normal cadence will catch it. This command's job is not to keep every consuming project's Status block current."
   - id: O6
     category: scope
     severity: high
     claim: "The migration reaches only projects that run `/harness-upgrade` — by the spec's own argument the population least in need of it — yet §9 records the corresponding prior objection as fully resolved."
     evidence: "§5: 'A project that never runs `/harness-upgrade` again keeps an orphaned rule.' §7 argues against the opt-out alternative because it 'silences the nudge for projects that never had one — the population most likely to need it.' §9: 'O6 | high | **Resolved** — §5 migrates consuming projects' orphaned GC rule'."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "Resolved as written. The plugin cannot edit files in projects it is not invited into; performing the migration on every /harness-upgrade run is the maximum available reach, and that is what resolved means here."
   - id: O7
     category: scope
     severity: high
     claim: "§2.2 prices only the loss of the unprompted notification, but §3 also deletes three other consumers — the `/harness-sync` monthly drift surface, the `/harness-audit` engine row, and the assessment's harness-detection marker — including a reader for data that stays in the wild."
     evidence: "§2.2: 'A project that upgrades the plugin will no longer be told, unprompted, that the template gained content.' §3 additionally deletes `commands/harness-sync.md:118,206-207,271,294`, `skills/harness-audit-engine/SKILL.md:33`, `skills/harness-observability/references/observatory-signals.md:127`, and `skills/ai-literacy-assessment/references/habitat-discovery.md:93,141` — the last being a marker used to recognise that a project has a harness at all, which unmigrated projects will keep carrying."
-    disposition: pending
-    disposition_rationale: null
+    disposition: amend
+    disposition_rationale: "Keep habitat-discovery.md reading the marker — it is a reader, it is harmless, and unmigrated projects keep carrying the marker it recognises. Rewrite section 2.2 to name every capability removed rather than only the unprompted notification."
   - id: O8
     category: alternatives
     severity: high
     claim: "All four alternatives in §7 keep or repair the nudge; the spec never weighs deleting less — removing the SessionStart hook (the every-session false signal) while retaining the pull-direction surfaces."
     evidence: "§7 lists 'Compare heading sets', 'Filter the compared set', 'Fix the template's own content marker and read that', and 'Keep the marker but make its absence an opt-out'. §1's evidence of harm is specific to the hook's assertion ('the SessionStart hook asserts `Plugin template has been updated` on evidence that cannot establish it'), not to the `/harness-sync` row, which surfaces drift as a `[manual]` item at a monthly cadence the user chose."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "Delete all of it. A drifted row computed from a broken proxy is still a false statement wherever it appears, including in a monthly table the user asked for. Coherence beats preserving a surface that reports the same bad signal at a slower cadence."
   - id: O9
     category: risk
     severity: medium
     claim: "The spec names the condition under which the decision is wrong and the option to reopen on, but the migration strips from the install base the marker that option depends on, making the recorded reopening path more expensive than §7 implies."
     evidence: "§2.2: 'If a future adopter reports missing template content they would have wanted to know about, that is evidence this decision was wrong and is worth reopening on.' §7: 'have the hook compare that marker rather than `plugin.json` … recorded here in enough detail to be taken up without re-deriving it.' §5 removes the project-side marker on every `/harness-upgrade` run."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "State plainly that the migration is one-way: it is not reversible from the plugin side, reverting the plugin does not restore project files, and reopening on section 7's alternative costs a second migration through the same partially-reaching channel."
   - id: O10
     category: risk
     severity: high
     claim: "Stripping the marker while older plugin copies remain installed produces a permanent every-session false nudge that the new command can no longer silence, because it stops writing the dismissal file."
     evidence: "`hooks/scripts/template-currency-check.sh:32-34` — absent marker is treated as `0.0.0` — with `:43-45` and `:48-53`, so an absent marker nudges unless a dismissal file matching the plugin version exists. §3: '`.claude/.harness-upgrade-dismissed` is no longer written or read.' CLAUDE.md documents per-version plugin caches and a separately-synced marketplace clone, so mixed versions across machines and teammates are the normal case."
-    disposition: pending
-    disposition_rationale: null
+    disposition: rejected
+    disposition_rationale: "Stated and accepted as a transitional cost. Name the mixed-version consequence in section 2.2 rather than carrying a dismissal file nothing in the new plugin reads. Users on stale plugins have other reasons to upgrade. The reference/hooks.md:287 docs bug is real but predates this spec and is tracked separately."
   - id: O11
     category: specification quality
     severity: medium
     claim: "The GC-rule removal predicate is stated in prose and never checked against the text it must match, and no behaviour is defined for a near-miss, a customised rule, or an unreadable file."
     evidence: "§5: 'a `### Template currency` GC rule whose **Tool** field references the template-version comment, it is removed'. §2.1 records that revision 2 shipped 'an exclusion predicate that matched nothing … verified by `grep '^###.*affordance-example'` returning zero matches'. §5's step 7 defines only the success report: 'step 7 reports each removal by name.'"
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Report near misses and never guess. A '### Template currency' heading whose Tool field does not match is reported and left alone, and step 7 distinguishes 'found nothing' from 'removed nothing' so silence never stands in for could-not-determine."
   - id: O12
     category: scope
     severity: high
     claim: "The §3 and §12 enumerations miss named surfaces despite claiming grep derivation, and no counterpart to §3.1's signal arithmetic exists for the hook count that a Layer 0 test enforces."
     evidence: "§12: 'Derived from the grep in §6, not by hand' — yet `how-to/sync-harness.md` matches none of the four terms, and the list omits `README.md:371`, `hooks/hooks.json:2`, `templates/CLAUDE.md:220`, `reference/skills.md:46`, `tutorials/first-time-tour.md:558`, `explanation/the-harness-lifecycle.md:161`, `explanation/the-loops-that-learn.md:36`, `reference/output-validation.md:33`. `hooks.json` declares 18 hooks (4 SessionStart); `tdad_tests/layer0_deterministic/test-hooks-doc-parity.sh:19` records the last time that count went stale. §3.1 does exactly this arithmetic for the observatory total (82 → 81) and nothing equivalent for hooks."
-    disposition: pending
-    disposition_rationale: null
+    disposition: accepted
+    disposition_rationale: "Regenerate the section 3 and section 12 tables from O2's broadened case-insensitive search rather than by hand, and add the hooks.json count arithmetic (18 hooks, 4 SessionStart) alongside the observatory arithmetic in section 3.1."
 ---
 
 ## O1 — premise — high
