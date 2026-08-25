@@ -182,7 +182,25 @@ nobody had asked about `.yml`.
 
 It binds at acceptance rather than at proposal because the Assayer frequently
 identifies a behaviour without knowing which of four agent files should own it.
-That is the human's decision, made at the gate beside the cost.
+That is the human's decision, made at the gate beside the cost:
+
+```bash
+/harness-accept <hdr> --target .claude/agents/tdd-agent.agent.md
+```
+
+A finding that names no target proposes normally and is refused at acceptance
+until one is supplied — the refusal names the classification. Until 0.86.0 there
+was no way to supply it, so the workflow this paragraph describes was impossible
+and such a record could never be accepted (#557).
+
+Three refusals bound it. A **routed** classification refuses `--target`, because
+`target_of` prefers the route and the value would be silently ignored. The target
+must be a markdown artifact, and it must exist.
+
+Where the assay named a target and the approver overrides it, the Assayer's value
+is preserved as **`proposed_target`** and the approver's goes in `target` — the
+same split as `proposed_cost` and `cost`, so a reader can tell which part of a
+record came from whom.
 
 **A `validator` must resolve, be runnable, and name the record it enforces.**
 Every listed path must exist; each must carry the executable bit or a `.py`,

@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.86.0 — 2026-08-25
+
+### Fixed — the target can now be set where the reference always said it was
+
+`harness-decision-records.md` has always described `target` as binding at
+acceptance, "because the Assayer frequently identifies a behaviour without
+knowing which of four agent files should own it. That is the human's decision,
+made at the gate beside the cost."
+
+The code fixed it at proposal, copied verbatim from an append-only assay, and
+`/harness-accept` had no way to set one. **The documented workflow was therefore
+impossible**: a finding naming no target proposed cleanly and could never be
+accepted, with no exit but a new assay finding or supersession. See #557.
+
+- **`/harness-accept --target <path>`** supplies the artifact that will host the
+  rule.
+- **Three refusals keep it narrow.** A routed classification refuses `--target`,
+  because `target_of` prefers the route and the value would be silently ignored —
+  and silently discarding what someone typed is what #551 was about. The target
+  must be able to hold the rule (the `.md` check from 0.80.0, reused), and it
+  must exist.
+- **Provenance is recorded.** Where the assay named a target and the approver
+  overrides it, the Assayer's value is preserved as `proposed_target`. Third
+  application of the `proposed_cost` / `cost` pattern: two people contributed to
+  one record and a reader should be able to tell which part came from whom.
+- **Layer 0 suite** `test-target-at-the-gate.sh` (T1–T9), hashing the corpus
+  across every refusal.
+
+### The objection, recorded rather than dismissed
+
+Letting the approver retarget at the gate lets a rule be moved to wherever it
+applies cleanly, which is a cousin of reclassifying to clear a threshold. It is a
+weaker cousin: reclassification changes the evidentiary bar a rule must clear,
+which is what the two-assay threshold turns on, while retargeting only changes
+which prose document hosts the text — and since 0.80.0 that must be markdown, so
+every option is a governance artifact. `proposed_target` makes the move visible.
+
+### Note on the ticket's preferred option
+
+The ticket leaned toward `--target` on `/harness-propose`. Rejected after testing the
+documented flow: if the Assayer cannot know which of four agent files owns a
+behaviour, neither can whoever drafts the record thirty seconds later. The person
+who can decide is the one reading the rule beside its cost, which is what the
+reference said all along.
+
 ## 0.85.0 — 2026-08-25
 
 ### Fixed — a project's routing table merges with the defaults instead of replacing them

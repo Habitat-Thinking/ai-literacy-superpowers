@@ -748,6 +748,63 @@ def cmd_precheck(args) -> int:
     return 0
 
 
+def apply_target_override(args, hdr_abs: str) -> None:
+    """Let the approver name the artifact that will host the rule.
+
+    `harness-decision-records.md` has always said `target` binds at ACCEPTANCE,
+    "because the Assayer frequently identifies a behaviour without knowing which
+    of four agent files should own it. That is the human's decision, made at the
+    gate beside the cost." The code fixed it at proposal and offered no way to
+    set one, so that workflow was impossible: such a record proposed cleanly and
+    could never be accepted (#557).
+
+    Where the assay named a target and the approver overrides it, the Assayer's
+    value is preserved as `proposed_target`. Two people contributed to one record
+    and a reader should be able to tell which part came from whom — the same
+    reason `proposed_cost` sits beside `cost`.
+    """
+    target = getattr(args, "target", None)
+    if not target:
+        return
+
+    with open(hdr_abs, encoding="utf-8") as handle:
+        text = handle.read()
+    raw_fm, _ = S0.split_frontmatter(text)
+    fm = S0.parse_yaml(raw_fm) if raw_fm else {}
+
+    routes, _ = load_matrix(args.root)
+    classification = str(fm.get("classification") or "")
+    if routes.get(classification):
+        die(f"classification '{classification}' is routed to "
+            f"'{routes[classification]}' in harness/surfaces.yaml, so --target "
+            "would be silently ignored. Change the route, or suppress it for this "
+            "project, rather than naming a target the compiler will not use.")
+
+    if not hosts_prose(target):
+        die(target_refusal(os.path.relpath(hdr_abs, args.root), target))
+    if not os.path.exists(os.path.join(args.root, target)):
+        die(f"target '{target}' does not exist. The Registrar writes records, "
+            "not governance documents — create the artifact, or name one that "
+            "exists.")
+
+    previous = fm.get("target")
+    lines = text.split("\n")
+    end = next(i for i in range(1, len(lines)) if lines[i] == "---")
+    out, replaced = [], False
+    for i, line in enumerate(lines):
+        if 0 < i < end and line.startswith("target:"):
+            if previous and str(previous) != target:
+                out.append(f"proposed_target: {previous}")
+            out.append(f"target: {target}")
+            replaced = True
+            continue
+        out.append(line)
+    if not replaced:
+        out.insert(end, f"target: {target}")
+    with open(hdr_abs, "w", encoding="utf-8") as handle:
+        handle.write("\n".join(out))
+
+
 def cmd_accept(args) -> int:
     cost_abs = os.path.join(args.root, args.cost_file)
     if not os.path.isfile(cost_abs):
@@ -758,6 +815,7 @@ def cmd_accept(args) -> int:
         die("the cost is empty. The approver writes what this rule will demand "
             "of whoever works here next, and how it might be gamed.")
 
+    apply_target_override(args, os.path.join(args.root, args.hdr))
     hdr_abs, candidate, _ = _accept_common(args, cost, "acceptance")
 
     # Applying and compiling are NOT separate approval gates. Once an HDR is
@@ -1835,6 +1893,10 @@ def main(argv: list[str]) -> int:
                         "shell history one copy-paste from the next HDR")
     p.add_argument("--approver", required=True)
     p.add_argument("--now", required=True, help="ISO timestamp; injected, not read")
+    p.add_argument("--target",
+                   help="the artifact that will host this rule. The Assayer often "
+                        "cannot know which one owns a behaviour; this is where "
+                        "that is decided, beside the cost")
     p.set_defaults(func=cmd_accept)
 
     p = sub.add_parser("correct", help="record a correction to an assay finding")
