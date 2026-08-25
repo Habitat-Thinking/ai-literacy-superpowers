@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.82.0 — 2026-08-25
+
+### Fixed — a validator must be shown to enforce the rule that claims it
+
+`has_validator` tested that a named file exists, and nothing else. Existence is
+the entire link between a written rule and the code enforcing it — `render_region`
+only ever emits prose, so governance never edits code — and `achieved_for` gates
+the top of the enforcement ladder on that one boolean. See #553.
+
+Observed against this repository before the change: `validator: README.md`,
+`CHANGELOG.md` and `.gitignore` all reported a rule as `validated`, and
+`["docs/index.md", "nope/missing.py"]` passed because `any` accepted the doc while
+the real checker was missing.
+
+- **Every listed path must resolve.** `all`, not `any`.
+- **Each must look runnable** — the executable bit, or a `.py`, `.sh`, `.bash`,
+  `.js` or `.rb` suffix. A shape test to exclude documents, not a guarantee of
+  executability.
+- **At least one must name the record it enforces** — the HDR `id` in the file's
+  text. A comment is enough. This is the condition that makes the claim
+  falsifiable: a runnable, invoked script that checks something else is still not
+  enforcement of *this* rule.
+- **The report names the specific failure** instead of one collapsed string:
+  `no validator declared`, `validator not found: <path>`,
+  `validator is not runnable: <path>`, or `validator does not name <hdr-id>`.
+  "Nobody declared one" and "one was declared and it is missing" are different
+  failures with different remedies, and collapsing them was the same class of
+  defect being fixed.
+- **Existence is checked across every path before runnability**, so a missing
+  validator is reported ahead of a present-but-unrunnable one.
+
+**Invocation is deliberately not checked.** The obvious test — a reference from a
+workflow — passes `README.md`, which two of this repository's workflows grep,
+while wrongly downgrading a validator invoked from inside another script. A test
+that passes the worst case and fails good ones is not worth having.
+
+### Adopter impact
+
+A record declaring a validator that does not name it drops from `validated` to
+`advisory` on the next compile. That is a downgrade toward honesty — the report
+stops claiming enforcement it cannot demonstrate — and the reason string says
+exactly which condition failed. This repository's corpus declares no validators,
+so its enforcement report is byte-identical.
+
+- **Layer 0 suite** `test-validator-binding.sh` (V1–V7), fixtured directly on the
+  #553 evidence table. V4 asserts a bound validator still reaches `validated`,
+  because a check strict enough to reject everything would replace an
+  over-claiming report with a useless one.
+- `test-harness-compile.sh` C12b now asserts the absent path is *named* rather
+  than matching the old collapsed message, and C13's fixture gained the one-line
+  binding comment — which is what the new convention costs an adopter.
+
 ## 0.81.0 — 2026-08-25
 
 ### Fixed — the Assayer's reasoning reaches the record

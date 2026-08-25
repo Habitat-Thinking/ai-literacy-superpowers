@@ -164,6 +164,26 @@ It binds at acceptance rather than at proposal because the Assayer frequently
 identifies a behaviour without knowing which of four agent files should own it.
 That is the human's decision, made at the gate beside the cost.
 
+**A `validator` must resolve, be runnable, and name the record it enforces.**
+Every listed path must exist; each must carry the executable bit or a `.py`,
+`.sh`, `.bash`, `.js` or `.rb` suffix; and at least one must contain the record's
+`id`. A comment is enough.
+
+The binding is what makes the enforcement claim falsifiable. Existence alone is
+not evidence: before #553 the test was `any(os.path.exists(...))`, so
+`validator: README.md` reported a rule as `validated`, and a list passed when one
+entry resolved while the real checker was missing. A runnable, invoked script
+that checks something else is still not enforcement of *this* rule.
+
+Whether anything *invokes* the validator is deliberately not checked. The obvious
+test — a reference from a workflow — passes `README.md`, which two of this
+repository's workflows grep, while wrongly downgrading validators invoked from
+inside another script.
+
+The enforcement report names the specific failure: `no validator declared`,
+`validator not found: <path>`, `validator is not runnable: <path>`, or
+`validator does not name <hdr-id>`.
+
 **`validator`** is a path, or list of paths, to whatever actually enforces the
 rule. Its absence is never an error — an unenforced rule is not a malformed one —
 but it is what the [enforcement report](enforcement-report-format.md) uses to
