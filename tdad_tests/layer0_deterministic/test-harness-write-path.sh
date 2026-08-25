@@ -180,7 +180,7 @@ printf 'Written by a human, in their own words, and not the proposal.\n' > "$TMP
 # === W1 (A1): a non-markdown target is refused, and nothing is written =======
 reg propose --assay "$A1F" --finding finding-2 --today 2026-08-25
 [ "$RC" -eq 0 ] || fail "W1 setup: propose failed. Out: $OUT"
-HDR2="$( cd "$TMP" && ls harness/decisions/HDR-*.md | head -1 )"
+HDR2="$( cd "$TMP" && printf '%s\n' harness/decisions/HDR-*.md | head -1 )"
 
 # Fill the tier-2 sections, so the refusal under test is the target refusal and
 # not the placeholder one. A test that passes on the wrong refusal proves
