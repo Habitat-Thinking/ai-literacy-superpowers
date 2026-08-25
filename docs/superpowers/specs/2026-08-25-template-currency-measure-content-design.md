@@ -273,8 +273,7 @@ its own terms rather than as a dependency of a mechanism being deleted.
 
 ## 9. Objections resolved and abandoned
 
-Against `docs/superpowers/objections/template-currency-measure-content-design.md`
-(revision 2's record):
+Against the revision-2 review (record preserved at commit `6da8b77`):
 
 | ID | Severity | Outcome |
 | --- | --- | --- |
