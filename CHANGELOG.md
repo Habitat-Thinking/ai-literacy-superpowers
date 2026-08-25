@@ -213,6 +213,58 @@ advisories were published against a package this repository has been rendering
 untrusted Markdown through on every pull request, and the first thing that ever
 looked was a garbage-collection sweep someone ran by hand on 2026-08-25.
 
+### Fixed — three garbage-collection tools that could not report a failure
+
+`/harness-gc`'s first on-demand run found that three of the ten deterministic GC
+rules were structurally incapable of failing. Not stale, not misconfigured —
+counted among the active nineteen since April, running clean, examining nothing.
+See #587.
+
+**Release tag completeness** used `grep -oP`, a GNU extension. Under
+`/usr/bin/grep` on macOS it prints usage, extracts nothing, and **exits 0** — the
+loop body never runs and the rule reports a clean bill. Replaced with a POSIX
+`sed -n` extraction. Verified under `PATH=/usr/bin:/bin`: the old form extracts
+**0** version headings, the new one extracts **118**, and against a fixture
+carrying an untagged version the new form reports `MISSING: v9.9.9` where the old
+form reports nothing.
+
+This was the third recurrence of the BSD/GNU pattern, landing outside the fence
+built for it — *Layer 0 bash tests run on macOS and Linux* scopes to Layer 0 bash
+scripts, not to rule tools declared inline in `HARNESS.md`.
+
+**Objection record freshness** referenced an unbound `$f` with no enclosing loop.
+Run verbatim, `$f` expanded empty, the `-newer` operand became
+`docs/superpowers/objections/.md`, `find` errored into suppressed stderr, and
+`grep .` matched nothing — `rc=1`, always, regardless of state. Replaced with a
+loop that binds its variable and compares **git commit dates** rather than
+filesystem mtimes, which are identical on a fresh clone and would have made the
+comparison meaningless in CI. It now reports 12 records.
+
+**Docs-site strict-build sweep** declared `mkdocs build --strict`, and `mkdocs` is
+not on the ambient PATH — a bare `/harness-gc` got a shell "command not found"
+rather than a result. The tool now checks for the binary first and fails with a
+named reason and a remedy. Absence of the tool reads as failure, not as silence.
+
+### Repair, not a rule change
+
+**What it checks**, **Enforcement**, **Frequency** and **Auto-fix** are byte-identical
+for all three. Only the Tool implementation moved, and in every case because the
+declared implementation could not execute. This is treated as repair rather than
+a governed change on the grounds that the harness evolution loop exists to
+restrain rules *entering force*, not to gate a portability bug in an existing
+rule's implementation.
+
+### Known limitation, deliberately not fixed here
+
+*Objection record freshness* now reports 12 stale records, and most are
+metadata-only post-merge edits rather than design changes — seven are
+cadence-sentinels specs all last touched by `1133b9c` (#518), a provenance fix.
+The rule as declared compares timestamps and has no discriminator for "design
+content changed". Adding one would change what the rule checks, which is a
+governed decision rather than a repair, so the over-firing is recorded and left.
+Four objection records also have no date-prefixed spec and the rule is silent on
+them by construction.
+
 ## 0.86.2 — 2026-08-25
 
 ### Added — /harness-audit now validates the Status block it writes

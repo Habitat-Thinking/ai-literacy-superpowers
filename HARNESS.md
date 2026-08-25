@@ -733,7 +733,7 @@ Use /governance-constrain for guided authoring of governance constraints.
   has a corresponding `vX.Y.Z` git tag
 - **Frequency**: weekly
 - **Enforcement**: deterministic
-- **Tool**: for v in $(grep -oP '(?<=^## )\d+\.\d+\.\d+' CHANGELOG.md); do git tag -l "v$v" | grep -q "v$v" || echo "MISSING: v$v"; done
+- **Tool**: for v in $(sed -n 's/^## \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' CHANGELOG.md); do git tag -l "v$v" | grep -q "v$v" || echo "MISSING: v$v"; done
 - **Auto-fix**: true (creates missing tags pointing at the merge
   commit that introduced the version heading)
 
@@ -839,7 +839,7 @@ Use /governance-constrain for guided authoring of governance constraints.
   changes after code-time review produce a stale code-mode record.
 - **Frequency**: weekly
 - **Enforcement**: deterministic
-- **Tool**: find docs/superpowers/specs -name "*.md" -newer docs/superpowers/objections/$(basename "$f" .md | sed 's/^[0-9-]*-//').md 2>/dev/null | grep .
+- **Tool**: for o in docs/superpowers/objections/*.md; do [ -f "$o" ] || continue; slug=$(basename "$o" .md); slug=${slug%-code}; spec=$(ls docs/superpowers/specs/*-"$slug".md 2>/dev/null | head -1); [ -n "$spec" ] || continue; so=$(git log -1 --format=%ct -- "$o"); ss=$(git log -1 --format=%ct -- "$spec"); [ -n "$so" ] && [ -n "$ss" ] && [ "$ss" -gt "$so" ] && echo "STALE: $o"; done; exit 0
 - **Auto-fix**: false
 
 <!-- Uncomment if governance constraints are declared above:
@@ -976,7 +976,7 @@ Run /governance-audit quarterly to keep governance constraints fresh.
   model-cards plugin already follows this.
 - **Frequency**: weekly
 - **Enforcement**: deterministic
-- **Tool**: `mkdocs build --strict --quiet --site-dir /tmp/mkdocs-gc-check 2>&1 >/dev/null; rc=$?; rm -rf /tmp/mkdocs-gc-check; exit $rc`
+- **Tool**: `command -v mkdocs >/dev/null 2>&1 || { echo "MISSING TOOL: mkdocs not on PATH — pip install -r requirements.txt"; exit 1; }; mkdocs build --strict --quiet --site-dir /tmp/mkdocs-gc-check >/dev/null 2>&1; rc=$?; rm -rf /tmp/mkdocs-gc-check; exit $rc`
 - **Auto-fix**: false
 
 ---
