@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.90.0 — 2026-08-25
+
+### Removed — the template-currency nudge
+
+The `template-version` marker claimed to track template content and tracked
+the plugin version. The templates shipped at plugin `0.79.0` and `0.89.0` were
+byte-identical; the plugin moved ten minors while the template moved zero
+bytes, so the SessionStart hook asserted `Plugin template has been updated` on
+evidence that could not establish it, and the false claim reached `HARNESS.md`'s
+Status block.
+
+Retired: the marker, the `Template currency` GC rule, the SessionStart hook and
+`.claude/.harness-upgrade-dismissed`.
+
+- **Hooks 18 → 17**, SessionStart 4 → 3.
+- **Observatory signals 82 → 81.** The `Template version` row was marked
+  *required*, and `/observatory-verify` reports PARTIAL on a missing required
+  field — leaving it would have degraded every project's verification.
+- **`/harness-upgrade` survives on demand.** Its version gate is gone; its
+  three-bucket comparison is untouched. Step 6 now offers to retire the marker
+  and an orphaned `Template currency` rule from a project's harness, **per item,
+  accept or skip** — nothing is deleted from a governing document without a
+  recorded decision. Near misses are reported and left alone, and step 7
+  distinguishes *removed*, *found but not removed* and *not found* so silence
+  cannot stand in for could-not-parse.
+- **`/harness-init` stops writing the marker.**
+- **The `/assess` habitat-discovery reader is retained**, under a sunset marker
+  dated 2027-02-25 — it reads the marker, and consuming projects will carry one
+  for a while yet. Deleting a reader before its data is gone is backwards.
+
+### Added — a residue assertion, because hand enumeration kept failing
+
+`tdad_tests/layer0_deterministic/test-template-currency-retired.sh` asserts the
+retirement left nothing behind. Enumerating the surfaces by hand produced 7
+files, then 12, then 19, against a real 22 — plus two pages that describe the
+hook without using any of its terms, which no term search reaches. The test
+therefore has two parts, and its allow-list lives in a data file it reads rather
+than an array a one-line diff could widen.
+
+Design: `docs/superpowers/specs/2026-08-25-template-currency-measure-content-design.md`
+(revision 5), with twelve objections and eight choice stories disposed.
+
 ## 0.89.0 — 2026-08-25
 
 ### Design — retire the template-currency nudge (spec only, #601)
