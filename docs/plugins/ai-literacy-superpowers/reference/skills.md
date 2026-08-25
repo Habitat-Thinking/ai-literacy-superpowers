@@ -43,7 +43,7 @@ Generating human-readable onboarding documentation from harness state. Covers th
 
 ### harness-audit-engine
 
-The shared drift-detection layer that backs both `/harness-audit` (read-only) and `/harness-sync`. Produces a structured drift report covering convention files, ONBOARDING.md, snapshot staleness, template drift, constraint regressions, recurring reflection patterns, and HARNESS.md Status section accuracy.
+The shared drift-detection layer that backs both `/harness-audit` (read-only) and `/harness-sync`. Produces a structured drift report covering convention files, ONBOARDING.md, snapshot staleness, constraint regressions, recurring reflection patterns, and HARNESS.md Status section accuracy.
 
 ### harness-assay
 

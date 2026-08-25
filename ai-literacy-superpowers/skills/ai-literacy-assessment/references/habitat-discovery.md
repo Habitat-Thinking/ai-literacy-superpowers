@@ -91,6 +91,10 @@ Match if **at least two** of the following are present:
 - A constraint block with the four-field shape:
   `**Rule**:`, `**Enforcement**:`, `**Tool**:`, `**Scope**:`
 - The string `template-version:` in an HTML comment near the top
+  <!-- redirect-sunset: 2027-02-25 — retained reader for the retired
+       template-version marker (spec 2026-08-25-template-currency-measure-content-design
+       §2.2). The marker is no longer written; this stays only while
+       consuming projects still carry one. Remove at the sunset date. -->
 - A YAML frontmatter `name:` field with a harness-shaped value
 
 The four-field constraint block is the strongest single marker — a

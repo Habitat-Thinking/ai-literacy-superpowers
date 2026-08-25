@@ -1,0 +1,29 @@
+# Residue allow-list for the retired template-currency mechanism.
+# Spec: docs/superpowers/specs/2026-08-25-template-currency-measure-content-design.md §6 criterion 8
+#
+# One path prefix per line, followed by ` :: ` and the reason it is exempt.
+# Adding an entry is a spec change in intent. It is a reviewable diff to a file
+# whose only purpose is exemptions, so it is visible as one.
+#
+# Historical and append-only record corpora — these describe what was, and
+# rewriting them would falsify the record.
+CHANGELOG.md :: release history; the retirement is recorded here by design
+REFLECTION_LOG.md :: append-only learning record
+reflections/ :: append-only learning fragments
+assessments/ :: dated point-in-time assessments
+harness/assay/ :: append-only assay reports
+harness/decisions/ :: frozen decision records
+docs/superpowers/specs/ :: specs, including this one, which must name what it removes
+docs/superpowers/plans/ :: historical implementation plans
+docs/superpowers/objections/ :: append-only adversarial review records
+docs/superpowers/stories/ :: append-only choice-story records
+observability/snapshots/ :: dated point-in-time snapshots
+.gitignore :: the dismissal-file ignore stays; the file exists on machines that ran the old command
+#
+# Exempted by construction — these must contain the terms to do their job.
+ai-literacy-superpowers/commands/harness-upgrade.md :: step 6 must name the marker and the rule in order to offer their removal
+tdad_tests/layer0_deterministic/test-template-currency-retired.sh :: the test's own search patterns
+tdad_tests/layer0_deterministic/fixtures/template-currency-residue-allowlist.txt :: this file
+#
+# Time-limited retention, tracked by the Redirect sunset GC rule.
+ai-literacy-superpowers/skills/ai-literacy-assessment/references/habitat-discovery.md :: retained reader; sunset 2027-02-25 (spec §2.2)

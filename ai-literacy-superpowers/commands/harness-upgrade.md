@@ -40,15 +40,9 @@ known to be safe. Default: prompt the user. If `git fetch` or
 check and continue silently — the staleness guard is best-effort, not
 a hard block.
 
-Read the plugin version from
-`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`.
-
-Read the template-version marker from the user's HARNESS.md. If
-missing, treat as version `0.0.0`.
-
-If versions match, tell the user: "Your harness is up to date with
-the current template (vX.Y.Z). Nothing to upgrade." Then skip to
-step 6 (write dismissal and update marker).
+There is no version comparison. The plugin version says nothing about
+whether the template changed — it moves on every release, and the
+template does not. The comparison in steps 2–3 is the check.
 
 ### 2. Read and Parse Both Files
 
@@ -130,17 +124,35 @@ For each accepted item:
 
 Preserve all existing content that was not part of the upgrade.
 
-### 6. Update Markers
+### 6. Retire template-currency leftovers
 
-Update the `<!-- template-version: X.Y.Z -->` comment in HARNESS.md
-to the current plugin version. If the marker does not exist, insert
-it after the line containing
-`https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->`.
+No marker is written, and `.claude/.harness-upgrade-dismissed` is neither
+written nor read.
 
-Write the current plugin version to
-`.claude/.harness-upgrade-dismissed` (create the `.claude/` directory
-if it does not exist). This silences the SessionStart hook until the
-next plugin upgrade.
+Instead, on **every** run, look in the user's `HARNESS.md` for two
+leftovers from the retired template-currency mechanism:
+
+1. A `<!-- template-version: X.Y.Z -->` marker.
+2. A `### Template currency` GC rule whose **Tool** field references the
+   template-version comment.
+
+The second matters because the rule is declared `deterministic` and its
+tool compares a marker that no longer exists. An absent marker used to
+read as `0.0.0`, so the rule reports drift on every run, permanently,
+with no way to clear it.
+
+**Present each as a finding for the user to accept or skip**, in the same
+per-item form step 4 uses. Never remove either without a recorded
+decision — a project may have specialised that rule, and deleting
+someone's work during a command they ran for another reason is not
+something this command does.
+
+**Near misses are reported, never guessed.** If a `### Template currency`
+heading is present but its **Tool** field does not reference the
+template-version comment, report it and leave it alone. The same applies
+to a marker in an unexpected form.
+
+Both removals are idempotent: a second run finds nothing further.
 
 ### 7. Report
 
@@ -149,7 +161,15 @@ Summarise what happened:
 - Items accepted (with names)
 - Items skipped
 - Removed items flagged for review (if any)
-- Template version updated from X.Y.Z to A.B.C
+
+For the step 6 leftovers, report all three outcomes distinctly:
+
+- **removed** — the user accepted a finding
+- **found, not removed** — the user skipped it, or it was a near miss
+- **not found** — the file was read and contained neither
+
+"Nothing reported" must never be able to mean "the file could not be
+parsed". Silence is not the reassuring answer.
 
 Suggest next steps:
 

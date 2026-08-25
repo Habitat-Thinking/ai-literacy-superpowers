@@ -3,7 +3,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.4.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.89.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.90.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
 [![diagnostic-legibility](https://img.shields.io/badge/diagnostic--legibility-v0.11.0-4682B4?style=flat-square)](diagnostic-legibility/)
 [![Skills](https://img.shields.io/badge/Skills-42-2E8B57?style=flat-square)](#skills-42)
@@ -28,7 +28,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.89.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **42 skills, 22 agents, 40 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.90.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **42 skills, 22 agents, 40 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 | **`diagnostic-legibility`** | v0.11.0 | Hosts agents accountable for maintaining human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. The `ConceptualPipelineMap` template adds a standalone, presentation-agnostic flow-perspective data model; the agent's `scope-resolution` mode answers "what does my task touch?"; its `pipeline` mode traces control flow within that bound and cross-checks all three collections; the `/pipeline-map "<task>"` command renders the task-scoped map as a self-contained HTML flowchart (pinned, SHA-verified Mermaid inlined; no CDN); and `--predict-change` adds an opt-in change-site prediction (which stages the task will modify and where it will insert new ones), disclosed as a prediction, never a directive. | [docs](docs/plugins/diagnostic-legibility/index.md) |
 
@@ -68,14 +68,12 @@ You can install one, the other, or both. Once installed, each plugin's skills, a
 
 #### Check if an update is available
 
-Three signals surface new versions without manual polling:
+New template content is found by running `/harness-upgrade`, which compares
+your harness against the plugin's template directly. Nothing nudges you
+automatically: the marker that used to drive a session-start nudge tracked the
+plugin version rather than template content, so it fired on every release
+whether or not the template had changed.
 
-- **SessionStart hook** — if your project has a HARNESS.md, the hook compares
-  its `template-version` marker against the installed plugin version and emits
-  a nudge if they differ. This fires once per upgrade and goes silent after you
-  run `/harness-upgrade`.
-- **Weekly GC rule** — the `Template currency` rule checks the same marker on
-  its weekly schedule and includes any mismatch in the `/harness-health` report.
 - **Manual check** — compare installed vs latest at any time:
 
 ```bash
@@ -368,7 +366,6 @@ All hooks are registered in `hooks/hooks.json` and active in every Claude Code s
 - **Stop rotating GC check** — runs one deterministic GC rule per session (rotating by day), catching entropy between weekly CI runs
 - **Stop curation nudge** — detects unpromoted reflections in `REFLECTION_LOG.md` and nudges curation into `AGENTS.md`
 - **Stop governance drift check** — detects governance-related file changes and audit staleness, nudges `/governance-audit`
-- **SessionStart template currency check** — detects when the HARNESS.md template version is behind the installed plugin version, nudges `/harness-upgrade`
 
 ---
 
@@ -481,10 +478,8 @@ ADVISORY LOOP (edit time — warn, do not block)
 │   │                                    rotating by day-of-year
 │   ├── Stop curation nudge            Detects unpromoted reflections, nudges
 │   │                                    curation into AGENTS.md
-│   ├── Stop governance drift check    Detects governance file changes, nudges
-│   │                                    /governance-audit
-│   └── SessionStart template currency Detects HARNESS.md template-version drift,
-│                                        nudges /harness-upgrade
+│   └── Stop governance drift check    Detects governance file changes, nudges
+│                                        /governance-audit
 ├── Context (read by agents at session start)
 │   ├── CLAUDE.md                       Workflow rules, conventions, disciplines
 │   ├── AGENTS.md                       Compound learning memory (human-curated)

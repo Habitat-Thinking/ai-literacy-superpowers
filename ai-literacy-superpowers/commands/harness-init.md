@@ -179,16 +179,6 @@ Each section runs from its `##` heading to the **next** `##` heading or end
 of file — so the section after `## Affordances` is `## Observability`, not
 `## Status`.
 
-**Template version marker (both first run and re-run):**
-
-After writing HARNESS.md, ensure it contains a `<!-- template-version: X.Y.Z -->`
-comment on its own line immediately after the intro comment block,
-where X.Y.Z is the current plugin version read from
-`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`. If the marker
-already exists, update it to the current version. If it does not
-exist, insert it after the line containing
-`https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html -->`.
-
 ### 8. Validate Generated HARNESS.md
 
 **This step is mandatory.** After writing HARNESS.md, read it and
@@ -207,10 +197,7 @@ verify its structure against `templates/HARNESS.md`.
    subsections
 4. `## Status` section present with all 4 fields: Last audit,
    Constraints enforced, Garbage collection active, Drift detected
-5. Template version marker comment present:
-   `<!-- template-version: X.Y.Z -->` where X.Y.Z matches the
-   current plugin version
-6. **Affordances (optional):** `## Affordances` is only required when the
+5. **Affordances (optional):** `## Affordances` is only required when the
    Affordances feature was selected. If selected, the section is present
    (with example entries or the placeholder marker) and sits **between
    `## Garbage Collection` and `## Observability`** (its template position).
@@ -219,7 +206,6 @@ verify its structure against `templates/HARNESS.md`.
 If any check fails, fix HARNESS.md in place:
 
 - Add missing sections from the template with placeholder markers
-- Insert the template version marker if absent
 - Add missing Status fields with default values
 
 Do not re-run the init conversation. Fix the output directly.

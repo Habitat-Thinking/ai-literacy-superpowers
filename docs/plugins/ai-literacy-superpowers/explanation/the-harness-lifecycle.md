@@ -158,7 +158,7 @@ Behind the everyday three, there are deeper or focused tools:
   `/harness-audit` for the read-only diagnostic, or `/harness-sync`
   to also fix.
 - **You install a new plugin version** → run `/harness-upgrade`. The
-  SessionStart hook nudges you when the template version has moved.
+  Run `/harness-upgrade` after a plugin upgrade; nothing nudges you.
 - **You notice a pattern of failures** in REFLECTION_LOG.md → run
   `/harness-constrain` to encode the lesson.
 

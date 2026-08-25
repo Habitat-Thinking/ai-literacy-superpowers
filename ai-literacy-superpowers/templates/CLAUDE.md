@@ -217,7 +217,7 @@ Light-touch health check (every 30 days, between quarterly anchor weeks):
    promoting to `AGENTS.md`
 3. `/harness-sync` — bring every push-direction surface into alignment
    with HARNESS.md (convention files, snapshot, Status section).
-   Surfaces ONBOARDING.md staleness, template drift, and recurring
+   Surfaces ONBOARDING.md staleness and recurring
    reflection patterns as `[manual]` items for follow-up; sync prints
    the suggested command but does not invoke them.
 

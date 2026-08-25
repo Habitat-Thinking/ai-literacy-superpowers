@@ -274,18 +274,6 @@ These hooks fire when a Claude Code session begins — **and also on
 resume, clear, and compact**, so a `SessionStart` hook runs more than
 once in the life of a session and must be idempotent.
 
-### Template currency check
-
-- **Script**: `hooks/scripts/template-currency-check.sh`
-- **Timeout**: 10s
-
-Compares the `<!-- template-version: X.Y.Z -->` marker in
-`HARNESS.md` against the installed plugin version from
-`plugin.json`. If the template version is behind the plugin
-version, nudges you to run `/harness-upgrade` to adopt new
-template content. Exits silently if `HARNESS.md` does not exist
-or the marker is absent.
-
 ### Session registry start
 
 - **Script**: `hooks/scripts/session-registry-start.sh`

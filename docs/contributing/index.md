@@ -192,8 +192,6 @@ Periodic checks run weekly or monthly to catch slow drift.
   a git tag.
 - **Onboarding staleness** — flags if ONBOARDING.md is older than
   HARNESS.md, AGENTS.md, or REFLECTION_LOG.md.
-- **Template currency** — detects when the HARNESS.md template
-  version is behind the installed plugin version.
 - **Dependency currency** — checks for known vulnerabilities in
   dependencies.
 - **Convention file sync** — checks whether Cursor, Copilot, and

@@ -62,8 +62,8 @@ invokes the underlying primitive (`/convention-sync`, `/harness-health`,
 `ONBOARDING.md` staleness — it prints a "next step" line:
 
 ```text
-Manual remediation suggested for: Template version drift
-Run: /harness-upgrade
+Manual remediation suggested for: ONBOARDING.md staleness
+Run: /harness-onboarding
 ```
 
 You run those separately.
@@ -83,7 +83,6 @@ Surface / Finding                              Before      After
 ONBOARDING.md                                  drifted     drifted (manual — run /harness-onboarding)
 Snapshot staleness                             drifted     in sync ✓
 HARNESS.md Status accuracy                     drifted     in sync ✓
-Template drift                                 drifted     drifted (manual — see suggestion above)
 ```
 
 If any selected `[auto]` finding didn't reach `in sync`, the run exits
@@ -131,8 +130,6 @@ zero otherwise.
 
 Some drift can't be `[auto]`-fixed:
 
-- **Template drift** — run `/harness-upgrade` and adjudicate the new
-  items.
 - **Constraint regression** — run `/harness-constrain` to either fix
   the constraint or downgrade its enforcement level.
 - **Recurring reflection pattern** — run `/harness-constrain` to
