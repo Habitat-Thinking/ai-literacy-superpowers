@@ -1,5 +1,60 @@
 # Changelog
 
+## 0.88.0 — 2026-08-25
+
+### Added — `/harness-board`, because "what is blocked" took three commands to answer
+
+On 2026-08-25 the evolution loop ran end to end for the first time. Answering
+*"what is blocked, and on what"* took running `precheck` three times, reading two
+objection records, and hand-computing a two-assay threshold — while every one of
+those answers already existed in machine-readable form.
+
+The sharper failure was not the absence of an overview. It was that one could
+report **that** three proposals were stalled but not **why each differed**, and
+the three blockers turned out to be entirely different: missing tier-2 sections,
+a threshold refusal, and two undecided rule-text amendments.
+
+```text
+PROPOSALS
+  2026-08-25-command-cli-parity          precheck: clean
+      → gate-ready. Remaining: the cost, written at /harness-accept
+  2026-08-25-workflow-step-masking       precheck: REFUSED
+      → a harness-loop change requires evidence from at least two
+        distinct assays, found 1
+```
+
+Five sections ordered by closeness to a gate — assays, proposals, in force,
+accepted-but-not-binding, objections awaiting disposition — plus `--timeline` for
+interventions over time.
+
+### Three properties that are load-bearing, not incidental
+
+**It quotes `precheck` rather than reimplementing the refusal.** Two
+implementations diverge, and the divergence favours the board because the board is
+what someone reads — a record would be refused at the gate while the board called
+it ready.
+
+**It never omits what it cannot classify.** A record with no `status`, or an
+unrecognised one, appears under `UNCLASSIFIED` with its path. Verified
+adversarially against seeded malformed records. A board that drops what it cannot
+parse reports a smaller world than it checked, and a board is the worst place to
+reproduce that, because it is the thing you would use to notice.
+
+**It distinguishes in force from accepted.** The first implementation listed a
+superseded record under IN FORCE — `status: accepted` is not the same as binding,
+since a superseded rule and a retirement are both accepted and neither binds. Now
+read from the registrar's derived state rather than recomputed, which is the same
+principle as quoting `precheck`.
+
+### And it stores nothing
+
+There is deliberately no `BOARD.md`. A file that must be regenerated becomes a
+file that is stale, and the 2026-08-25 assessment found exactly that: two stored
+dashboards, 106 days old, read by nobody. A third with a fresher date would be the
+same mistake. `git status` is unchanged after a run, asserted rather than assumed.
+
+Ships with a spec, a Layer 1 structural scenario, a reference entry and a how-to.
+
 ## 0.87.0 — 2026-08-25
 
 ### The first rule enters force through the governed loop
