@@ -568,60 +568,6 @@
   `.github/workflows/gc.yml`)
 - **Scope**: pr
 
-### Harness decision records are well-formed
-
-- **Rule**: Every file in `harness/decisions/` (other than the generated
-  `index.md` and the corpus `README.md`) must be a valid Harness Decision
-  Record, and `harness/surfaces.yaml` must be a valid control-surface
-  capability matrix. The validator is the single source of truth for
-  every refusal: the identifier grammar, the required fields, the
-  classification and enforcement vocabularies, the two body tiers, the
-  four-backtick Rule block, the human-authored `cost`, the two-assay
-  promotion threshold for `harness-loop` changes, the three-per-cycle
-  acceptance cap, and the grandfathering rules for imported constraints.
-  A surface that cannot reach a rule's intended enforcement level is an
-  **enforcement gap**, reported by `/harness-compile` — never a
-  validation failure, because failing here would train authors to
-  declare the weakest enforcement any surface supports. A repository
-  with no `harness/` directory passes; adopting the mechanism stays a
-  choice. See the reference page at
-  `docs/plugins/ai-literacy-superpowers/reference/harness-decision-records.md`
-  and the spec at
-  `docs/superpowers/specs/2026-08-23-harness-evolution-s0-schema-validator-design.md`.
-- **Enforcement**: deterministic
-- **Tool**: `python3 ai-literacy-superpowers/scripts/check-harness-decisions.py`
-  (CI: `.github/workflows/harness.yml`)
-- **Scope**: pr
-
-### Harness governance is applied and undrifted
-
-- **Rule**: Every generated region compiled from the Harness Decision
-  Record corpus must match what the corpus produces, every accepted
-  record must be applied to the artifact its classification routes it
-  to, and no accepted record may differ from its content at the commit
-  that accepted it. Compilation writes only between
-  `<!-- BEGIN GENERATED: harness-registrar -->` and
-  `<!-- END GENERATED: harness-registrar -->`; content outside the
-  markers is never touched, and an ambiguous marker pair is refused
-  rather than guessed at. The frozen-record check is git-backed because
-  region drift alone cannot see a rule reworded in the accepted record
-  and then recompiled — the region would match the corpus and every
-  byte-identity check would pass. An accepted record that has never been
-  committed is skipped with a note rather than failed. A rule past its
-  `expires` date and still in force **fails**, so retiring a rule is
-  never contingent on anyone remembering to reflect; an evidence
-  reference naming a repository path that no longer exists fails, while
-  a reference carrying a URI scheme is named as skipped rather than
-  passed in silence. A repository with no `harness/` directory passes.
-  See
-  `docs/plugins/ai-literacy-superpowers/reference/enforcement-report-format.md`
-  and the spec at
-  `docs/superpowers/specs/2026-08-23-harness-evolution-s2-compile-check-design.md`.
-- **Enforcement**: deterministic
-- **Tool**: `python3 ai-literacy-superpowers/scripts/harness-registrar.py check`
-  (CI: `.github/workflows/harness.yml`)
-- **Scope**: pr
-
 <!-- Uncomment if using spec-first development:
 
 ### Spec conformance
@@ -1158,7 +1104,13 @@ Run /reservoir for an on-demand read, or /reservoir tune to edit this block.
 <!-- Auto-updated by /harness-audit — do not edit manually -->
 
 Last audit: 2026-08-25
-<!-- Counts re-derived 2026-08-25 by the v0.90.0 retirement of the version-marker mechanism.
+<!-- Counts re-derived 2026-08-25 by the v0.91.0 retirement of the harness
+     evolution loop. Constraints 36 -> 34. Narrative below that names
+     check-harness-decisions.py, harness-registrar.py, HDRs or the two removed
+     governance constraints is HISTORICAL: those artefacts were deleted in
+     v0.91.0 and the sentences describe incidents that occurred while they
+     existed. Earlier note follows.
+     Counts re-derived 2026-08-25 by the v0.90.0 retirement of the version-marker mechanism.
      Constraints and GC rules were recounted from this file; every other
      finding below is carried forward from the 2026-08-25 audit and was NOT
      re-verified. A full /harness-audit is still owed. -->

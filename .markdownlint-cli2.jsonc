@@ -32,10 +32,7 @@
     // same reason docs/superpowers/** is excluded: an HDR quotes the verbatim
     // rule text it is about to write into HARNESS.md, so style rules fight it
     // by construction — and reformatting an accepted HDR would edit a frozen
-    // record. Note the narrow globs: harness/decisions/README.md and the
     // generated index.md ARE linted, because those are documents, not records.
-    "harness/decisions/HDR-*.md",
-    "harness/assay/**",
     "reflections/**",
     // Gitignored staging, regenerated on every mining run.
     "REFLECTION_STAGING.md",

@@ -9,19 +9,6 @@ title: The Self-Improving Harness
 > ceremony when the team is large. The harness has to keep up — and
 > the cheapest way to do that is to make every session a contribution.
 
----
-
-> **The mechanism that does this**
->
-> This page is the *why*. The **how**, for a harness that already exists, is
-> [Harness Evolution](harness-evolution.md) — the assay-to-decision-record
-> loop, where a rule enters on recorded evidence and leaves on an expiry
-> date rather than on somebody remembering it exists.
->
-> The failure mode named below as **drift** is the one that loop was built
-> against, and the reason it makes rules *hard to add and easy to retire*
-> rather than the other way round.
-
 ## Why iteration matters
 
 The conventions captured in HARNESS.md were correct *when they were

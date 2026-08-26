@@ -7,21 +7,6 @@ title: The Harness Lifecycle
 > upstream when needed**. Three commands cover it. Everything else is
 > a deeper or specialised version of one of those three.
 
----
-
-> **Drift is not the only way a harness changes**
->
-> This lifecycle keeps the harness *consistent with itself*. It does not
-> govern the moment a rule is added, changed, or retired — which is a
-> different question with a different answer.
->
-> That is [Harness Evolution](harness-evolution.md): an assay produces
-> evidence, a decision record carries the rule and its cost, and
-> `/harness-check` fails the build when what is written down and what is in
-> force disagree — or when a rule has outlived its expiry.
->
-> Detecting drift and governing change are complementary. Run both.
-
 ## Before the lifecycle: setting up the harness
 
 The lifecycle starts when a harness exists. To get there, run one of

@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.91.0 — 2026-08-25
+
+### Removed — the harness evolution loop
+
+The Assayer, the Registrar and the Harness Decision Record mechanism are
+retired. `HARNESS.md` is the master, it is human-curated, and the way into it is
+the reflection channel:
+
+```text
+/reflect → a human reads the reflections → HARNESS.md → /harness-sync
+```
+
+**Why.** The loop produced ceremony without proportionate return. Four assays and
+ten findings yielded one accepted rule reaching a live artefact; the
+`harness-loop` classification that governs `HARNESS.md` itself was proposed once
+and rejected. Its own gates kept catching it — the most recent assay finding was
+adjudicated and retired because its stated harm was false, `git log -S` already
+answering the question a decision record was meant to answer. A single version
+marker took five spec revisions, three adversarial reviews, a choice-story pass
+and twenty-four objection dispositions to remove.
+
+**Removed:** 8 commands (`/harness-assay`, `-propose`, `-accept`, `-check`,
+`-compile`, `-review`, `-timeline`, `-board`), 2 agents (`harness-assayer`,
+`harness-registrar`), the `harness-assay` skill, 3 scripts, the `harness/`
+corpus, 2 `HARNESS.md` constraints and their CI steps, 13 Layer 0 tests, 11 TDAD
+scenarios, and 9 docs pages.
+
+Counts: **41 skills, 20 agents, 32 commands.** Constraints 36 → 34.
+
+**Given up, stated plainly:** evidence thresholds, a human-authored cost per
+rule, automatic expiry, and the drift and frozen-record checks over governance
+records. These were real properties, traded because the machinery cost more than
+it returned. The quarterly `/governance-audit` remains the check against
+`HARNESS.md` accreting rules nobody can justify.
+
+**One rule dropped with the mechanism.** The four-mechanisms rule compiled into
+`advocatus-diaboli/SKILL.md` was the only loop rule in a live artefact. It
+entered through a retired process and was not migrated; if the behaviour matters
+it will re-enter through a reflection.
+
+**Unchanged:** `/reflect`, `/harness-sync`, `/convention-sync`,
+`/harness-audit`, `/harness-gc`, `/harness-constrain`, and the nine non-loop
+sentinels with their `Sentinel integrity` constraint.
+
+Design: `docs/superpowers/specs/2026-08-25-retire-harness-evolution-loop-design.md`
+
 ## 0.90.0 — 2026-08-25
 
 ### Removed — the template-currency nudge

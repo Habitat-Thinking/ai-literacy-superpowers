@@ -102,44 +102,6 @@ BASH_TEST_SCRIPTS = [
     # Cadence Sentinels S5 — the consultation-disposition matcher. RED until
     # S5 ships scripts/check-consultation-dispositions.py.
     "test-convene-check",
-    # Harness Evolution S0 — the HDR + surfaces.yaml validator. RED until S0
-    # ships scripts/check-harness-decisions.py. This is the one place every
-    # governance refusal lives: the Registrar is a plugin agent with Write, so
-    # a rule that existed only in its prompt would be a rule it could talk
-    # itself past. Here it turns the build red instead.
-    "test-harness-decisions",
-    # Harness Evolution S1 — the Registrar's write path. R2 asserts the copied
-    # rule text is byte-identical (the fixture's first line ends in two spaces:
-    # a markdown hard break that a well-meaning .rstrip() destroys). R13 hashes
-    # every file under harness/ before and after each refusal, because "nothing
-    # was written" deserves a measurement rather than a reading of the code.
-    "test-harness-registrar",
-    # Harness Evolution S2 — compilation, the enforcement report, and the drift
-    # check. C12b asserts that a validator DECLARED but absent does not lift the
-    # enforcement degradation, and C14 asserts the git-backed frozen-record
-    # check: region drift cannot catch an agent rewording the rule in the
-    # accepted HDR and recompiling, because the region would then match.
-    "test-harness-compile",
-    # Harness Evolution S3 — the assay linter and the forward-test fixture.
-    # A6 asserts EVERY malformed finding is reported in one pass: /harness-propose
-    # parses lazily so one bad block costs one finding, but at write time the
-    # question is whether the document is well-formed, and a linter that stopped
-    # at the first defect would send an author round the loop once per mistake
-    # against a record that is append-only once written.
-    "test-harness-assay",
-    # Harness Evolution S4 — review, expiry and demotion. D7/D8 hold the line on
-    # the conflict S2 created: supersession is DERIVED from the successor's
-    # `supersedes` field, because writing `superseded_by` onto the record being
-    # superseded would be an edit to a frozen record. D11 keeps retirements
-    # exempt from the two-assay threshold — that threshold exists to make rules
-    # hard to ADD, and applying it to removal inverts the design.
-    "test-harness-review",
-    # Harness Evolution S5 — the Observatory intervention feed. T3 asserts no
-    # field derives from the current date: expiry is a clock fact, and a feed
-    # carrying one produces different output on different days from a corpus
-    # nobody touched. T9 asserts every intervention has an end — without it,
-    # every rule ever retired is still counted as in force.
-    "test-harness-timeline",
 ]
 
 

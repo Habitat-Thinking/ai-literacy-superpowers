@@ -14,20 +14,12 @@ evidence, carry a cost the approver wrote, and expire unless someone renews
 them:
 
 ```text
-/harness-assay      read what actually happened; propose, then stop
-/harness-propose    draft a decision record, rule text copied verbatim
-/harness-accept     you write the cost; the rule is applied and compiled
-/harness-check      CI verifies what is written down is what is in force
-/harness-review     when a rule lapses: re-evidence, weaken, or demote
+/reflect → a human reads the reflections → HARNESS.md → /harness-sync
 ```
 
-Start with **[Your First Governance Change](tutorials/your-first-governance-change.md)**,
-or read [Harness evolution](explanation/harness-evolution.md) for why the role
-that diagnoses failures is forbidden from writing the rules.
-
-Editing `HARNESS.md` by hand still has one job — the first draft of a harness
-that does not exist yet. After that, hand edits are how a governing document
-becomes the least governed thing in the repository.
+`HARNESS.md` is edited by hand, deliberately. `/harness-init` writes the first
+draft; after that a human decides what belongs in it, reading the reflections
+that `/reflect` captures. Git history is the record of what changed and why.
 
 The everyday drift-and-heal entry is `/harness-sync` — it detects drift across
 every surface and applies the fixes you select. See
@@ -75,7 +67,6 @@ matches the kind of reading you're doing right now.
 
 Start here if you're new to the plugin.
 
-- [Your First Governance Change](tutorials/your-first-governance-change.md) — change a harness rule the governed way: from evidence, through a recorded decision, with a cost you wrote and an expiry CI enforces
 - [Your First Sentinels](tutorials/your-first-sentinels.md) — meet three of the ten in one session; the category that guards your understanding rather than your code
 - [Getting Started](tutorials/getting-started.md)
 - [First Time Tour](tutorials/first-time-tour.md)
@@ -95,9 +86,6 @@ Practical guides for specific tasks.
 
 How a rule changes once the harness exists. This is the governed path, and the
 one to reach for by default.
-
-- [Assay a Phase](how-to/assay-a-phase.md) — the read-only postmortem a governance change is built from
-- [Record a Governance Change](how-to/record-a-governance-change.md) — propose, accept, and read the enforcement report
 
 #### Harness lifecycle
 
@@ -169,10 +157,6 @@ one to reach for by default.
 - [Hooks](reference/hooks.md)
 - [Templates](reference/templates.md)
 - [HARNESS.md format](reference/harness-md-format.md)
-- [Harness Decision Record format](reference/harness-decision-records.md) — the unit a governance change is recorded in
-- [Assay finding format](reference/assay-finding-format.md) — the contract between the Assayer and the Registrar
-- [Enforcement report format](reference/enforcement-report-format.md) — intended versus achieved, per rule, per surface
-- [Intervention feed format](reference/intervention-feed-format.md) — the Observatory timeline `/harness-timeline` emits
 - [Output validation](reference/output-validation.md)
 - [Governance summary format](reference/governance-summary-format.md)
 
@@ -188,7 +172,6 @@ from first principles to the complete system:
 5. [Agent Orchestration](explanation/agent-orchestration.md) — specialised agents with trust boundaries
 6. [Compound Learning](explanation/compound-learning.md) — how your AI gets smarter every session
 7. [The Loops That Learn](explanation/the-loops-that-learn.md) — four operational loops that make AI environments compound
-8. [Harness Evolution](explanation/harness-evolution.md) — **how the rules themselves change**: the two roles, the human gate between them, and why rules should be hard to add and easy to retire
 
 #### Deep dives
 
