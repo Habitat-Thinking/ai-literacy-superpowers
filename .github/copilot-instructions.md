@@ -178,4 +178,3 @@ Every active constraint heading in HARNESS.md's Constraints section must appear 
 ### Sentinel integrity
 
 Any agent whose frontmatter declares `role: sentinel` MUST NOT be granted `Write` or `Edit` tools — a sentinel's object of care is the human's understanding and judgement, and criterion S1 of the sentinel signature is a read-only trust boundary (`Bash` is permitted for read-only inspection such as `git log`). The same check also rejects any `role:` value outside the enum `{sentinel}`, so a typo fails loudly rather than silently exempting the agent. Enforcement: deterministic. Scope: pr.
-

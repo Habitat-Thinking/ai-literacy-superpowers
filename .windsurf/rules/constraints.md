@@ -238,4 +238,3 @@
 - **Enforcement**: deterministic
 - **Tool**: `bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents`
 - **Scope**: pr
-
