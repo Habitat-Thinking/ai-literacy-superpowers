@@ -117,7 +117,6 @@ build goes red. S2 and S3 are agent-verifiable via the harness-enforcer.
 | `wip-warden` | The count — how much is open at once, against a line the person drew | Read-only; counts sessions and never watches the human; reports the count's flag; never invents a limit; says plainly that `strict` cannot compel |
 | `coda` | The ending — that a session stops by decision rather than by attrition | Read-only; returns record content for `/coda` to persist; per-item observed/inferred/asked flags; never refuses a next action and never records why someone stopped |
 | `convener` | The room — that a spec is not decided by everyone it affects being absent | Read-only; voices disposed at a soft gate; observed/inferred/asked per voice; never contacts anyone and never drafts a message to send |
-| `harness-assayer` | The rules themselves — that a harness rule enters on evidence and can be retired | Read-only; returns report content for `/harness-assay` to persist; observed/reported/inferred flags; never converts a planned command into passing evidence; marks conflicting evidence unresolved rather than choosing |
 
 The roster splits into **two disciplines**, plus one agent in neither.
 
@@ -159,7 +158,6 @@ one.
 | `wip-warden` | You suspect more is open at once than you can hold | `/wip` | [Watching your WIP](../how-to/watching-your-wip.md) |
 | `mast` | You want a limit you set in clear weather to survive the moment it governs | `/mast` | [Keeping a pact](../how-to/keeping-a-pact.md) |
 | `coda` | A session is ending and you would rather stop by decision than by attrition | `/coda` | [Closing a session](../how-to/closing-a-session.md) |
-| `harness-assayer` | A phase has ended and you want to know what the harness itself should learn from it | `/harness-assay` | [Assay a phase](../how-to/assay-a-phase.md) |
 
 ### You do not have to adopt them all
 

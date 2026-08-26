@@ -135,7 +135,6 @@ solid and which are precaution under uncertainty.
 | `mast` | The pact — that a limit set in clear weather survives the moment it governs |
 | `wip-warden` | The count — how much is open at once, against a line the person drew |
 | `convener` | The room — that a spec is not decided by everyone it affects being absent |
-| `harness-assayer` | The rules themselves — that a harness rule enters on evidence and can be retired |
 
 Narrative: the decision-discipline triad guards *decisions*; the
 reservoir-warden guards *the decider*; the cost-estimator guards *the

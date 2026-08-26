@@ -372,28 +372,3 @@ After the frontmatter, write one prose section per objection:
 ```
 
 At least three entries required. More is better.
-
-<!-- BEGIN GENERATED: harness-registrar — do not edit by hand -->
-
-<!-- Compiled from harness/decisions/. Run /harness-compile to regenerate. -->
-
-### HDR-2026-08-25-four-mechanisms-report-the-reassuring-answer-when-they-cannot-determine-the-real-one — Four mechanisms report the reassuring answer when they cannot determine the real one
-
-> Intended: advisory · claude-code: advisory · provisional until 2026-11-23
-
-- **Rule**: A mechanism that reports a status — a badge, a `## Status`
-  block, a check result, a snapshot field, a summary line — must have a
-  defined value for the case where it could not determine the answer, and
-  that value may not be the passing one. Where an input is missing,
-  unreadable or not supplied, the mechanism reports the degraded or unknown
-  state and names the input it could not read. A reachable code path that
-  reaches a passing value without reading the thing it reports on is a
-  defect, not a default.
-  Absence of evidence is not evidence of health,
-  and a mechanism that fails toward the reassuring answer is worse than an
-  absent one, because the next reader stops looking.
-- **Enforcement**: agent
-- **Tool**: `ai-literacy-superpowers/skills/advocatus-diaboli/SKILL.md`
-- **Scope**: pr
-
-<!-- END GENERATED: harness-registrar -->

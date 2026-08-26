@@ -190,26 +190,23 @@ rather than inlining field definitions.
 
 ## Changing a Harness Rule
 
-Once a harness exists, changing it goes through the governed loop rather than a
-hand edit to `HARNESS.md`:
+`HARNESS.md` is the master and it is human-curated. A rule enters when a human
+decides it should, and the way things reach that decision is the reflection
+channel:
 
 ```text
-/harness-assay → /harness-propose → /harness-accept → /harness-check
+/reflect → a human reads the reflections → HARNESS.md → /harness-sync
 ```
 
-with `/harness-review` when a rule lapses, `/harness-compile` as repair, and
-`/harness-timeline` for the Observatory feed.
+`/reflect` captures what was noticed and routes it by signal type. A human
+reviews the corpus, with agentic support, and decides what is worth writing into
+`HARNESS.md`. `/harness-sync` then brings the control surfaces into line.
 
-A rule enters on recorded evidence, carries a cost the approver wrote in their
-own words, and expires unless someone renews it. `/harness-check` runs in
-`.github/workflows/harness.yml` and fails the build when what is written down
-and what is in force disagree, or when a rule has outlived its expiry.
+`/harness-constrain` helps author a constraint. `/harness-audit` checks whether
+what `HARNESS.md` declares matches reality.
 
-`/harness-constrain` still authors the _first_ draft of a harness. After that,
-hand edits are how a governing document becomes the least governed thing in the
-repository.
-
-See `docs/plugins/ai-literacy-superpowers/explanation/harness-evolution.md`.
+Nothing compiles into `HARNESS.md`, and git history is the record of what
+changed and why.
 
 ## Dynamic Workflows
 

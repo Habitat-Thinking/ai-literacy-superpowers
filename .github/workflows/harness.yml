@@ -85,18 +85,6 @@ jobs:
         run: |
           bash ai-literacy-superpowers/scripts/sentinel-integrity-check.sh ai-literacy-superpowers/agents
 
-      - name: "Constraint: Harness decision records are well-formed"
-        id: constraint_harness_decision_records_are_well_formed
-        if: always()
-        run: |
-          python3 ai-literacy-superpowers/scripts/check-harness-decisions.py
-
-      - name: "Constraint: Harness governance is applied and undrifted"
-        id: constraint_harness_governance_is_applied_and_undrifted
-        if: always()
-        run: |
-          python3 ai-literacy-superpowers/scripts/harness-registrar.py check
-
       - name: Summary
         if: always()
         run: |
@@ -124,8 +112,6 @@ jobs:
           record 'constraint_shellcheck_compliance' 'Constraint: ShellCheck compliance' '${{ steps.constraint_shellcheck_compliance.outcome }}'
           record 'constraint_all_frontmatter_has_name_and_description' 'Constraint: All frontmatter has name and description' '${{ steps.constraint_all_frontmatter_has_name_and_description.outcome }}'
           record 'constraint_sentinel_integrity' 'Constraint: Sentinel integrity' '${{ steps.constraint_sentinel_integrity.outcome }}'
-          record 'constraint_harness_decision_records_are_well_formed' 'Constraint: Harness decision records are well-formed' '${{ steps.constraint_harness_decision_records_are_well_formed.outcome }}'
-          record 'constraint_harness_governance_is_applied_and_undrifted' 'Constraint: Harness governance is applied and undrifted' '${{ steps.constraint_harness_governance_is_applied_and_undrifted.outcome }}'
           echo
           if [ "$failed" -eq 1 ]; then
             echo "::error::One or more constraints failed. See the per-constraint results above."

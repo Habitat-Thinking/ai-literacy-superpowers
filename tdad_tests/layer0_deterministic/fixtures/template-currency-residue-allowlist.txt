@@ -11,8 +11,6 @@ CHANGELOG.md :: release history; the retirement is recorded here by design
 REFLECTION_LOG.md :: append-only learning record
 reflections/ :: append-only learning fragments
 assessments/ :: dated point-in-time assessments
-harness/assay/ :: append-only assay reports
-harness/decisions/ :: frozen decision records
 docs/superpowers/specs/ :: specs, including this one, which must name what it removes
 docs/superpowers/plans/ :: historical implementation plans
 docs/superpowers/objections/ :: append-only adversarial review records

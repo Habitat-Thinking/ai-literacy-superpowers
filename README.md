@@ -3,10 +3,10 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Lint Markdown](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/Habitat-Thinking/ai-literacy-superpowers/actions/workflows/lint-markdown.yml)
 [![Marketplace](https://img.shields.io/badge/Marketplace-v0.4.0-4682B4?style=flat-square)](.claude-plugin/marketplace.json)
-[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.90.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
+[![ai-literacy-superpowers](https://img.shields.io/badge/ai--literacy--superpowers-v0.91.0-4682B4?style=flat-square)](ai-literacy-superpowers/)
 [![model-cards](https://img.shields.io/badge/model--cards-v0.1.0-4682B4?style=flat-square)](model-cards/)
 [![diagnostic-legibility](https://img.shields.io/badge/diagnostic--legibility-v0.11.0-4682B4?style=flat-square)](diagnostic-legibility/)
-[![Skills](https://img.shields.io/badge/Skills-42-2E8B57?style=flat-square)](#skills-42)
+[![Skills](https://img.shields.io/badge/Skills-41-2E8B57?style=flat-square)](#skills-41)
 [![Agents](https://img.shields.io/badge/Agents-22-2E8B57?style=flat-square)](#agents-22)
 [![Commands](https://img.shields.io/badge/Commands-40-2E8B57?style=flat-square)](#commands-40)
 [![Harness](https://img.shields.io/badge/Harness-35%2F36_enforced-B8860B?style=flat-square)](HARNESS.md)
@@ -28,7 +28,7 @@ New to the project? Start with [ONBOARDING.md](ONBOARDING.md) or browse the [doc
 
 | Plugin | Version | What it does | Docs |
 | ------ | ------- | ------------ | ---- |
-| **`ai-literacy-superpowers`** | v0.90.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **42 skills, 22 agents, 40 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
+| **`ai-literacy-superpowers`** | v0.91.0 | The flagship. Harness engineering, agent orchestration, literate programming, CUPID code review, compound learning, and the three enforcement loops. **41 skills, 20 agents, 32 commands.** | [docs](docs/plugins/ai-literacy-superpowers/index.md) |
 | **`model-cards`** | v0.1.0 | Researches and authors Mitchell-extended model cards from a model name. Tiered source strategy (provider docs → HuggingFace → arXiv → web), refusal-on-unconfirmed-existence honesty rule. | [docs](docs/plugins/model-cards/index.md) |
 | **`diagnostic-legibility`** | v0.11.0 | Hosts agents accountable for maintaining human understanding. Ships the `diagnostic-legibility` agent — builds and self-challenges two models of a codebase scope (architectural moving parts and domain concepts) via a five-question retained-challenge cycle, then cross-checks the two collections against each other via a five-question per-direction cycle. The `/diagnose` command surfaces the mutually-corrected models on demand as a readable report. The `ConceptualPipelineMap` template adds a standalone, presentation-agnostic flow-perspective data model; the agent's `scope-resolution` mode answers "what does my task touch?"; its `pipeline` mode traces control flow within that bound and cross-checks all three collections; the `/pipeline-map "<task>"` command renders the task-scoped map as a self-contained HTML flowchart (pinned, SHA-verified Mermaid inlined; no CDN); and `--predict-change` adds an opt-in change-site prediction (which stages the task will modify and where it will insert new ones), disclosed as a prediction, never a directive. | [docs](docs/plugins/diagnostic-legibility/index.md) |
 
@@ -142,29 +142,18 @@ After installation, run these commands to set up your project:
 
 Setting a harness up is the easy half. **Once it exists, this is how it changes:**
 
-```bash
-/harness-assay      # read what actually happened; propose, then stop
-/harness-propose    # draft a decision record, rule text copied verbatim
-/harness-accept     # you write the cost; the rule is applied and compiled
-/harness-check      # CI verifies what is written down is what is in force
-/harness-review     # when a rule lapses: re-evidence, weaken, or demote
+```text
+/reflect → a human reads the reflections → HARNESS.md → /harness-sync
 ```
 
-Harness rules accrete. One enters because somebody was annoyed once, and it never leaves, because leaving requires somebody to remember it exists. A year later the document governing the work is the least governed thing in the repository — a dozen rules, none carrying the evidence that justified it, none saying what it costs, none with an expiry.
+`HARNESS.md` is the master and it is human-curated. `/reflect` captures what was
+noticed and routes it by signal type; a human reviews the corpus, with agentic
+support, and decides what is worth writing down. `/harness-sync` then brings the
+convention files for Cursor, Copilot and Windsurf into line.
 
-This loop is the answer, and it is deliberately asymmetric: **rules are hard to add and easy to retire.**
-
-- A rule enters on **recorded evidence**, and a change to `HARNESS.md` needs evidence from two distinct assays — one bad afternoon is not a governance finding
-- The **cost is written by the approver**, in their own words. A cost copied from the proposal is refused, because a copy-pasted cost reads exactly like a considered one
-- Every rule is **provisional by default**. An expired rule still in force fails CI, so retiring one never depends on anyone remembering to reflect
-- `harness/enforcement-report.md` says which rules are **actually enforced** and which are merely written down — a rule intending `blocked` on a tool that can only advise is reported as a gap, never silently downgraded
-- **`no-change` is a first-class outcome.** An assay in which nothing needs changing is a successful assay
-
-The two roles are kept apart on purpose: the **Harness Assayer** diagnoses and is read-only by construction; the **Harness Registrar** writes but never authors. An agent that did both could rationalise its own findings into rules that make its next diagnosis easier.
-
-Start with [Your First Governance Change](docs/plugins/ai-literacy-superpowers/tutorials/your-first-governance-change.md).
-
-Editing `HARNESS.md` by hand still has one job — the first draft of a harness that does not exist yet.
+`/harness-constrain` helps author a constraint. `/harness-audit` checks whether
+what `HARNESS.md` declares still matches reality. Git history is the record of
+what changed and why.
 
 ### Tool Compatibility
 
@@ -184,7 +173,7 @@ This plugin works with both Claude Code and GitHub Copilot CLI from the same rep
 
 The remaining sections of this README document the **`ai-literacy-superpowers`** plugin in detail. For `model-cards`, see [its README](model-cards/README.md) and [its docs](docs/plugins/model-cards/index.md).
 
-### Skills (42)
+### Skills (41)
 
 Code quality, harness engineering, and governance knowledge that agents read when working in your codebase.
 
@@ -196,7 +185,6 @@ Code quality, harness engineering, and governance knowledge that agents read whe
 | dependency-vulnerability-audit | Go and Maven CVE scanning procedures |
 | docker-scout-audit | Docker image CVE triage and remediation |
 | harness-engineering | Foundational concepts — the three components, promotion ladder, enforcement timing |
-| harness-assay | The read-only postmortem — materiality test, evidence pool and its honesty flags, the report's six sections |
 | context-engineering | Writing conventions precise enough for humans and LLMs to enforce |
 | dynamic-workflows | When/which/how to author ephemeral multi-agent workflows — six patterns, election rubric, INV-1/INV-2 governance |
 | constraint-design | Designing enforceable constraints with the verification slot model |
@@ -233,7 +221,7 @@ splits into two families: **sentinels**, whose object of care is the
 human's understanding and judgement, and **pipeline & harness agents**,
 whose object of care is an artefact, the pipeline, or the harness.
 
-#### Sentinels (10)
+#### Sentinels (9)
 
 > **Sentinel** — any agent whose primary purpose is to protect and
 > support the understanding and judgement of the human in the workflow.
@@ -275,7 +263,6 @@ sentinels** guard the shape of the work around those decisions: the
 | mast | The pact | Pact-keeper — recites a limit the person set in clear weather before measuring anything against it, so the recitation cannot be shaped by the moment; refuses to estimate spend it cannot observe; discloses its own check's blind spot; never gates | Read only |
 | wip-warden | The count | Concurrency counter — counts live sessions against a limit the person declared, never inventing one; reports the count's honesty flag; watches sessions, never the human; says plainly that `strict` cannot compel | Read only |
 | convener | The room | Counsel-bringer — runs at plan approval beside the cartographer; maps the roles and groups a spec affects and drafts the one concrete question worth asking each; soft gate at plan approval, complete-if-present merge constraint; **never contacts anyone**, in any medium, ever | Read only |
-| harness-assayer | The rules themselves | Assayer — the read-only postmortem a governance change is built from; reads evidence at a phase boundary, classifies findings by ownership, and returns a bounded proposal for a human to dispose; **never converts a planned command from a build file into passing evidence**; a finding the harness auditor already reports is recorded as a rejected candidate, not a finding | Read only |
 
 #### Pipeline & harness agents (11)
 
@@ -290,7 +277,6 @@ sentinels** guard the shape of the work around those decisions: the
 | harness-enforcer | Unified verification engine for all constraint types | Read + Bash |
 | harness-gc | Periodic entropy fighter | Read + Write |
 | harness-auditor | Meta-agent — checks whether the harness matches reality | Write to Status only |
-| harness-registrar | Keeps the record of how governance changes — applies human-approved decisions, never authors them | Read + Write |
 | assessor | AI literacy assessment — scans repo, asks questions, applies fixes, recommends workflow changes | Read + Write |
 | governance-auditor | Governance specialist — semantic drift analysis, debt inventory, three-frame alignment | Read + limited Write |
 
@@ -304,13 +290,6 @@ sentinels** guard the shape of the work around those decisions: the
 | `/harness-status` | Quick harness health read |
 | `/harness-constrain` | Add or promote a constraint |
 | `/harness-gc` | Manage and run garbage collection rules |
-| `/harness-assay` | Run the read-only postmortem a governance change is built from |
-| `/harness-propose` | Draft a decision record from an assay finding, rule text copied verbatim |
-| `/harness-accept` | The write transaction — you author the cost, then the rule is applied and compiled |
-| `/harness-review` | List every lapsed rule and its three outcomes — re-evidence, weaken, demote |
-| `/harness-compile` | Idempotent repair of every generated region |
-| `/harness-check` | Read-only drift detection; the CI entry point |
-| `/harness-timeline` | Emit the Observatory intervention feed to stdout |
 | `/harness-audit` | Read-only diagnostic. Same engine as `/harness-sync` but prints findings without prompting to fix. Use for inspection-without-commitment, CI scripts, or the quarterly cadence anchor. |
 | `/reflect` | Capture a post-task reflection |
 | `/worktree` | Git worktree lifecycle — spin, merge, clean |
