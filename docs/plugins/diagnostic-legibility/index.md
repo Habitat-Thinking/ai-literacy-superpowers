@@ -8,7 +8,15 @@ Agents accountable for helping to maintain human understanding.
 A sister plugin to [ai-literacy-superpowers](../ai-literacy-superpowers/index.md)
 and [model-cards](../model-cards/index.md) in the same marketplace.
 
-## Charter
+## The Challenge of Putting Back the Hunches
+
+AI has fundamentally changed the relationship between creating software and understanding it. Developers can now generate large amounts of code while missing a living theory of how it works.   Developers remain accountable for software created with AI, and the need for understanding has not gone away just because the process that used to generate that understanding has changed.  While reviewing the code can help, it does not put back the experiential intuition that has gone missing.  Developers need **hunches**: the intuitive sense of what to do, where to look, and what to try.
+
+## Charter 
+
+Make maintaining human hunches a first-class design goal supported by the agents. Rather than expecting humans to recover understanding by reviewing generated code, agents are accountable for designing for diagnostic legibility and helping to maintain human understanding.  The agents construct diagnostic affordances that help the humans gain hunches by _poking and seeing_: interacting with the software, observing what happens, and developing experiential intuition about how it works.  As the human learns, they offer their hunches as feedback, and the agent revises the design for conceptual clarity--an approach we call _hunch-oriented telemetry_.
+
+## Current Scope
 
 The plugin's purpose is to host agents that are accountable for
 maintaining human understanding of complex systems. The inaugural
