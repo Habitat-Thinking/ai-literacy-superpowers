@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.92.0 — 2026-09-17
+
+### The constraint gate becomes a check that can run
+
+- Replaced the `PostToolUse` constraint-gate prompt hook with
+  `hooks/scripts/commit-constraint-check.sh`, a command hook. A prompt hook is a
+  single-turn model call over the hook input with no tool access, so the
+  gate's opening instruction — "Read HARNESS.md in the project root" — was never
+  something it could do, in any repository. It returned an improvised sentence
+  about the file instead, and a prompt hook's `ok: false` ends the turn: every
+  edit in a repository without a `HARNESS.md` cut the session off mid-task
+  (#615). Moving the hook to `PostToolUse` in #509 fixed the blocked writes and
+  left this, because the position was never the whole defect.
+- The new hook runs the constraints `HARNESS.md` actually declares with
+  `Scope: commit` and `Enforcement: deterministic`, quotes their headings out of
+  the file, and stays silent when there is nothing it can check — including on
+  agent-enforced constraints, which need a reviewer with judgement (#605).
+- Added `tdad_tests/layer0_deterministic/test-commit-constraint-check.sh` (C1–C6),
+  pinning the three silences, the advisory case, and the invariant that the hook
+  never exits non-zero or emits `continue`/`decision`. #509 noted the prompt hook
+  had no Layer 0 test at all.
+- Rewrote `test-hooks-advisory-placement.sh`: its H2/H3 required the gate to be
+  a prompt hook with particular wording, which pinned the broken design in place.
+  The new H1b rejects any prompt hook instructed to read a file, whatever event
+  it sits on.
+- Corrected the hooks reference and README, which described the gate as
+  prompt-based and advisory, and claimed `PostToolUse` output is "advisory by
+  construction" — true of a command hook that exits 0, false of a prompt hook.
+
 ## 0.91.0 — 2026-08-25
 
 ### Removed — the harness evolution loop

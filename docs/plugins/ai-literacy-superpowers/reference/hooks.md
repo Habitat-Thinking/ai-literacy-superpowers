@@ -30,40 +30,61 @@ linter and returns any violations as a warning. Exits silently for
 non-markdown files, files that do not yet exist on disk (new files
 via Write), or when the tool is not installed.
 
-Complements the prompt-based constraint gate with deterministic
-checking — the prompt hook catches constraint intent, while this
-hook catches formatting that machines are better at detecting.
+This is the only place markdown formatting is reported. The commit-constraint
+check deliberately leaves `.md` files alone, because two hooks reporting one
+violation teach the reader to skim both.
 
 ---
 
 ## PostToolUse Hooks
 
-These fire **after** a tool call has run. Output is advisory by construction:
-the work has happened, so a hook here informs rather than prevents.
+These fire **after** a tool call has run, so nothing here can prevent the work.
+That is not the same as being advisory. A `command` hook is advisory when it
+exits 0 and keeps `continue` and `decision` out of its JSON. A `prompt` hook is
+not: its `{ok: false, reason: ...}` ends the turn unless the hook sets
+`continueOnBlock`, and a model with nothing to report still has to return
+something. #615 is what that distinction cost before it was written down.
 
-### Constraint gate (prompt)
+### Commit-constraint check (command)
 
 - **Event**: PostToolUse
 - **Matcher**: `Write|Edit`
-- **Type**: prompt
-- **Timeout**: 30s
+- **Type**: command
+- **Script**: `hooks/scripts/commit-constraint-check.sh`
+- **Timeout**: 15s
 
-Reads the Constraints section of `HARNESS.md`, identifies constraints scoped to
-`commit`, and reports any the file just written breaks.
+Reads the `## Constraints` section of `HARNESS.md` and collects the constraints
+declaring both `Scope: commit` and `Enforcement: deterministic`. For each whose
+`Tool:` names something it can run against a single file, it runs that check on
+the file just written and reports failures as a warning. It exits silently when
+there is no `HARNESS.md`, when no constraint is commit-scoped, when the file is
+not one the declared tools apply to, and when everything passes — which is the
+common case, and the point.
 
-**It reports only what it can quote.** A violation requires the constraint's
-heading verbatim from `HARNESS.md` *and* the offending line from the
-file. Without both, it returns nothing — and returning nothing is the correct
-and common outcome. A document that discusses a rule is not a document that
-breaks one.
+**It reports only what `HARNESS.md` declares.** The constraint heading in a
+warning is read out of the file, never composed. A constraint whose `Tool:` the
+script does not recognise is skipped in silence rather than approximated: a
+guess wearing a citation is harder to dismiss than no check at all.
 
-**Why it is not a `PreToolUse` hook.** It used to be, and it could not do what
-its own prompt asked. A `PreToolUse` prompt hook has exactly two channels —
-return nothing (allow) or return text (deny) — so "warn, only warn" was
-addressed to a model with no mechanism to comply, and the text it returned *was*
-the block. It denied two legitimate writes, each citing a constraint that does
-not exist in `HARNESS.md`. Moved in #510; the file is on disk and uncommitted
-when the hook runs, so the warning stays actionable.
+**Why it is not a `prompt` hook.** It was one until #615, and it could not do
+what its own prompt asked. A prompt hook is a single-turn model call over the
+hook input payload, with no tool access — so "Read HARNESS.md in the project
+root" was never available to it, in any repository. What it returned instead was
+an improvised sentence about being unable to read the file, and a prompt hook's
+`{ok: false, reason: ...}` ends the turn by default. Every edit in a repository
+without a `HARNESS.md` cut the session off mid-task, and every edit in a
+repository with one was evaluated by something that had not read it. #509 had
+already found the first half of this at `PreToolUse`, where returned text is the
+block; moving the hook to `PostToolUse` fixed the blocked writes and left the
+deeper defect in place, because position was never the whole problem. A script
+can read the file, and can say nothing by saying nothing.
+
+**Agent-enforced commit constraints are out of scope here.** They need file
+access *and* judgement, which is an agent hook or a dispatch to
+`harness-enforcer`; #605 tracks that they have no dispatch path today. This hook
+stays silent on them rather than pretending.
+
+---
 
 ### Affordance invocation recorder (command)
 

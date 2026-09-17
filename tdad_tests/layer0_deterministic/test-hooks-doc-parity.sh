@@ -48,14 +48,19 @@ config = json.loads(raw)
 
 # --- D3: nothing in the repo calls the constraint gate a PreToolUse hook -----
 # Derive the gate's real event from the registration rather than assuming it.
+#
+# The gate was a prompt hook until #615, so this used to find it by looking for
+# "HARNESS.md" in a `prompt` field. It is a command hook now — a prompt hook has
+# no tool access and could never read HARNESS.md — so the gate is located by its
+# script, which is what the registration actually carries.
 gate_event = None
 for event, groups in config.get("hooks", {}).items():
     for group in groups:
         for hook in group.get("hooks", []):
-            if "HARNESS.md" in str(hook.get("prompt", "")):
+            if "commit-constraint-check.sh" in str(hook.get("command", "")):
                 gate_event = event
 if gate_event is None:
-    errors.append("D3: no HARNESS.md constraint-gate hook found to check against")
+    errors.append("D3: no commit-constraint-gate hook found to check against")
 
 # The manifest's own description field must not contradict its registration.
 if gate_event and re.search(r"constraint gate \(PreToolUse\)", raw):
@@ -73,6 +78,13 @@ for rel in ("README.md",
         for number, line in enumerate(fh, start=1):
             if re.search(r"PreToolUse\s+constraint gate|constraint gate \(PreToolUse\)", line):
                 errors.append(f"D3: {rel}:{number} calls the constraint gate a PreToolUse hook")
+            # #615: the gate is a command hook. A page still calling it
+            # prompt-based describes a check that never ran.
+            if re.search(r"constraint gate \(prompt\)|prompt-based constraint gate", line):
+                errors.append(
+                    f"D3: {rel}:{number} calls the constraint gate prompt-based, "
+                    "but it is a command hook (#615)"
+                )
 
 # --- D2: the page's event sections match the registration --------------------
 with open(page, encoding="utf-8") as fh:
