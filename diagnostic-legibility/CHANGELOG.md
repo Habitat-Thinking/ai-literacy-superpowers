@@ -2,6 +2,22 @@
 
 ## 0.11.0 — 2026-06-15
 
+### The charter states the problem it exists for (#613, #614)
+
+- Rewrote the charter on both surfaces it appears on — the plugin README
+  and the docs-site landing page — so it opens with the problem rather
+  than the mechanism. A new *The Challenge of Putting Back the Hunches*
+  section names what AI changed: code can be generated faster than the
+  living theory of how it works can be formed, and reviewing the output
+  does not put back the experiential intuition that went missing. The
+  charter proper now commits the agents to maintaining human *hunches* as
+  a first-class design goal, built by *poking and seeing* and fed back as
+  *hunch-oriented telemetry*.
+- The previous charter text is retained verbatim under a new *Current
+  Scope* heading, so nothing that described what the plugin does today
+  was lost — the rewrite adds the why above it.
+- Docs-only; no behavioural change, so the plugin version is unchanged.
+
 ### Change-site prediction (#368)
 
 Adds an **opt-in** capability over the task-scoped pipeline map: predict
